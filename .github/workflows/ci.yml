@@ -1,0 +1,11 @@
+name: Continuous Integration
+
+on: [push, pull_request]
+
+jobs:
+  formatting:
+    name: Check formatting
+    runs-on: ubuntu-latest
+    steps:
+    - name: Check formatting
+      run: cargo fmt --all -- --check

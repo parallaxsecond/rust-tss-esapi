@@ -1,0 +1,18 @@
+[package]
+name = "tss-esapi"
+version = "0.1.0"
+authors = ["Ionut Mihalcea <ionut.mihalcea@arm.com>",
+           "Hugues de Valon <hugues.devalon@arm.com>"]
+edition = "2018"
+
+[dependencies]
+bitfield = "0.13.2"
+serde = { version = "1.0.103", features = ["derive"] }
+mbox = "0.5.0"
+log = "0.4.8"
+
+[dev-dependencies]
+env_logger = "0.7.1"
+
+[build-dependencies]
+bindgen = "0.52.0"

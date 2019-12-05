@@ -1,0 +1,38 @@
+# tss-esapi crate maintainers file
+#
+# This file lists the maintainers of the parallaxsecond/rust-tss-esapi project.
+#
+# Its structure is inspired from the maintainers files in the Docker Github
+# repositories. Please see the MAINTAINERS file in docker/opensource for more
+# information.
+
+[maintainers]
+
+# Core maintainers of the project.
+
+    [maintainers.core]
+    people = [
+      "hug-dev",
+      "ionut-arm",
+      "paulhowardarm",
+    ]
+
+[people]
+
+# A reference list of all people associated with the project.
+
+    [people.hug-dev]
+    Name = "Hugues de Valon"
+    Email = "hugues.devalon@arm.com"
+    GitHub = "hug-dev"
+
+    [people.ionut-arm]
+    Name = "Ionut Mihalcea"
+    Email = "ionut.mihalcea@arm.com"
+    GitHub = "ionut-arm"
+
+    [people.paulhowardarm]
+    Name = "Paul Howard"
+    Email = "paul.howard@arm.com"
+    GitHub = "paulhowardarm"
+
