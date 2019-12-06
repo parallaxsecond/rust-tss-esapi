@@ -50,8 +50,10 @@ use std::ptr::{null, null_mut};
 pub use tss2_esys::*;
 pub use utils::{AsymSchemeUnion, Signature, TpmaSession};
 
-pub type SessionTrio = (ESYS_TR, ESYS_TR, ESYS_TR);
-pub const NO_SESSIONS: SessionTrio = (ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE);
+pub type Sessions = (ESYS_TR, ESYS_TR);
+pub const NO_SESSIONS: Sessions = (ESYS_TR_NONE, ESYS_TR_NONE);
+pub const NO_NON_AUTH_SESSIONS: (ESYS_TR, ESYS_TR, ESYS_TR) =
+    (ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE);
 
 // Possible TCTI to use with the ESYS API.
 // TODO: add to each variant a structure for its configuration. Currently using the default
@@ -119,7 +121,15 @@ impl Context {
                 tcti_context,
                 open_handles: HashSet::new(),
             };
-            let session = context.start_auth_session(ESYS_TR_NONE)?;
+            let session = context.start_auth_session(
+                NO_NON_AUTH_SESSIONS,
+                ESYS_TR_NONE,
+                ESYS_TR_NONE,
+                &[],
+                TPM2_SE_HMAC,
+                utils::TpmtSymDefBuilder::aes_256_cfb(),
+                TPM2_ALG_SHA256,
+            )?;
             let session_attr = TpmaSession::new()
                 .with_flag(TPMA_SESSION_DECRYPT)
                 .with_flag(TPMA_SESSION_ENCRYPT);
@@ -132,23 +142,47 @@ impl Context {
         }
     }
 
-    pub fn start_auth_session(&mut self, bind: ESYS_TR) -> Result<ESYS_TR> {
-        let sym_def = utils::TpmtSymDefBuilder::aes_256_cfb();
+    // TODO: Fix when compacting the arguments into a struct
+    #[allow(clippy::too_many_arguments)]
+    pub fn start_auth_session(
+        &mut self,
+        non_auth_sessions: (ESYS_TR, ESYS_TR, ESYS_TR),
+        tpm_key: ESYS_TR,
+        bind: ESYS_TR,
+        nonce: &[u8],
+        session_type: TPM2_SE,
+        symmetric: TPMT_SYM_DEF,
+        auth_hash: TPMI_ALG_HASH,
+    ) -> Result<ESYS_TR> {
+        if nonce.len() > 64 {
+            return Err(Tss2ResponseCode::new(TPM2_RC_SIZE));
+        }
+
+        let mut nonce_buffer = [0u8; 64];
+        nonce_buffer[..nonce.len()].clone_from_slice(&nonce[..nonce.len()]);
+        let nonce_caller = TPM2B_NONCE {
+            size: nonce.len().try_into().unwrap(),
+            buffer: nonce_buffer,
+        };
 
         let mut sess = ESYS_TR_NONE;
 
         let ret = unsafe {
             tss2_esys::Esys_StartAuthSession(
                 self.mut_context(),
-                ESYS_TR_NONE,
+                tpm_key,
                 bind,
-                ESYS_TR_NONE,
-                ESYS_TR_NONE,
-                ESYS_TR_NONE,
-                null(),
-                TPM2_SE_HMAC,
-                &sym_def,
-                TPM2_ALG_SHA256,
+                non_auth_sessions.0,
+                non_auth_sessions.1,
+                non_auth_sessions.2,
+                if nonce.is_empty() {
+                    null()
+                } else {
+                    &nonce_caller
+                },
+                session_type,
+                &symmetric,
+                auth_hash,
                 &mut sess,
             )
         };
@@ -167,12 +201,31 @@ impl Context {
         self.session = session_handle;
     }
 
-    pub fn create_primary_key(&mut self, auth_value: &[u8]) -> Result<ESYS_TR> {
-        if auth_value.len() > 64 {
+    // TODO: Fix when compacting the arguments into a struct
+    #[allow(clippy::too_many_arguments)]
+    pub fn create_primary_key(
+        &mut self,
+        sessions: Sessions,
+        primary_handle: ESYS_TR,
+        public: &TPM2B_PUBLIC,
+        auth_value: &[u8],
+        initial_data: &[u8],
+        outside_info: &[u8],
+        creation_pcrs: &[TPMS_PCR_SELECTION],
+    ) -> Result<ESYS_TR> {
+        if auth_value.len() > 64
+            || initial_data.len() > 256
+            || outside_info.len() > 64
+            || creation_pcrs.len() > 16
+        {
             return Err(Tss2ResponseCode::new(TPM2_RC_SIZE));
         }
-        let mut buffer = [0u8; 64];
-        buffer[..auth_value.len()].clone_from_slice(&auth_value[..auth_value.len()]);
+
+        let mut auth_value_buffer = [0u8; 64];
+        auth_value_buffer[..auth_value.len()].clone_from_slice(&auth_value[..auth_value.len()]);
+        let mut initial_data_buffer = [0u8; 256];
+        initial_data_buffer[..initial_data.len()]
+            .clone_from_slice(&initial_data[..initial_data.len()]);
         let sensitive_create = TPM2B_SENSITIVE_CREATE {
             size: std::mem::size_of::<TPMS_SENSITIVE_CREATE>()
                 .try_into()
@@ -180,34 +233,53 @@ impl Context {
             sensitive: TPMS_SENSITIVE_CREATE {
                 userAuth: TPM2B_DIGEST {
                     size: auth_value.len().try_into().unwrap(),
-                    buffer,
+                    buffer: auth_value_buffer,
                 },
-                data: Default::default(),
+                data: TPM2B_SENSITIVE_DATA {
+                    size: initial_data.len().try_into().unwrap(),
+                    buffer: initial_data_buffer,
+                },
             },
+        };
+
+        let mut outside_info_buffer = [0u8; 64];
+        outside_info_buffer[..outside_info.len()]
+            .clone_from_slice(&outside_info[..outside_info.len()]);
+        let outside_info = TPM2B_DATA {
+            size: outside_info.len().try_into().unwrap(),
+            buffer: outside_info_buffer,
+        };
+
+        let mut creation_pcrs_buffer = [Default::default(); 16];
+        creation_pcrs_buffer[..creation_pcrs.len()]
+            .clone_from_slice(&creation_pcrs[..creation_pcrs.len()]);
+        let creation_pcrs = TPML_PCR_SELECTION {
+            count: creation_pcrs.len().try_into().unwrap(),
+            pcrSelections: creation_pcrs_buffer,
         };
 
         let mut outpublic = null_mut();
         let mut creation_data = null_mut();
-        let mut digest = null_mut();
-        let mut creation = null_mut();
+        let mut creation_hash = null_mut();
+        let mut creation_ticket = null_mut();
         let mut prim_key_handle = ESYS_TR_NONE;
 
         let ret = unsafe {
             Esys_CreatePrimary(
                 self.mut_context(),
-                ESYS_TR_RH_OWNER,
+                primary_handle,
                 self.session,
-                ESYS_TR_NONE,
-                ESYS_TR_NONE,
+                sessions.0,
+                sessions.1,
                 &sensitive_create,
-                &get_rsa_public_utils(true, true, false, 2048),
-                null(),
-                &Default::default(),
+                public,
+                &outside_info,
+                &creation_pcrs,
                 &mut prim_key_handle,
                 &mut outpublic,
                 &mut creation_data,
-                &mut digest,
-                &mut creation,
+                &mut creation_hash,
+                &mut creation_ticket,
             )
         };
         let ret = Tss2ResponseCode::new(ret);
@@ -216,8 +288,8 @@ impl Context {
             unsafe {
                 MBox::from_raw(outpublic);
                 MBox::from_raw(creation_data);
-                MBox::from_raw(digest);
-                MBox::from_raw(creation);
+                MBox::from_raw(creation_hash);
+                MBox::from_raw(creation_ticket);
             }
             self.open_handles.insert(prim_key_handle);
             Ok(prim_key_handle)
@@ -227,23 +299,31 @@ impl Context {
         }
     }
 
+    // TODO: Fix when compacting the arguments into a struct
+    #[allow(clippy::too_many_arguments)]
     pub fn create_key(
         &mut self,
+        sessions: Sessions,
         parent_handle: ESYS_TR,
-        key_bits: u16,
+        public: &TPM2B_PUBLIC,
         auth_value: &[u8],
+        initial_data: &[u8],
+        outside_info: &[u8],
+        creation_pcrs: &[TPMS_PCR_SELECTION],
     ) -> Result<(TPM2B_PRIVATE, TPM2B_PUBLIC)> {
-        if auth_value.len() > 64 {
+        if auth_value.len() > 64
+            || initial_data.len() > 256
+            || outside_info.len() > 64
+            || creation_pcrs.len() > 16
+        {
             return Err(Tss2ResponseCode::new(TPM2_RC_SIZE));
         }
-        let mut buffer = [0u8; 64];
-        buffer[..auth_value.len()].clone_from_slice(&auth_value[..auth_value.len()]);
 
-        let mut outpublic = null_mut();
-        let mut outprivate = null_mut();
-        let mut creation_data = null_mut();
-        let mut digest = null_mut();
-        let mut creation = null_mut();
+        let mut auth_value_buffer = [0u8; 64];
+        auth_value_buffer[..auth_value.len()].clone_from_slice(&auth_value[..auth_value.len()]);
+        let mut initial_data_buffer = [0u8; 256];
+        initial_data_buffer[..initial_data.len()]
+            .clone_from_slice(&initial_data[..initial_data.len()]);
         let sensitive_create = TPM2B_SENSITIVE_CREATE {
             size: std::mem::size_of::<TPMS_SENSITIVE_CREATE>()
                 .try_into()
@@ -251,23 +331,48 @@ impl Context {
             sensitive: TPMS_SENSITIVE_CREATE {
                 userAuth: TPM2B_DIGEST {
                     size: auth_value.len().try_into().unwrap(),
-                    buffer,
+                    buffer: auth_value_buffer,
                 },
-                data: Default::default(),
+                data: TPM2B_SENSITIVE_DATA {
+                    size: initial_data.len().try_into().unwrap(),
+                    buffer: initial_data_buffer,
+                },
             },
         };
+
+        let mut outside_info_buffer = [0u8; 64];
+        outside_info_buffer[..outside_info.len()]
+            .clone_from_slice(&outside_info[..outside_info.len()]);
+        let outside_info = TPM2B_DATA {
+            size: outside_info.len().try_into().unwrap(),
+            buffer: outside_info_buffer,
+        };
+
+        let mut creation_pcrs_buffer = [Default::default(); 16];
+        creation_pcrs_buffer[..creation_pcrs.len()]
+            .clone_from_slice(&creation_pcrs[..creation_pcrs.len()]);
+        let creation_pcrs = TPML_PCR_SELECTION {
+            count: creation_pcrs.len().try_into().unwrap(),
+            pcrSelections: creation_pcrs_buffer,
+        };
+
+        let mut outpublic = null_mut();
+        let mut outprivate = null_mut();
+        let mut creation_data = null_mut();
+        let mut digest = null_mut();
+        let mut creation = null_mut();
 
         let ret = unsafe {
             Esys_Create(
                 self.mut_context(),
                 parent_handle,
                 self.session,
-                ESYS_TR_NONE,
-                ESYS_TR_NONE,
+                sessions.0,
+                sessions.1,
                 &sensitive_create,
-                &get_rsa_public_utils(false, false, true, key_bits),
-                null(),
-                &Default::default(),
+                public,
+                &outside_info,
+                &creation_pcrs,
                 &mut outprivate,
                 &mut outpublic,
                 &mut creation_data,
@@ -294,6 +399,7 @@ impl Context {
 
     pub fn load(
         &mut self,
+        sessions: Sessions,
         parent_handle: ESYS_TR,
         private: TPM2B_PRIVATE,
         public: TPM2B_PUBLIC,
@@ -304,8 +410,8 @@ impl Context {
                 self.mut_context(),
                 parent_handle,
                 self.session,
-                ESYS_TR_NONE,
-                ESYS_TR_NONE,
+                sessions.0,
+                sessions.1,
                 &private,
                 &public,
                 &mut handle,
@@ -322,25 +428,25 @@ impl Context {
         }
     }
 
-    pub fn sign(&mut self, key_handle: ESYS_TR, digest: TPM2B_DIGEST) -> Result<Signature> {
+    pub fn sign(
+        &mut self,
+        sessions: Sessions,
+        key_handle: ESYS_TR,
+        digest: &TPM2B_DIGEST,
+        scheme: TPMT_SIG_SCHEME,
+        validation: &TPMT_TK_HASHCHECK,
+    ) -> Result<Signature> {
         let mut signature = null_mut();
         let ret = unsafe {
             Esys_Sign(
                 self.mut_context(),
                 key_handle,
                 self.session,
-                ESYS_TR_NONE,
-                ESYS_TR_NONE,
-                &digest,
-                &TPMT_SIG_SCHEME {
-                    scheme: TPM2_ALG_NULL,
-                    details: Default::default(),
-                },
-                &TPMT_TK_HASHCHECK {
-                    tag: TPM2_ST_HASHCHECK,
-                    hierarchy: TPM2_RH_NULL,
-                    digest: Default::default(),
-                },
+                sessions.0,
+                sessions.1,
+                digest,
+                &scheme,
+                validation,
                 &mut signature,
             )
         };
@@ -357,20 +463,21 @@ impl Context {
 
     pub fn verify_signature(
         &mut self,
+        sessions: Sessions,
         key_handle: ESYS_TR,
-        digest: TPM2B_DIGEST,
-        signature: Signature,
+        digest: &TPM2B_DIGEST,
+        signature: &TPMT_SIGNATURE,
     ) -> Result<TPMT_TK_VERIFIED> {
         let mut validation = null_mut();
         let ret = unsafe {
             Esys_VerifySignature(
                 self.mut_context(),
                 key_handle,
-                ESYS_TR_NONE,
-                ESYS_TR_NONE,
-                ESYS_TR_NONE,
-                &digest,
-                &signature.try_into()?,
+                self.session,
+                sessions.0,
+                sessions.1,
+                digest,
+                signature,
                 &mut validation,
             )
         };
@@ -385,17 +492,23 @@ impl Context {
         }
     }
 
-    pub fn load_external(&mut self, public: TPM2B_PUBLIC) -> Result<ESYS_TR> {
+    pub fn load_external(
+        &mut self,
+        sessions: Sessions,
+        private: &TPM2B_SENSITIVE,
+        public: &TPM2B_PUBLIC,
+        hierarchy: TPMI_RH_HIERARCHY,
+    ) -> Result<ESYS_TR> {
         let mut key_handle = ESYS_TR_NONE;
         let ret = unsafe {
             Esys_LoadExternal(
                 self.mut_context(),
-                ESYS_TR_NONE,
-                ESYS_TR_NONE,
-                ESYS_TR_NONE,
-                null(),
-                &public,
-                TPM2_RH_OWNER,
+                self.session,
+                sessions.0,
+                sessions.1,
+                private,
+                public,
+                hierarchy,
                 &mut key_handle,
             )
         };
@@ -411,11 +524,7 @@ impl Context {
         }
     }
 
-    pub fn read_public(
-        &mut self,
-        sessions: SessionTrio,
-        key_handle: ESYS_TR,
-    ) -> Result<TPM2B_PUBLIC> {
+    pub fn read_public(&mut self, sessions: Sessions, key_handle: ESYS_TR) -> Result<TPM2B_PUBLIC> {
         let mut public = null_mut();
         let mut name = null_mut();
         let mut qualified_name = null_mut();
@@ -423,9 +532,9 @@ impl Context {
             Esys_ReadPublic(
                 self.mut_context(),
                 key_handle,
+                self.session,
                 sessions.0,
                 sessions.1,
-                sessions.2,
                 &mut public,
                 &mut name,
                 &mut qualified_name,
@@ -492,15 +601,15 @@ impl Context {
         }
     }
 
-    pub fn get_random(&mut self, sessions: SessionTrio, num_bytes: u16) -> Result<Vec<u8>> {
+    pub fn get_random(&mut self, sessions: Sessions, num_bytes: usize) -> Result<Vec<u8>> {
         let mut buffer = null_mut();
         let ret = unsafe {
             Esys_GetRandom(
                 self.mut_context(),
+                self.session,
                 sessions.0,
                 sessions.1,
-                sessions.2,
-                num_bytes,
+                num_bytes.try_into().unwrap(),
                 &mut buffer,
             )
         };
@@ -768,13 +877,33 @@ mod tests {
         env_logger::init();
 
         let mut context = Context::new(Tcti::Tabrmd).unwrap();
-        let key_auth: Vec<u8> = context.get_random(NO_SESSIONS.clone(), 16).unwrap();
+        let key_auth: Vec<u8> = context.get_random(NO_SESSIONS, 16).unwrap();
 
-        let prim_key_handle = context.create_primary_key(&key_auth).unwrap();
+        let prim_key_handle = context
+            .create_primary_key(
+                NO_SESSIONS,
+                ESYS_TR_RH_OWNER,
+                &get_rsa_public_utils(true, true, false, 2048),
+                &key_auth,
+                &[],
+                &[],
+                &[],
+            )
+            .unwrap();
 
         dbg!(prim_key_handle);
 
-        let new_session = context.start_auth_session(prim_key_handle).unwrap();
+        let new_session = context
+            .start_auth_session(
+                NO_NON_AUTH_SESSIONS,
+                ESYS_TR_NONE,
+                prim_key_handle,
+                &[],
+                TPM2_SE_HMAC,
+                utils::TpmtSymDefBuilder::aes_256_cfb(),
+                TPM2_ALG_SHA256,
+            )
+            .unwrap();
         let session_attr = TpmaSession::new()
             .with_flag(TPMA_SESSION_DECRYPT)
             .with_flag(TPMA_SESSION_ENCRYPT);
@@ -782,9 +911,19 @@ mod tests {
         context.set_session(new_session);
 
         let (key_priv, key_pub) = context
-            .create_key(prim_key_handle, 2048, &key_auth)
+            .create_key(
+                NO_SESSIONS,
+                prim_key_handle,
+                &get_rsa_public_utils(false, false, true, 1024),
+                &key_auth,
+                &[],
+                &[],
+                &[],
+            )
             .unwrap();
-        let key_handle = context.load(prim_key_handle, key_priv, key_pub).unwrap();
+        let key_handle = context
+            .load(NO_SESSIONS, prim_key_handle, key_priv, key_pub)
+            .unwrap();
         dbg!(key_handle);
 
         let key_context = context.context_save(key_handle).unwrap();
@@ -795,7 +934,18 @@ mod tests {
             size: 32,
             buffer: HASH.clone(),
         };
-        let signature = context.sign(key_handle, digest).unwrap();
+        let scheme = TPMT_SIG_SCHEME {
+            scheme: TPM2_ALG_NULL,
+            details: Default::default(),
+        };
+        let validation = TPMT_TK_HASHCHECK {
+            tag: TPM2_ST_HASHCHECK,
+            hierarchy: TPM2_RH_NULL,
+            digest: Default::default(),
+        };
+        let signature = context
+            .sign(NO_SESSIONS, key_handle, &digest, scheme, &validation)
+            .unwrap();
         print!("Signature: ");
         for x in &signature.signature {
             print!("{}, ", x);
@@ -803,7 +953,12 @@ mod tests {
         println!();
         dbg!(
             context
-                .verify_signature(key_handle, digest, signature)
+                .verify_signature(
+                    NO_SESSIONS,
+                    key_handle,
+                    &digest,
+                    &signature.try_into().unwrap()
+                )
                 .unwrap()
                 .tag
         );
