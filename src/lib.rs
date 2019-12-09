@@ -876,7 +876,7 @@ mod tests {
     fn simple_test() {
         env_logger::init();
 
-        let mut context = Context::new(Tcti::Tabrmd).unwrap();
+        let mut context = Context::new(Tcti::Mssim).unwrap();
         let key_auth: Vec<u8> = context.get_random(NO_SESSIONS, 16).unwrap();
 
         let prim_key_handle = context

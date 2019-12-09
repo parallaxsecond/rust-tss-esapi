@@ -10,3 +10,15 @@ jobs:
     - uses: actions/checkout@v1
     - name: Check formatting
       run: cargo fmt --all -- --check
+
+  # All in one job as I think it is a big overhead to build and run the Docker
+  # container?
+  all:
+    name: Use Docker to execute the test script
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: Build the container
+      run: docker build -t tss2.0 tests/
+    - name: Run the container
+      run: docker run -v $(pwd):/tmp/rust-tss-esapi -w /tmp/rust-tss-esapi tss2.0 /tmp/rust-tss-esapi/tests/all.sh
