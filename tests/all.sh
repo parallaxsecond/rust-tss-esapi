@@ -28,19 +28,25 @@ set -e
 # Run the TPM simulation server #
 #################################
 tpm_server &
-tpm2_startup -c -T mssim || exit 1
+sleep 5
+tpm2_startup -c -T mssim
 
 ##################
 # Execute clippy #
 ##################
-cargo clippy || exit 1
+cargo clippy
 
 ###################
 # Build the crate #
 ###################
-cargo build || exit 1
+cargo build
 
 #################
 # Static checks #
 #################
-RUST_LOG=info cargo test || exit 1
+RUST_LOG=info cargo test -- --test-threads=1 --nocapture
+
+###################
+# Stop TPM server #
+###################
+pkill tpm_server
