@@ -39,6 +39,7 @@ pub mod constants;
 pub mod response_code;
 pub mod utils;
 
+pub use abstraction::transient::TransientObjectContext;
 use log::{error, info};
 use mbox::MBox;
 use response_code::Result;
@@ -62,8 +63,7 @@ macro_rules! wrap_buffer {
     }};
 }
 
-pub type Sessions = (ESYS_TR, ESYS_TR);
-pub const NO_SESSIONS: Sessions = (ESYS_TR_NONE, ESYS_TR_NONE);
+pub const NO_SESSIONS: (ESYS_TR, ESYS_TR, ESYS_TR) = (ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE);
 pub const NO_NON_AUTH_SESSIONS: (ESYS_TR, ESYS_TR, ESYS_TR) =
     (ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE);
 
@@ -85,7 +85,7 @@ use constants::*;
 pub struct Context {
     // TODO: explain Option
     esys_context: Option<MBox<ESYS_CONTEXT>>,
-    session: ESYS_TR,
+    sessions: (ESYS_TR, ESYS_TR, ESYS_TR),
     tcti_context: Option<MBox<TSS2_TCTI_CONTEXT>>,
     open_handles: HashSet<ESYS_TR>,
 }
@@ -129,12 +129,12 @@ impl Context {
             let esys_context = unsafe { Some(MBox::from_raw(esys_context)) };
             let mut context = Context {
                 esys_context,
-                session: ESYS_TR_NONE,
+                sessions: NO_SESSIONS,
                 tcti_context,
                 open_handles: HashSet::new(),
             };
             let session = context.start_auth_session(
-                NO_NON_AUTH_SESSIONS,
+                NO_SESSIONS,
                 ESYS_TR_NONE,
                 ESYS_TR_NONE,
                 &[],
@@ -146,7 +146,7 @@ impl Context {
                 .with_flag(TPMA_SESSION_DECRYPT)
                 .with_flag(TPMA_SESSION_ENCRYPT);
             context.set_session_attr(session, session_attr)?;
-            context.session = session;
+            context.sessions = (session, ESYS_TR_NONE, ESYS_TR_NONE);
             Ok(context)
         } else {
             error!("Error when creating a new context: {}.", ret);
@@ -203,15 +203,18 @@ impl Context {
         }
     }
 
-    pub fn set_session(&mut self, session_handle: ESYS_TR) {
-        self.session = session_handle;
+    pub fn set_sessions(&mut self, session_handles: (ESYS_TR, ESYS_TR, ESYS_TR)) {
+        self.sessions = session_handles;
+    }
+
+    pub fn sessions(&self) -> (ESYS_TR, ESYS_TR, ESYS_TR) {
+        self.sessions
     }
 
     // TODO: Fix when compacting the arguments into a struct
     #[allow(clippy::too_many_arguments)]
     pub fn create_primary_key(
         &mut self,
-        sessions: Sessions,
         primary_handle: ESYS_TR,
         public: &TPM2B_PUBLIC,
         auth_value: &[u8],
@@ -256,9 +259,9 @@ impl Context {
             Esys_CreatePrimary(
                 self.mut_context(),
                 primary_handle,
-                self.session,
-                sessions.0,
-                sessions.1,
+                self.sessions.0,
+                self.sessions.1,
+                self.sessions.2,
                 &sensitive_create,
                 public,
                 &outside_info,
@@ -291,7 +294,6 @@ impl Context {
     #[allow(clippy::too_many_arguments)]
     pub fn create_key(
         &mut self,
-        sessions: Sessions,
         parent_handle: ESYS_TR,
         public: &TPM2B_PUBLIC,
         auth_value: &[u8],
@@ -337,9 +339,9 @@ impl Context {
             Esys_Create(
                 self.mut_context(),
                 parent_handle,
-                self.session,
-                sessions.0,
-                sessions.1,
+                self.sessions.0,
+                self.sessions.1,
+                self.sessions.2,
                 &sensitive_create,
                 public,
                 &outside_info,
@@ -370,7 +372,6 @@ impl Context {
 
     pub fn load(
         &mut self,
-        sessions: Sessions,
         parent_handle: ESYS_TR,
         private: TPM2B_PRIVATE,
         public: TPM2B_PUBLIC,
@@ -380,9 +381,9 @@ impl Context {
             Esys_Load(
                 self.mut_context(),
                 parent_handle,
-                self.session,
-                sessions.0,
-                sessions.1,
+                self.sessions.0,
+                self.sessions.1,
+                self.sessions.2,
                 &private,
                 &public,
                 &mut handle,
@@ -401,7 +402,6 @@ impl Context {
 
     pub fn sign(
         &mut self,
-        sessions: Sessions,
         key_handle: ESYS_TR,
         digest: &[u8],
         scheme: TPMT_SIG_SCHEME,
@@ -416,9 +416,9 @@ impl Context {
             Esys_Sign(
                 self.mut_context(),
                 key_handle,
-                self.session,
-                sessions.0,
-                sessions.1,
+                self.sessions.0,
+                self.sessions.1,
+                self.sessions.2,
                 &digest,
                 &scheme,
                 validation,
@@ -438,7 +438,6 @@ impl Context {
 
     pub fn verify_signature(
         &mut self,
-        sessions: Sessions,
         key_handle: ESYS_TR,
         digest: &[u8],
         signature: &TPMT_SIGNATURE,
@@ -452,9 +451,9 @@ impl Context {
             Esys_VerifySignature(
                 self.mut_context(),
                 key_handle,
-                self.session,
-                sessions.0,
-                sessions.1,
+                self.sessions.0,
+                self.sessions.1,
+                self.sessions.2,
                 &digest,
                 signature,
                 &mut validation,
@@ -473,7 +472,6 @@ impl Context {
 
     pub fn load_external(
         &mut self,
-        sessions: Sessions,
         private: &TPM2B_SENSITIVE,
         public: &TPM2B_PUBLIC,
         hierarchy: TPMI_RH_HIERARCHY,
@@ -482,9 +480,9 @@ impl Context {
         let ret = unsafe {
             Esys_LoadExternal(
                 self.mut_context(),
-                self.session,
-                sessions.0,
-                sessions.1,
+                self.sessions.0,
+                self.sessions.1,
+                self.sessions.2,
                 private,
                 public,
                 hierarchy,
@@ -505,7 +503,6 @@ impl Context {
 
     pub fn load_external_public(
         &mut self,
-        sessions: Sessions,
         public: &TPM2B_PUBLIC,
         hierarchy: TPMI_RH_HIERARCHY,
     ) -> Result<ESYS_TR> {
@@ -513,9 +510,9 @@ impl Context {
         let ret = unsafe {
             Esys_LoadExternal(
                 self.mut_context(),
-                self.session,
-                sessions.0,
-                sessions.1,
+                self.sessions.0,
+                self.sessions.1,
+                self.sessions.2,
                 null(),
                 public,
                 hierarchy,
@@ -534,7 +531,7 @@ impl Context {
         }
     }
 
-    pub fn read_public(&mut self, sessions: Sessions, key_handle: ESYS_TR) -> Result<TPM2B_PUBLIC> {
+    pub fn read_public(&mut self, key_handle: ESYS_TR) -> Result<TPM2B_PUBLIC> {
         let mut public = null_mut();
         let mut name = null_mut();
         let mut qualified_name = null_mut();
@@ -542,9 +539,9 @@ impl Context {
             Esys_ReadPublic(
                 self.mut_context(),
                 key_handle,
-                self.session,
-                sessions.0,
-                sessions.1,
+                self.sessions.0,
+                self.sessions.1,
+                self.sessions.2,
                 &mut public,
                 &mut name,
                 &mut qualified_name,
@@ -611,14 +608,14 @@ impl Context {
         }
     }
 
-    pub fn get_random(&mut self, sessions: Sessions, num_bytes: usize) -> Result<Vec<u8>> {
+    pub fn get_random(&mut self, num_bytes: usize) -> Result<Vec<u8>> {
         let mut buffer = null_mut();
         let ret = unsafe {
             Esys_GetRandom(
                 self.mut_context(),
-                self.session,
-                sessions.0,
-                sessions.1,
+                self.sessions.0,
+                self.sessions.1,
+                self.sessions.2,
                 num_bytes.try_into().unwrap(),
                 &mut buffer,
             )
@@ -739,11 +736,10 @@ mod tests {
         env_logger::init();
 
         let mut context = Context::new(Tcti::Mssim).unwrap();
-        let key_auth: Vec<u8> = context.get_random(NO_SESSIONS, 16).unwrap();
+        let key_auth: Vec<u8> = context.get_random(16).unwrap();
 
         let prim_key_handle = context
             .create_primary_key(
-                NO_SESSIONS,
                 ESYS_TR_RH_OWNER,
                 &utils::get_rsa_public(true, true, false, 2048),
                 &key_auth,
@@ -757,7 +753,7 @@ mod tests {
 
         let new_session = context
             .start_auth_session(
-                NO_NON_AUTH_SESSIONS,
+                NO_SESSIONS,
                 ESYS_TR_NONE,
                 prim_key_handle,
                 &[],
@@ -770,11 +766,10 @@ mod tests {
             .with_flag(TPMA_SESSION_DECRYPT)
             .with_flag(TPMA_SESSION_ENCRYPT);
         context.set_session_attr(new_session, session_attr).unwrap();
-        context.set_session(new_session);
+        context.set_sessions((new_session, ESYS_TR_NONE, ESYS_TR_NONE));
 
         let (key_priv, key_pub) = context
             .create_key(
-                NO_SESSIONS,
                 prim_key_handle,
                 &utils::get_rsa_public(false, false, true, 1024),
                 &key_auth,
@@ -783,9 +778,7 @@ mod tests {
                 &[],
             )
             .unwrap();
-        let key_handle = context
-            .load(NO_SESSIONS, prim_key_handle, key_priv, key_pub)
-            .unwrap();
+        let key_handle = context.load(prim_key_handle, key_priv, key_pub).unwrap();
         dbg!(key_handle);
 
         let key_context = context.context_save(key_handle).unwrap();
@@ -802,7 +795,7 @@ mod tests {
             digest: Default::default(),
         };
         let signature = context
-            .sign(NO_SESSIONS, key_handle, &HASH[..32], scheme, &validation)
+            .sign(key_handle, &HASH[..32], scheme, &validation)
             .unwrap();
         print!("Signature: ");
         for x in &signature.signature {
@@ -811,12 +804,7 @@ mod tests {
         println!();
         dbg!(
             context
-                .verify_signature(
-                    NO_SESSIONS,
-                    key_handle,
-                    &HASH[..32],
-                    &signature.try_into().unwrap()
-                )
+                .verify_signature(key_handle, &HASH[..32], &signature.try_into().unwrap())
                 .unwrap()
                 .tag
         );

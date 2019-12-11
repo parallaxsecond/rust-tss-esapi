@@ -17,10 +17,8 @@ use crate::constants::*;
 use crate::response_code::{Result, Tss2ResponseCode};
 use crate::tss2_esys::*;
 use crate::utils::{self, get_rsa_public, PublicIdUnion, TpmsContext};
-use crate::{Context, Tcti, NO_NON_AUTH_SESSIONS, NO_SESSIONS};
+use crate::{Context, Tcti, NO_SESSIONS};
 use std::convert::{TryFrom, TryInto};
-
-pub type AuthValue = Vec<u8>;
 
 pub struct TransientObjectContext {
     pub context: Context,
@@ -42,7 +40,7 @@ impl TransientObjectContext {
         }
         let mut context = Context::new(tcti)?;
         let root_key_auth: Vec<u8> = if root_key_auth_size > 0 {
-            context.get_random(NO_SESSIONS, root_key_auth_size)?
+            context.get_random(root_key_auth_size)?
         } else {
             vec![]
         };
@@ -51,7 +49,6 @@ impl TransientObjectContext {
         }
 
         let root_key_handle = context.create_primary_key(
-            NO_SESSIONS,
             ESYS_TR_RH_OWNER,
             &get_rsa_public(true, true, false, root_key_size.try_into().unwrap()),
             &root_key_auth,
@@ -61,7 +58,7 @@ impl TransientObjectContext {
         )?;
 
         let new_session = context.start_auth_session(
-            NO_NON_AUTH_SESSIONS,
+            NO_SESSIONS,
             root_key_handle,
             ESYS_TR_NONE,
             &[],
@@ -73,7 +70,9 @@ impl TransientObjectContext {
             .with_flag(TPMA_SESSION_DECRYPT)
             .with_flag(TPMA_SESSION_ENCRYPT);
         context.set_session_attr(new_session, session_attr)?;
-        context.set_session(new_session);
+        let (old_session, _, _) = context.sessions();
+        context.set_sessions((new_session, ESYS_TR_NONE, ESYS_TR_NONE));
+        context.flush_context(old_session)?;
         Ok(TransientObjectContext {
             context,
             root_key_handle,
@@ -84,7 +83,7 @@ impl TransientObjectContext {
         &mut self,
         key_size: usize,
         auth_size: usize,
-    ) -> Result<(TpmsContext, AuthValue)> {
+    ) -> Result<(TpmsContext, Vec<u8>)> {
         if auth_size > 32 {
             return Err(Tss2ResponseCode::new(TPM2_RC_SIZE));
         }
@@ -92,12 +91,11 @@ impl TransientObjectContext {
             return Err(Tss2ResponseCode::new(TPM2_RC_KEY_SIZE));
         }
         let key_auth = if auth_size > 0 {
-            self.context.get_random(NO_SESSIONS, auth_size)?
+            self.context.get_random(auth_size)?
         } else {
             vec![]
         };
         let (key_priv, key_pub) = self.context.create_key(
-            NO_SESSIONS,
             self.root_key_handle,
             &get_rsa_public(false, false, true, key_size.try_into().unwrap()),
             &key_auth,
@@ -105,11 +103,12 @@ impl TransientObjectContext {
             &[],
             &[],
         )?;
-        let key_handle = self
-            .context
-            .load(NO_SESSIONS, self.root_key_handle, key_priv, key_pub)?;
+        let key_handle = self.context.load(self.root_key_handle, key_priv, key_pub)?;
 
-        let key_context = self.context.context_save(key_handle)?;
+        let key_context = self.context.context_save(key_handle).or_else(|e| {
+            self.context.flush_context(key_handle)?;
+            Err(e)
+        })?;
         self.context.flush_context(key_handle)?;
         Ok((key_context, key_auth))
     }
@@ -136,25 +135,24 @@ impl TransientObjectContext {
         );
         public.publicArea.unique = pk;
 
-        let key_handle = self
-            .context
-            .load_external_public(NO_SESSIONS, &public, TPM2_RH_OWNER)?;
+        let key_handle = self.context.load_external_public(&public, TPM2_RH_OWNER)?;
 
-        let key_context = self.context.context_save(key_handle)?;
+        let key_context = self.context.context_save(key_handle).or_else(|e| {
+            self.context.flush_context(key_handle)?;
+            Err(e)
+        })?;
         self.context.flush_context(key_handle)?;
 
         Ok(key_context)
     }
 
-    pub fn read_public_key(
-        &mut self,
-        key_context: TpmsContext,
-        key_auth: &[u8],
-    ) -> Result<Vec<u8>> {
+    pub fn read_public_key(&mut self, key_context: TpmsContext) -> Result<Vec<u8>> {
         let key_handle = self.context.context_load(key_context)?;
-        self.context.set_handle_auth(key_handle, key_auth)?;
 
-        let key_pub_id = self.context.read_public(NO_SESSIONS, key_handle)?;
+        let key_pub_id = self.context.read_public(key_handle).or_else(|e| {
+            self.context.flush_context(key_handle)?;
+            Err(e)
+        })?;
         let key = match PublicIdUnion::from_public(&key_pub_id) {
             PublicIdUnion::Rsa(pub_key) => {
                 let mut key = pub_key.buffer.to_vec();
@@ -174,7 +172,12 @@ impl TransientObjectContext {
         digest: &[u8],
     ) -> Result<utils::Signature> {
         let key_handle = self.context.context_load(key_context)?;
-        self.context.set_handle_auth(key_handle, key_auth)?;
+        self.context
+            .set_handle_auth(key_handle, key_auth)
+            .or_else(|e| {
+                self.context.flush_context(key_handle)?;
+                Err(e)
+            })?;
 
         let scheme = TPMT_SIG_SCHEME {
             scheme: TPM2_ALG_NULL,
@@ -187,7 +190,11 @@ impl TransientObjectContext {
         };
         let signature = self
             .context
-            .sign(NO_SESSIONS, key_handle, digest, scheme, &validation)?;
+            .sign(key_handle, digest, scheme, &validation)
+            .or_else(|e| {
+                self.context.flush_context(key_handle)?;
+                Err(e)
+            })?;
         self.context.flush_context(key_handle)?;
         Ok(signature)
     }
@@ -200,12 +207,17 @@ impl TransientObjectContext {
     ) -> Result<TPMT_TK_VERIFIED> {
         let key_handle = self.context.context_load(key_context)?;
 
-        let verified = self.context.verify_signature(
-            NO_SESSIONS,
-            key_handle,
-            digest,
-            &signature.try_into()?,
-        )?;
+        let signature: TPMT_SIGNATURE = signature.try_into().or_else(|e| {
+            self.context.flush_context(key_handle)?;
+            Err(e)
+        })?;
+        let verified = self
+            .context
+            .verify_signature(key_handle, digest, &signature)
+            .or_else(|e| {
+                self.context.flush_context(key_handle)?;
+                Err(e)
+            })?;
         self.context.flush_context(key_handle)?;
         Ok(verified)
     }
@@ -227,7 +239,7 @@ mod tests {
         let mut ctx = TransientObjectContext::new(Tcti::Mssim, 2048, 32, &[]).unwrap();
         let (key, auth) = ctx.create_rsa_signing_key(2048, 16).unwrap();
         let signature = ctx.sign(key.clone(), &auth, &HASH).unwrap();
-        let pub_key = ctx.read_public_key(key.clone(), &auth).unwrap();
+        let pub_key = ctx.read_public_key(key.clone()).unwrap();
         let pub_key = ctx.load_external_rsa_public_key(&pub_key).unwrap();
         ctx.verify_signature(pub_key, &HASH, signature).unwrap();
     }
