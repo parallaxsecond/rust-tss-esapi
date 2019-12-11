@@ -24,9 +24,10 @@
 // There is an issue where long double become u128 in extern blocks. Check this issue:
 // https://github.com/rust-lang/rust-bindgen/issues/1549
 #[allow(improper_ctypes)]
-mod tss2_esys {
+pub mod tss2_esys {
     include!(concat!(env!("OUT_DIR"), "/tss2_esys_bindings.rs"));
 }
+pub mod abstraction;
 #[allow(
     non_snake_case,
     non_camel_case_types,
@@ -35,20 +36,31 @@ mod tss2_esys {
 )]
 #[allow(clippy::all)]
 pub mod constants;
-mod response_code;
-mod utils;
+pub mod response_code;
+pub mod utils;
 
 use log::{error, info};
 use mbox::MBox;
 use response_code::Result;
 use response_code::Tss2ResponseCode;
-use serde::{Deserialize, Serialize};
 use std::collections::HashSet;
 use std::convert::{TryFrom, TryInto};
 use std::ffi::CString;
 use std::ptr::{null, null_mut};
-pub use tss2_esys::*;
-pub use utils::{AsymSchemeUnion, Signature, TpmaSession};
+use tss2_esys::*;
+use utils::{Signature, TpmaSession, TpmsContext};
+
+#[macro_use]
+macro_rules! wrap_buffer {
+    ($buf:expr, $buf_type:ty, $buf_size:expr) => {{
+        let mut buffer = [0u8; $buf_size];
+        buffer[..$buf.len()].clone_from_slice(&$buf[..$buf.len()]);
+        let mut buf_struct: $buf_type = Default::default();
+        buf_struct.size = $buf.len().try_into().unwrap();
+        buf_struct.buffer = buffer;
+        buf_struct
+    }};
+}
 
 pub type Sessions = (ESYS_TR, ESYS_TR);
 pub const NO_SESSIONS: Sessions = (ESYS_TR_NONE, ESYS_TR_NONE);
@@ -158,13 +170,7 @@ impl Context {
             return Err(Tss2ResponseCode::new(TPM2_RC_SIZE));
         }
 
-        let mut nonce_buffer = [0u8; 64];
-        nonce_buffer[..nonce.len()].clone_from_slice(&nonce[..nonce.len()]);
-        let nonce_caller = TPM2B_NONCE {
-            size: nonce.len().try_into().unwrap(),
-            buffer: nonce_buffer,
-        };
-
+        let nonce_caller = wrap_buffer!(nonce, TPM2B_NONCE, 64);
         let mut sess = ESYS_TR_NONE;
 
         let ret = unsafe {
@@ -221,35 +227,17 @@ impl Context {
             return Err(Tss2ResponseCode::new(TPM2_RC_SIZE));
         }
 
-        let mut auth_value_buffer = [0u8; 64];
-        auth_value_buffer[..auth_value.len()].clone_from_slice(&auth_value[..auth_value.len()]);
-        let mut initial_data_buffer = [0u8; 256];
-        initial_data_buffer[..initial_data.len()]
-            .clone_from_slice(&initial_data[..initial_data.len()]);
         let sensitive_create = TPM2B_SENSITIVE_CREATE {
             size: std::mem::size_of::<TPMS_SENSITIVE_CREATE>()
                 .try_into()
                 .unwrap(),
             sensitive: TPMS_SENSITIVE_CREATE {
-                userAuth: TPM2B_DIGEST {
-                    size: auth_value.len().try_into().unwrap(),
-                    buffer: auth_value_buffer,
-                },
-                data: TPM2B_SENSITIVE_DATA {
-                    size: initial_data.len().try_into().unwrap(),
-                    buffer: initial_data_buffer,
-                },
+                userAuth: wrap_buffer!(auth_value, TPM2B_AUTH, 64),
+                data: wrap_buffer!(initial_data, TPM2B_SENSITIVE_DATA, 256),
             },
         };
 
-        let mut outside_info_buffer = [0u8; 64];
-        outside_info_buffer[..outside_info.len()]
-            .clone_from_slice(&outside_info[..outside_info.len()]);
-        let outside_info = TPM2B_DATA {
-            size: outside_info.len().try_into().unwrap(),
-            buffer: outside_info_buffer,
-        };
-
+        let outside_info = wrap_buffer!(outside_info, TPM2B_DATA, 64);
         let mut creation_pcrs_buffer = [Default::default(); 16];
         creation_pcrs_buffer[..creation_pcrs.len()]
             .clone_from_slice(&creation_pcrs[..creation_pcrs.len()]);
@@ -319,34 +307,17 @@ impl Context {
             return Err(Tss2ResponseCode::new(TPM2_RC_SIZE));
         }
 
-        let mut auth_value_buffer = [0u8; 64];
-        auth_value_buffer[..auth_value.len()].clone_from_slice(&auth_value[..auth_value.len()]);
-        let mut initial_data_buffer = [0u8; 256];
-        initial_data_buffer[..initial_data.len()]
-            .clone_from_slice(&initial_data[..initial_data.len()]);
         let sensitive_create = TPM2B_SENSITIVE_CREATE {
             size: std::mem::size_of::<TPMS_SENSITIVE_CREATE>()
                 .try_into()
                 .unwrap(),
             sensitive: TPMS_SENSITIVE_CREATE {
-                userAuth: TPM2B_DIGEST {
-                    size: auth_value.len().try_into().unwrap(),
-                    buffer: auth_value_buffer,
-                },
-                data: TPM2B_SENSITIVE_DATA {
-                    size: initial_data.len().try_into().unwrap(),
-                    buffer: initial_data_buffer,
-                },
+                userAuth: wrap_buffer!(auth_value, TPM2B_AUTH, 64),
+                data: wrap_buffer!(initial_data, TPM2B_SENSITIVE_DATA, 256),
             },
         };
 
-        let mut outside_info_buffer = [0u8; 64];
-        outside_info_buffer[..outside_info.len()]
-            .clone_from_slice(&outside_info[..outside_info.len()]);
-        let outside_info = TPM2B_DATA {
-            size: outside_info.len().try_into().unwrap(),
-            buffer: outside_info_buffer,
-        };
+        let outside_info = wrap_buffer!(outside_info, TPM2B_DATA, 64);
 
         let mut creation_pcrs_buffer = [Default::default(); 16];
         creation_pcrs_buffer[..creation_pcrs.len()]
@@ -432,11 +403,15 @@ impl Context {
         &mut self,
         sessions: Sessions,
         key_handle: ESYS_TR,
-        digest: &TPM2B_DIGEST,
+        digest: &[u8],
         scheme: TPMT_SIG_SCHEME,
         validation: &TPMT_TK_HASHCHECK,
     ) -> Result<Signature> {
+        if digest.len() > 64 {
+            return Err(Tss2ResponseCode::new(TPM2_RC_SIZE));
+        }
         let mut signature = null_mut();
+        let digest = wrap_buffer!(digest, TPM2B_DIGEST, 64);
         let ret = unsafe {
             Esys_Sign(
                 self.mut_context(),
@@ -444,7 +419,7 @@ impl Context {
                 self.session,
                 sessions.0,
                 sessions.1,
-                digest,
+                &digest,
                 &scheme,
                 validation,
                 &mut signature,
@@ -465,10 +440,14 @@ impl Context {
         &mut self,
         sessions: Sessions,
         key_handle: ESYS_TR,
-        digest: &TPM2B_DIGEST,
+        digest: &[u8],
         signature: &TPMT_SIGNATURE,
     ) -> Result<TPMT_TK_VERIFIED> {
+        if digest.len() > 64 {
+            return Err(Tss2ResponseCode::new(TPM2_RC_SIZE));
+        }
         let mut validation = null_mut();
+        let digest = wrap_buffer!(digest, TPM2B_DIGEST, 64);
         let ret = unsafe {
             Esys_VerifySignature(
                 self.mut_context(),
@@ -476,7 +455,7 @@ impl Context {
                 self.session,
                 sessions.0,
                 sessions.1,
-                digest,
+                &digest,
                 signature,
                 &mut validation,
             )
@@ -507,6 +486,37 @@ impl Context {
                 sessions.0,
                 sessions.1,
                 private,
+                public,
+                hierarchy,
+                &mut key_handle,
+            )
+        };
+
+        let ret = Tss2ResponseCode::new(ret);
+
+        if ret.is_success() {
+            self.open_handles.insert(key_handle);
+            Ok(key_handle)
+        } else {
+            error!("Error in loading: {}.", ret);
+            Err(ret)
+        }
+    }
+
+    pub fn load_external_public(
+        &mut self,
+        sessions: Sessions,
+        public: &TPM2B_PUBLIC,
+        hierarchy: TPMI_RH_HIERARCHY,
+    ) -> Result<ESYS_TR> {
+        let mut key_handle = ESYS_TR_NONE;
+        let ret = unsafe {
+            Esys_LoadExternal(
+                self.mut_context(),
+                self.session,
+                sessions.0,
+                sessions.1,
+                null(),
                 public,
                 hierarchy,
                 &mut key_handle,
@@ -630,13 +640,8 @@ impl Context {
         if auth_value.len() > 64 {
             return Err(Tss2ResponseCode::new(TPM2_RC_SIZE));
         }
-        let mut buffer = [0u8; 64];
-        buffer[..auth_value.len()].clone_from_slice(&auth_value[..auth_value.len()]);
 
-        let auth = TPM2B_DIGEST {
-            size: auth_value.len().try_into().unwrap(),
-            buffer,
-        };
+        let auth = wrap_buffer!(auth_value, TPM2B_AUTH, 64);
         let ret = unsafe { Esys_TR_SetAuth(self.mut_context(), handle, &auth) };
         let ret = Tss2ResponseCode::new(ret);
         if ret.is_success() {
@@ -660,53 +665,6 @@ impl Context {
 
     fn mut_context(&mut self) -> *mut ESYS_CONTEXT {
         self.esys_context.as_mut().unwrap().as_mut_ptr()
-    }
-}
-
-#[derive(Serialize, Deserialize)]
-pub struct TpmsContext {
-    sequence: u64,
-    saved_handle: TPMI_DH_CONTEXT,
-    hierarchy: TPMI_RH_HIERARCHY,
-    context_blob: Vec<u8>,
-}
-
-impl From<TPMS_CONTEXT> for TpmsContext {
-    fn from(tss2_context: TPMS_CONTEXT) -> Self {
-        let mut context = TpmsContext {
-            sequence: tss2_context.sequence,
-            saved_handle: tss2_context.savedHandle,
-            hierarchy: tss2_context.hierarchy,
-            context_blob: tss2_context.contextBlob.buffer.to_vec(),
-        };
-        context
-            .context_blob
-            .truncate(tss2_context.contextBlob.size.try_into().unwrap());
-        context
-    }
-}
-
-impl TryFrom<TpmsContext> for TPMS_CONTEXT {
-    type Error = Tss2ResponseCode;
-
-    fn try_from(context: TpmsContext) -> Result<Self> {
-        let buffer_size = context.context_blob.len();
-        if buffer_size > 5188 {
-            return Err(Tss2ResponseCode::new(TPM2_RC_SIZE));
-        }
-        let mut buffer = [0u8; 5188];
-        for (i, val) in context.context_blob.into_iter().enumerate() {
-            buffer[i] = val;
-        }
-        Ok(TPMS_CONTEXT {
-            sequence: context.sequence,
-            savedHandle: context.saved_handle,
-            hierarchy: context.hierarchy,
-            contextBlob: TPM2B_CONTEXT_DATA {
-                size: buffer_size.try_into().unwrap(),
-                buffer,
-            },
-        })
     }
 }
 
@@ -736,104 +694,6 @@ impl Drop for Context {
         unsafe { tss2_esys::Esys_Finalize(&mut esys_context.into_raw() as *mut *mut ESYS_CONTEXT) };
         info!("Context closed.");
     }
-}
-
-pub fn get_rsa_public(restricted: bool, decrypt: bool, sign: bool) -> TPM2B_PUBLIC {
-    let mut object_attributes = 0x2 // FixedTPM
-        | 0x10 // Fixed Parent
-        | 0x40 // User with Auth
-        | 0x20; // SensitiveDataOrigin
-    if decrypt {
-        object_attributes |= 0x20000; // Decrypt
-    }
-    if sign {
-        object_attributes |= 0x40000; // Sign Encrypt
-    }
-    if restricted && !(decrypt && sign) {
-        object_attributes |= 0x10000; // Restricted
-    }
-
-    let algorithm = if sign { 0x10 } else { 0x6 };
-
-    let mut scheme = 0x14; // RSA_SSA
-    let hash_alg = if !sign || decrypt {
-        scheme = 0x10; // NULL
-        0x10
-    } else {
-        0xB
-    };
-
-    dbg!(scheme);
-    let public_area = TPMT_PUBLIC {
-        type_: 1,     // RSA
-        nameAlg: 0xB, // SHA-256
-        objectAttributes: object_attributes,
-        authPolicy: Default::default(),
-        parameters: TPMU_PUBLIC_PARMS {
-            rsaDetail: TPMS_RSA_PARMS {
-                symmetric: TPMT_SYM_DEF_OBJECT {
-                    algorithm,
-                    keyBits: TPMU_SYM_KEY_BITS { aes: 128 },
-                    mode: TPMU_SYM_MODE {
-                        aes: 0x43, // CFB
-                    },
-                },
-                scheme: TPMT_RSA_SCHEME {
-                    scheme, // NULL //0x14, //RSA_SSA
-                    details: TPMU_ASYM_SCHEME {
-                        rsassa: TPMS_SCHEME_HASH { hashAlg: hash_alg },
-                    },
-                },
-                keyBits: 2048,
-                exponent: 0, // Default: 2^16 + 1
-            },
-        },
-        unique: TPMU_PUBLIC_ID {
-            rsa: TPM2B_PUBLIC_KEY_RSA {
-                size: 0,
-                buffer: [0; 512],
-            },
-        },
-    };
-    let size = std::mem::size_of::<TPMT_PUBLIC>().try_into().unwrap();
-    TPM2B_PUBLIC {
-        size,
-        publicArea: public_area,
-    }
-}
-
-pub fn get_rsa_public_utils(
-    restricted: bool,
-    decrypt: bool,
-    sign: bool,
-    key_bits: u16,
-) -> TPM2B_PUBLIC {
-    let symmetric = utils::TpmtSymDefBuilder::new()
-        .with_algorithm(TPM2_ALG_AES)
-        .with_key_bits(128)
-        .with_mode(TPM2_ALG_CFB)
-        .build_object();
-    let scheme = utils::AsymSchemeUnion::RSASSA(TPM2_ALG_SHA256);
-    let rsa_parms = utils::TpmsRsaParmsBuilder::new()
-        .with_symmetric(symmetric)
-        .with_key_bits(key_bits)
-        .with_scheme(scheme)
-        .build();
-    let mut object_attributes = utils::ObjectAttributes(0);
-    object_attributes.set_fixed_tpm(true);
-    object_attributes.set_fixed_parent(true);
-    object_attributes.set_sensitive_data_origin(true);
-    object_attributes.set_user_with_auth(true);
-    object_attributes.set_decrypt(decrypt);
-    object_attributes.set_sign_encrypt(sign);
-    object_attributes.set_restricted(restricted);
-
-    utils::Tpm2BPublicBuilder::new()
-        .with_type(TPM2_ALG_RSA)
-        .with_name_alg(TPM2_ALG_SHA256)
-        .with_object_attributes(object_attributes)
-        .with_parms(utils::PublicParmsUnion::RsaDetail(rsa_parms))
-        .build()
 }
 
 #[cfg(test)]
@@ -871,7 +731,9 @@ mod tests {
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     ];
 
+    use crate::utils;
     use crate::*;
+
     #[test]
     fn simple_test() {
         env_logger::init();
@@ -883,7 +745,7 @@ mod tests {
             .create_primary_key(
                 NO_SESSIONS,
                 ESYS_TR_RH_OWNER,
-                &get_rsa_public_utils(true, true, false, 2048),
+                &utils::get_rsa_public(true, true, false, 2048),
                 &key_auth,
                 &[],
                 &[],
@@ -914,7 +776,7 @@ mod tests {
             .create_key(
                 NO_SESSIONS,
                 prim_key_handle,
-                &get_rsa_public_utils(false, false, true, 1024),
+                &utils::get_rsa_public(false, false, true, 1024),
                 &key_auth,
                 &[],
                 &[],
@@ -930,10 +792,6 @@ mod tests {
         let key_handle = context.context_load(key_context).unwrap();
         context.set_handle_auth(key_handle, &key_auth).unwrap();
         dbg!(key_handle);
-        let digest = TPM2B_DIGEST {
-            size: 32,
-            buffer: HASH.clone(),
-        };
         let scheme = TPMT_SIG_SCHEME {
             scheme: TPM2_ALG_NULL,
             details: Default::default(),
@@ -944,7 +802,7 @@ mod tests {
             digest: Default::default(),
         };
         let signature = context
-            .sign(NO_SESSIONS, key_handle, &digest, scheme, &validation)
+            .sign(NO_SESSIONS, key_handle, &HASH[..32], scheme, &validation)
             .unwrap();
         print!("Signature: ");
         for x in &signature.signature {
@@ -956,7 +814,7 @@ mod tests {
                 .verify_signature(
                     NO_SESSIONS,
                     key_handle,
-                    &digest,
+                    &HASH[..32],
                     &signature.try_into().unwrap()
                 )
                 .unwrap()

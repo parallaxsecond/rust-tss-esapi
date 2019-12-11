@@ -14,9 +14,10 @@
 // limitations under the License.
 
 use crate::constants::*;
-use crate::response_code::Tss2ResponseCode;
+use crate::response_code::{Result, Tss2ResponseCode};
 use crate::tss2_esys::*;
 use bitfield::bitfield;
+use serde::{Deserialize, Serialize};
 use std::convert::{TryFrom, TryInto};
 
 pub struct Tpm2BPublicBuilder {
@@ -129,6 +130,13 @@ impl Tpm2BPublicBuilder {
     }
 }
 
+impl Default for Tpm2BPublicBuilder {
+    fn default() -> Self {
+        Tpm2BPublicBuilder::new()
+    }
+}
+
+#[derive(Default)]
 pub struct TpmsRsaParmsBuilder {
     symmetric: TPMT_SYM_DEF_OBJECT,
     scheme: Option<AsymSchemeUnion>,
@@ -279,6 +287,12 @@ impl TpmtSymDefBuilder {
     }
 }
 
+impl Default for TpmtSymDefBuilder {
+    fn default() -> Self {
+        TpmtSymDefBuilder::new()
+    }
+}
+
 bitfield! {
     pub struct ObjectAttributes(TPMA_OBJECT);
     impl Debug;
@@ -301,6 +315,21 @@ pub enum PublicIdUnion {
     Sym(TPM2B_DIGEST),
     Rsa(Box<TPM2B_PUBLIC_KEY_RSA>),
     Ecc(Box<TPMS_ECC_POINT>),
+}
+
+impl PublicIdUnion {
+    pub fn from_public(public: &TPM2B_PUBLIC) -> Self {
+        match public.publicArea.type_ {
+            TPM2_ALG_RSA => {
+                // TODO Issue #2: Should this method be unsafe?
+                PublicIdUnion::Rsa(Box::from(unsafe { public.publicArea.unique.rsa }))
+            }
+            TPM2_ALG_ECC => unimplemented!(),
+            TPM2_ALG_SYMCIPHER => unimplemented!(),
+            TPM2_ALG_KEYEDHASH => unimplemented!(),
+            _ => unimplemented!(),
+        }
+    }
 }
 
 pub enum PublicParmsUnion {
@@ -395,7 +424,7 @@ pub struct Signature {
 impl TryFrom<TPMT_SIGNATURE> for Signature {
     type Error = Tss2ResponseCode;
 
-    fn try_from(tss_signature: TPMT_SIGNATURE) -> Result<Self, Self::Error> {
+    fn try_from(tss_signature: TPMT_SIGNATURE) -> Result<Self> {
         match tss_signature.sigAlg {
             TPM2_ALG_RSASSA => {
                 let hash_alg = unsafe { tss_signature.signature.rsassa.hash };
@@ -422,7 +451,7 @@ impl TryFrom<TPMT_SIGNATURE> for Signature {
 
 impl TryFrom<Signature> for TPMT_SIGNATURE {
     type Error = Tss2ResponseCode;
-    fn try_from(sig: Signature) -> Result<Self, Self::Error> {
+    fn try_from(sig: Signature) -> Result<Self> {
         let len = sig.signature.len();
         let mut buffer = [0u8; 512];
         for (idx, byte) in sig.signature.into_iter().enumerate() {
@@ -477,4 +506,76 @@ impl TpmaSession {
     pub fn flags(&self) -> TPMA_SESSION {
         self.0
     }
+}
+
+#[derive(Serialize, Deserialize, Clone)]
+pub struct TpmsContext {
+    sequence: u64,
+    saved_handle: TPMI_DH_CONTEXT,
+    hierarchy: TPMI_RH_HIERARCHY,
+    context_blob: Vec<u8>,
+}
+
+impl From<TPMS_CONTEXT> for TpmsContext {
+    fn from(tss2_context: TPMS_CONTEXT) -> Self {
+        let mut context = TpmsContext {
+            sequence: tss2_context.sequence,
+            saved_handle: tss2_context.savedHandle,
+            hierarchy: tss2_context.hierarchy,
+            context_blob: tss2_context.contextBlob.buffer.to_vec(),
+        };
+        context
+            .context_blob
+            .truncate(tss2_context.contextBlob.size.try_into().unwrap());
+        context
+    }
+}
+
+impl TryFrom<TpmsContext> for TPMS_CONTEXT {
+    type Error = Tss2ResponseCode;
+
+    fn try_from(context: TpmsContext) -> Result<Self> {
+        let buffer_size = context.context_blob.len();
+        if buffer_size > 5188 {
+            return Err(Tss2ResponseCode::new(TPM2_RC_SIZE));
+        }
+        let mut buffer = [0u8; 5188];
+        for (i, val) in context.context_blob.into_iter().enumerate() {
+            buffer[i] = val;
+        }
+        Ok(TPMS_CONTEXT {
+            sequence: context.sequence,
+            savedHandle: context.saved_handle,
+            hierarchy: context.hierarchy,
+            contextBlob: TPM2B_CONTEXT_DATA {
+                size: buffer_size.try_into().unwrap(),
+                buffer,
+            },
+        })
+    }
+}
+
+pub fn get_rsa_public(restricted: bool, decrypt: bool, sign: bool, key_bits: u16) -> TPM2B_PUBLIC {
+    let symmetric = TpmtSymDefBuilder::aes_256_cfb_object();
+    let scheme = AsymSchemeUnion::RSASSA(TPM2_ALG_SHA256);
+    let rsa_parms = TpmsRsaParmsBuilder::new()
+        .with_symmetric(symmetric)
+        .with_key_bits(key_bits)
+        .with_scheme(scheme)
+        .build();
+    let mut object_attributes = ObjectAttributes(0);
+    object_attributes.set_fixed_tpm(true);
+    object_attributes.set_fixed_parent(true);
+    object_attributes.set_sensitive_data_origin(true);
+    object_attributes.set_user_with_auth(true);
+    object_attributes.set_decrypt(decrypt);
+    object_attributes.set_sign_encrypt(sign);
+    object_attributes.set_restricted(restricted);
+
+    Tpm2BPublicBuilder::new()
+        .with_type(TPM2_ALG_RSA)
+        .with_name_alg(TPM2_ALG_SHA256)
+        .with_object_attributes(object_attributes)
+        .with_parms(PublicParmsUnion::RsaDetail(rsa_parms))
+        .build()
 }
