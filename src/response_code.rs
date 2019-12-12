@@ -98,7 +98,7 @@ impl Tss2ResponseCode {
         }
     }
 
-    fn kind(self) -> Option<Tss2ResponseCodeKind> {
+    pub fn kind(self) -> Option<Tss2ResponseCodeKind> {
         match self {
             Tss2ResponseCode::Success => Some(Tss2ResponseCodeKind::Success),
             Tss2ResponseCode::FormatZero(rc) => {
@@ -218,7 +218,8 @@ impl Tss2ResponseCode {
     }
 }
 
-enum Tss2ResponseCodeKind {
+#[derive(PartialEq)]
+pub enum Tss2ResponseCodeKind {
     // FormatZero errors
     Success,
     TpmVendorSpecific,
