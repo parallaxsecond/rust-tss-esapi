@@ -66,10 +66,6 @@ impl TransientObjectContext {
             utils::TpmtSymDefBuilder::aes_256_cfb(),
             TPM2_ALG_SHA256,
         )?;
-        let session_attr = utils::TpmaSession::new()
-            .with_flag(TPMA_SESSION_DECRYPT)
-            .with_flag(TPMA_SESSION_ENCRYPT);
-        context.set_session_attr(new_session, session_attr)?;
         let (old_session, _, _) = context.sessions();
         context.set_sessions((new_session, ESYS_TR_NONE, ESYS_TR_NONE));
         context.flush_context(old_session)?;
@@ -91,10 +87,12 @@ impl TransientObjectContext {
             return Err(Tss2ResponseCode::new(TPM2_RC_KEY_SIZE));
         }
         let key_auth = if auth_size > 0 {
+            self.set_session_attrs()?;
             self.context.get_random(auth_size)?
         } else {
             vec![]
         };
+        self.set_session_attrs()?;
         let (key_priv, key_pub) = self.context.create_key(
             self.root_key_handle,
             &get_rsa_public(false, false, true, key_size.try_into().unwrap()),
@@ -103,8 +101,10 @@ impl TransientObjectContext {
             &[],
             &[],
         )?;
+        self.set_session_attrs()?;
         let key_handle = self.context.load(self.root_key_handle, key_priv, key_pub)?;
 
+        self.set_session_attrs()?;
         let key_context = self.context.context_save(key_handle).or_else(|e| {
             self.context.flush_context(key_handle)?;
             Err(e)
@@ -135,8 +135,10 @@ impl TransientObjectContext {
         );
         public.publicArea.unique = pk;
 
+        self.set_session_attrs()?;
         let key_handle = self.context.load_external_public(&public, TPM2_RH_OWNER)?;
 
+        self.set_session_attrs()?;
         let key_context = self.context.context_save(key_handle).or_else(|e| {
             self.context.flush_context(key_handle)?;
             Err(e)
@@ -147,8 +149,10 @@ impl TransientObjectContext {
     }
 
     pub fn read_public_key(&mut self, key_context: TpmsContext) -> Result<Vec<u8>> {
+        self.set_session_attrs()?;
         let key_handle = self.context.context_load(key_context)?;
 
+        self.set_session_attrs()?;
         let key_pub_id = self.context.read_public(key_handle).or_else(|e| {
             self.context.flush_context(key_handle)?;
             Err(e)
@@ -161,6 +165,7 @@ impl TransientObjectContext {
             }
             _ => unimplemented!(),
         };
+        self.context.flush_context(key_handle)?;
 
         Ok(key)
     }
@@ -171,6 +176,7 @@ impl TransientObjectContext {
         key_auth: &[u8],
         digest: &[u8],
     ) -> Result<utils::Signature> {
+        self.set_session_attrs()?;
         let key_handle = self.context.context_load(key_context)?;
         self.context
             .set_handle_auth(key_handle, key_auth)
@@ -188,6 +194,7 @@ impl TransientObjectContext {
             hierarchy: TPM2_RH_NULL,
             digest: Default::default(),
         };
+        self.set_session_attrs()?;
         let signature = self
             .context
             .sign(key_handle, digest, scheme, &validation)
@@ -205,12 +212,14 @@ impl TransientObjectContext {
         digest: &[u8],
         signature: utils::Signature,
     ) -> Result<TPMT_TK_VERIFIED> {
+        self.set_session_attrs()?;
         let key_handle = self.context.context_load(key_context)?;
 
         let signature: TPMT_SIGNATURE = signature.try_into().or_else(|e| {
             self.context.flush_context(key_handle)?;
             Err(e)
         })?;
+        self.set_session_attrs()?;
         let verified = self
             .context
             .verify_signature(key_handle, digest, &signature)
@@ -220,6 +229,15 @@ impl TransientObjectContext {
             })?;
         self.context.flush_context(key_handle)?;
         Ok(verified)
+    }
+
+    fn set_session_attrs(&mut self) -> Result<()> {
+        let (session, _, _) = self.context.sessions();
+        let session_attr = utils::TpmaSession::new()
+            .with_flag(TPMA_SESSION_DECRYPT)
+            .with_flag(TPMA_SESSION_ENCRYPT);
+        self.context.set_session_attr(session, session_attr)?;
+        Ok(())
     }
 }
 
@@ -237,10 +255,12 @@ mod tests {
     #[test]
     fn transient_test() {
         let mut ctx = TransientObjectContext::new(Tcti::Mssim, 2048, 32, &[]).unwrap();
-        let (key, auth) = ctx.create_rsa_signing_key(2048, 16).unwrap();
-        let signature = ctx.sign(key.clone(), &auth, &HASH).unwrap();
-        let pub_key = ctx.read_public_key(key.clone()).unwrap();
-        let pub_key = ctx.load_external_rsa_public_key(&pub_key).unwrap();
-        ctx.verify_signature(pub_key, &HASH, signature).unwrap();
+        for _ in 0..4 {
+            let (key, auth) = ctx.create_rsa_signing_key(2048, 16).unwrap();
+            let mut signature = ctx.sign(key.clone(), &auth, &HASH).unwrap();
+            let pub_key = ctx.read_public_key(key.clone()).unwrap();
+            let pub_key = ctx.load_external_rsa_public_key(&pub_key).unwrap();
+            ctx.verify_signature(pub_key, &HASH, signature).unwrap();
+        }
     }
 }
