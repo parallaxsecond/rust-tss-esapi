@@ -16,3 +16,4 @@ env_logger = "0.7.1"
 
 [build-dependencies]
 bindgen = "0.52.0"
+pkg-config = "0.3.17"

@@ -31,6 +31,20 @@ suitable for use in production. Documentation pages may be incomplete and are su
 without notice. Interfaces may change in such a way as to break compatibility with client code.
 Contributions from the developer community are welcome. Please refer to the contribution guidelines.
 
+## Requirements
+
+This crate has currently only been tested with the TSS 2.0
+[open-source implementation](https://github.com/tpm2-software/tpm2-tss).
+It uses `pkg-config` to find the include and library files for the `tss2-esys` and `tss2-tctildr`
+libraries. `pkg-config` tool is needed to build this crate.
+
+Having installed the open-source implementation libraries at `/usr/local/lib` (by default), it
+might happen that `pkg-config` can not find them. Run the following command if that is the
+case:
+```bash
+$ export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig
+```
+
 ## Community channel
 
 Come and talk to us in [our Slack channel](https://app.slack.com/client/T0JK1PCN6/CPMQ9D4H1)!
@@ -54,3 +68,4 @@ This project uses the following third party crates:
 * env\_logger (MIT and Apache-2.0)
 * mbox (MIT)
 * bitfield (MIT and Apache-2.0)
+* pkg-config (MIT and Apache-2.0)

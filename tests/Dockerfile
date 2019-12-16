@@ -1,6 +1,6 @@
 FROM tpm2software/tpm2-tss
 
-ENV LD_LIBRARY_PATH /usr/local/lib
+ENV PKG_CONFIG_PATH /usr/local/lib/pkgconfig
 
 # Download and install TSS 2.0
 RUN git clone https://github.com/tpm2-software/tpm2-tss.git --branch 2.3.1
