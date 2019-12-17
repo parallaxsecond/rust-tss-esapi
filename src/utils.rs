@@ -71,7 +71,7 @@ impl Tpm2BPublicBuilder {
         self
     }
 
-    pub fn build(mut self) -> TPM2B_PUBLIC {
+    pub fn build(mut self) -> Result<TPM2B_PUBLIC> {
         match self.type_ {
             Some(TPM2_ALG_RSA) => {
                 // RSA key
@@ -80,9 +80,9 @@ impl Tpm2BPublicBuilder {
                 if let Some(PublicParmsUnion::RsaDetail(parms)) = self.parameters {
                     parameters = TPMU_PUBLIC_PARMS { rsaDetail: parms };
                 } else if self.parameters.is_none() {
-                    panic!("No key parameters provided");
+                    return Err(Error::local_error(WrapperErrorKind::ParamsMissing));
                 } else {
-                    panic!("Wrong parameter type provided");
+                    return Err(Error::local_error(WrapperErrorKind::InconsistentParams));
                 }
 
                 if let Some(PublicIdUnion::Rsa(rsa_unique)) = self.unique {
@@ -90,7 +90,7 @@ impl Tpm2BPublicBuilder {
                 } else if self.unique.is_none() {
                     unique = Default::default();
                 } else {
-                    panic!("Wrong unique type provided");
+                    return Err(Error::local_error(WrapperErrorKind::InconsistentParams));
                 }
 
                 if self.object_attributes.sign_encrypt() && self.object_attributes.decrypt() {
@@ -111,19 +111,21 @@ impl Tpm2BPublicBuilder {
                     parameters.rsaDetail.symmetric.algorithm = TPM2_ALG_NULL;
                 }
 
-                TPM2B_PUBLIC {
+                Ok(TPM2B_PUBLIC {
                     size: std::mem::size_of::<TPMT_PUBLIC>()
                         .try_into()
-                        .expect("Failed to convert usize to u16"),
+                        .expect("Failed to convert usize to u16"), // should not fail on valid targets
                     publicArea: TPMT_PUBLIC {
-                        type_: self.type_.expect("Object type not provided"),
+                        type_: self
+                            .type_
+                            .ok_or_else(|| Error::local_error(WrapperErrorKind::ParamsMissing))?,
                         nameAlg: self.name_alg,
                         objectAttributes: self.object_attributes.0,
                         authPolicy: self.auth_policy,
                         parameters,
                         unique,
                     },
-                }
+                })
             }
             _ => unimplemented!(),
         }
@@ -177,16 +179,16 @@ impl TpmsRsaParmsBuilder {
         self
     }
 
-    pub fn build(self) -> TPMS_RSA_PARMS {
-        TPMS_RSA_PARMS {
+    pub fn build(self) -> Result<TPMS_RSA_PARMS> {
+        Ok(TPMS_RSA_PARMS {
             symmetric: self.symmetric,
             scheme: self
                 .scheme
-                .expect("Scheme was not provided")
+                .ok_or_else(|| Error::local_error(WrapperErrorKind::ParamsMissing))?
                 .get_rsa_scheme(),
             keyBits: self.key_bits,
             exponent: self.exponent,
-        }
+        })
     }
 }
 
@@ -225,7 +227,7 @@ impl TpmtSymDefBuilder {
         self
     }
 
-    pub fn build_object(self) -> TPMT_SYM_DEF_OBJECT {
+    pub fn build_object(self) -> Result<TPMT_SYM_DEF_OBJECT> {
         let key_bits;
         let mode;
         match self.algorithm {
@@ -263,11 +265,13 @@ impl TpmtSymDefBuilder {
             _ => unimplemented!(),
         }
 
-        TPMT_SYM_DEF_OBJECT {
-            algorithm: self.algorithm.expect("No algorithm provided"),
+        Ok(TPMT_SYM_DEF_OBJECT {
+            algorithm: self
+                .algorithm
+                .ok_or_else(|| Error::local_error(WrapperErrorKind::ParamsMissing))?,
             keyBits: key_bits,
             mode,
-        }
+        })
     }
 
     pub fn aes_256_cfb() -> TPMT_SYM_DEF {
@@ -469,7 +473,7 @@ impl TryFrom<Signature> for TPMT_SIGNATURE {
                     rsassa: TPMS_SIGNATURE_RSA {
                         hash: hash_alg,
                         sig: TPM2B_PUBLIC_KEY_RSA {
-                            size: len.try_into().expect("Failed to convert length to u16"), // Should never panic
+                            size: len.try_into().expect("Failed to convert length to u16"), // Should never panic as per the check above
                             buffer,
                         },
                     },
@@ -517,18 +521,24 @@ pub struct TpmsContext {
     context_blob: Vec<u8>,
 }
 
-impl From<TPMS_CONTEXT> for TpmsContext {
-    fn from(tss2_context: TPMS_CONTEXT) -> Self {
+impl TryFrom<TPMS_CONTEXT> for TpmsContext {
+    type Error = Error;
+
+    fn try_from(tss2_context: TPMS_CONTEXT) -> Result<Self> {
         let mut context = TpmsContext {
             sequence: tss2_context.sequence,
             saved_handle: tss2_context.savedHandle,
             hierarchy: tss2_context.hierarchy,
             context_blob: tss2_context.contextBlob.buffer.to_vec(),
         };
-        context
-            .context_blob
-            .truncate(tss2_context.contextBlob.size.try_into().unwrap());
-        context
+        context.context_blob.truncate(
+            tss2_context
+                .contextBlob
+                .size
+                .try_into()
+                .or_else(|_| Err(Error::local_error(WrapperErrorKind::WrongParamSize)))?,
+        );
+        Ok(context)
     }
 }
 
@@ -538,7 +548,7 @@ impl TryFrom<TpmsContext> for TPMS_CONTEXT {
     fn try_from(context: TpmsContext) -> Result<Self> {
         let buffer_size = context.context_blob.len();
         if buffer_size > 5188 {
-            return Err(Error::from_tss_rc(TPM2_RC_SIZE));
+            return Err(Error::local_error(WrapperErrorKind::WrongParamSize));
         }
         let mut buffer = [0u8; 5188];
         for (i, val) in context.context_blob.into_iter().enumerate() {
@@ -549,7 +559,7 @@ impl TryFrom<TpmsContext> for TPMS_CONTEXT {
             savedHandle: context.saved_handle,
             hierarchy: context.hierarchy,
             contextBlob: TPM2B_CONTEXT_DATA {
-                size: buffer_size.try_into().unwrap(),
+                size: buffer_size.try_into().unwrap(), // should not panic given the check above
                 buffer,
             },
         })
@@ -563,7 +573,8 @@ pub fn get_rsa_public(restricted: bool, decrypt: bool, sign: bool, key_bits: u16
         .with_symmetric(symmetric)
         .with_key_bits(key_bits)
         .with_scheme(scheme)
-        .build();
+        .build()
+        .unwrap(); // should not fail as we control the params
     let mut object_attributes = ObjectAttributes(0);
     object_attributes.set_fixed_tpm(true);
     object_attributes.set_fixed_parent(true);
@@ -579,4 +590,5 @@ pub fn get_rsa_public(restricted: bool, decrypt: bool, sign: bool, key_bits: u16
         .with_object_attributes(object_attributes)
         .with_parms(PublicParmsUnion::RsaDetail(rsa_parms))
         .build()
+        .unwrap() // should not fail as we control the params
 }

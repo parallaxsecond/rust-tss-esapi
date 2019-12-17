@@ -35,7 +35,7 @@ impl TransientObjectContext {
         if root_key_auth_size > 32 {
             return Err(Error::local_error(ErrorKind::WrongParamSize));
         }
-        if root_key_size < 1024 {
+        if root_key_size < 1024 || root_key_size > 4096 {
             return Err(Error::local_error(ErrorKind::WrongParamSize));
         }
         let mut context = Context::new(tcti)?;
@@ -50,7 +50,7 @@ impl TransientObjectContext {
 
         let root_key_handle = context.create_primary_key(
             ESYS_TR_RH_OWNER,
-            &get_rsa_public(true, true, false, root_key_size.try_into().unwrap()),
+            &get_rsa_public(true, true, false, root_key_size.try_into().unwrap()), // should not fail on supported targets, given the checks above
             &root_key_auth,
             &[],
             &[],
@@ -83,7 +83,7 @@ impl TransientObjectContext {
         if auth_size > 32 {
             return Err(Error::local_error(ErrorKind::WrongParamSize));
         }
-        if key_size < 1024 {
+        if key_size < 1024 || key_size > 4096 {
             return Err(Error::local_error(ErrorKind::WrongParamSize));
         }
         let key_auth = if auth_size > 0 {
@@ -95,7 +95,7 @@ impl TransientObjectContext {
         self.set_session_attrs()?;
         let (key_priv, key_pub) = self.context.create_key(
             self.root_key_handle,
-            &get_rsa_public(false, false, true, key_size.try_into().unwrap()),
+            &get_rsa_public(false, false, true, key_size.try_into().unwrap()), // should not fail on valid targets, given the checks above
             &key_auth,
             &[],
             &[],
@@ -122,7 +122,7 @@ impl TransientObjectContext {
 
         let pk = TPMU_PUBLIC_ID {
             rsa: TPM2B_PUBLIC_KEY_RSA {
-                size: public_key.len().try_into().unwrap(),
+                size: public_key.len().try_into().unwrap(), // should not fail on valid targets, given the checks above
                 buffer: pk_buffer,
             },
         };
@@ -131,7 +131,7 @@ impl TransientObjectContext {
             false,
             false,
             true,
-            u16::try_from(public_key.len()).unwrap() * 8u16,
+            u16::try_from(public_key.len()).unwrap() * 8u16, // should not fail on valid targets, given the checks above
         );
         public.publicArea.unique = pk;
 
@@ -160,7 +160,7 @@ impl TransientObjectContext {
         let key = match PublicIdUnion::from_public(&key_pub_id) {
             PublicIdUnion::Rsa(pub_key) => {
                 let mut key = pub_key.buffer.to_vec();
-                key.truncate(pub_key.size.try_into().unwrap());
+                key.truncate(pub_key.size.try_into().unwrap()); // should not fail on supported targets
                 key
             }
             _ => unimplemented!(),
@@ -257,7 +257,7 @@ mod tests {
         let mut ctx = TransientObjectContext::new(Tcti::Mssim, 2048, 32, &[]).unwrap();
         for _ in 0..4 {
             let (key, auth) = ctx.create_rsa_signing_key(2048, 16).unwrap();
-            let mut signature = ctx.sign(key.clone(), &auth, &HASH).unwrap();
+            let signature = ctx.sign(key.clone(), &auth, &HASH).unwrap();
             let pub_key = ctx.read_public_key(key.clone()).unwrap();
             let pub_key = ctx.load_external_rsa_public_key(&pub_key).unwrap();
             ctx.verify_signature(pub_key, &HASH, signature).unwrap();
