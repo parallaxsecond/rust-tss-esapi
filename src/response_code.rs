@@ -15,7 +15,7 @@
 use crate::tss2_esys::TSS2_RC;
 use bitfield::bitfield;
 
-pub type Result<T> = std::result::Result<T, Tss2ResponseCode>;
+pub type Result<T> = std::result::Result<T, Error>;
 
 bitfield! {
     pub struct ResponseCode(TSS2_RC);
@@ -52,7 +52,7 @@ pub enum Tss2ResponseCode {
 }
 
 impl Tss2ResponseCode {
-    pub fn new(response_code: TSS2_RC) -> Self {
+    pub(crate) fn from_tss_rc(response_code: TSS2_RC) -> Self {
         if response_code == 0 {
             Tss2ResponseCode::Success
         } else if ResponseCode(response_code).format_selector() {
@@ -218,7 +218,7 @@ impl Tss2ResponseCode {
     }
 }
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Copy, Clone, Debug)]
 pub enum Tss2ResponseCodeKind {
     // FormatZero errors
     Success,
@@ -435,6 +435,54 @@ impl std::fmt::Display for Tss2ResponseCode {
 
 impl From<TSS2_RC> for Tss2ResponseCode {
     fn from(rc: TSS2_RC) -> Self {
-        Tss2ResponseCode::new(rc)
+        Tss2ResponseCode::from_tss_rc(rc)
+    }
+}
+
+#[derive(Copy, Clone, PartialEq, Debug)]
+pub enum Error {
+    WrapperError(WrapperErrorKind),
+    Tss2Error(Tss2ResponseCode),
+}
+
+impl Error {
+    pub(crate) fn from_tss_rc(rc: TSS2_RC) -> Self {
+        Error::Tss2Error(Tss2ResponseCode::from_tss_rc(rc))
+    }
+
+    pub(crate) fn local_error(kind: WrapperErrorKind) -> Self {
+        Error::WrapperError(kind)
+    }
+
+    pub fn is_success(self) -> bool {
+        if let Error::Tss2Error(tss2_rc) = self {
+            tss2_rc.is_success()
+        } else {
+            false
+        }
+    }
+}
+
+impl std::fmt::Display for Error {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Error::WrapperError(e) => e.fmt(f),
+            Error::Tss2Error(e) => e.fmt(f),
+        }
+    }
+}
+
+#[derive(Copy, Clone, PartialEq, Debug)]
+pub enum WrapperErrorKind {
+    WrongParamSize,
+}
+
+impl std::fmt::Display for WrapperErrorKind {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            WrapperErrorKind::WrongParamSize => {
+                write!(f, "parameter provided is of the wrong size")
+            }
+        }
     }
 }

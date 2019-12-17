@@ -14,7 +14,7 @@
 // limitations under the License.
 
 use crate::constants::*;
-use crate::response_code::{Result, Tss2ResponseCode};
+use crate::response_code::{Error, Result, WrapperErrorKind};
 use crate::tss2_esys::*;
 use bitfield::bitfield;
 use serde::{Deserialize, Serialize};
@@ -422,7 +422,7 @@ pub struct Signature {
 }
 
 impl TryFrom<TPMT_SIGNATURE> for Signature {
-    type Error = Tss2ResponseCode;
+    type Error = Error;
 
     fn try_from(tss_signature: TPMT_SIGNATURE) -> Result<Self> {
         match tss_signature.sigAlg {
@@ -444,19 +444,22 @@ impl TryFrom<TPMT_SIGNATURE> for Signature {
             TPM2_ALG_SM2 => unimplemented!(),
             TPM2_ALG_ECSCHNORR => unimplemented!(),
             TPM2_ALG_ECDAA => unimplemented!(),
-            _ => Err(Tss2ResponseCode::new(TPM2_RC_SCHEME)),
+            _ => Err(Error::from_tss_rc(TPM2_RC_SCHEME)),
         }
     }
 }
 
 impl TryFrom<Signature> for TPMT_SIGNATURE {
-    type Error = Tss2ResponseCode;
+    type Error = Error;
     fn try_from(sig: Signature) -> Result<Self> {
         let len = sig.signature.len();
-        let mut buffer = [0u8; 512];
-        for (idx, byte) in sig.signature.into_iter().enumerate() {
-            buffer[idx] = byte;
+        if len > 512 {
+            return Err(Error::local_error(WrapperErrorKind::WrongParamSize));
         }
+
+        let mut buffer = [0u8; 512];
+        buffer[..len].clone_from_slice(&sig.signature[..len]);
+
         match sig.scheme {
             AsymSchemeUnion::ECDH(_) => unimplemented!(),
             AsymSchemeUnion::ECMQV(_) => unimplemented!(),
@@ -466,9 +469,7 @@ impl TryFrom<Signature> for TPMT_SIGNATURE {
                     rsassa: TPMS_SIGNATURE_RSA {
                         hash: hash_alg,
                         sig: TPM2B_PUBLIC_KEY_RSA {
-                            size: len
-                                .try_into()
-                                .map_err(|_| Tss2ResponseCode::new(TPM2_RC_SIZE))?,
+                            size: len.try_into().expect("Failed to convert length to u16"), // Should never panic
                             buffer,
                         },
                     },
@@ -532,12 +533,12 @@ impl From<TPMS_CONTEXT> for TpmsContext {
 }
 
 impl TryFrom<TpmsContext> for TPMS_CONTEXT {
-    type Error = Tss2ResponseCode;
+    type Error = Error;
 
     fn try_from(context: TpmsContext) -> Result<Self> {
         let buffer_size = context.context_blob.len();
         if buffer_size > 5188 {
-            return Err(Tss2ResponseCode::new(TPM2_RC_SIZE));
+            return Err(Error::from_tss_rc(TPM2_RC_SIZE));
         }
         let mut buffer = [0u8; 5188];
         for (i, val) in context.context_blob.into_iter().enumerate() {

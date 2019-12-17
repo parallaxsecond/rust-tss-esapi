@@ -14,7 +14,7 @@
 // limitations under the License.
 
 use crate::constants::*;
-use crate::response_code::{Result, Tss2ResponseCode};
+use crate::response_code::{Error, Result, WrapperErrorKind as ErrorKind};
 use crate::tss2_esys::*;
 use crate::utils::{self, get_rsa_public, PublicIdUnion, TpmsContext};
 use crate::{Context, Tcti, NO_SESSIONS};
@@ -33,10 +33,10 @@ impl TransientObjectContext {
         owner_hierarchy_auth: &[u8],
     ) -> Result<Self> {
         if root_key_auth_size > 32 {
-            return Err(Tss2ResponseCode::new(TPM2_RC_SIZE));
+            return Err(Error::local_error(ErrorKind::WrongParamSize));
         }
         if root_key_size < 1024 {
-            return Err(Tss2ResponseCode::new(TPM2_RC_KEY_SIZE));
+            return Err(Error::local_error(ErrorKind::WrongParamSize));
         }
         let mut context = Context::new(tcti)?;
         let root_key_auth: Vec<u8> = if root_key_auth_size > 0 {
@@ -81,10 +81,10 @@ impl TransientObjectContext {
         auth_size: usize,
     ) -> Result<(TpmsContext, Vec<u8>)> {
         if auth_size > 32 {
-            return Err(Tss2ResponseCode::new(TPM2_RC_SIZE));
+            return Err(Error::local_error(ErrorKind::WrongParamSize));
         }
         if key_size < 1024 {
-            return Err(Tss2ResponseCode::new(TPM2_RC_KEY_SIZE));
+            return Err(Error::local_error(ErrorKind::WrongParamSize));
         }
         let key_auth = if auth_size > 0 {
             self.set_session_attrs()?;
@@ -115,7 +115,7 @@ impl TransientObjectContext {
 
     pub fn load_external_rsa_public_key(&mut self, public_key: &[u8]) -> Result<TpmsContext> {
         if public_key.len() > 512 {
-            return Err(Tss2ResponseCode::new(TPM2_RC_SIZE));
+            return Err(Error::local_error(ErrorKind::WrongParamSize));
         }
         let mut pk_buffer = [0u8; 512];
         pk_buffer[..public_key.len()].clone_from_slice(&public_key[..public_key.len()]);

@@ -43,7 +43,7 @@ pub use abstraction::transient::TransientObjectContext;
 use log::{error, info};
 use mbox::MBox;
 use response_code::Result;
-use response_code::Tss2ResponseCode;
+use response_code::{Error, WrapperErrorKind as ErrorKind};
 use std::collections::HashSet;
 use std::convert::{TryFrom, TryInto};
 use std::ffi::CString;
@@ -100,16 +100,12 @@ impl Context {
             Tcti::Mssim => MSSIM,
             Tcti::Tabrmd => TABRMD,
         };
-        let tcti_name_conf = CString::new(tcti_name_conf).or_else(|e| {
-            error!("Error when allocating a CString: {}.", e);
-            // Invalid response code but signaling an error.
-            Err(Tss2ResponseCode::new(1))
-        })?;
+        let tcti_name_conf = CString::new(tcti_name_conf).expect("Failed conversion to CString"); // should never panic
 
         let ret = unsafe {
             tss2_esys::Tss2_TctiLdr_Initialize(tcti_name_conf.as_ptr(), &mut tcti_context)
         };
-        let ret = Tss2ResponseCode::new(ret);
+        let ret = Error::from_tss_rc(ret);
         if !ret.is_success() {
             error!("Error when creating a TCTI context: {}.", ret);
             return Err(ret);
@@ -123,7 +119,7 @@ impl Context {
                 null_mut(),
             )
         };
-        let ret = Tss2ResponseCode::new(ret);
+        let ret = Error::from_tss_rc(ret);
 
         if ret.is_success() {
             let esys_context = unsafe { Some(MBox::from_raw(esys_context)) };
@@ -167,7 +163,7 @@ impl Context {
         auth_hash: TPMI_ALG_HASH,
     ) -> Result<ESYS_TR> {
         if nonce.len() > 64 {
-            return Err(Tss2ResponseCode::new(TPM2_RC_SIZE));
+            return Err(Error::local_error(ErrorKind::WrongParamSize));
         }
 
         let nonce_caller = wrap_buffer!(nonce, TPM2B_NONCE, 64);
@@ -193,7 +189,7 @@ impl Context {
             )
         };
 
-        let ret = Tss2ResponseCode::new(ret);
+        let ret = Error::from_tss_rc(ret);
         if ret.is_success() {
             self.open_handles.insert(sess);
             Ok(sess)
@@ -227,7 +223,7 @@ impl Context {
             || outside_info.len() > 64
             || creation_pcrs.len() > 16
         {
-            return Err(Tss2ResponseCode::new(TPM2_RC_SIZE));
+            return Err(Error::local_error(ErrorKind::WrongParamSize));
         }
 
         let sensitive_create = TPM2B_SENSITIVE_CREATE {
@@ -273,7 +269,7 @@ impl Context {
                 &mut creation_ticket,
             )
         };
-        let ret = Tss2ResponseCode::new(ret);
+        let ret = Error::from_tss_rc(ret);
 
         if ret.is_success() {
             unsafe {
@@ -306,7 +302,7 @@ impl Context {
             || outside_info.len() > 64
             || creation_pcrs.len() > 16
         {
-            return Err(Tss2ResponseCode::new(TPM2_RC_SIZE));
+            return Err(Error::local_error(ErrorKind::WrongParamSize));
         }
 
         let sensitive_create = TPM2B_SENSITIVE_CREATE {
@@ -353,7 +349,7 @@ impl Context {
                 &mut creation,
             )
         };
-        let ret = Tss2ResponseCode::new(ret);
+        let ret = Error::from_tss_rc(ret);
 
         if ret.is_success() {
             let outprivate = unsafe { MBox::from_raw(outprivate) };
@@ -389,7 +385,7 @@ impl Context {
                 &mut handle,
             )
         };
-        let ret = Tss2ResponseCode::new(ret);
+        let ret = Error::from_tss_rc(ret);
 
         if ret.is_success() {
             self.open_handles.insert(handle);
@@ -408,7 +404,7 @@ impl Context {
         validation: &TPMT_TK_HASHCHECK,
     ) -> Result<Signature> {
         if digest.len() > 64 {
-            return Err(Tss2ResponseCode::new(TPM2_RC_SIZE));
+            return Err(Error::local_error(ErrorKind::WrongParamSize));
         }
         let mut signature = null_mut();
         let digest = wrap_buffer!(digest, TPM2B_DIGEST, 64);
@@ -425,7 +421,7 @@ impl Context {
                 &mut signature,
             )
         };
-        let ret = Tss2ResponseCode::new(ret);
+        let ret = Error::from_tss_rc(ret);
 
         if ret.is_success() {
             let signature = unsafe { MBox::from_raw(signature) };
@@ -443,7 +439,7 @@ impl Context {
         signature: &TPMT_SIGNATURE,
     ) -> Result<TPMT_TK_VERIFIED> {
         if digest.len() > 64 {
-            return Err(Tss2ResponseCode::new(TPM2_RC_SIZE));
+            return Err(Error::local_error(ErrorKind::WrongParamSize));
         }
         let mut validation = null_mut();
         let digest = wrap_buffer!(digest, TPM2B_DIGEST, 64);
@@ -459,7 +455,7 @@ impl Context {
                 &mut validation,
             )
         };
-        let ret = Tss2ResponseCode::new(ret);
+        let ret = Error::from_tss_rc(ret);
 
         if ret.is_success() {
             let validation = unsafe { MBox::from_raw(validation) };
@@ -490,7 +486,7 @@ impl Context {
             )
         };
 
-        let ret = Tss2ResponseCode::new(ret);
+        let ret = Error::from_tss_rc(ret);
 
         if ret.is_success() {
             self.open_handles.insert(key_handle);
@@ -520,7 +516,7 @@ impl Context {
             )
         };
 
-        let ret = Tss2ResponseCode::new(ret);
+        let ret = Error::from_tss_rc(ret);
 
         if ret.is_success() {
             self.open_handles.insert(key_handle);
@@ -547,7 +543,7 @@ impl Context {
                 &mut qualified_name,
             )
         };
-        let ret = Tss2ResponseCode::new(ret);
+        let ret = Error::from_tss_rc(ret);
 
         if ret.is_success() {
             unsafe {
@@ -564,7 +560,7 @@ impl Context {
 
     pub fn flush_context(&mut self, handle: ESYS_TR) -> Result<()> {
         let ret = unsafe { Esys_FlushContext(self.mut_context(), handle) };
-        let ret = Tss2ResponseCode::new(ret);
+        let ret = Error::from_tss_rc(ret);
         if ret.is_success() {
             self.open_handles.remove(&handle);
             Ok(())
@@ -578,7 +574,7 @@ impl Context {
         let mut context = null_mut();
         let ret = unsafe { Esys_ContextSave(self.mut_context(), handle, &mut context) };
 
-        let ret = Tss2ResponseCode::new(ret);
+        let ret = Error::from_tss_rc(ret);
         if ret.is_success() {
             let context = unsafe { MBox::<TPMS_CONTEXT>::from_raw(context) };
             Ok((*context).into())
@@ -598,7 +594,7 @@ impl Context {
             )
         };
 
-        let ret = Tss2ResponseCode::new(ret);
+        let ret = Error::from_tss_rc(ret);
         if ret.is_success() {
             self.open_handles.insert(handle);
             Ok(handle)
@@ -621,7 +617,7 @@ impl Context {
             )
         };
 
-        let ret = Tss2ResponseCode::new(ret);
+        let ret = Error::from_tss_rc(ret);
         if ret.is_success() {
             let buffer = unsafe { MBox::from_raw(buffer) };
             let mut random = buffer.buffer.to_vec();
@@ -635,12 +631,12 @@ impl Context {
 
     pub fn set_handle_auth(&mut self, handle: ESYS_TR, auth_value: &[u8]) -> Result<()> {
         if auth_value.len() > 64 {
-            return Err(Tss2ResponseCode::new(TPM2_RC_SIZE));
+            return Err(Error::local_error(ErrorKind::WrongParamSize));
         }
 
         let auth = wrap_buffer!(auth_value, TPM2B_AUTH, 64);
         let ret = unsafe { Esys_TR_SetAuth(self.mut_context(), handle, &auth) };
-        let ret = Tss2ResponseCode::new(ret);
+        let ret = Error::from_tss_rc(ret);
         if ret.is_success() {
             Ok(())
         } else {
@@ -652,7 +648,7 @@ impl Context {
         let ret = unsafe {
             Esys_TRSess_SetAttributes(self.mut_context(), handle, attrs.flags(), attrs.mask())
         };
-        let ret = Tss2ResponseCode::new(ret);
+        let ret = Error::from_tss_rc(ret);
         if ret.is_success() {
             Ok(())
         } else {
