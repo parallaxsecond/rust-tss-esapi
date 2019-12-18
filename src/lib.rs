@@ -12,7 +12,24 @@
 // WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+
 #![allow(dead_code)]
+///! # Notes on code safety:
+///! * the `unsafe` keyword is used to denote methods that could panic, crash or cause undefined
+///! behaviour. Whenever this is the case, the properties that need to be checked against
+///! parameters before passing them in will be stated in the documentation of the method.
+///! * `unsafe` blocks within this crate need to be documented through code comments if they
+///! are not covered by the points of trust described here.
+///! * the TSS2.0 library that this crate links to is trusted to return consistent values and to
+///! not crash or lead to undefined behaviour when presented with valid arguments.
+///! * the `Mbox` crate is trusted to perform operations safely on the pointers provided to it, if
+///! the pointers are trusted to be valid.
+///! * methods not marked `unsafe` are trusted to behave safely, potentially returning appropriate
+///! erorr messages when encountering any problems.
+///! * whenever `unwrap`, `expect`, `panic` or derivatives of these are used, they need to be
+///! thoroughly documented and justified - preferably `unwrap` and `expect` should *never* fail
+///! during normal operation.
+///! * these rules can be broken in test-only code and in tests.
 
 #[allow(
     non_snake_case,
@@ -412,7 +429,7 @@ impl Context {
 
         if ret.is_success() {
             let signature = unsafe { MBox::from_raw(signature) };
-            Ok((*signature).try_into()?)
+            Ok(unsafe { Signature::try_from(*signature)? })
         } else {
             error!("Error in loading: {}.", ret);
             Err(ret)
@@ -659,14 +676,10 @@ impl Drop for Context {
         let tcti_context = self.tcti_context.take().unwrap(); // should not fail based on how the context is initialised/used
 
         // Close the TCTI context.
-        unsafe {
-            tss2_esys::Tss2_TctiLdr_Finalize(
-                &mut tcti_context.into_raw() as *mut *mut TSS2_TCTI_CONTEXT
-            )
-        };
+        unsafe { tss2_esys::Tss2_TctiLdr_Finalize(&mut tcti_context.into_raw()) };
 
         // Close the context.
-        unsafe { tss2_esys::Esys_Finalize(&mut esys_context.into_raw() as *mut *mut ESYS_CONTEXT) };
+        unsafe { tss2_esys::Esys_Finalize(&mut esys_context.into_raw()) };
         info!("Context closed.");
     }
 }

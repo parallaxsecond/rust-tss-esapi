@@ -322,12 +322,9 @@ pub enum PublicIdUnion {
 }
 
 impl PublicIdUnion {
-    pub fn from_public(public: &TPM2B_PUBLIC) -> Self {
+    pub unsafe fn from_public(public: &TPM2B_PUBLIC) -> Self {
         match public.publicArea.type_ {
-            TPM2_ALG_RSA => {
-                // TODO Issue #2: Should this method be unsafe?
-                PublicIdUnion::Rsa(Box::from(unsafe { public.publicArea.unique.rsa }))
-            }
+            TPM2_ALG_RSA => PublicIdUnion::Rsa(Box::from(public.publicArea.unique.rsa)),
             TPM2_ALG_ECC => unimplemented!(),
             TPM2_ALG_SYMCIPHER => unimplemented!(),
             TPM2_ALG_KEYEDHASH => unimplemented!(),
@@ -425,15 +422,13 @@ pub struct Signature {
     pub signature: Vec<u8>,
 }
 
-impl TryFrom<TPMT_SIGNATURE> for Signature {
-    type Error = Error;
-
-    fn try_from(tss_signature: TPMT_SIGNATURE) -> Result<Self> {
+impl Signature {
+    pub unsafe fn try_from(tss_signature: TPMT_SIGNATURE) -> Result<Self> {
         match tss_signature.sigAlg {
             TPM2_ALG_RSASSA => {
-                let hash_alg = unsafe { tss_signature.signature.rsassa.hash };
+                let hash_alg = tss_signature.signature.rsassa.hash;
                 let scheme = AsymSchemeUnion::RSASSA(hash_alg);
-                let signature_buf = unsafe { tss_signature.signature.rsassa.sig };
+                let signature_buf = tss_signature.signature.rsassa.sig;
                 let mut signature = signature_buf.buffer.to_vec();
                 signature.truncate(signature_buf.size.into());
 
