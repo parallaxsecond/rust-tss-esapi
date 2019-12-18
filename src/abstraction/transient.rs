@@ -157,7 +157,8 @@ impl TransientObjectContext {
             self.context.flush_context(key_handle)?;
             Err(e)
         })?;
-        let key = match PublicIdUnion::from_public(&key_pub_id) {
+        let key = match unsafe { PublicIdUnion::from_public(&key_pub_id) } {
+            // call should be safe given our trust in the TSS library
             PublicIdUnion::Rsa(pub_key) => {
                 let mut key = pub_key.buffer.to_vec();
                 key.truncate(pub_key.size.try_into().unwrap()); // should not fail on supported targets
