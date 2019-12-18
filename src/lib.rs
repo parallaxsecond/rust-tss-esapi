@@ -54,10 +54,13 @@ use utils::{Signature, TpmaSession, TpmsContext};
 #[macro_use]
 macro_rules! wrap_buffer {
     ($buf:expr, $buf_type:ty, $buf_size:expr) => {{
+        if $buf.len() > $buf_size {
+            return Err(Error::local_error(ErrorKind::WrongParamSize));
+        }
         let mut buffer = [0u8; $buf_size];
         buffer[..$buf.len()].clone_from_slice(&$buf[..$buf.len()]);
         let mut buf_struct: $buf_type = Default::default();
-        buf_struct.size = $buf.len().try_into().unwrap();
+        buf_struct.size = $buf.len().try_into().unwrap(); // should not fail since the length is checked above
         buf_struct.buffer = buffer;
         buf_struct
     }};
@@ -115,7 +118,7 @@ impl Context {
         let ret = unsafe {
             tss2_esys::Esys_Initialize(
                 &mut esys_context,
-                tcti_context.as_mut().unwrap().as_mut_ptr(),
+                tcti_context.as_mut().unwrap().as_mut_ptr(), // will not panic as per how tcti_context is initialised
                 null_mut(),
             )
         };
@@ -162,10 +165,6 @@ impl Context {
         symmetric: TPMT_SYM_DEF,
         auth_hash: TPMI_ALG_HASH,
     ) -> Result<ESYS_TR> {
-        if nonce.len() > 64 {
-            return Err(Error::local_error(ErrorKind::WrongParamSize));
-        }
-
         let nonce_caller = wrap_buffer!(nonce, TPM2B_NONCE, 64);
         let mut sess = ESYS_TR_NONE;
 
@@ -218,30 +217,26 @@ impl Context {
         outside_info: &[u8],
         creation_pcrs: &[TPMS_PCR_SELECTION],
     ) -> Result<ESYS_TR> {
-        if auth_value.len() > 64
-            || initial_data.len() > 256
-            || outside_info.len() > 64
-            || creation_pcrs.len() > 16
-        {
-            return Err(Error::local_error(ErrorKind::WrongParamSize));
-        }
-
         let sensitive_create = TPM2B_SENSITIVE_CREATE {
             size: std::mem::size_of::<TPMS_SENSITIVE_CREATE>()
                 .try_into()
-                .unwrap(),
+                .unwrap(), // will not fail on targets of at least 16 bits
             sensitive: TPMS_SENSITIVE_CREATE {
                 userAuth: wrap_buffer!(auth_value, TPM2B_AUTH, 64),
                 data: wrap_buffer!(initial_data, TPM2B_SENSITIVE_DATA, 256),
             },
         };
-
         let outside_info = wrap_buffer!(outside_info, TPM2B_DATA, 64);
+
+        if creation_pcrs.len() > 16 {
+            return Err(Error::local_error(ErrorKind::WrongParamSize));
+        }
+
         let mut creation_pcrs_buffer = [Default::default(); 16];
         creation_pcrs_buffer[..creation_pcrs.len()]
             .clone_from_slice(&creation_pcrs[..creation_pcrs.len()]);
         let creation_pcrs = TPML_PCR_SELECTION {
-            count: creation_pcrs.len().try_into().unwrap(),
+            count: creation_pcrs.len().try_into().unwrap(), // will not fail given the len checks above
             pcrSelections: creation_pcrs_buffer,
         };
 
@@ -297,18 +292,10 @@ impl Context {
         outside_info: &[u8],
         creation_pcrs: &[TPMS_PCR_SELECTION],
     ) -> Result<(TPM2B_PRIVATE, TPM2B_PUBLIC)> {
-        if auth_value.len() > 64
-            || initial_data.len() > 256
-            || outside_info.len() > 64
-            || creation_pcrs.len() > 16
-        {
-            return Err(Error::local_error(ErrorKind::WrongParamSize));
-        }
-
         let sensitive_create = TPM2B_SENSITIVE_CREATE {
             size: std::mem::size_of::<TPMS_SENSITIVE_CREATE>()
                 .try_into()
-                .unwrap(),
+                .unwrap(), // will not fail on targets of at least 16 bits
             sensitive: TPMS_SENSITIVE_CREATE {
                 userAuth: wrap_buffer!(auth_value, TPM2B_AUTH, 64),
                 data: wrap_buffer!(initial_data, TPM2B_SENSITIVE_DATA, 256),
@@ -317,11 +304,14 @@ impl Context {
 
         let outside_info = wrap_buffer!(outside_info, TPM2B_DATA, 64);
 
+        if creation_pcrs.len() > 16 {
+            return Err(Error::local_error(ErrorKind::WrongParamSize));
+        }
         let mut creation_pcrs_buffer = [Default::default(); 16];
         creation_pcrs_buffer[..creation_pcrs.len()]
             .clone_from_slice(&creation_pcrs[..creation_pcrs.len()]);
         let creation_pcrs = TPML_PCR_SELECTION {
-            count: creation_pcrs.len().try_into().unwrap(),
+            count: creation_pcrs.len().try_into().unwrap(), // will not fail given the len checks above
             pcrSelections: creation_pcrs_buffer,
         };
 
@@ -403,9 +393,6 @@ impl Context {
         scheme: TPMT_SIG_SCHEME,
         validation: &TPMT_TK_HASHCHECK,
     ) -> Result<Signature> {
-        if digest.len() > 64 {
-            return Err(Error::local_error(ErrorKind::WrongParamSize));
-        }
         let mut signature = null_mut();
         let digest = wrap_buffer!(digest, TPM2B_DIGEST, 64);
         let ret = unsafe {
@@ -438,9 +425,6 @@ impl Context {
         digest: &[u8],
         signature: &TPMT_SIGNATURE,
     ) -> Result<TPMT_TK_VERIFIED> {
-        if digest.len() > 64 {
-            return Err(Error::local_error(ErrorKind::WrongParamSize));
-        }
         let mut validation = null_mut();
         let digest = wrap_buffer!(digest, TPM2B_DIGEST, 64);
         let ret = unsafe {
@@ -577,7 +561,7 @@ impl Context {
         let ret = Error::from_tss_rc(ret);
         if ret.is_success() {
             let context = unsafe { MBox::<TPMS_CONTEXT>::from_raw(context) };
-            Ok((*context).into())
+            Ok((*context).try_into()?)
         } else {
             error!("Error in saving context: {}.", ret);
             Err(ret)
@@ -612,7 +596,9 @@ impl Context {
                 self.sessions.0,
                 self.sessions.1,
                 self.sessions.2,
-                num_bytes.try_into().unwrap(),
+                num_bytes
+                    .try_into()
+                    .or_else(|_| Err(Error::local_error(ErrorKind::WrongParamSize)))?,
                 &mut buffer,
             )
         };
@@ -621,7 +607,7 @@ impl Context {
         if ret.is_success() {
             let buffer = unsafe { MBox::from_raw(buffer) };
             let mut random = buffer.buffer.to_vec();
-            random.truncate(buffer.size.try_into().unwrap());
+            random.truncate(buffer.size.try_into().unwrap()); // should not panic given the TryInto above
             Ok(random)
         } else {
             error!("Error in flushing context: {}.", ret);
@@ -630,10 +616,6 @@ impl Context {
     }
 
     pub fn set_handle_auth(&mut self, handle: ESYS_TR, auth_value: &[u8]) -> Result<()> {
-        if auth_value.len() > 64 {
-            return Err(Error::local_error(ErrorKind::WrongParamSize));
-        }
-
         let auth = wrap_buffer!(auth_value, TPM2B_AUTH, 64);
         let ret = unsafe { Esys_TR_SetAuth(self.mut_context(), handle, &auth) };
         let ret = Error::from_tss_rc(ret);
@@ -657,7 +639,7 @@ impl Context {
     }
 
     fn mut_context(&mut self) -> *mut ESYS_CONTEXT {
-        self.esys_context.as_mut().unwrap().as_mut_ptr()
+        self.esys_context.as_mut().unwrap().as_mut_ptr() // will only fail if called from Drop after .take()
     }
 }
 
@@ -673,8 +655,8 @@ impl Drop for Context {
             }
         });
 
-        let esys_context = self.esys_context.take().unwrap();
-        let tcti_context = self.tcti_context.take().unwrap();
+        let esys_context = self.esys_context.take().unwrap(); // should not fail based on how the context is initialised/used
+        let tcti_context = self.tcti_context.take().unwrap(); // should not fail based on how the context is initialised/used
 
         // Close the TCTI context.
         unsafe {

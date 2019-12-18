@@ -328,7 +328,7 @@ impl std::fmt::Display for Tss2ResponseCode {
         if kind.is_none() {
             return write!(f, "response code not recognized");
         }
-        match self.kind().unwrap() {
+        match self.kind().unwrap() { // should not panic, given the check above
             Tss2ResponseCodeKind::Success => write!(f, "success"),
             Tss2ResponseCodeKind::TpmVendorSpecific => write!(f, "vendor specific error: {}", self.error_number()),
             // Format Zero
@@ -475,6 +475,8 @@ impl std::fmt::Display for Error {
 #[derive(Copy, Clone, PartialEq, Debug)]
 pub enum WrapperErrorKind {
     WrongParamSize,
+    ParamsMissing,
+    InconsistentParams,
 }
 
 impl std::fmt::Display for WrapperErrorKind {
@@ -483,6 +485,13 @@ impl std::fmt::Display for WrapperErrorKind {
             WrapperErrorKind::WrongParamSize => {
                 write!(f, "parameter provided is of the wrong size")
             }
+            WrapperErrorKind::ParamsMissing => {
+                write!(f, "some of the required parameters were not provided")
+            }
+            WrapperErrorKind::InconsistentParams => write!(
+                f,
+                "the provided parameters have inconsistent values or variants"
+            ),
         }
     }
 }
