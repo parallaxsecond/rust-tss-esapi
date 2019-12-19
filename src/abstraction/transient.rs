@@ -16,7 +16,7 @@
 use crate::constants::*;
 use crate::response_code::{Error, Result, WrapperErrorKind as ErrorKind};
 use crate::tss2_esys::*;
-use crate::utils::{self, get_rsa_public, PublicIdUnion, TpmsContext};
+use crate::utils::{self, get_rsa_public, PublicIdUnion, TpmsContext, TpmtTkVerified};
 use crate::{Context, Tcti, NO_SESSIONS};
 use std::convert::{TryFrom, TryInto};
 
@@ -212,7 +212,7 @@ impl TransientObjectContext {
         key_context: TpmsContext,
         digest: &[u8],
         signature: utils::Signature,
-    ) -> Result<TPMT_TK_VERIFIED> {
+    ) -> Result<TpmtTkVerified> {
         self.set_session_attrs()?;
         let key_handle = self.context.context_load(key_context)?;
 
@@ -229,7 +229,7 @@ impl TransientObjectContext {
                 Err(e)
             })?;
         self.context.flush_context(key_handle)?;
-        Ok(verified)
+        Ok(verified.try_into()?)
     }
 
     fn set_session_attrs(&mut self) -> Result<()> {
