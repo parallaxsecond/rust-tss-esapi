@@ -41,6 +41,11 @@ cargo clippy
 ###################
 cargo build
 
+##############
+# Build docs #
+##############
+cargo doc --no-deps --verbose
+
 #################
 # Static checks #
 #################

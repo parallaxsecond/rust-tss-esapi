@@ -12,7 +12,14 @@
 // WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-
+//! Utility module
+//!
+//! This module mostly contains helper elements meant to act as either wrappers around FFI-level
+//! structs or builders for them, along with other convenience elements.
+//! The naming structure usually takes the names inherited from the TSS spec and applies Rust
+//! guidelines to them. Structures that are meant to act as builders have `Builder` appended to
+//! type name. Unions are converted to Rust `enum`s by dropping the `TPMU` qualifier and appending
+//! `Union`.
 use crate::constants::*;
 use crate::response_code::{Error, Result, WrapperErrorKind};
 use crate::tss2_esys::*;
@@ -20,6 +27,9 @@ use bitfield::bitfield;
 use serde::{Deserialize, Serialize};
 use std::convert::{TryFrom, TryInto};
 
+/// Helper for building `TPM2B_PUBLIC` values out of its subcomponents.
+///
+/// Currently the implementation is incomplete, focusing on creating objects of RSA type.
 pub struct Tpm2BPublicBuilder {
     type_: Option<TPMI_ALG_PUBLIC>,
     name_alg: TPMI_ALG_HASH,
@@ -30,6 +40,7 @@ pub struct Tpm2BPublicBuilder {
 }
 
 impl Tpm2BPublicBuilder {
+    /// Create a new builder with default (i.e. empty or null) placeholder values.
     pub fn new() -> Self {
         Tpm2BPublicBuilder {
             type_: None,
@@ -41,36 +52,58 @@ impl Tpm2BPublicBuilder {
         }
     }
 
+    /// Set the type of the object to be built.
     pub fn with_type(mut self, type_: TPMI_ALG_PUBLIC) -> Self {
         self.type_ = Some(type_);
         self
     }
 
+    /// Set the algorithm used to derive the object name.
     pub fn with_name_alg(mut self, name_alg: TPMI_ALG_HASH) -> Self {
         self.name_alg = name_alg;
         self
     }
 
+    /// Set the object attributes.
     pub fn with_object_attributes(mut self, obj_attr: ObjectAttributes) -> Self {
         self.object_attributes = obj_attr;
         self
     }
 
+    /// Set the authentication policy hash for the object.
     pub fn with_auth_policy(mut self, size: u16, buffer: [u8; 64]) -> Self {
         self.auth_policy = TPM2B_DIGEST { size, buffer };
         self
     }
 
+    /// Set the public parameters of the object.
     pub fn with_parms(mut self, parameters: PublicParmsUnion) -> Self {
         self.parameters = Some(parameters);
         self
     }
 
+    /// Set the unique value for the object.
     pub fn with_unique(mut self, unique: PublicIdUnion) -> Self {
         self.unique = Some(unique);
         self
     }
 
+    /// Build an object with the previously provided parameters.
+    ///
+    /// The paramters are checked for consistency based on the TSS specifications for the
+    /// `TPM2B_PUBLIC` structure and for the structures nested within it.
+    ///
+    /// Currently only objects of type `TPM2_ALG_RSA` are supported.
+    ///
+    /// # Errors
+    /// * if no public parameters are provided, `ParamsMissing` wrapper error is returned
+    /// * if a public parameter type or public ID type is provided that is incosistent with the
+    /// object type provided, `InconsistentParams` wrapper error is returned
+    ///
+    /// # Panics
+    /// * if the object type is set to something other than `TPM2_ALG_RSA`, the method will panic
+    /// by reaching an `unimplemented` block
+    /// * will panic on unsupported platforms (i.e. on 8 bit processors)
     pub fn build(mut self) -> Result<TPM2B_PUBLIC> {
         match self.type_ {
             Some(TPM2_ALG_RSA) => {
@@ -116,9 +149,7 @@ impl Tpm2BPublicBuilder {
                         .try_into()
                         .expect("Failed to convert usize to u16"), // should not fail on valid targets
                     publicArea: TPMT_PUBLIC {
-                        type_: self
-                            .type_
-                            .ok_or_else(|| Error::local_error(WrapperErrorKind::ParamsMissing))?,
+                        type_: self.type_.unwrap(), // cannot fail given that this is inside a match on `type_`
                         nameAlg: self.name_alg,
                         objectAttributes: self.object_attributes.0,
                         authPolicy: self.auth_policy,
@@ -138,6 +169,7 @@ impl Default for Tpm2BPublicBuilder {
     }
 }
 
+/// Builder for `TPMS_RSA_PARMS` values.
 #[derive(Default)]
 pub struct TpmsRsaParmsBuilder {
     symmetric: TPMT_SYM_DEF_OBJECT,
@@ -147,6 +179,7 @@ pub struct TpmsRsaParmsBuilder {
 }
 
 impl TpmsRsaParmsBuilder {
+    /// Create a new builder with default (i.e. empty or null) placeholder values.
     pub fn new() -> Self {
         let mut builder = TpmsRsaParmsBuilder {
             symmetric: Default::default(),
@@ -159,26 +192,36 @@ impl TpmsRsaParmsBuilder {
         builder
     }
 
+    /// Set the symmetric algorithm for parameter encryption.
     pub fn with_symmetric(mut self, symmetric: TPMT_SYM_DEF_OBJECT) -> Self {
         self.symmetric = symmetric;
         self
     }
 
+    /// Set the asymmetric scheme for the object.
     pub fn with_scheme(mut self, scheme: AsymSchemeUnion) -> Self {
         self.scheme = Some(scheme);
         self
     }
 
+    /// Set the size of the key in bits.
     pub fn with_key_bits(mut self, key_bits: TPMI_RSA_KEY_BITS) -> Self {
         self.key_bits = key_bits;
         self
     }
 
+    /// Set the RSA exponent.
     pub fn with_exponent(mut self, exponent: u32) -> Self {
         self.exponent = exponent;
         self
     }
 
+    /// Build an object given the previously provded parameters.
+    ///
+    /// The only mandatory parameter is the asymmetric scheme.
+    ///
+    /// # Errors
+    /// * if no asymmetric scheme is set, `ParamsMissing` wrapper error is returned.
     pub fn build(self) -> Result<TPMS_RSA_PARMS> {
         Ok(TPMS_RSA_PARMS {
             symmetric: self.symmetric,
@@ -192,6 +235,7 @@ impl TpmsRsaParmsBuilder {
     }
 }
 
+/// Builder for `TPMT_SYM_DEF` objects.
 pub struct TpmtSymDefBuilder {
     algorithm: Option<TPM2_ALG_ID>,
     key_bits: u16,
@@ -199,6 +243,7 @@ pub struct TpmtSymDefBuilder {
 }
 
 impl TpmtSymDefBuilder {
+    /// Create a new builder with default (i.e. empty or null) placeholder values.
     pub fn new() -> Self {
         TpmtSymDefBuilder {
             algorithm: None,
@@ -207,26 +252,35 @@ impl TpmtSymDefBuilder {
         }
     }
 
+    /// Set the symmetric algorithm.
     pub fn with_algorithm(mut self, algorithm: TPM2_ALG_ID) -> Self {
         self.algorithm = Some(algorithm);
         self
     }
 
+    /// Set the key length.
     pub fn with_key_bits(mut self, key_bits: TPM2_KEY_BITS) -> Self {
         self.key_bits = key_bits;
         self
     }
 
+    /// Set the hash algorithm (applies when the symmetric algorithm is XOR).
     pub fn with_hash(mut self, hash: TPM2_ALG_ID) -> Self {
         self.key_bits = hash;
         self
     }
 
+    /// Set the mode of the symmetric algorithm.
     pub fn with_mode(mut self, mode: TPM2_ALG_ID) -> Self {
         self.mode = mode;
         self
     }
 
+    /// Build the object given the previously provided parameters.
+    ///
+    /// # Errors
+    /// * if an unrecognized symmetric algorithm type was set, `InconsistentParams` wrapper error
+    /// is returned.
     pub fn build_object(self) -> Result<TPMT_SYM_DEF_OBJECT> {
         let key_bits;
         let mode;
@@ -262,7 +316,7 @@ impl TpmtSymDefBuilder {
                 key_bits = Default::default();
                 mode = Default::default();
             }
-            _ => unimplemented!(),
+            _ => return Err(Error::local_error(WrapperErrorKind::InconsistentParams)),
         }
 
         Ok(TPMT_SYM_DEF_OBJECT {
@@ -274,6 +328,7 @@ impl TpmtSymDefBuilder {
         })
     }
 
+    /// Generate a `TPMT_SYM_DEF` object defining 256 bit AES in CFB mode.
     pub fn aes_256_cfb() -> TPMT_SYM_DEF {
         TPMT_SYM_DEF {
             algorithm: TPM2_ALG_AES,
@@ -282,6 +337,7 @@ impl TpmtSymDefBuilder {
         }
     }
 
+    /// Generate a `TPMT_SYM_DEF_OBJECT` object defining 256 bit AES in CFB mode.
     pub fn aes_256_cfb_object() -> TPMT_SYM_DEF_OBJECT {
         TPMT_SYM_DEF_OBJECT {
             algorithm: TPM2_ALG_AES,
@@ -314,6 +370,7 @@ bitfield! {
     pub sign_encrypt, set_sign_encrypt: 18;
 }
 
+/// Rust enum representation of `TPMU_PUBLIC_ID`.
 pub enum PublicIdUnion {
     KeyedHash(TPM2B_DIGEST),
     Sym(TPM2B_DIGEST),
@@ -322,6 +379,11 @@ pub enum PublicIdUnion {
 }
 
 impl PublicIdUnion {
+    /// Extract a `PublicIdUnion` from a `TPM2B_PUBLIC` object.
+    ///
+    /// # Constraints
+    /// * the value of `public.publicArea.type_` *MUST* be consistent with the union field used in
+    /// `public.publicArea.unique`.
     pub unsafe fn from_public(public: &TPM2B_PUBLIC) -> Self {
         match public.publicArea.type_ {
             TPM2_ALG_RSA => PublicIdUnion::Rsa(Box::from(public.publicArea.unique.rsa)),
@@ -333,6 +395,7 @@ impl PublicIdUnion {
     }
 }
 
+/// Rust enum representation of `TPMU_PUBLIC_PARMS`.
 pub enum PublicParmsUnion {
     KeyedHashDetail(TPMS_KEYEDHASH_PARMS),
     SymDetail(TPMS_SYMCIPHER_PARMS),
@@ -341,6 +404,7 @@ pub enum PublicParmsUnion {
     AsymDetail(TPMS_ASYM_PARMS),
 }
 
+/// Rust enum representation of `TPMU_ASYM_SCHEME`.
 pub enum AsymSchemeUnion {
     ECDH(TPMI_ALG_HASH),
     ECMQV(TPMI_ALG_HASH),
@@ -356,6 +420,7 @@ pub enum AsymSchemeUnion {
 }
 
 impl AsymSchemeUnion {
+    /// Get scheme ID.
     pub fn scheme_id(&self) -> TPM2_ALG_ID {
         match self {
             AsymSchemeUnion::ECDH(_) => TPM2_ALG_ECDH,
@@ -372,6 +437,7 @@ impl AsymSchemeUnion {
         }
     }
 
+    /// Convert scheme object to `TPMT_RSA_SCHEME`.
     fn get_rsa_scheme(self) -> TPMT_RSA_SCHEME {
         let scheme = self.scheme_id();
         let details = match self {
@@ -417,12 +483,21 @@ impl AsymSchemeUnion {
     }
 }
 
+/// Rust native representation of an asymmetric signature.
+///
+/// The structure contains the signature as a byte vector and the scheme with which the signature
+/// was created.
 pub struct Signature {
     pub scheme: AsymSchemeUnion,
     pub signature: Vec<u8>,
 }
 
 impl Signature {
+    /// Attempt to parse a signature from a `TPMT_SIGNATURE` object.
+    ///
+    /// # Constraints
+    /// * the value of `tss_signature.sigAlg` *MUST* be consistent with the union field used in
+    /// `tss_signature.signature`
     pub unsafe fn try_from(tss_signature: TPMT_SIGNATURE) -> Result<Self> {
         match tss_signature.sigAlg {
             TPM2_ALG_RSASSA => {
@@ -430,7 +505,11 @@ impl Signature {
                 let scheme = AsymSchemeUnion::RSASSA(hash_alg);
                 let signature_buf = tss_signature.signature.rsassa.sig;
                 let mut signature = signature_buf.buffer.to_vec();
-                signature.truncate(signature_buf.size.into());
+                let buf_size = signature_buf.size.into();
+                if buf_size > signature.len() {
+                    return Err(Error::local_error(WrapperErrorKind::InconsistentParams));
+                }
+                signature.truncate(buf_size);
 
                 Ok(Signature { scheme, signature })
             }
@@ -443,7 +522,7 @@ impl Signature {
             TPM2_ALG_SM2 => unimplemented!(),
             TPM2_ALG_ECSCHNORR => unimplemented!(),
             TPM2_ALG_ECDAA => unimplemented!(),
-            _ => Err(Error::from_tss_rc(TPM2_RC_SCHEME)),
+            _ => Err(Error::local_error(WrapperErrorKind::InconsistentParams)),
         }
     }
 }
@@ -486,28 +565,39 @@ impl TryFrom<Signature> for TPMT_SIGNATURE {
     }
 }
 
+/// Rust native wrapper for session attributes objects.
 #[derive(Default)]
 pub struct TpmaSession(TPMA_SESSION);
 
 impl TpmaSession {
+    /// Create a new session attributes object.
     pub fn new() -> TpmaSession {
         TpmaSession(0)
     }
 
+    /// Set flag.
     pub fn with_flag(mut self, flag: TPMA_SESSION) -> Self {
         self.0 |= flag;
         self
     }
 
+    /// Get mask for all set flags.
     pub fn mask(&self) -> TPMA_SESSION {
         self.0
     }
 
+    /// Get all set flags.
     pub fn flags(&self) -> TPMA_SESSION {
         self.0
     }
 }
 
+/// Rust native wrapper for `TPMS_CONTEXT` objects.
+///
+/// This structure is intended to help with persisting object contexts. As the main reason for
+/// saving the context of an object is to be able to re-use it later, on demand, a serializable
+/// structure is most commonly needed. `TpmsContext` implements the `Serialize` and `Deserialize`
+/// defined by `serde`.
 #[derive(Serialize, Deserialize, Clone)]
 pub struct TpmsContext {
     sequence: u64,
@@ -516,6 +606,7 @@ pub struct TpmsContext {
     context_blob: Vec<u8>,
 }
 
+// TODO: Replace with `From`
 impl TryFrom<TPMS_CONTEXT> for TpmsContext {
     type Error = Error;
 
@@ -561,6 +652,14 @@ impl TryFrom<TpmsContext> for TPMS_CONTEXT {
     }
 }
 
+/// Convenience method for generating `TPM2B_PUBLIC` objects for RSA keys based on the provided
+/// parameters.
+///
+/// The method defaults the following values:
+/// * asymmetric scheme used - RSA SSA with SHA-256 as the hash algorithm
+/// * symmetric algorithm associated with the object - 256 bit AES in CFB mode
+/// * name algorithm - SHA-256
+/// * object attributes - fixed TPM, fixed parent, sensitive data origin and user with auth are set
 pub fn get_rsa_public(restricted: bool, decrypt: bool, sign: bool, key_bits: u16) -> TPM2B_PUBLIC {
     let symmetric = TpmtSymDefBuilder::aes_256_cfb_object();
     let scheme = AsymSchemeUnion::RSASSA(TPM2_ALG_SHA256);
@@ -588,6 +687,7 @@ pub fn get_rsa_public(restricted: bool, decrypt: bool, sign: bool, key_bits: u16
         .unwrap() // should not fail as we control the params
 }
 
+/// Enum describing the object hierarchies in a TPM 2.0.
 #[derive(Clone, Copy)]
 pub enum Hierarchy {
     Null,
@@ -597,6 +697,7 @@ pub enum Hierarchy {
 }
 
 impl Hierarchy {
+    /// Get the ESYS resource handle for the hierarchy.
     pub fn esys_rh(self) -> TPMI_RH_HIERARCHY {
         match self {
             Hierarchy::Null => ESYS_TR_RH_NULL,
@@ -606,6 +707,7 @@ impl Hierarchy {
         }
     }
 
+    /// Get the TPM resource handle for the hierarchy.
     pub fn rh(self) -> TPM2_RH {
         match self {
             Hierarchy::Null => TPM2_RH_NULL,
@@ -630,16 +732,19 @@ impl TryFrom<TPM2_HANDLE> for Hierarchy {
     }
 }
 
+/// Rust native wrapper for `TPMT_TK_VERIFIED` objects.
 pub struct TpmtTkVerified {
     hierarchy: Hierarchy,
     digest: Vec<u8>,
 }
 
 impl TpmtTkVerified {
+    /// Get the hierarchy associated with the verification ticket.
     pub fn hierarchy(&self) -> Hierarchy {
         self.hierarchy
     }
 
+    /// Get the digest associated with the verification ticket.
     pub fn digest(&self) -> &[u8] {
         &self.digest
     }
