@@ -12,24 +12,48 @@
 // WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+//! # TSS 2.0 Rust Wrapper over Enhanced System API
+//! This crate exposes the functionality of the TCG Software Stack Enhanced System API to
+//! Rust developers, both directly through FFI bindings and through more Rust-tailored interfaces
+//! at varying levels of abstraction.
+//! At the moment, the abstracted functionality focuses on creating signing and encryption RSA
+//! keys, as well as signing and verifying signatures.
+//! Only platforms based on processors with a word size of at least 16 bits are supported.
+//!
+//! # Code structure
+//! The modules comprising the crate expose the following functionalities:
+//! * lib/root module - exposes the `Context` structure, the most basic abstraction over the
+//! ESAPI, on top of which all other abstraction layers are implemented.
+//! * utils - exposes Rust-native versions and/or builders for (some of) the structures defined in
+//! the TSS 2.0 specification; it also offers convenience methods for generating very specific
+//! parameter structures for use in certain operations.
+//! * response_code - implements error code parsing for the formats defined in the TSS spec and
+//! exposes it along with wrapper-specific error types.
+//! * abstraction - intended to offer abstracted interfaces that focus on providing different
+//! kinds of user experience to the developers; at the moment the only implementation allows for a
+//! resource-handle-free coding experience by working soloely with object contexts.
+//! * tss2_esys - exposes raw FFI bindings to the Enhanced System API.
+//! * constants - exposes constants that were ported to Rust manually as bindgen does not support
+//! converting them yet.
+//!
+//! # Notes on code safety:
+//! * the `unsafe` keyword is used to denote methods that could panic, crash or cause undefined
+//! behaviour. Whenever this is the case, the properties that need to be checked against
+//! parameters before passing them in will be stated in the documentation of the method.
+//! * `unsafe` blocks within this crate need to be documented through code comments if they
+//! are not covered by the points of trust described here.
+//! * the TSS2.0 library that this crate links to is trusted to return consistent values and to
+//! not crash or lead to undefined behaviour when presented with valid arguments.
+//! * the `Mbox` crate is trusted to perform operations safely on the pointers provided to it, if
+//! the pointers are trusted to be valid.
+//! * methods not marked `unsafe` are trusted to behave safely, potentially returning appropriate
+//! erorr messages when encountering any problems.
+//! * whenever `unwrap`, `expect`, `panic` or derivatives of these are used, they need to be
+//! thoroughly documented and justified - preferably `unwrap` and `expect` should *never* fail
+//! during normal operation.
+//! * these rules can be broken in test-only code and in tests.
 
 #![allow(dead_code)]
-///! # Notes on code safety:
-///! * the `unsafe` keyword is used to denote methods that could panic, crash or cause undefined
-///! behaviour. Whenever this is the case, the properties that need to be checked against
-///! parameters before passing them in will be stated in the documentation of the method.
-///! * `unsafe` blocks within this crate need to be documented through code comments if they
-///! are not covered by the points of trust described here.
-///! * the TSS2.0 library that this crate links to is trusted to return consistent values and to
-///! not crash or lead to undefined behaviour when presented with valid arguments.
-///! * the `Mbox` crate is trusted to perform operations safely on the pointers provided to it, if
-///! the pointers are trusted to be valid.
-///! * methods not marked `unsafe` are trusted to behave safely, potentially returning appropriate
-///! erorr messages when encountering any problems.
-///! * whenever `unwrap`, `expect`, `panic` or derivatives of these are used, they need to be
-///! thoroughly documented and justified - preferably `unwrap` and `expect` should *never* fail
-///! during normal operation.
-///! * these rules can be broken in test-only code and in tests.
 
 #[allow(
     non_snake_case,
@@ -83,13 +107,14 @@ macro_rules! wrap_buffer {
     }};
 }
 
+/// Placeholder for passing empty session handles for a call to the TPM
 pub const NO_SESSIONS: (ESYS_TR, ESYS_TR, ESYS_TR) = (ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE);
-pub const NO_NON_AUTH_SESSIONS: (ESYS_TR, ESYS_TR, ESYS_TR) =
-    (ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE);
 
 // Possible TCTI to use with the ESYS API.
 // TODO: add to each variant a structure for its configuration. Currently using the default
 // configuration.
+/// Placeholder TCTI types that can be used when initialising a `Context` to determine which
+/// interface will be used to communicate with the TPM.
 pub enum Tcti {
     Device,
     Mssim,
@@ -102,15 +127,49 @@ const TABRMD: &str = "tabrmd";
 use constants::*;
 
 /// Safe abstraction over an ESYS_CONTEXT.
+///
+/// Serves as a low-level abstraction interface to the TPM, providing a thin wrapper around the
+/// `unsafe` FFI calls. It is meant for more advanced uses of the TSS where control over all
+/// parameters is necessary or important.
+///
+/// The methods it exposes take the parameters advertised by the specification, with some of the
+/// parameters being passed as generated by `bindgen` and others in a more convenient/Rust-efficient
+/// way.
+///
+/// The context also keeps track of all object allocated and deallocated through it and, before
+/// being dropped, will attempt to close all outstanding handles. However, care must be taken by
+/// the client to not exceed the maximum number of slots available from the RM.
+///
+/// Code safety-wise, the methods should cover the two kinds of problems that might arise:
+/// * in terms of memory safety, all parameters passed down to the TSS are verified and the library
+/// stack is then trusted to provide back valid outputs
+/// * in terms of thread safety, all methods require a mutable reference to the context object,
+/// ensuring that no two threads can use the context at the same time for an operation (barring use
+/// of `unsafe` constructs on the client side)
+/// More testing and verification will be added to ensure this.
+///
+/// For most methods, if the wrapped TSS call fails and returns a non-zero `TPM2_RC`, a
+/// corresponding `Tss2ResponseCode` will be created and returned as an `Error`. Wherever this is
+/// not the case or additional error types can be returned, the method definition should mention
+/// it.
 pub struct Context {
-    // TODO: explain Option
+    /// Handle for the ESYS context object owned through an Mbox.
+    /// Wrapping the handle in an optional Mbox is done to allow the `Context` to be closed properly when the `Context` structure is dropped.
     esys_context: Option<MBox<ESYS_CONTEXT>>,
     sessions: (ESYS_TR, ESYS_TR, ESYS_TR),
+    /// TCTI context handle associated with the ESYS context.
+    /// As with the ESYS context, an optional Mbox wrapper allows the context to be deallocated.
     tcti_context: Option<MBox<TSS2_TCTI_CONTEXT>>,
+    /// A set of currently open object handles that should be flushed before closing the context.
     open_handles: HashSet<ESYS_TR>,
 }
 
 impl Context {
+    /// Create a new ESYS context based on the desired TCTI
+    ///
+    /// # Errors
+    /// * if either `Tss2_TctiLdr_Initiialize` or `Esys_Initialize` fail, a corresponding
+    /// Tss2ResponseCode will be returned
     pub fn new(tcti: Tcti) -> Result<Self> {
         let mut esys_context = null_mut();
         let mut tcti_context = null_mut();
@@ -171,6 +230,16 @@ impl Context {
     }
 
     // TODO: Fix when compacting the arguments into a struct
+    /// Start new authentication session and return the handle.
+    ///
+    /// The caller nonce is passed as a slice and converted by the method in a TSS digest
+    /// structure.
+    ///
+    /// # Constraints
+    /// * nonce must be at most 64 elements long
+    ///
+    /// # Errors
+    /// * if the `nonce` is larger than allowed, a `WrongSizeParam` wrapper error is returned
     #[allow(clippy::too_many_arguments)]
     pub fn start_auth_session(
         &mut self,
@@ -223,6 +292,20 @@ impl Context {
         self.sessions
     }
 
+    /// Create a primary key and return the handle.
+    ///
+    /// The authentication value, initial data, outside info and creation PCRs are passed as slices
+    /// which are then converted by the method into TSS native structures.
+    ///
+    /// # Constraints
+    /// * `outside_info` must be at most 64 elements long
+    /// * `creation_pcrs` must be at most 16 elements long
+    /// * `auth_value` must be at most 64 elements long
+    /// * `initial_data` must be at most 256 elements long
+    ///
+    /// # Errors
+    /// * if either of the slices is larger than the maximum size of the native objects, a
+    /// `WrongParamSize` wrapper error is returned
     // TODO: Fix when compacting the arguments into a struct
     #[allow(clippy::too_many_arguments)]
     pub fn create_primary_key(
@@ -298,6 +381,20 @@ impl Context {
         }
     }
 
+    /// Create a key and return the handle.
+    ///
+    /// The authentication value, initial data, outside info and creation PCRs are passed as slices
+    /// which are then converted by the method into TSS native structures.
+    ///
+    /// # Constraints
+    /// * `outside_info` must be at most 64 elements long
+    /// * `creation_pcrs` must be at most 16 elements long
+    /// * `auth_value` must be at most 64 elements long
+    /// * `initial_data` must be at most 256 elements long
+    ///
+    /// # Errors
+    /// * if either of the slices is larger than the maximum size of the native objects, a
+    /// `WrongParamSize` wrapper error is returned
     // TODO: Fix when compacting the arguments into a struct
     #[allow(clippy::too_many_arguments)]
     pub fn create_key(
@@ -373,6 +470,7 @@ impl Context {
         }
     }
 
+    /// Load a previously generated key back into the TPM and return its new handle.
     pub fn load(
         &mut self,
         parent_handle: ESYS_TR,
@@ -403,6 +501,15 @@ impl Context {
         }
     }
 
+    /// Sign a digest with a key present in the TPM and return the signature.
+    ///
+    /// The digest is passed as a slice, converted by the method to a TSS digest structure.
+    ///
+    /// # Constraints
+    /// * `digest` must be at most 64 elements long
+    ///
+    /// # Errors
+    /// * if the digest provided is too long, a `WrongParamSize` wrapper error will be returned
     pub fn sign(
         &mut self,
         key_handle: ESYS_TR,
@@ -436,6 +543,15 @@ impl Context {
         }
     }
 
+    /// Verify if a signature was generated by signing a given digest with a key in the TPM.
+    ///
+    /// The digest is passed as a sliice and converted by the method to a TSS digest structure.
+    ///
+    /// # Constraints
+    /// * `digest` must be at most 64 elements long
+    ///
+    /// # Errors
+    /// * if the digest provided is too long, a `WrongParamSize` wrapper error will be returned
     pub fn verify_signature(
         &mut self,
         key_handle: ESYS_TR,
@@ -467,6 +583,7 @@ impl Context {
         }
     }
 
+    /// Load an external key into the TPM and return its new handle.
     pub fn load_external(
         &mut self,
         private: &TPM2B_SENSITIVE,
@@ -498,6 +615,7 @@ impl Context {
         }
     }
 
+    /// Load the public part of an external key and return its new handle.
     pub fn load_external_public(
         &mut self,
         public: &TPM2B_PUBLIC,
@@ -528,6 +646,7 @@ impl Context {
         }
     }
 
+    /// Read the public part of a key currently in the TPM and return it.
     pub fn read_public(&mut self, key_handle: ESYS_TR) -> Result<TPM2B_PUBLIC> {
         let mut public = null_mut();
         let mut name = null_mut();
@@ -559,6 +678,7 @@ impl Context {
         }
     }
 
+    /// Flush the context of an object from the TPM.
     pub fn flush_context(&mut self, handle: ESYS_TR) -> Result<()> {
         let ret = unsafe { Esys_FlushContext(self.mut_context(), handle) };
         let ret = Error::from_tss_rc(ret);
@@ -571,6 +691,11 @@ impl Context {
         }
     }
 
+    /// Save the context of an object from the TPM and return it.
+    ///
+    /// # Errors
+    /// * if conversion from `TPMS_CONTEXT` to `TpmsContext` fails, a `WrongParamSize` error will
+    /// be returned
     pub fn context_save(&mut self, handle: ESYS_TR) -> Result<TpmsContext> {
         let mut context = null_mut();
         let ret = unsafe { Esys_ContextSave(self.mut_context(), handle, &mut context) };
@@ -585,6 +710,11 @@ impl Context {
         }
     }
 
+    /// Load a previously saved context into the TPM and return the object handle.
+    ///
+    /// # Errors
+    /// * if conversion from `TpmsContext` to the native `TPMS_CONTEXT` fails, a `WrongParamSize`
+    /// error will be returned
     pub fn context_load(&mut self, context: TpmsContext) -> Result<ESYS_TR> {
         let mut handle = ESYS_TR_NONE;
         let ret = unsafe {
@@ -605,6 +735,11 @@ impl Context {
         }
     }
 
+    // TODO: Should we really keep `num_bytes` as `u16`?
+    /// Get a number of random bytes from the TPM and return them.
+    ///
+    /// # Errors
+    /// * if converting `num_bytes` to `u16` fails, a `WrongParamSize` will be returned
     pub fn get_random(&mut self, num_bytes: usize) -> Result<Vec<u8>> {
         let mut buffer = null_mut();
         let ret = unsafe {
@@ -632,6 +767,13 @@ impl Context {
         }
     }
 
+    /// Set the authentication value for a given object handle in the ESYS context.
+    ///
+    /// # Constraints
+    /// * `auth_value` must be at most 64 elements long
+    ///
+    /// # Errors
+    /// * if `auth_value` is larger than the limit, a `WrongParamSize` wrapper error is returned
     pub fn set_handle_auth(&mut self, handle: ESYS_TR, auth_value: &[u8]) -> Result<()> {
         let auth = wrap_buffer!(auth_value, TPM2B_AUTH, 64);
         let ret = unsafe { Esys_TR_SetAuth(self.mut_context(), handle, &auth) };
@@ -643,6 +785,7 @@ impl Context {
         }
     }
 
+    /// Set the given attributes on a given session.
     pub fn set_session_attr(&mut self, handle: ESYS_TR, attrs: TpmaSession) -> Result<()> {
         let ret = unsafe {
             Esys_TRSess_SetAttributes(self.mut_context(), handle, attrs.flags(), attrs.mask())
@@ -655,6 +798,7 @@ impl Context {
         }
     }
 
+    /// Returns a mutable reference to the native ESYS context handle.
     fn mut_context(&mut self) -> *mut ESYS_CONTEXT {
         self.esys_context.as_mut().unwrap().as_mut_ptr() // will only fail if called from Drop after .take()
     }
