@@ -12,6 +12,37 @@
 // WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+#![deny(
+    nonstandard_style,
+    const_err,
+    dead_code,
+    improper_ctypes,
+    legacy_directory_ownership,
+    non_shorthand_field_patterns,
+    no_mangle_generic_items,
+    overflowing_literals,
+    path_statements,
+    patterns_in_fns_without_body,
+    plugin_as_library,
+    private_in_public,
+    safe_extern_statics,
+    unconditional_recursion,
+    unused,
+    unused_allocation,
+    unused_comparisons,
+    unused_parens,
+    while_true,
+    missing_debug_implementations,
+    //TODO: activate this!
+    //missing_docs,
+    trivial_casts,
+    trivial_numeric_casts,
+    unused_extern_crates,
+    unused_import_braces,
+    unused_qualifications,
+    unused_results,
+    missing_copy_implementations
+)]
 //! # TSS 2.0 Rust Wrapper over Enhanced System API
 //! This crate exposes the functionality of the TCG Software Stack Enhanced System API to
 //! Rust developers, both directly through FFI bindings and through more Rust-tailored interfaces
@@ -64,7 +95,7 @@
 #[allow(clippy::all)]
 // There is an issue where long double become u128 in extern blocks. Check this issue:
 // https://github.com/rust-lang/rust-bindgen/issues/1549
-#[allow(improper_ctypes)]
+#[allow(improper_ctypes, missing_debug_implementations, trivial_casts)]
 pub mod tss2_esys {
     include!(concat!(env!("OUT_DIR"), "/tss2_esys_bindings.rs"));
 }
@@ -115,6 +146,7 @@ pub const NO_SESSIONS: (ESYS_TR, ESYS_TR, ESYS_TR) = (ESYS_TR_NONE, ESYS_TR_NONE
 // configuration.
 /// Placeholder TCTI types that can be used when initialising a `Context` to determine which
 /// interface will be used to communicate with the TPM.
+#[derive(Copy, Clone, Debug)]
 pub enum Tcti {
     Device,
     Mssim,
@@ -152,6 +184,7 @@ use constants::*;
 /// corresponding `Tss2ResponseCode` will be created and returned as an `Error`. Wherever this is
 /// not the case or additional error types can be returned, the method definition should mention
 /// it.
+#[derive(Debug)]
 pub struct Context {
     /// Handle for the ESYS context object owned through an Mbox.
     /// Wrapping the handle in an optional Mbox is done to allow the `Context` to be closed properly when the `Context` structure is dropped.
@@ -181,9 +214,7 @@ impl Context {
         };
         let tcti_name_conf = CString::new(tcti_name_conf).expect("Failed conversion to CString"); // should never panic
 
-        let ret = unsafe {
-            tss2_esys::Tss2_TctiLdr_Initialize(tcti_name_conf.as_ptr(), &mut tcti_context)
-        };
+        let ret = unsafe { Tss2_TctiLdr_Initialize(tcti_name_conf.as_ptr(), &mut tcti_context) };
         let ret = Error::from_tss_rc(ret);
         if !ret.is_success() {
             error!("Error when creating a TCTI context: {}.", ret);
@@ -192,7 +223,7 @@ impl Context {
         let mut tcti_context = unsafe { Some(MBox::from_raw(tcti_context)) };
 
         let ret = unsafe {
-            tss2_esys::Esys_Initialize(
+            Esys_Initialize(
                 &mut esys_context,
                 tcti_context.as_mut().unwrap().as_mut_ptr(), // will not panic as per how tcti_context is initialised
                 null_mut(),
@@ -255,7 +286,7 @@ impl Context {
         let mut sess = ESYS_TR_NONE;
 
         let ret = unsafe {
-            tss2_esys::Esys_StartAuthSession(
+            Esys_StartAuthSession(
                 self.mut_context(),
                 tpm_key,
                 bind,
@@ -276,7 +307,7 @@ impl Context {
 
         let ret = Error::from_tss_rc(ret);
         if ret.is_success() {
-            self.open_handles.insert(sess);
+            let _ = self.open_handles.insert(sess);
             Ok(sess)
         } else {
             error!("Error when creating a session: {}.", ret);
@@ -368,12 +399,12 @@ impl Context {
 
         if ret.is_success() {
             unsafe {
-                MBox::from_raw(outpublic);
-                MBox::from_raw(creation_data);
-                MBox::from_raw(creation_hash);
-                MBox::from_raw(creation_ticket);
+                let _ = MBox::from_raw(outpublic);
+                let _ = MBox::from_raw(creation_data);
+                let _ = MBox::from_raw(creation_hash);
+                let _ = MBox::from_raw(creation_ticket);
             }
-            self.open_handles.insert(prim_key_handle);
+            let _ = self.open_handles.insert(prim_key_handle);
             Ok(prim_key_handle)
         } else {
             error!("Error in creating primary key: {}.", ret);
@@ -459,9 +490,9 @@ impl Context {
             let outprivate = unsafe { MBox::from_raw(outprivate) };
             let outpublic = unsafe { MBox::from_raw(outpublic) };
             unsafe {
-                MBox::from_raw(creation_data);
-                MBox::from_raw(digest);
-                MBox::from_raw(creation);
+                let _ = MBox::from_raw(creation_data);
+                let _ = MBox::from_raw(digest);
+                let _ = MBox::from_raw(creation);
             }
             Ok((*outprivate, *outpublic))
         } else {
@@ -493,7 +524,7 @@ impl Context {
         let ret = Error::from_tss_rc(ret);
 
         if ret.is_success() {
-            self.open_handles.insert(handle);
+            let _ = self.open_handles.insert(handle);
             Ok(handle)
         } else {
             error!("Error in loading: {}.", ret);
@@ -607,7 +638,7 @@ impl Context {
         let ret = Error::from_tss_rc(ret);
 
         if ret.is_success() {
-            self.open_handles.insert(key_handle);
+            let _ = self.open_handles.insert(key_handle);
             Ok(key_handle)
         } else {
             error!("Error in loading: {}.", ret);
@@ -638,7 +669,7 @@ impl Context {
         let ret = Error::from_tss_rc(ret);
 
         if ret.is_success() {
-            self.open_handles.insert(key_handle);
+            let _ = self.open_handles.insert(key_handle);
             Ok(key_handle)
         } else {
             error!("Error in loading: {}.", ret);
@@ -667,8 +698,8 @@ impl Context {
 
         if ret.is_success() {
             unsafe {
-                MBox::from_raw(name);
-                MBox::from_raw(qualified_name);
+                let _ = MBox::from_raw(name);
+                let _ = MBox::from_raw(qualified_name);
             }
             let public = unsafe { MBox::<TPM2B_PUBLIC>::from_raw(public) };
             Ok(*public)
@@ -683,7 +714,7 @@ impl Context {
         let ret = unsafe { Esys_FlushContext(self.mut_context(), handle) };
         let ret = Error::from_tss_rc(ret);
         if ret.is_success() {
-            self.open_handles.remove(&handle);
+            let _ = self.open_handles.remove(&handle);
             Ok(())
         } else {
             error!("Error in flushing context: {}.", ret);
@@ -727,7 +758,7 @@ impl Context {
 
         let ret = Error::from_tss_rc(ret);
         if ret.is_success() {
-            self.open_handles.insert(handle);
+            let _ = self.open_handles.insert(handle);
             Ok(handle)
         } else {
             error!("Error in loading context: {}.", ret);
@@ -820,10 +851,10 @@ impl Drop for Context {
         let tcti_context = self.tcti_context.take().unwrap(); // should not fail based on how the context is initialised/used
 
         // Close the TCTI context.
-        unsafe { tss2_esys::Tss2_TctiLdr_Finalize(&mut tcti_context.into_raw()) };
+        unsafe { Tss2_TctiLdr_Finalize(&mut tcti_context.into_raw()) };
 
         // Close the context.
-        unsafe { tss2_esys::Esys_Finalize(&mut esys_context.into_raw()) };
+        unsafe { Esys_Finalize(&mut esys_context.into_raw()) };
         info!("Context closed.");
     }
 }
