@@ -30,6 +30,8 @@ use std::convert::{TryFrom, TryInto};
 /// Helper for building `TPM2B_PUBLIC` values out of its subcomponents.
 ///
 /// Currently the implementation is incomplete, focusing on creating objects of RSA type.
+// Most of the field types are from bindgen which does not implement Debug on them.
+#[allow(missing_debug_implementations)]
 pub struct Tpm2BPublicBuilder {
     type_: Option<TPMI_ALG_PUBLIC>,
     name_alg: TPMI_ALG_HASH,
@@ -170,7 +172,9 @@ impl Default for Tpm2BPublicBuilder {
 }
 
 /// Builder for `TPMS_RSA_PARMS` values.
-#[derive(Default)]
+// Most of the field types are from bindgen which does not implement Debug on them.
+#[allow(missing_debug_implementations)]
+#[derive(Copy, Clone, Default)]
 pub struct TpmsRsaParmsBuilder {
     symmetric: TPMT_SYM_DEF_OBJECT,
     scheme: Option<AsymSchemeUnion>,
@@ -236,6 +240,7 @@ impl TpmsRsaParmsBuilder {
 }
 
 /// Builder for `TPMT_SYM_DEF` objects.
+#[derive(Copy, Clone, Debug)]
 pub struct TpmtSymDefBuilder {
     algorithm: Option<TPM2_ALG_ID>,
     key_bits: u16,
@@ -371,6 +376,8 @@ bitfield! {
 }
 
 /// Rust enum representation of `TPMU_PUBLIC_ID`.
+// Most of the field types are from bindgen which does not implement Debug on them.
+#[allow(missing_debug_implementations)]
 pub enum PublicIdUnion {
     KeyedHash(TPM2B_DIGEST),
     Sym(TPM2B_DIGEST),
@@ -384,6 +391,10 @@ impl PublicIdUnion {
     /// # Constraints
     /// * the value of `public.publicArea.type_` *MUST* be consistent with the union field used in
     /// `public.publicArea.unique`.
+    ///
+    /// # Safety
+    ///
+    /// Check "Notes on code safety" section in the crate-level documentation.
     pub unsafe fn from_public(public: &TPM2B_PUBLIC) -> Self {
         match public.publicArea.type_ {
             TPM2_ALG_RSA => PublicIdUnion::Rsa(Box::from(public.publicArea.unique.rsa)),
@@ -396,6 +407,9 @@ impl PublicIdUnion {
 }
 
 /// Rust enum representation of `TPMU_PUBLIC_PARMS`.
+// Most of the field types are from bindgen which does not implement Debug on them.
+#[allow(missing_debug_implementations)]
+#[derive(Copy, Clone)]
 pub enum PublicParmsUnion {
     KeyedHashDetail(TPMS_KEYEDHASH_PARMS),
     SymDetail(TPMS_SYMCIPHER_PARMS),
@@ -405,6 +419,7 @@ pub enum PublicParmsUnion {
 }
 
 /// Rust enum representation of `TPMU_ASYM_SCHEME`.
+#[derive(Copy, Clone, Debug)]
 pub enum AsymSchemeUnion {
     ECDH(TPMI_ALG_HASH),
     ECMQV(TPMI_ALG_HASH),
@@ -421,7 +436,7 @@ pub enum AsymSchemeUnion {
 
 impl AsymSchemeUnion {
     /// Get scheme ID.
-    pub fn scheme_id(&self) -> TPM2_ALG_ID {
+    pub fn scheme_id(self) -> TPM2_ALG_ID {
         match self {
             AsymSchemeUnion::ECDH(_) => TPM2_ALG_ECDH,
             AsymSchemeUnion::ECMQV(_) => TPM2_ALG_ECMQV,
@@ -487,6 +502,7 @@ impl AsymSchemeUnion {
 ///
 /// The structure contains the signature as a byte vector and the scheme with which the signature
 /// was created.
+#[derive(Debug)]
 pub struct Signature {
     pub scheme: AsymSchemeUnion,
     pub signature: Vec<u8>,
@@ -498,6 +514,10 @@ impl Signature {
     /// # Constraints
     /// * the value of `tss_signature.sigAlg` *MUST* be consistent with the union field used in
     /// `tss_signature.signature`
+    ///
+    /// # Safety
+    ///
+    /// Check "Notes on code safety" section in the crate-level documentation.
     pub unsafe fn try_from(tss_signature: TPMT_SIGNATURE) -> Result<Self> {
         match tss_signature.sigAlg {
             TPM2_ALG_RSASSA => {
@@ -566,7 +586,7 @@ impl TryFrom<Signature> for TPMT_SIGNATURE {
 }
 
 /// Rust native wrapper for session attributes objects.
-#[derive(Default)]
+#[derive(Copy, Clone, Debug, Default)]
 pub struct TpmaSession(TPMA_SESSION);
 
 impl TpmaSession {
@@ -582,12 +602,12 @@ impl TpmaSession {
     }
 
     /// Get mask for all set flags.
-    pub fn mask(&self) -> TPMA_SESSION {
+    pub fn mask(self) -> TPMA_SESSION {
         self.0
     }
 
     /// Get all set flags.
-    pub fn flags(&self) -> TPMA_SESSION {
+    pub fn flags(self) -> TPMA_SESSION {
         self.0
     }
 }
@@ -598,7 +618,7 @@ impl TpmaSession {
 /// saving the context of an object is to be able to re-use it later, on demand, a serializable
 /// structure is most commonly needed. `TpmsContext` implements the `Serialize` and `Deserialize`
 /// defined by `serde`.
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct TpmsContext {
     sequence: u64,
     saved_handle: TPMI_DH_CONTEXT,
@@ -688,7 +708,7 @@ pub fn get_rsa_public(restricted: bool, decrypt: bool, sign: bool, key_bits: u16
 }
 
 /// Enum describing the object hierarchies in a TPM 2.0.
-#[derive(Clone, Copy)]
+#[derive(Debug, Clone, Copy)]
 pub enum Hierarchy {
     Null,
     Owner,
@@ -733,6 +753,7 @@ impl TryFrom<TPM2_HANDLE> for Hierarchy {
 }
 
 /// Rust native wrapper for `TPMT_TK_VERIFIED` objects.
+#[derive(Debug)]
 pub struct TpmtTkVerified {
     hierarchy: Hierarchy,
     digest: Vec<u8>,

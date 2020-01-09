@@ -39,6 +39,7 @@ use std::convert::{TryFrom, TryInto};
 ///
 /// Currently, only functionality necessary for RSA key creation and usage (for signing and
 /// verifying signatures) is implemented.
+#[derive(Debug)]
 pub struct TransientObjectContext {
     pub context: Context,
     root_key_handle: ESYS_TR,
@@ -354,7 +355,7 @@ mod tests {
             let signature = ctx.sign(key.clone(), &auth, &HASH).unwrap();
             let pub_key = ctx.read_public_key(key.clone()).unwrap();
             let pub_key = ctx.load_external_rsa_public_key(&pub_key).unwrap();
-            ctx.verify_signature(pub_key, &HASH, signature).unwrap();
+            let _ = ctx.verify_signature(pub_key, &HASH, signature).unwrap();
         }
     }
 }
