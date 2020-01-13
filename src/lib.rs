@@ -260,7 +260,6 @@ impl Context {
         }
     }
 
-    // TODO: Fix when compacting the arguments into a struct
     /// Start new authentication session and return the handle.
     ///
     /// The caller nonce is passed as a slice and converted by the method in a TSS digest
@@ -271,6 +270,7 @@ impl Context {
     ///
     /// # Errors
     /// * if the `nonce` is larger than allowed, a `WrongSizeParam` wrapper error is returned
+    // TODO: Fix when compacting the arguments into a struct
     #[allow(clippy::too_many_arguments)]
     pub fn start_auth_session(
         &mut self,
@@ -856,123 +856,5 @@ impl Drop for Context {
         // Close the context.
         unsafe { Esys_Finalize(&mut esys_context.into_raw()) };
         info!("Context closed.");
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    const HASH: [u8; 64] = [
-        0x69, 0x3E, 0xDB, 0x1B, 0x22, 0x79, 0x03, 0xF4, 0xC0, 0xBF, 0xD6, 0x91, 0x76, 0x37, 0x84,
-        0x69, 0x3E, 0xDB, 0x1B, 0x22, 0x79, 0x03, 0xF4, 0xC0, 0xBF, 0xD6, 0x91, 0x76, 0x37, 0x84,
-        0xA2, 0x94, 0x8E, 0x92, 0x50, 0x35, 0xC2, 0x8C, 0x5C, 0x3C, 0xCA, 0xFE, 0x18, 0xE8, 0x81,
-        0xA2, 0x94, 0x8E, 0x92, 0x50, 0x35, 0xC2, 0x8C, 0x5C, 0x3C, 0xCA, 0xFE, 0x18, 0xE8, 0x81,
-        0x37, 0x78, 0x37, 0x78,
-    ];
-
-    const KEY: [u8; 512] = [
-        231, 97, 201, 180, 0, 1, 185, 150, 85, 90, 174, 188, 105, 133, 188, 3, 206, 5, 222, 71,
-        185, 1, 209, 243, 36, 130, 250, 116, 17, 0, 24, 4, 25, 225, 250, 198, 245, 210, 140, 23,
-        139, 169, 15, 193, 4, 145, 52, 138, 149, 155, 238, 36, 74, 152, 179, 108, 200, 248, 250,
-        100, 115, 214, 166, 165, 1, 27, 51, 11, 11, 244, 218, 157, 3, 174, 171, 142, 45, 8, 9, 36,
-        202, 171, 165, 43, 208, 186, 232, 15, 241, 95, 81, 174, 189, 30, 213, 47, 86, 115, 239, 49,
-        214, 235, 151, 9, 189, 174, 144, 238, 200, 201, 241, 157, 43, 37, 6, 96, 94, 152, 159, 205,
-        54, 9, 181, 14, 35, 246, 49, 150, 163, 118, 242, 59, 54, 42, 221, 215, 248, 23, 18, 223,
-        179, 229, 0, 204, 65, 69, 166, 180, 11, 49, 131, 96, 163, 96, 158, 7, 109, 119, 208, 17,
-        237, 125, 187, 121, 94, 65, 2, 86, 105, 68, 51, 197, 73, 108, 185, 231, 126, 199, 81, 1,
-        251, 211, 45, 47, 15, 113, 135, 197, 152, 239, 180, 111, 18, 192, 136, 222, 11, 99, 41,
-        248, 205, 253, 209, 56, 214, 32, 225, 3, 49, 161, 58, 57, 190, 69, 86, 95, 185, 184, 155,
-        76, 8, 122, 104, 81, 222, 234, 246, 40, 98, 182, 90, 160, 111, 74, 102, 36, 148, 99, 69,
-        207, 214, 104, 87, 128, 238, 26, 121, 107, 166, 4, 64, 5, 210, 164, 162, 189, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    ];
-
-    use crate::utils;
-    use crate::*;
-
-    #[test]
-    fn simple_test() {
-        env_logger::init();
-
-        let mut context = Context::new(Tcti::Mssim).unwrap();
-        let key_auth: Vec<u8> = context.get_random(16).unwrap();
-
-        let prim_key_handle = context
-            .create_primary_key(
-                ESYS_TR_RH_OWNER,
-                &utils::get_rsa_public(true, true, false, 2048),
-                &key_auth,
-                &[],
-                &[],
-                &[],
-            )
-            .unwrap();
-
-        dbg!(prim_key_handle);
-
-        let new_session = context
-            .start_auth_session(
-                NO_SESSIONS,
-                ESYS_TR_NONE,
-                prim_key_handle,
-                &[],
-                TPM2_SE_HMAC,
-                utils::TpmtSymDefBuilder::aes_256_cfb(),
-                TPM2_ALG_SHA256,
-            )
-            .unwrap();
-        let session_attr = TpmaSession::new()
-            .with_flag(TPMA_SESSION_DECRYPT)
-            .with_flag(TPMA_SESSION_ENCRYPT);
-        context.set_session_attr(new_session, session_attr).unwrap();
-        context.set_sessions((new_session, ESYS_TR_NONE, ESYS_TR_NONE));
-
-        let (key_priv, key_pub) = context
-            .create_key(
-                prim_key_handle,
-                &utils::get_rsa_public(false, false, true, 1024),
-                &key_auth,
-                &[],
-                &[],
-                &[],
-            )
-            .unwrap();
-        let key_handle = context.load(prim_key_handle, key_priv, key_pub).unwrap();
-        dbg!(key_handle);
-
-        let key_context = context.context_save(key_handle).unwrap();
-        let key_handle = context.context_load(key_context).unwrap();
-        context.set_handle_auth(key_handle, &key_auth).unwrap();
-        dbg!(key_handle);
-        let scheme = TPMT_SIG_SCHEME {
-            scheme: TPM2_ALG_NULL,
-            details: Default::default(),
-        };
-        let validation = TPMT_TK_HASHCHECK {
-            tag: TPM2_ST_HASHCHECK,
-            hierarchy: TPM2_RH_NULL,
-            digest: Default::default(),
-        };
-        let signature = context
-            .sign(key_handle, &HASH[..32], scheme, &validation)
-            .unwrap();
-        print!("Signature: ");
-        for x in &signature.signature {
-            print!("{}, ", x);
-        }
-        println!();
-        dbg!(
-            context
-                .verify_signature(key_handle, &HASH[..32], &signature.try_into().unwrap())
-                .unwrap()
-                .tag
-        );
     }
 }
