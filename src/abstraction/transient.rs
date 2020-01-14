@@ -1,4 +1,4 @@
-// Copyright (c) 2019, Arm Limited, All Rights Reserved
+// Copyright (c) 2019-2020, Arm Limited, All Rights Reserved
 // SPDX-License-Identifier: Apache-2.0
 //
 // Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -30,6 +30,7 @@ use crate::response_code::{Error, Result, WrapperErrorKind as ErrorKind};
 use crate::tss2_esys::*;
 use crate::utils::{self, get_rsa_public, PublicIdUnion, TpmsContext, TpmtTkVerified};
 use crate::{Context, Tcti, NO_SESSIONS};
+use log::error;
 use std::convert::{TryFrom, TryInto};
 
 /// Structure offering an abstracted programming experience.
@@ -41,7 +42,7 @@ use std::convert::{TryFrom, TryInto};
 /// verifying signatures) is implemented.
 #[derive(Debug)]
 pub struct TransientObjectContext {
-    pub context: Context,
+    context: Context,
     root_key_handle: ESYS_TR,
 }
 
@@ -53,7 +54,7 @@ impl TransientObjectContext {
     /// length provided as a parameter, and never exposed outside the context.
     ///
     /// # Constraints
-    /// * `root_key_size` must be between 1024 and 4096, inclusive
+    /// * `root_key_size` must be 1024 or 2048
     /// * `root_key_auth_size` must be at most 32
     ///
     /// # Errors
@@ -61,7 +62,7 @@ impl TransientObjectContext {
     /// `Context::start_auth_session`, `Context::create_primary_key`, `Context::flush_context`,
     /// `Context::set_handle_auth`
     /// * if the root key authentication size is given greater than 32 or if the root key size is
-    /// not between 1024 and 4096, a `WrongParamSize` wrapper error is returned
+    /// not 1024 or 2048, a `WrongParamSize` wrapper error is returned
     pub fn new(
         tcti: Tcti,
         root_key_size: usize,
@@ -71,7 +72,8 @@ impl TransientObjectContext {
         if root_key_auth_size > 32 {
             return Err(Error::local_error(ErrorKind::WrongParamSize));
         }
-        if root_key_size < 1024 || root_key_size > 4096 {
+        if root_key_size != 1024 && root_key_size != 2048 {
+            error!("The reference implementation only supports key sizes of 1,024 and 2,048 bits.");
             return Err(Error::local_error(ErrorKind::WrongParamSize));
         }
         let mut context = Context::new(tcti)?;
@@ -118,12 +120,12 @@ impl TransientObjectContext {
     /// context.
     ///
     /// # Constraints
-    /// * `key_size` must be between 1024 and 4096, inclusive
+    /// * `key_size` must be 1024 or 2048
     /// * `auth_size` must be at most 32
     ///
     /// # Errors
     /// * if the authentication size is given larger than 32 or if the requested key size is not
-    /// between 1024 and 4096, a `WrongParamSize` wrapper error is returned
+    /// 1024 or 2048, a `WrongParamSize` wrapper error is returned
     /// * errors are returned if any method calls return an error: `Context::get_random`,
     /// `TransientObjectContext::set_session_attrs`, `Context::create_key`, `Context::load`,
     /// `Context::context_save`, `Context::context_flush`
@@ -135,7 +137,7 @@ impl TransientObjectContext {
         if auth_size > 32 {
             return Err(Error::local_error(ErrorKind::WrongParamSize));
         }
-        if key_size < 1024 || key_size > 4096 {
+        if key_size != 1024 && key_size != 2048 {
             return Err(Error::local_error(ErrorKind::WrongParamSize));
         }
         let key_auth = if auth_size > 0 {
@@ -170,15 +172,15 @@ impl TransientObjectContext {
     /// Returns the key context.
     ///
     /// # Constraints
-    /// * `public_key` must have be at most 512 elements long
+    /// * `public_key` must be 128 or 256 elements long
     ///
     /// # Errors
-    /// * if the public key is larger than 4096 bits, a `WrongParamSize` wrapper error is returned
+    /// * if the public key length is different than 1024 or 2048 bits, a `WrongParamSize` wrapper error is returned
     /// * errors are returned if any method calls return an error:
     /// `TransientObjectContext::`set_session_attrs`, `Context::load_external_public`,
     /// `Context::context_save`, `Context::flush_context`
     pub fn load_external_rsa_public_key(&mut self, public_key: &[u8]) -> Result<TpmsContext> {
-        if public_key.len() > 512 {
+        if public_key.len() != 128 && public_key.len() != 256 {
             return Err(Error::local_error(ErrorKind::WrongParamSize));
         }
         let mut pk_buffer = [0u8; 512];
@@ -333,29 +335,5 @@ impl TransientObjectContext {
             .with_flag(TPMA_SESSION_ENCRYPT);
         self.context.set_session_attr(session, session_attr)?;
         Ok(())
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use crate::Tcti;
-
-    const HASH: [u8; 32] = [
-        0x69, 0x3E, 0xDB, 0x1B, 0x22, 0x79, 0x03, 0xF4, 0xC0, 0xBF, 0xD6, 0x91, 0x76, 0x37, 0x84,
-        0xA2, 0x94, 0x8E, 0x92, 0x50, 0x35, 0xC2, 0x8C, 0x5C, 0x3C, 0xCA, 0xFE, 0x18, 0xE8, 0x81,
-        0x37, 0x78,
-    ];
-
-    #[test]
-    fn transient_test() {
-        let mut ctx = TransientObjectContext::new(Tcti::Mssim, 2048, 32, &[]).unwrap();
-        for _ in 0..4 {
-            let (key, auth) = ctx.create_rsa_signing_key(2048, 16).unwrap();
-            let signature = ctx.sign(key.clone(), &auth, &HASH).unwrap();
-            let pub_key = ctx.read_public_key(key.clone()).unwrap();
-            let pub_key = ctx.load_external_rsa_public_key(&pub_key).unwrap();
-            let _ = ctx.verify_signature(pub_key, &HASH, signature).unwrap();
-        }
     }
 }

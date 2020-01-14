@@ -47,7 +47,7 @@ cargo build
 cargo doc --no-deps --verbose
 
 #################
-# Static checks #
+# Run the tests #
 #################
 RUST_LOG=info cargo test -- --test-threads=1 --nocapture
 
