@@ -68,6 +68,10 @@
 //! converting them yet.
 //!
 //! # Notes on code safety:
+//! * thread safety is ensured by the required mutability of the `Context` structure within the
+//! methods implemented on it; thus, in an otherwise safe app commands cannot be dispatched in
+//! parallel for the same context; whether multithreading with multiple context objects is possible
+//! depends on the TCTI used and this is the responsability of the crate client to establish.
 //! * the `unsafe` keyword is used to denote methods that could panic, crash or cause undefined
 //! behaviour. Whenever this is the case, the properties that need to be checked against
 //! parameters before passing them in will be stated in the documentation of the method.
@@ -200,10 +204,14 @@ pub struct Context {
 impl Context {
     /// Create a new ESYS context based on the desired TCTI
     ///
+    /// # Constraints
+    /// * the client is responsible for ensuring that the context can be initialized safely,
+    /// threading-wise
+    ///
     /// # Errors
     /// * if either `Tss2_TctiLdr_Initiialize` or `Esys_Initialize` fail, a corresponding
     /// Tss2ResponseCode will be returned
-    pub fn new(tcti: Tcti) -> Result<Self> {
+    pub unsafe fn new(tcti: Tcti) -> Result<Self> {
         let mut esys_context = null_mut();
         let mut tcti_context = null_mut();
 
@@ -214,25 +222,23 @@ impl Context {
         };
         let tcti_name_conf = CString::new(tcti_name_conf).expect("Failed conversion to CString"); // should never panic
 
-        let ret = unsafe { Tss2_TctiLdr_Initialize(tcti_name_conf.as_ptr(), &mut tcti_context) };
+        let ret = Tss2_TctiLdr_Initialize(tcti_name_conf.as_ptr(), &mut tcti_context);
         let ret = Error::from_tss_rc(ret);
         if !ret.is_success() {
             error!("Error when creating a TCTI context: {}.", ret);
             return Err(ret);
         }
-        let mut tcti_context = unsafe { Some(MBox::from_raw(tcti_context)) };
+        let mut tcti_context = Some(MBox::from_raw(tcti_context));
 
-        let ret = unsafe {
-            Esys_Initialize(
-                &mut esys_context,
-                tcti_context.as_mut().unwrap().as_mut_ptr(), // will not panic as per how tcti_context is initialised
-                null_mut(),
-            )
-        };
+        let ret = Esys_Initialize(
+            &mut esys_context,
+            tcti_context.as_mut().unwrap().as_mut_ptr(), // will not panic as per how tcti_context is initialised
+            null_mut(),
+        );
         let ret = Error::from_tss_rc(ret);
 
         if ret.is_success() {
-            let esys_context = unsafe { Some(MBox::from_raw(esys_context)) };
+            let esys_context = Some(MBox::from_raw(esys_context));
             let mut context = Context {
                 esys_context,
                 sessions: NO_SESSIONS,

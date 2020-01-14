@@ -54,6 +54,8 @@ impl TransientObjectContext {
     /// length provided as a parameter, and never exposed outside the context.
     ///
     /// # Constraints
+    /// * it is the responsibility of the client to ensure that the context can be initialized
+    /// safely, threading-wise
     /// * `root_key_size` must be 1024 or 2048
     /// * `root_key_auth_size` must be at most 32
     ///
@@ -63,7 +65,7 @@ impl TransientObjectContext {
     /// `Context::set_handle_auth`
     /// * if the root key authentication size is given greater than 32 or if the root key size is
     /// not 1024 or 2048, a `WrongParamSize` wrapper error is returned
-    pub fn new(
+    pub unsafe fn new(
         tcti: Tcti,
         root_key_size: usize,
         root_key_auth_size: usize,
