@@ -117,8 +117,7 @@ fn simple_test() {
         .unwrap();
     context
         .verify_signature(key_handle, &HASH[..32], &signature.try_into().unwrap())
-        .unwrap()
-        .tag;
+        .unwrap();
 }
 
 mod test_start_sess {
@@ -363,7 +362,7 @@ mod test_create_primary {
             .create_primary_key(
                 ESYS_TR_RH_OWNER,
                 &utils::get_rsa_public(true, true, false, 2048),
-                &vec![0xa5; 100],
+                &[0xa5; 100],
                 &[],
                 &[],
                 &[],
@@ -380,7 +379,7 @@ mod test_create_primary {
                 ESYS_TR_RH_OWNER,
                 &utils::get_rsa_public(true, true, false, 2048),
                 &[],
-                &vec![0xa5; 300],
+                &[0xa5; 300],
                 &[],
                 &[],
             )
@@ -397,7 +396,7 @@ mod test_create_primary {
                 &utils::get_rsa_public(true, true, false, 2048),
                 &[],
                 &[],
-                &vec![0xfe; 80],
+                &[0xfe; 80],
                 &[],
             )
             .unwrap_err();
@@ -414,7 +413,7 @@ mod test_create_primary {
                 &[],
                 &[],
                 &[],
-                &vec![Default::default(); 20],
+                &[Default::default(); 20],
             )
             .unwrap_err();
     }
@@ -471,7 +470,7 @@ mod test_create {
             .create_key(
                 prim_key_handle,
                 &utils::get_rsa_public(true, true, false, 2048),
-                &vec![0xa5; 100],
+                &[0xa5; 100],
                 &[],
                 &[],
                 &[],
@@ -500,7 +499,7 @@ mod test_create {
                 prim_key_handle,
                 &utils::get_rsa_public(true, true, false, 2048),
                 &[],
-                &vec![0xa5; 300],
+                &[0xa5; 300],
                 &[],
                 &[],
             )
@@ -529,7 +528,7 @@ mod test_create {
                 &utils::get_rsa_public(true, true, false, 2048),
                 &[],
                 &[],
-                &vec![0xfe; 80],
+                &[0xfe; 80],
                 &[],
             )
             .is_err());
@@ -558,7 +557,7 @@ mod test_create {
                 &[],
                 &[],
                 &[],
-                &vec![Default::default(); 20],
+                &[Default::default(); 20],
             )
             .is_err());
     }
@@ -835,7 +834,7 @@ mod test_load_ext {
 
         let pub_buffer = TPM2B_PUBLIC_KEY_RSA {
             size: 256,
-            buffer: KEY.clone(),
+            buffer: KEY,
         };
         let pub_key = PublicIdUnion::Rsa(Box::from(pub_buffer));
 
@@ -903,7 +902,7 @@ mod test_flush_context {
                 &[],
             )
             .unwrap();
-        let _ = context.flush_context(key_handle).unwrap();
+        context.flush_context(key_handle).unwrap();
         assert!(context.read_public(key_handle).is_err());
     }
 

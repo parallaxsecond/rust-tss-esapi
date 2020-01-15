@@ -204,7 +204,7 @@ pub struct Context {
 impl Context {
     /// Create a new ESYS context based on the desired TCTI
     ///
-    /// # Constraints
+    /// # Safety
     /// * the client is responsible for ensuring that the context can be initialized safely,
     /// threading-wise
     ///
