@@ -55,7 +55,7 @@ fn wrong_auth_size() {
 fn load_bad_sized_key() {
     let mut ctx = unsafe { TransientObjectContext::new(Tcti::Mssim, 2048, 32, &[]).unwrap() };
     assert_eq!(
-        ctx.load_external_rsa_public_key(&vec![0xDE, 0xAD, 0xBE, 0xEF])
+        ctx.load_external_rsa_public_key(&[0xDE, 0xAD, 0xBE, 0xEF])
             .unwrap_err(),
         Error::WrapperError(ErrorKind::WrongParamSize)
     );
@@ -113,14 +113,14 @@ fn sign_with_bad_auth() {
     auth[7] = 0xAD;
     auth[8] = 0xBE;
     auth[9] = 0xEF;
-    ctx.sign(key.clone(), &auth, &HASH).unwrap_err();
+    ctx.sign(key, &auth, &HASH).unwrap_err();
 }
 
 #[test]
 fn sign_with_no_auth() {
     let mut ctx = unsafe { TransientObjectContext::new(Tcti::Mssim, 2048, 32, &[]).unwrap() };
     let (key, _) = ctx.create_rsa_signing_key(2048, 16).unwrap();
-    ctx.sign(key.clone(), &[], &HASH).unwrap_err();
+    ctx.sign(key, &[], &HASH).unwrap_err();
 }
 
 #[test]
@@ -128,8 +128,8 @@ fn two_signatures_different_digest() {
     let mut ctx = unsafe { TransientObjectContext::new(Tcti::Mssim, 2048, 32, &[]).unwrap() };
     let (key1, auth1) = ctx.create_rsa_signing_key(2048, 16).unwrap();
     let (key2, auth2) = ctx.create_rsa_signing_key(2048, 16).unwrap();
-    let signature1 = ctx.sign(key1.clone(), &auth1, &HASH).unwrap();
-    let signature2 = ctx.sign(key2.clone(), &auth2, &HASH).unwrap();
+    let signature1 = ctx.sign(key1, &auth1, &HASH).unwrap();
+    let signature2 = ctx.sign(key2, &auth2, &HASH).unwrap();
 
     assert!(signature1.signature != signature2.signature);
 }
@@ -141,10 +141,10 @@ fn verify_wrong_key() {
     let (key2, _) = ctx.create_rsa_signing_key(2048, 16).unwrap();
 
     // Sign with the first key
-    let signature = ctx.sign(key1.clone(), &auth1, &HASH).unwrap();
+    let signature = ctx.sign(key1, &auth1, &HASH).unwrap();
 
     // Import and verify with the second key
-    let pub_key = ctx.read_public_key(key2.clone()).unwrap();
+    let pub_key = ctx.read_public_key(key2).unwrap();
     let pub_key = ctx.load_external_rsa_public_key(&pub_key).unwrap();
     if let Tss2Error(error) = ctx.verify_signature(pub_key, &HASH, signature).unwrap_err() {
         assert_eq!(error.kind(), Some(Tss2ResponseCodeKind::Signature));
@@ -158,7 +158,7 @@ fn verify_wrong_digest() {
     let (key, auth) = ctx.create_rsa_signing_key(2048, 16).unwrap();
 
     let signature = ctx.sign(key.clone(), &auth, &HASH).unwrap();
-    let pub_key = ctx.read_public_key(key.clone()).unwrap();
+    let pub_key = ctx.read_public_key(key).unwrap();
     let pub_key = ctx.load_external_rsa_public_key(&pub_key).unwrap();
 
     let mut digest_copy = HASH.to_vec();
@@ -182,7 +182,7 @@ fn full_test() {
     for _ in 0..4 {
         let (key, auth) = ctx.create_rsa_signing_key(2048, 16).unwrap();
         let signature = ctx.sign(key.clone(), &auth, &HASH).unwrap();
-        let pub_key = ctx.read_public_key(key.clone()).unwrap();
+        let pub_key = ctx.read_public_key(key).unwrap();
         let pub_key = ctx.load_external_rsa_public_key(&pub_key).unwrap();
         let _ = ctx.verify_signature(pub_key, &HASH, signature).unwrap();
     }
