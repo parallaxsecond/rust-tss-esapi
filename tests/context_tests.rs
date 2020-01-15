@@ -57,7 +57,7 @@ use tss_esapi::*;
 fn simple_test() {
     env_logger::init();
 
-    let mut context = Context::new(Tcti::Mssim).unwrap();
+    let mut context = unsafe { Context::new(Tcti::Mssim).unwrap() };
     let key_auth: Vec<u8> = context.get_random(16).unwrap();
 
     let prim_key_handle = context
@@ -126,7 +126,7 @@ mod test_start_sess {
 
     #[test]
     fn test_simple_sess() {
-        let mut context = Context::new(Tcti::Mssim).unwrap();
+        let mut context = unsafe { Context::new(Tcti::Mssim).unwrap() };
         context
             .start_auth_session(
                 NO_SESSIONS,
@@ -142,7 +142,7 @@ mod test_start_sess {
 
     #[test]
     fn test_nonce_sess() {
-        let mut context = Context::new(Tcti::Mssim).unwrap();
+        let mut context = unsafe { Context::new(Tcti::Mssim).unwrap() };
         context
             .start_auth_session(
                 NO_SESSIONS,
@@ -160,7 +160,7 @@ mod test_start_sess {
 
     #[test]
     fn test_long_nonce_sess() {
-        let mut context = Context::new(Tcti::Mssim).unwrap();
+        let mut context = unsafe { Context::new(Tcti::Mssim).unwrap() };
         context
             .start_auth_session(
                 NO_SESSIONS,
@@ -186,7 +186,7 @@ mod test_start_sess {
 
     #[test]
     fn test_bound_sess() {
-        let mut context = Context::new(Tcti::Mssim).unwrap();
+        let mut context = unsafe { Context::new(Tcti::Mssim).unwrap() };
         let prim_key_handle = context
             .create_primary_key(
                 ESYS_TR_RH_OWNER,
@@ -217,7 +217,7 @@ mod test_start_sess {
     #[ignore]
     #[test]
     fn test_encrypted_start_sess() {
-        let mut context = Context::new(Tcti::Mssim).unwrap();
+        let mut context = unsafe { Context::new(Tcti::Mssim).unwrap() };
         let encrypted_sess = context
             .start_auth_session(
                 NO_SESSIONS,
@@ -252,7 +252,7 @@ mod test_start_sess {
 
     #[test]
     fn test_authenticated_start_sess() {
-        let mut context = Context::new(Tcti::Mssim).unwrap();
+        let mut context = unsafe { Context::new(Tcti::Mssim).unwrap() };
         let auth_sess = context
             .start_auth_session(
                 NO_SESSIONS,
@@ -284,7 +284,7 @@ mod test_get_random {
 
     #[test]
     fn test_encrypted_get_rand() {
-        let mut context = Context::new(Tcti::Mssim).unwrap();
+        let mut context = unsafe { Context::new(Tcti::Mssim).unwrap() };
         let encrypted_sess = context
             .start_auth_session(
                 NO_SESSIONS,
@@ -310,7 +310,7 @@ mod test_get_random {
 
     #[test]
     fn test_authenticated_get_rand() {
-        let mut context = Context::new(Tcti::Mssim).unwrap();
+        let mut context = unsafe { Context::new(Tcti::Mssim).unwrap() };
         let auth_sess = context
             .start_auth_session(
                 NO_SESSIONS,
@@ -329,7 +329,7 @@ mod test_get_random {
 
     #[test]
     fn test_get_0_rand() {
-        let mut context = Context::new(Tcti::Mssim).unwrap();
+        let mut context = unsafe { Context::new(Tcti::Mssim).unwrap() };
         let _ = context.get_random(0);
     }
 }
@@ -339,7 +339,7 @@ mod test_create_primary {
 
     #[test]
     fn test_create_primary() {
-        let mut context = Context::new(Tcti::Mssim).unwrap();
+        let mut context = unsafe { Context::new(Tcti::Mssim).unwrap() };
         let key_auth: Vec<u8> = context.get_random(16).unwrap();
 
         let key_handle = context
@@ -357,7 +357,7 @@ mod test_create_primary {
 
     #[test]
     fn test_long_auth_create_primary() {
-        let mut context = Context::new(Tcti::Mssim).unwrap();
+        let mut context = unsafe { Context::new(Tcti::Mssim).unwrap() };
 
         let _ = context
             .create_primary_key(
@@ -373,7 +373,7 @@ mod test_create_primary {
 
     #[test]
     fn test_long_init_data_create_primary() {
-        let mut context = Context::new(Tcti::Mssim).unwrap();
+        let mut context = unsafe { Context::new(Tcti::Mssim).unwrap() };
 
         let _ = context
             .create_primary_key(
@@ -389,7 +389,7 @@ mod test_create_primary {
 
     #[test]
     fn test_long_outside_info_create_primary() {
-        let mut context = Context::new(Tcti::Mssim).unwrap();
+        let mut context = unsafe { Context::new(Tcti::Mssim).unwrap() };
 
         let _ = context
             .create_primary_key(
@@ -405,7 +405,7 @@ mod test_create_primary {
 
     #[test]
     fn test_long_pcrs_create_primary() {
-        let mut context = Context::new(Tcti::Mssim).unwrap();
+        let mut context = unsafe { Context::new(Tcti::Mssim).unwrap() };
 
         let _ = context
             .create_primary_key(
@@ -425,7 +425,7 @@ mod test_create {
 
     #[test]
     fn test_create() {
-        let mut context = Context::new(Tcti::Mssim).unwrap();
+        let mut context = unsafe { Context::new(Tcti::Mssim).unwrap() };
         let key_auth: Vec<u8> = context.get_random(16).unwrap();
 
         let prim_key_handle = context
@@ -453,7 +453,7 @@ mod test_create {
 
     #[test]
     fn test_long_auth_create() {
-        let mut context = Context::new(Tcti::Mssim).unwrap();
+        let mut context = unsafe { Context::new(Tcti::Mssim).unwrap() };
         let key_auth: Vec<u8> = context.get_random(16).unwrap();
 
         let prim_key_handle = context
@@ -481,7 +481,7 @@ mod test_create {
 
     #[test]
     fn test_long_init_data_create() {
-        let mut context = Context::new(Tcti::Mssim).unwrap();
+        let mut context = unsafe { Context::new(Tcti::Mssim).unwrap() };
         let key_auth: Vec<u8> = context.get_random(16).unwrap();
 
         let prim_key_handle = context
@@ -509,7 +509,7 @@ mod test_create {
 
     #[test]
     fn test_long_outside_info_create() {
-        let mut context = Context::new(Tcti::Mssim).unwrap();
+        let mut context = unsafe { Context::new(Tcti::Mssim).unwrap() };
         let key_auth: Vec<u8> = context.get_random(16).unwrap();
 
         let prim_key_handle = context
@@ -537,7 +537,7 @@ mod test_create {
 
     #[test]
     fn test_long_pcrs_create() {
-        let mut context = Context::new(Tcti::Mssim).unwrap();
+        let mut context = unsafe { Context::new(Tcti::Mssim).unwrap() };
         let key_auth: Vec<u8> = context.get_random(16).unwrap();
 
         let prim_key_handle = context
@@ -569,7 +569,7 @@ mod test_load {
 
     #[test]
     fn test_load() {
-        let mut context = Context::new(Tcti::Mssim).unwrap();
+        let mut context = unsafe { Context::new(Tcti::Mssim).unwrap() };
         let key_auth: Vec<u8> = context.get_random(16).unwrap();
 
         let prim_key_handle = context
@@ -603,7 +603,7 @@ mod test_sign {
 
     #[test]
     fn test_sign() {
-        let mut context = Context::new(Tcti::Mssim).unwrap();
+        let mut context = unsafe { Context::new(Tcti::Mssim).unwrap() };
         let key_auth: Vec<u8> = context.get_random(16).unwrap();
 
         let key_handle = context
@@ -633,7 +633,7 @@ mod test_sign {
 
     #[test]
     fn test_sign_empty_digest() {
-        let mut context = Context::new(Tcti::Mssim).unwrap();
+        let mut context = unsafe { Context::new(Tcti::Mssim).unwrap() };
         let key_auth: Vec<u8> = context.get_random(16).unwrap();
 
         let key_handle = context
@@ -663,7 +663,7 @@ mod test_sign {
 
     #[test]
     fn test_sign_large_digest() {
-        let mut context = Context::new(Tcti::Mssim).unwrap();
+        let mut context = unsafe { Context::new(Tcti::Mssim).unwrap() };
         let key_auth: Vec<u8> = context.get_random(16).unwrap();
 
         let key_handle = context
@@ -697,7 +697,7 @@ mod test_verify_sig {
 
     #[test]
     fn test_verify_sig() {
-        let mut context = Context::new(Tcti::Mssim).unwrap();
+        let mut context = unsafe { Context::new(Tcti::Mssim).unwrap() };
         let key_auth: Vec<u8> = context.get_random(16).unwrap();
 
         let key_handle = context
@@ -731,7 +731,7 @@ mod test_verify_sig {
 
     #[test]
     fn test_verify_wrong_sig() {
-        let mut context = Context::new(Tcti::Mssim).unwrap();
+        let mut context = unsafe { Context::new(Tcti::Mssim).unwrap() };
         let key_auth: Vec<u8> = context.get_random(16).unwrap();
 
         let key_handle = context
@@ -766,7 +766,7 @@ mod test_verify_sig {
 
     #[test]
     fn test_verify_wrong_sig_2() {
-        let mut context = Context::new(Tcti::Mssim).unwrap();
+        let mut context = unsafe { Context::new(Tcti::Mssim).unwrap() };
         let key_auth: Vec<u8> = context.get_random(16).unwrap();
 
         let key_handle = context
@@ -791,7 +791,7 @@ mod test_verify_sig {
 
     #[test]
     fn test_verify_wrong_sig_3() {
-        let mut context = Context::new(Tcti::Mssim).unwrap();
+        let mut context = unsafe { Context::new(Tcti::Mssim).unwrap() };
         let key_auth: Vec<u8> = context.get_random(16).unwrap();
 
         let key_handle = context
@@ -854,7 +854,7 @@ mod test_load_ext {
 
     #[test]
     fn test_load_ext_pub() {
-        let mut context = Context::new(Tcti::Mssim).unwrap();
+        let mut context = unsafe { Context::new(Tcti::Mssim).unwrap() };
         let pub_key = get_ext_rsa_pub();
 
         context
@@ -868,7 +868,7 @@ mod test_read_pub {
 
     #[test]
     fn test_read_pub() {
-        let mut context = Context::new(Tcti::Mssim).unwrap();
+        let mut context = unsafe { Context::new(Tcti::Mssim).unwrap() };
         let key_auth: Vec<u8> = context.get_random(16).unwrap();
 
         let key_handle = context
@@ -890,7 +890,7 @@ mod test_flush_context {
 
     #[test]
     fn test_flush_ctx() {
-        let mut context = Context::new(Tcti::Mssim).unwrap();
+        let mut context = unsafe { Context::new(Tcti::Mssim).unwrap() };
         let key_auth: Vec<u8> = context.get_random(16).unwrap();
 
         let key_handle = context
@@ -909,7 +909,7 @@ mod test_flush_context {
 
     #[test]
     fn test_flush_parent_ctx() {
-        let mut context = Context::new(Tcti::Mssim).unwrap();
+        let mut context = unsafe { Context::new(Tcti::Mssim).unwrap() };
         let key_auth: Vec<u8> = context.get_random(16).unwrap();
 
         let prim_key_handle = context
@@ -945,7 +945,7 @@ mod test_ctx_save {
 
     #[test]
     fn test_ctx_save() {
-        let mut context = Context::new(Tcti::Mssim).unwrap();
+        let mut context = unsafe { Context::new(Tcti::Mssim).unwrap() };
         let key_auth: Vec<u8> = context.get_random(16).unwrap();
 
         let key_handle = context
@@ -963,7 +963,7 @@ mod test_ctx_save {
 
     #[test]
     fn test_ctx_save_leaf() {
-        let mut context = Context::new(Tcti::Mssim).unwrap();
+        let mut context = unsafe { Context::new(Tcti::Mssim).unwrap() };
         let key_auth: Vec<u8> = context.get_random(16).unwrap();
 
         let prim_key_handle = context
@@ -999,7 +999,7 @@ mod test_ctx_load {
 
     #[test]
     fn test_ctx_load() {
-        let mut context = Context::new(Tcti::Mssim).unwrap();
+        let mut context = unsafe { Context::new(Tcti::Mssim).unwrap() };
         let key_auth: Vec<u8> = context.get_random(16).unwrap();
 
         let prim_key_handle = context
@@ -1037,7 +1037,7 @@ mod test_handle_auth {
 
     #[test]
     fn test_set_handle_auth() {
-        let mut context = Context::new(Tcti::Mssim).unwrap();
+        let mut context = unsafe { Context::new(Tcti::Mssim).unwrap() };
         let key_auth: Vec<u8> = context.get_random(16).unwrap();
 
         let prim_key_handle = context
@@ -1073,7 +1073,7 @@ mod test_handle_auth {
 
     #[test]
     fn test_set_large_handle() {
-        let mut context = Context::new(Tcti::Mssim).unwrap();
+        let mut context = unsafe { Context::new(Tcti::Mssim).unwrap() };
         let key_auth: Vec<u8> = context.get_random(16).unwrap();
 
         let prim_key_handle = context
@@ -1098,7 +1098,7 @@ mod test_handle_auth {
     #[ignore]
     #[test]
     fn test_invalid_handle() {
-        let mut context = Context::new(Tcti::Mssim).unwrap();
+        let mut context = unsafe { Context::new(Tcti::Mssim).unwrap() };
         context
             .set_handle_auth(ESYS_TR_NONE, &[0x11; 10])
             .unwrap_err();
@@ -1110,7 +1110,7 @@ mod test_session_attr {
 
     #[test]
     fn test_session_attr() {
-        let mut context = Context::new(Tcti::Mssim).unwrap();
+        let mut context = unsafe { Context::new(Tcti::Mssim).unwrap() };
         let sess_handle = context
             .start_auth_session(
                 NO_SESSIONS,

@@ -26,19 +26,19 @@ const HASH: [u8; 32] = [
 #[test]
 fn wrong_key_sizes() {
     assert_eq!(
-        TransientObjectContext::new(Tcti::Mssim, 1023, 32, &[]).unwrap_err(),
+        unsafe { TransientObjectContext::new(Tcti::Mssim, 1023, 32, &[]).unwrap_err() },
         Error::WrapperError(ErrorKind::WrongParamSize)
     );
     assert_eq!(
-        TransientObjectContext::new(Tcti::Mssim, 1025, 32, &[]).unwrap_err(),
+        unsafe { TransientObjectContext::new(Tcti::Mssim, 1025, 32, &[]).unwrap_err() },
         Error::WrapperError(ErrorKind::WrongParamSize)
     );
     assert_eq!(
-        TransientObjectContext::new(Tcti::Mssim, 2047, 32, &[]).unwrap_err(),
+        unsafe { TransientObjectContext::new(Tcti::Mssim, 2047, 32, &[]).unwrap_err() },
         Error::WrapperError(ErrorKind::WrongParamSize)
     );
     assert_eq!(
-        TransientObjectContext::new(Tcti::Mssim, 2049, 32, &[]).unwrap_err(),
+        unsafe { TransientObjectContext::new(Tcti::Mssim, 2049, 32, &[]).unwrap_err() },
         Error::WrapperError(ErrorKind::WrongParamSize)
     );
 }
@@ -46,14 +46,14 @@ fn wrong_key_sizes() {
 #[test]
 fn wrong_auth_size() {
     assert_eq!(
-        TransientObjectContext::new(Tcti::Mssim, 1024, 33, &[]).unwrap_err(),
+        unsafe { TransientObjectContext::new(Tcti::Mssim, 1024, 33, &[]).unwrap_err() },
         Error::WrapperError(ErrorKind::WrongParamSize)
     );
 }
 
 #[test]
 fn load_bad_sized_key() {
-    let mut ctx = TransientObjectContext::new(Tcti::Mssim, 2048, 32, &[]).unwrap();
+    let mut ctx = unsafe { TransientObjectContext::new(Tcti::Mssim, 2048, 32, &[]).unwrap() };
     assert_eq!(
         ctx.load_external_rsa_public_key(&vec![0xDE, 0xAD, 0xBE, 0xEF])
             .unwrap_err(),
@@ -98,7 +98,7 @@ fn verify() {
         ],
     };
 
-    let mut ctx = TransientObjectContext::new(Tcti::Mssim, 2048, 32, &[]).unwrap();
+    let mut ctx = unsafe { TransientObjectContext::new(Tcti::Mssim, 2048, 32, &[]).unwrap() };
     let pub_key = ctx.load_external_rsa_public_key(&pub_key).unwrap();
     let _ = ctx
         .verify_signature(pub_key, &digest, signature)
@@ -107,7 +107,7 @@ fn verify() {
 
 #[test]
 fn sign_with_bad_auth() {
-    let mut ctx = TransientObjectContext::new(Tcti::Mssim, 2048, 32, &[]).unwrap();
+    let mut ctx = unsafe { TransientObjectContext::new(Tcti::Mssim, 2048, 32, &[]).unwrap() };
     let (key, mut auth) = ctx.create_rsa_signing_key(2048, 16).unwrap();
     auth[6] = 0xDE;
     auth[7] = 0xAD;
@@ -118,14 +118,14 @@ fn sign_with_bad_auth() {
 
 #[test]
 fn sign_with_no_auth() {
-    let mut ctx = TransientObjectContext::new(Tcti::Mssim, 2048, 32, &[]).unwrap();
+    let mut ctx = unsafe { TransientObjectContext::new(Tcti::Mssim, 2048, 32, &[]).unwrap() };
     let (key, _) = ctx.create_rsa_signing_key(2048, 16).unwrap();
     ctx.sign(key.clone(), &[], &HASH).unwrap_err();
 }
 
 #[test]
 fn two_signatures_different_digest() {
-    let mut ctx = TransientObjectContext::new(Tcti::Mssim, 2048, 32, &[]).unwrap();
+    let mut ctx = unsafe { TransientObjectContext::new(Tcti::Mssim, 2048, 32, &[]).unwrap() };
     let (key1, auth1) = ctx.create_rsa_signing_key(2048, 16).unwrap();
     let (key2, auth2) = ctx.create_rsa_signing_key(2048, 16).unwrap();
     let signature1 = ctx.sign(key1.clone(), &auth1, &HASH).unwrap();
@@ -136,7 +136,7 @@ fn two_signatures_different_digest() {
 
 #[test]
 fn verify_wrong_key() {
-    let mut ctx = TransientObjectContext::new(Tcti::Mssim, 2048, 32, &[]).unwrap();
+    let mut ctx = unsafe { TransientObjectContext::new(Tcti::Mssim, 2048, 32, &[]).unwrap() };
     let (key1, auth1) = ctx.create_rsa_signing_key(2048, 16).unwrap();
     let (key2, _) = ctx.create_rsa_signing_key(2048, 16).unwrap();
 
@@ -154,7 +154,7 @@ fn verify_wrong_key() {
 }
 #[test]
 fn verify_wrong_digest() {
-    let mut ctx = TransientObjectContext::new(Tcti::Mssim, 2048, 32, &[]).unwrap();
+    let mut ctx = unsafe { TransientObjectContext::new(Tcti::Mssim, 2048, 32, &[]).unwrap() };
     let (key, auth) = ctx.create_rsa_signing_key(2048, 16).unwrap();
 
     let signature = ctx.sign(key.clone(), &auth, &HASH).unwrap();
@@ -178,7 +178,7 @@ fn verify_wrong_digest() {
 
 #[test]
 fn full_test() {
-    let mut ctx = TransientObjectContext::new(Tcti::Mssim, 2048, 32, &[]).unwrap();
+    let mut ctx = unsafe { TransientObjectContext::new(Tcti::Mssim, 2048, 32, &[]).unwrap() };
     for _ in 0..4 {
         let (key, auth) = ctx.create_rsa_signing_key(2048, 16).unwrap();
         let signature = ctx.sign(key.clone(), &auth, &HASH).unwrap();
