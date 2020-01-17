@@ -51,6 +51,15 @@
 //! keys, as well as signing and verifying signatures.
 //! Only platforms based on processors with a word size of at least 16 bits are supported.
 //!
+//! # Disclaimer
+//!
+//! The current version of the API does not offer any security or code safety guarantees as it has
+//! not been tested to a desired level of confidence.
+//! The implementation that is provided is suitable for exploratory testing and experimentation only.
+//! This test implementation does not offer any tangible security benefits and therefore is not
+//! suitable for use in production.
+//! Contributions from the developer community are welcome. Please refer to the contribution guidelines.
+//!
 //! # Code structure
 //! The modules comprising the crate expose the following functionalities:
 //! * lib/root module - exposes the `Context` structure, the most basic abstraction over the
@@ -101,7 +110,11 @@
 // https://github.com/rust-lang/rust-bindgen/issues/1549
 #[allow(improper_ctypes, missing_debug_implementations, trivial_casts)]
 pub mod tss2_esys {
+    #[cfg(not(feature = "docs"))]
     include!(concat!(env!("OUT_DIR"), "/tss2_esys_bindings.rs"));
+
+    #[cfg(feature = "docs")]
+    include!(concat!(env!("CARGO_MANIFEST_DIR"), "/doc_bindings.rs"));
 }
 pub mod abstraction;
 #[allow(

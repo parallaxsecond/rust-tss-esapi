@@ -22,15 +22,6 @@
 
 The `tss-esapi` Rust crate provides an idiomatic interface to the TCG TSS 2.0 Enhanced System API. We expose both direct FFI bindings and abstracted versions, aimed at improved convenience of using the API.
 
-## Disclaimer
-
-The current version of the API does not offer any security or code safety guarantees.
-The implementation that is provided is suitable for exploratory testing and experimentation only.
-This test implementation does not offer any tangible security benefits and therefore is not
-suitable for use in production. Documentation pages may be incomplete and are subject to change
-without notice. Interfaces may change in such a way as to break compatibility with client code.
-Contributions from the developer community are welcome. Please refer to the contribution guidelines.
-
 ## Requirements
 
 This crate has currently only been tested with the TSS 2.0

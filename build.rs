@@ -19,42 +19,44 @@ use std::path::PathBuf;
 const MINIMUM_VERSION: &str = "2.3.0";
 
 fn main() {
-    let tss2_esys = pkg_config::Config::new()
-        .atleast_version(MINIMUM_VERSION)
-        .probe("tss2-esys")
-        .expect("Error with pkg-config finding tss2-esys.");
-    let tss2_tctildr = pkg_config::Config::new()
-        .atleast_version(MINIMUM_VERSION)
-        .probe("tss2-tctildr")
-        .expect("Error with pkg-config finding tss2-tctildr.");
+    if cfg!(not(feature = "docs")) {
+        let tss2_esys = pkg_config::Config::new()
+            .atleast_version(MINIMUM_VERSION)
+            .probe("tss2-esys")
+            .expect("Error with pkg-config finding tss2-esys.");
+        let tss2_tctildr = pkg_config::Config::new()
+            .atleast_version(MINIMUM_VERSION)
+            .probe("tss2-tctildr")
+            .expect("Error with pkg-config finding tss2-tctildr.");
 
-    // These two pkg-config files should contain only one include/lib path.
-    let tss2_esys_include_path = tss2_esys.include_paths[0]
-        .clone()
-        .into_os_string()
-        .into_string()
-        .expect("Error converting OsString to String.");
-    let tss2_tctildr_include_path = tss2_tctildr.include_paths[0]
-        .clone()
-        .into_os_string()
-        .into_string()
-        .expect("Error converting OsString to String.");
+        // These two pkg-config files should contain only one include/lib path.
+        let tss2_esys_include_path = tss2_esys.include_paths[0]
+            .clone()
+            .into_os_string()
+            .into_string()
+            .expect("Error converting OsString to String.");
+        let tss2_tctildr_include_path = tss2_tctildr.include_paths[0]
+            .clone()
+            .into_os_string()
+            .into_string()
+            .expect("Error converting OsString to String.");
 
-    let bindings = bindgen::Builder::default()
-        .clang_arg(format!("-I{}/tss2/", tss2_esys_include_path))
-        .clang_arg(format!("-I{}/tss2/", tss2_tctildr_include_path))
-        .rustfmt_bindings(true)
-        .header(format!("{}/tss2/tss2_esys.h", tss2_esys_include_path))
-        .header(format!("{}/tss2/tss2_tctildr.h", tss2_tctildr_include_path))
-        .generate_comments(false)
-        .derive_default(true)
-        .generate()
-        .expect("Unable to generate bindings to TSS2 ESYS APIs.");
+        let bindings = bindgen::Builder::default()
+            .clang_arg(format!("-I{}/tss2/", tss2_esys_include_path))
+            .clang_arg(format!("-I{}/tss2/", tss2_tctildr_include_path))
+            .rustfmt_bindings(true)
+            .header(format!("{}/tss2/tss2_esys.h", tss2_esys_include_path))
+            .header(format!("{}/tss2/tss2_tctildr.h", tss2_tctildr_include_path))
+            .generate_comments(false)
+            .derive_default(true)
+            .generate()
+            .expect("Unable to generate bindings to TSS2 ESYS APIs.");
 
-    let out_path = PathBuf::from(
-        env::var("OUT_DIR").expect("Error while getting the OUT_DIR environment variable."),
-    );
-    bindings
-        .write_to_file(out_path.join("tss2_esys_bindings.rs"))
-        .expect(&format!("Couldn't write bindings to {:?}!", out_path));
+        let out_path = PathBuf::from(
+            env::var("OUT_DIR").expect("Error while getting the OUT_DIR environment variable."),
+        );
+        bindings
+            .write_to_file(out_path.join("tss2_esys_bindings.rs"))
+            .expect(&format!("Couldn't write bindings to {:?}!", out_path));
+    }
 }
