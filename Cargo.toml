@@ -1,6 +1,6 @@
 [package]
 name = "tss-esapi"
-version = "1.0.0"
+version = "1.0.1"
 authors = ["Ionut Mihalcea <ionut.mihalcea@arm.com>",
            "Hugues de Valon <hugues.devalon@arm.com>"]
 edition = "2018"
@@ -9,6 +9,8 @@ readme = "README.md"
 keywords = ["tpm", "tss", "esys", "esapi"]
 categories = ["api-bindings", "external-ffi-bindings", "cryptography"]
 license = "Apache-2.0"
+repository = "https://github.com/parallaxsecond/rust-tss-esapi"
+documentation = "https://docs.rs/crate/tss-esapi"
 
 [dependencies]
 bitfield = "0.13.2"
@@ -22,3 +24,9 @@ env_logger = "0.7.1"
 [build-dependencies]
 bindgen = "0.52.0"
 pkg-config = "0.3.17"
+
+[features]
+docs = []
+
+[package.metadata.docs.rs]
+features = ["docs"]
