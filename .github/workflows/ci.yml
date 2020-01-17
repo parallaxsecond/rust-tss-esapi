@@ -22,3 +22,13 @@ jobs:
       run: docker build -t tss2.0 tests/
     - name: Run the container
       run: docker run -v $(pwd):/tmp/rust-tss-esapi -w /tmp/rust-tss-esapi tss2.0 /tmp/rust-tss-esapi/tests/all.sh
+
+  all-on-arm:
+    name: Use Docker to execute the test script on Aarch64 server
+    runs-on: self-hosted
+    steps:
+    - uses: actions/checkout@v1
+    - name: Build the container
+      run: docker build -t tss2.0 tests/
+    - name: Run the container
+      run: docker run -v $(pwd):/tmp/rust-tss-esapi -w /tmp/rust-tss-esapi tss2.0 /tmp/rust-tss-esapi/tests/all.sh
