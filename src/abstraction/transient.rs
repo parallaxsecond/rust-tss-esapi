@@ -40,6 +40,7 @@ use std::convert::{TryFrom, TryInto};
 ///
 /// Currently, only functionality necessary for RSA key creation and usage (for signing and
 /// verifying signatures) is implemented.
+#[allow(clippy::module_name_repetitions)]
 #[derive(Debug)]
 pub struct TransientObjectContext {
     context: Context,
@@ -187,7 +188,7 @@ impl TransientObjectContext {
         if public_key.len() != 128 && public_key.len() != 256 {
             return Err(Error::local_error(ErrorKind::WrongParamSize));
         }
-        let mut pk_buffer = [0u8; 512];
+        let mut pk_buffer = [0_u8; 512];
         pk_buffer[..public_key.len()].clone_from_slice(&public_key[..public_key.len()]);
 
         let pk = TPMU_PUBLIC_ID {
@@ -201,7 +202,7 @@ impl TransientObjectContext {
             false,
             false,
             true,
-            u16::try_from(public_key.len()).unwrap() * 8u16, // should not fail on valid targets, given the checks above
+            u16::try_from(public_key.len()).unwrap() * 8_u16, // should not fail on valid targets, given the checks above
         );
         public.publicArea.unique = pk;
 
@@ -235,14 +236,14 @@ impl TransientObjectContext {
             self.context.flush_context(key_handle)?;
             Err(e)
         })?;
-        let key = match unsafe { PublicIdUnion::from_public(&key_pub_id) } {
+        let key = match unsafe { PublicIdUnion::from_public(&key_pub_id)? } {
             // call should be safe given our trust in the TSS library
             PublicIdUnion::Rsa(pub_key) => {
                 let mut key = pub_key.buffer.to_vec();
                 key.truncate(pub_key.size.try_into().unwrap()); // should not fail on supported targets
                 key
             }
-            _ => unimplemented!(),
+            _ => return Err(Error::local_error(ErrorKind::UnsupportedParam)),
         };
         self.context.flush_context(key_handle)?;
 

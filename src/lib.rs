@@ -106,6 +106,7 @@
     dead_code
 )]
 #[allow(clippy::all)]
+#[allow(clippy::unseparated_literal_suffix)]
 // There is an issue where long double become u128 in extern blocks. Check this issue:
 // https://github.com/rust-lang/rust-bindgen/issues/1549
 #[allow(improper_ctypes, missing_debug_implementations, trivial_casts)]
@@ -146,7 +147,7 @@ macro_rules! wrap_buffer {
         if $buf.len() > $buf_size {
             return Err(Error::local_error(ErrorKind::WrongParamSize));
         }
-        let mut buffer = [0u8; $buf_size];
+        let mut buffer = [0_u8; $buf_size];
         buffer[..$buf.len()].clone_from_slice(&$buf[..$buf.len()]);
         let mut buf_struct: $buf_type = Default::default();
         buf_struct.size = $buf.len().try_into().unwrap(); // should not fail since the length is checked above

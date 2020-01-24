@@ -51,6 +51,7 @@ bitfield! {
 }
 
 /// Rust native representation of the TSS2 response codes as defined in the spec.
+#[allow(clippy::module_name_repetitions)]
 #[derive(Copy, Clone, PartialEq, Debug)]
 pub enum Tss2ResponseCode {
     Success,
@@ -497,6 +498,8 @@ pub enum WrapperErrorKind {
     ParamsMissing,
     /// Returned when two or more parameters have inconsistent values or variants.
     InconsistentParams,
+    /// Returned when the value of a parameter is not yet supported.
+    UnsupportedParam,
 }
 
 impl std::fmt::Display for WrapperErrorKind {
@@ -511,6 +514,10 @@ impl std::fmt::Display for WrapperErrorKind {
             WrapperErrorKind::InconsistentParams => write!(
                 f,
                 "the provided parameters have inconsistent values or variants"
+            ),
+            WrapperErrorKind::UnsupportedParam => write!(
+                f,
+                "the provided parameter is not yet supported by the library"
             ),
         }
     }
