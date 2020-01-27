@@ -103,8 +103,6 @@ impl Tpm2BPublicBuilder {
     /// object type provided, `InconsistentParams` wrapper error is returned
     ///
     /// # Panics
-    /// * if the object type is set to something other than `TPM2_ALG_RSA`, the method will panic
-    /// by reaching an `unimplemented` block
     /// * will panic on unsupported platforms (i.e. on 8 bit processors)
     pub fn build(mut self) -> Result<TPM2B_PUBLIC> {
         match self.type_ {
@@ -160,7 +158,7 @@ impl Tpm2BPublicBuilder {
                     },
                 })
             }
-            _ => unimplemented!(),
+            _ => Err(Error::local_error(WrapperErrorKind::UnsupportedParam)),
         }
     }
 }
@@ -395,13 +393,13 @@ impl PublicIdUnion {
     /// # Safety
     ///
     /// Check "Notes on code safety" section in the crate-level documentation.
-    pub unsafe fn from_public(public: &TPM2B_PUBLIC) -> Self {
+    pub unsafe fn from_public(public: &TPM2B_PUBLIC) -> Result<Self> {
         match public.publicArea.type_ {
-            TPM2_ALG_RSA => PublicIdUnion::Rsa(Box::from(public.publicArea.unique.rsa)),
-            TPM2_ALG_ECC => unimplemented!(),
-            TPM2_ALG_SYMCIPHER => unimplemented!(),
-            TPM2_ALG_KEYEDHASH => unimplemented!(),
-            _ => unimplemented!(),
+            TPM2_ALG_RSA => Ok(PublicIdUnion::Rsa(Box::from(public.publicArea.unique.rsa))),
+            TPM2_ALG_ECC => Err(Error::local_error(WrapperErrorKind::UnsupportedParam)),
+            TPM2_ALG_SYMCIPHER => Err(Error::local_error(WrapperErrorKind::UnsupportedParam)),
+            TPM2_ALG_KEYEDHASH => Err(Error::local_error(WrapperErrorKind::UnsupportedParam)),
+            _ => Err(Error::local_error(WrapperErrorKind::UnsupportedParam)),
         }
     }
 }
@@ -409,6 +407,7 @@ impl PublicIdUnion {
 /// Rust enum representation of `TPMU_PUBLIC_PARMS`.
 // Most of the field types are from bindgen which does not implement Debug on them.
 #[allow(missing_debug_implementations)]
+#[allow(clippy::pub_enum_variant_names)]
 #[derive(Copy, Clone)]
 pub enum PublicParmsUnion {
     KeyedHashDetail(TPMS_KEYEDHASH_PARMS),
@@ -533,15 +532,15 @@ impl Signature {
 
                 Ok(Signature { scheme, signature })
             }
-            TPM2_ALG_ECDH => unimplemented!(),
-            TPM2_ALG_ECDSA => unimplemented!(),
-            TPM2_ALG_OAEP => unimplemented!(),
-            TPM2_ALG_RSAPSS => unimplemented!(),
-            TPM2_ALG_RSAES => unimplemented!(),
-            TPM2_ALG_ECMQV => unimplemented!(),
-            TPM2_ALG_SM2 => unimplemented!(),
-            TPM2_ALG_ECSCHNORR => unimplemented!(),
-            TPM2_ALG_ECDAA => unimplemented!(),
+            TPM2_ALG_ECDH => Err(Error::local_error(WrapperErrorKind::UnsupportedParam)),
+            TPM2_ALG_ECDSA => Err(Error::local_error(WrapperErrorKind::UnsupportedParam)),
+            TPM2_ALG_OAEP => Err(Error::local_error(WrapperErrorKind::UnsupportedParam)),
+            TPM2_ALG_RSAPSS => Err(Error::local_error(WrapperErrorKind::UnsupportedParam)),
+            TPM2_ALG_RSAES => Err(Error::local_error(WrapperErrorKind::UnsupportedParam)),
+            TPM2_ALG_ECMQV => Err(Error::local_error(WrapperErrorKind::UnsupportedParam)),
+            TPM2_ALG_SM2 => Err(Error::local_error(WrapperErrorKind::UnsupportedParam)),
+            TPM2_ALG_ECSCHNORR => Err(Error::local_error(WrapperErrorKind::UnsupportedParam)),
+            TPM2_ALG_ECDAA => Err(Error::local_error(WrapperErrorKind::UnsupportedParam)),
             _ => Err(Error::local_error(WrapperErrorKind::InconsistentParams)),
         }
     }
@@ -555,12 +554,14 @@ impl TryFrom<Signature> for TPMT_SIGNATURE {
             return Err(Error::local_error(WrapperErrorKind::WrongParamSize));
         }
 
-        let mut buffer = [0u8; 512];
+        let mut buffer = [0_u8; 512];
         buffer[..len].clone_from_slice(&sig.signature[..len]);
 
         match sig.scheme {
-            AsymSchemeUnion::ECDH(_) => unimplemented!(),
-            AsymSchemeUnion::ECMQV(_) => unimplemented!(),
+            AsymSchemeUnion::ECDH(_) => Err(Error::local_error(WrapperErrorKind::UnsupportedParam)),
+            AsymSchemeUnion::ECMQV(_) => {
+                Err(Error::local_error(WrapperErrorKind::UnsupportedParam))
+            }
             AsymSchemeUnion::RSASSA(hash_alg) => Ok(TPMT_SIGNATURE {
                 sigAlg: TPM2_ALG_RSASSA,
                 signature: TPMU_SIGNATURE {
@@ -573,14 +574,26 @@ impl TryFrom<Signature> for TPMT_SIGNATURE {
                     },
                 },
             }),
-            AsymSchemeUnion::RSAPSS(_) => unimplemented!(),
-            AsymSchemeUnion::ECDSA(_) => unimplemented!(),
-            AsymSchemeUnion::ECDAA(_, _) => unimplemented!(),
-            AsymSchemeUnion::SM2(_) => unimplemented!(),
-            AsymSchemeUnion::ECSchnorr(_) => unimplemented!(),
-            AsymSchemeUnion::RSAES => unimplemented!(),
-            AsymSchemeUnion::RSAOAEP(_) => unimplemented!(),
-            AsymSchemeUnion::AnySig(_) => unimplemented!(),
+            AsymSchemeUnion::RSAPSS(_) => {
+                Err(Error::local_error(WrapperErrorKind::UnsupportedParam))
+            }
+            AsymSchemeUnion::ECDSA(_) => {
+                Err(Error::local_error(WrapperErrorKind::UnsupportedParam))
+            }
+            AsymSchemeUnion::ECDAA(_, _) => {
+                Err(Error::local_error(WrapperErrorKind::UnsupportedParam))
+            }
+            AsymSchemeUnion::SM2(_) => Err(Error::local_error(WrapperErrorKind::UnsupportedParam)),
+            AsymSchemeUnion::ECSchnorr(_) => {
+                Err(Error::local_error(WrapperErrorKind::UnsupportedParam))
+            }
+            AsymSchemeUnion::RSAES => Err(Error::local_error(WrapperErrorKind::UnsupportedParam)),
+            AsymSchemeUnion::RSAOAEP(_) => {
+                Err(Error::local_error(WrapperErrorKind::UnsupportedParam))
+            }
+            AsymSchemeUnion::AnySig(_) => {
+                Err(Error::local_error(WrapperErrorKind::UnsupportedParam))
+            }
         }
     }
 }
@@ -656,7 +669,7 @@ impl TryFrom<TpmsContext> for TPMS_CONTEXT {
         if buffer_size > 5188 {
             return Err(Error::local_error(WrapperErrorKind::WrongParamSize));
         }
-        let mut buffer = [0u8; 5188];
+        let mut buffer = [0_u8; 5188];
         for (i, val) in context.context_blob.into_iter().enumerate() {
             buffer[i] = val;
         }
