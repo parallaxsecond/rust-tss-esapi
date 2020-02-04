@@ -22,7 +22,7 @@
 #
 # Usage: ./tests/all.sh
 
-set -e
+set -euf -o pipefail
 
 #################################
 # Run the TPM simulation server #
@@ -34,12 +34,12 @@ tpm2_startup -c -T mssim
 ##################
 # Execute clippy #
 ##################
-cargo clippy --all-targets --all-features -- -D warnings
+cargo clippy --all-targets --all-features -- -D clippy::all -D clippy::cargo
 
 ###################
 # Build the crate #
 ###################
-cargo build
+RUST_BACKTRACE=1 cargo build
 
 ##############
 # Build docs #
@@ -49,7 +49,7 @@ cargo doc --no-deps --verbose
 #################
 # Run the tests #
 #################
-RUST_LOG=info cargo test -- --test-threads=1 --nocapture
+RUST_BACKTRACE=1 RUST_LOG=info cargo test -- --test-threads=1 --nocapture
 
 ###################
 # Stop TPM server #

@@ -57,6 +57,6 @@ fn main() {
         );
         bindings
             .write_to_file(out_path.join("tss2_esys_bindings.rs"))
-            .expect(&format!("Couldn't write bindings to {:?}!", out_path));
+            .unwrap_or_else(|_| panic!("Couldn't write bindings to {:?}!", out_path));
     }
 }
