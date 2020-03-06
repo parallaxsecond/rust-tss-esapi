@@ -126,7 +126,7 @@ pub mod constants;
 pub mod response_code;
 pub mod utils;
 
-pub use abstraction::transient::TransientObjectContext;
+pub use abstraction::transient::TransientKeyContext;
 use log::{error, info};
 use mbox::MBox;
 use response_code::Result;
@@ -171,7 +171,6 @@ pub enum Tcti {
 const DEVICE: &str = "device";
 const MSSIM: &str = "mssim";
 const TABRMD: &str = "tabrmd";
-use constants::*;
 
 /// Safe abstraction over an ESYS_CONTEXT.
 ///
@@ -250,26 +249,12 @@ impl Context {
 
         if ret.is_success() {
             let esys_context = Some(MBox::from_raw(esys_context));
-            let mut context = Context {
+            let context = Context {
                 esys_context,
                 sessions: NO_SESSIONS,
                 tcti_context,
                 open_handles: HashSet::new(),
             };
-            let session = context.start_auth_session(
-                NO_SESSIONS,
-                ESYS_TR_NONE,
-                ESYS_TR_NONE,
-                &[],
-                TPM2_SE_HMAC,
-                utils::TpmtSymDefBuilder::aes_256_cfb(),
-                TPM2_ALG_SHA256,
-            )?;
-            let session_attr = TpmaSession::new()
-                .with_flag(TPMA_SESSION_DECRYPT)
-                .with_flag(TPMA_SESSION_ENCRYPT);
-            context.set_session_attr(session, session_attr)?;
-            context.sessions = (session, ESYS_TR_NONE, ESYS_TR_NONE);
             Ok(context)
         } else {
             error!("Error when creating a new context: {}.", ret);

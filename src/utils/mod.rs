@@ -20,6 +20,8 @@
 //! guidelines to them. Structures that are meant to act as builders have `Builder` appended to
 //! type name. Unions are converted to Rust `enum`s by dropping the `TPMU` qualifier and appending
 //! `Union`.
+pub mod primitives;
+
 use crate::constants::*;
 use crate::response_code::{Error, Result, WrapperErrorKind};
 use crate::tss2_esys::*;
@@ -279,12 +281,39 @@ impl TpmtSymDefBuilder {
         self
     }
 
-    /// Build the object given the previously provided parameters.
+    /// Build a TPMT_SYM_DEF given the previously provided parameters.
     ///
     /// # Errors
-    /// * if an unrecognized symmetric algorithm type was set, `InconsistentParams` wrapper error
+    /// * if an unrecognized symmetric algorithm type was set, `UnsupportedParam` wrapper error
     /// is returned.
+    /// * if an algorithm is not explicitly set, `ParamsMissing` is returned
+    pub fn build(self) -> Result<TPMT_SYM_DEF> {
+        let (key_bits, mode) = self.bits_and_mode()?;
+
+        Ok(TPMT_SYM_DEF {
+            algorithm: self.algorithm.unwrap(), // bits_and_mode would return an Err if algorithm was missing
+            keyBits: key_bits,
+            mode,
+        })
+    }
+
+    /// Build a TPMT_SYM_DEF_OBJECT given the previously provided parameters.
+    ///
+    /// # Errors
+    /// * if an unrecognized symmetric algorithm type was set, `UnsupportedParam` wrapper error
+    /// is returned.
+    /// * if an algorithm is not explicitly set, `ParamsMissing` is returned
     pub fn build_object(self) -> Result<TPMT_SYM_DEF_OBJECT> {
+        let (key_bits, mode) = self.bits_and_mode()?;
+
+        Ok(TPMT_SYM_DEF_OBJECT {
+            algorithm: self.algorithm.unwrap(), // bits_and_mode would return an Err if algorithm was missing
+            keyBits: key_bits,
+            mode,
+        })
+    }
+
+    fn bits_and_mode(self) -> Result<(TPMU_SYM_KEY_BITS, TPMU_SYM_MODE)> {
         let key_bits;
         let mode;
         match self.algorithm {
@@ -319,16 +348,11 @@ impl TpmtSymDefBuilder {
                 key_bits = Default::default();
                 mode = Default::default();
             }
-            _ => return Err(Error::local_error(WrapperErrorKind::InconsistentParams)),
+            None => return Err(Error::local_error(WrapperErrorKind::ParamsMissing)),
+            _ => return Err(Error::local_error(WrapperErrorKind::UnsupportedParam)),
         }
 
-        Ok(TPMT_SYM_DEF_OBJECT {
-            algorithm: self
-                .algorithm
-                .ok_or_else(|| Error::local_error(WrapperErrorKind::ParamsMissing))?,
-            keyBits: key_bits,
-            mode,
-        })
+        Ok((key_bits, mode))
     }
 
     /// Generate a `TPMT_SYM_DEF` object defining 256 bit AES in CFB mode.
