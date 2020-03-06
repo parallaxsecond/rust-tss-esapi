@@ -16,7 +16,7 @@ use std::env;
 use std::path::PathBuf;
 
 // Minimum version of the TSS 2.0 libraries that this crate can use.
-const MINIMUM_VERSION: &str = "2.3.0";
+const MINIMUM_VERSION: &str = "2.3.3";
 
 fn main() {
     if cfg!(not(feature = "docs")) {

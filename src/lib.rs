@@ -153,9 +153,6 @@ macro_rules! wrap_buffer {
     }};
 }
 
-/// Placeholder for passing empty session handles for a call to the TPM
-pub const NO_SESSIONS: (ESYS_TR, ESYS_TR, ESYS_TR) = (ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE);
-
 // Possible TCTI to use with the ESYS API.
 // TODO: add to each variant a structure for its configuration. Currently using the default
 // configuration.
@@ -251,7 +248,7 @@ impl Context {
             let esys_context = Some(MBox::from_raw(esys_context));
             let context = Context {
                 esys_context,
-                sessions: NO_SESSIONS,
+                sessions: (ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE),
                 tcti_context,
                 open_handles: HashSet::new(),
             };
@@ -276,7 +273,6 @@ impl Context {
     #[allow(clippy::too_many_arguments)]
     pub fn start_auth_session(
         &mut self,
-        non_auth_sessions: (ESYS_TR, ESYS_TR, ESYS_TR),
         tpm_key: ESYS_TR,
         bind: ESYS_TR,
         nonce: &[u8],
@@ -292,9 +288,9 @@ impl Context {
                 self.mut_context(),
                 tpm_key,
                 bind,
-                non_auth_sessions.0,
-                non_auth_sessions.1,
-                non_auth_sessions.2,
+                self.sessions.0,
+                self.sessions.1,
+                self.sessions.2,
                 if nonce.is_empty() {
                     null()
                 } else {

@@ -685,6 +685,7 @@ impl TryFrom<TPMS_CONTEXT> for TpmsContext {
     }
 }
 
+#[allow(clippy::needless_update)]
 impl TryFrom<TpmsContext> for TPMS_CONTEXT {
     type Error = Error;
 
@@ -705,6 +706,7 @@ impl TryFrom<TpmsContext> for TPMS_CONTEXT {
                 size: buffer_size.try_into().unwrap(), // should not panic given the check above
                 buffer,
             },
+            ..Default::default()
         })
     }
 }

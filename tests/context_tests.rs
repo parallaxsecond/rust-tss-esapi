@@ -57,7 +57,6 @@ fn create_ctx_with_session() -> Context {
     let mut ctx = unsafe { Context::new(Tcti::Mssim).unwrap() };
     let session = ctx
         .start_auth_session(
-            NO_SESSIONS,
             ESYS_TR_NONE,
             ESYS_TR_NONE,
             &[],
@@ -73,6 +72,10 @@ fn create_ctx_with_session() -> Context {
     ctx.set_sessions((session, ESYS_TR_NONE, ESYS_TR_NONE));
 
     ctx
+}
+
+fn create_ctx_without_session() -> Context {
+    unsafe { Context::new(Tcti::Mssim).unwrap() }
 }
 
 #[test]
@@ -95,7 +98,6 @@ fn comprehensive_test() {
 
     let new_session = context
         .start_auth_session(
-            NO_SESSIONS,
             ESYS_TR_NONE,
             prim_key_handle,
             &[],
@@ -147,10 +149,9 @@ mod test_start_sess {
 
     #[test]
     fn test_simple_sess() {
-        let mut context = create_ctx_with_session();
+        let mut context = create_ctx_without_session();
         context
             .start_auth_session(
-                NO_SESSIONS,
                 ESYS_TR_NONE,
                 ESYS_TR_NONE,
                 &[],
@@ -163,10 +164,9 @@ mod test_start_sess {
 
     #[test]
     fn test_nonce_sess() {
-        let mut context = create_ctx_with_session();
+        let mut context = create_ctx_without_session();
         context
             .start_auth_session(
-                NO_SESSIONS,
                 ESYS_TR_NONE,
                 ESYS_TR_NONE,
                 &[
@@ -181,10 +181,9 @@ mod test_start_sess {
 
     #[test]
     fn test_long_nonce_sess() {
-        let mut context = create_ctx_with_session();
+        let mut context = create_ctx_without_session();
         context
             .start_auth_session(
-                NO_SESSIONS,
                 ESYS_TR_NONE,
                 ESYS_TR_NONE,
                 &[
@@ -221,7 +220,6 @@ mod test_start_sess {
 
         context
             .start_auth_session(
-                NO_SESSIONS,
                 prim_key_handle,
                 prim_key_handle,
                 &[],
@@ -232,16 +230,11 @@ mod test_start_sess {
             .unwrap();
     }
 
-    // Ignored since currently the TSS library fails when encryption for a `StartAuthSession`
-    // command is used.
-    // See: https://github.com/tpm2-software/tpm2-tss/issues/1590
-    #[ignore]
     #[test]
     fn test_encrypted_start_sess() {
-        let mut context = create_ctx_with_session();
+        let mut context = create_ctx_without_session();
         let encrypted_sess = context
             .start_auth_session(
-                NO_SESSIONS,
                 ESYS_TR_NONE,
                 ESYS_TR_NONE,
                 &[],
@@ -260,7 +253,6 @@ mod test_start_sess {
 
         let _ = context
             .start_auth_session(
-                (encrypted_sess, ESYS_TR_NONE, ESYS_TR_NONE),
                 ESYS_TR_NONE,
                 ESYS_TR_NONE,
                 &[],
@@ -273,10 +265,9 @@ mod test_start_sess {
 
     #[test]
     fn test_authenticated_start_sess() {
-        let mut context = create_ctx_with_session();
+        let mut context = create_ctx_without_session();
         let auth_sess = context
             .start_auth_session(
-                NO_SESSIONS,
                 ESYS_TR_NONE,
                 ESYS_TR_NONE,
                 &[],
@@ -285,10 +276,10 @@ mod test_start_sess {
                 TPM2_ALG_SHA256,
             )
             .unwrap();
+        context.set_sessions((auth_sess, ESYS_TR_NONE, ESYS_TR_NONE));
 
         context
             .start_auth_session(
-                (auth_sess, ESYS_TR_NONE, ESYS_TR_NONE),
                 ESYS_TR_NONE,
                 ESYS_TR_NONE,
                 &[],
@@ -308,7 +299,6 @@ mod test_get_random {
         let mut context = create_ctx_with_session();
         let encrypted_sess = context
             .start_auth_session(
-                NO_SESSIONS,
                 ESYS_TR_NONE,
                 ESYS_TR_NONE,
                 &[],
@@ -334,7 +324,6 @@ mod test_get_random {
         let mut context = create_ctx_with_session();
         let auth_sess = context
             .start_auth_session(
-                NO_SESSIONS,
                 ESYS_TR_NONE,
                 ESYS_TR_NONE,
                 &[],
@@ -1131,7 +1120,6 @@ mod test_session_attr {
         let mut context = create_ctx_with_session();
         let sess_handle = context
             .start_auth_session(
-                NO_SESSIONS,
                 ESYS_TR_NONE,
                 ESYS_TR_NONE,
                 &[],
