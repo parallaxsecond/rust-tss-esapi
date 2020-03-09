@@ -32,7 +32,7 @@ use crate::utils::primitives::Cipher;
 use crate::utils::{
     self, get_rsa_public, Hierarchy, PublicIdUnion, TpmaSession, TpmsContext, TpmtTkVerified,
 };
-use crate::{Context, Tcti, NO_SESSIONS};
+use crate::{Context, Tcti};
 use log::error;
 use std::convert::{TryFrom, TryInto};
 
@@ -385,7 +385,6 @@ impl TransientKeyContextBuilder {
         let mut context = Context::new(self.tcti)?;
 
         let session = context.start_auth_session(
-            NO_SESSIONS,
             ESYS_TR_NONE,
             ESYS_TR_NONE,
             &[],
@@ -418,7 +417,6 @@ impl TransientKeyContextBuilder {
         )?;
 
         let new_session = context.start_auth_session(
-            NO_SESSIONS,
             root_key_handle,
             ESYS_TR_NONE,
             &[],
