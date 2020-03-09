@@ -26,6 +26,7 @@ use crate::constants::*;
 use crate::response_code::{Error, Result, WrapperErrorKind};
 use crate::tss2_esys::*;
 use bitfield::bitfield;
+use primitives::Cipher;
 use serde::{Deserialize, Serialize};
 use std::convert::{TryFrom, TryInto};
 
@@ -435,10 +436,45 @@ impl PublicIdUnion {
 #[derive(Copy, Clone)]
 pub enum PublicParmsUnion {
     KeyedHashDetail(TPMS_KEYEDHASH_PARMS),
-    SymDetail(TPMS_SYMCIPHER_PARMS),
+    SymDetail(Cipher),
     RsaDetail(TPMS_RSA_PARMS),
     EccDetail(TPMS_ECC_PARMS),
     AsymDetail(TPMS_ASYM_PARMS),
+}
+
+impl PublicParmsUnion {
+    /// Get the object type corresponding to the value's variant.
+    pub fn object_type(&self) -> TPMI_ALG_PUBLIC {
+        match self {
+            PublicParmsUnion::AsymDetail(..) => TPM2_ALG_NULL,
+            PublicParmsUnion::EccDetail(..) => TPM2_ALG_ECC,
+            PublicParmsUnion::RsaDetail(..) => TPM2_ALG_RSA,
+            PublicParmsUnion::SymDetail(..) => TPM2_ALG_SYMCIPHER,
+            PublicParmsUnion::KeyedHashDetail(..) => TPM2_ALG_KEYEDHASH,
+        }
+    }
+}
+
+impl From<PublicParmsUnion> for TPMU_PUBLIC_PARMS {
+    fn from(parms: PublicParmsUnion) -> Self {
+        match parms {
+            PublicParmsUnion::AsymDetail(tss_parms) => TPMU_PUBLIC_PARMS {
+                asymDetail: tss_parms,
+            },
+            PublicParmsUnion::EccDetail(tss_parms) => TPMU_PUBLIC_PARMS {
+                eccDetail: tss_parms,
+            },
+            PublicParmsUnion::RsaDetail(tss_parms) => TPMU_PUBLIC_PARMS {
+                rsaDetail: tss_parms,
+            },
+            PublicParmsUnion::SymDetail(cipher) => TPMU_PUBLIC_PARMS {
+                symDetail: cipher.into(),
+            },
+            PublicParmsUnion::KeyedHashDetail(tss_parms) => TPMU_PUBLIC_PARMS {
+                keyedHashDetail: tss_parms,
+            },
+        }
+    }
 }
 
 /// Rust enum representation of `TPMU_ASYM_SCHEME`.

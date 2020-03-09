@@ -48,8 +48,8 @@ use std::convert::TryInto;
 use tss_esapi::constants::*;
 use tss_esapi::tss2_esys::*;
 use tss_esapi::utils::{
-    self, AsymSchemeUnion, ObjectAttributes, PublicIdUnion, PublicParmsUnion, Signature,
-    Tpm2BPublicBuilder, TpmaSession, TpmsRsaParmsBuilder, TpmtSymDefBuilder,
+    self, primitives::Cipher, AsymSchemeUnion, ObjectAttributes, PublicIdUnion, PublicParmsUnion,
+    Signature, Tpm2BPublicBuilder, TpmaSession, TpmsRsaParmsBuilder, TpmtSymDefBuilder,
 };
 use tss_esapi::*;
 
@@ -1137,5 +1137,18 @@ mod test_session_attr {
         context.set_sessions((sess_handle, ESYS_TR_NONE, ESYS_TR_NONE));
 
         let _ = context.get_random(10).unwrap();
+    }
+}
+
+mod test_test_parms {
+    use super::*;
+
+    #[test]
+    fn test_sym_parms() {
+        let mut context = create_ctx_without_session();
+        let cipher = Cipher::aes_256_cfb();
+        context
+            .test_parms(PublicParmsUnion::SymDetail(cipher))
+            .unwrap();
     }
 }
