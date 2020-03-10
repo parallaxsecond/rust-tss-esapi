@@ -160,3 +160,9 @@ impl From<Cipher> for TPMT_SYM_DEF_OBJECT {
             .unwrap() // all params are strictly controlled, should not fail
     }
 }
+
+impl From<Cipher> for TPMS_SYMCIPHER_PARMS {
+    fn from(cipher: Cipher) -> Self {
+        TPMS_SYMCIPHER_PARMS { sym: cipher.into() }
+    }
+}

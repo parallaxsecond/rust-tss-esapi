@@ -136,7 +136,7 @@ use std::convert::{TryFrom, TryInto};
 use std::ffi::CString;
 use std::ptr::{null, null_mut};
 use tss2_esys::*;
-use utils::{Signature, TpmaSession, TpmsContext};
+use utils::{PublicParmsUnion, Signature, TpmaSession, TpmsContext};
 
 #[macro_use]
 macro_rules! wrap_buffer {
@@ -792,6 +792,35 @@ impl Context {
             Ok(random)
         } else {
             error!("Error in flushing context: {}.", ret);
+            Err(ret)
+        }
+    }
+
+    /// Test if the given parameters are supported by the TPM.
+    ///
+    /// # Errors
+    /// * if any of the public parameters is not compatible with the TPM,
+    /// an `Err` containing the specific unmarshalling error will be returned.
+    pub fn test_parms(&mut self, parms: PublicParmsUnion) -> Result<()> {
+        let public_parms = TPMT_PUBLIC_PARMS {
+            type_: parms.object_type(),
+            parameters: parms.into(),
+        };
+        let ret = unsafe {
+            Esys_TestParms(
+                self.mut_context(),
+                self.sessions.0,
+                self.sessions.1,
+                self.sessions.2,
+                &public_parms,
+            )
+        };
+
+        let ret = Error::from_tss_rc(ret);
+        if ret.is_success() {
+            Ok(())
+        } else {
+            error!("Error while testing parameters: {}.", ret);
             Err(ret)
         }
     }
