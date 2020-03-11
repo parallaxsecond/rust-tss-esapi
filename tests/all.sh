@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # ------------------------------------------------------------------------------
-# Copyright (c) 2019, Arm Limited, All Rights Reserved
+# Copyright (c) 2019-2020, Arm Limited, All Rights Reserved
 # SPDX-License-Identifier: Apache-2.0
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -41,11 +41,6 @@ cargo clippy --all-targets --all-features -- -D clippy::all -D clippy::cargo
 ###################
 RUST_BACKTRACE=1 cargo build
 
-##############
-# Build docs #
-##############
-cargo doc --no-deps --verbose
-
 #################
 # Run the tests #
 #################
@@ -55,3 +50,28 @@ RUST_BACKTRACE=1 RUST_LOG=info cargo test -- --test-threads=1 --nocapture
 # Stop TPM server #
 ###################
 pkill tpm_server
+
+#############################
+# Install nightly toolchain #
+#############################
+rustup toolchain install nightly
+
+############################
+# Install legacy toolchain #
+############################
+rustup toolchain install 1.38.0
+
+####################
+# Verify doc build #
+####################
+cargo +nightly doc --features docs --verbose --no-deps
+
+########################
+# Verify nightly build #
+########################
+cargo +nightly build
+
+#####################################
+# Verify build with legacy compiler #
+#####################################
+RUST_BACKTRACE=1 cargo +1.38.0 build

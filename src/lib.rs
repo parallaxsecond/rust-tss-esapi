@@ -48,6 +48,9 @@
 //! keys, as well as signing and verifying signatures.
 //! Only platforms based on processors with a word size of at least 16 bits are supported.
 //!
+//! The crate is expected to successfully compile and run using the nightly compiler and any other
+//! Rust compiler since 1.38.0.
+//!
 //! # Disclaimer
 //!
 //! The current version of the API does not offer any security or code safety guarantees as it has

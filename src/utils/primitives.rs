@@ -12,10 +12,18 @@
 // WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+//! Rust-native crypto primitive handles
+//!
+//! This module offers a Rust-native way of identifying cryptographic primitives for usage within
+//! this crate.
 use crate::constants::*;
 use crate::tss2_esys::*;
 use crate::utils::TpmtSymDefBuilder;
 
+/// Block cipher identifiers
+///
+/// Enum useful for handling an abstract representation of ciphers. Each cipher is defined by a
+/// mode and a key length, or, in the case of `XOR`, by the hash function used with it.
 #[derive(Copy, Clone, Debug)]
 pub enum Cipher {
     AES {
@@ -35,10 +43,12 @@ pub enum Cipher {
 }
 
 impl Cipher {
+    /// Get general object type for symmetric ciphers.
     pub fn object_type() -> TPM2_ALG_ID {
         TPM2_ALG_SYMCIPHER
     }
 
+    /// Get the cipher key length.
     pub fn key_bits(self) -> Option<CipherKeyLength> {
         match self {
             Cipher::AES { key_bits, .. } => Some(key_bits),
@@ -48,6 +58,7 @@ impl Cipher {
         }
     }
 
+    /// Get the cipher mode.
     pub fn mode(self) -> Option<CipherMode> {
         match self {
             Cipher::AES { mode, .. } => Some(mode),
@@ -57,6 +68,7 @@ impl Cipher {
         }
     }
 
+    /// Get the TSS algorithm ID.
     pub fn algorithm_id(self) -> TPM2_ALG_ID {
         match self {
             Cipher::AES { .. } => TPM2_ALG_AES,
@@ -66,6 +78,7 @@ impl Cipher {
         }
     }
 
+    /// Constructor for 128 bit AES in CFB mode.
     pub fn aes_128_cfb() -> Self {
         Cipher::AES {
             key_bits: CipherKeyLength::Bits128,
@@ -73,6 +86,7 @@ impl Cipher {
         }
     }
 
+    /// Constructor for 256 bit AES in CFB mode.
     pub fn aes_256_cfb() -> Self {
         Cipher::AES {
             key_bits: CipherKeyLength::Bits256,
@@ -81,6 +95,9 @@ impl Cipher {
     }
 }
 
+/// Statically enforceable cipher key length
+///
+/// Enum restricting allowed cipher key lengths to pre-defined values.
 #[derive(Copy, Clone, Debug)]
 pub enum CipherKeyLength {
     Bits128,
@@ -98,6 +115,9 @@ impl From<CipherKeyLength> for u16 {
     }
 }
 
+/// TPM-supported cipher modes
+///
+/// A list of all the cipher modes that could be supported by a TPM implementation.
 #[derive(Copy, Clone, Debug)]
 pub enum CipherMode {
     CTR,
