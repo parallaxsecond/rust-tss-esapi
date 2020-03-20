@@ -846,6 +846,20 @@ impl Context {
         }
     }
 
+    /// Retrieve the name of an object from the object handle
+    pub fn tr_get_name(&mut self, handle: ESYS_TR) -> Result<TPM2B_NAME> {
+        let mut name = null_mut();
+        let ret = unsafe { Esys_TR_GetName(self.mut_context(), handle, &mut name) };
+        let ret = Error::from_tss_rc(ret);
+        if ret.is_success() {
+            let name = unsafe { MBox::<TPM2B_NAME>::from_raw(name) };
+            Ok(*name)
+        } else {
+            error!("Error in getting name: {}.", ret);
+            Err(ret)
+        }
+    }
+
     /// Set the given attributes on a given session.
     pub fn set_session_attr(&mut self, handle: ESYS_TR, attrs: TpmaSession) -> Result<()> {
         let ret = unsafe {
