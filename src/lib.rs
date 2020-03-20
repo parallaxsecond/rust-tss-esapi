@@ -139,7 +139,7 @@ use std::convert::{TryFrom, TryInto};
 use std::ffi::CString;
 use std::ptr::{null, null_mut};
 use tss2_esys::*;
-use utils::{PublicParmsUnion, Signature, TpmaSession, TpmsContext};
+use utils::{close_contexts, PublicParmsUnion, Signature, TpmaSession, TpmsContext};
 
 #[macro_use]
 macro_rules! wrap_buffer {
@@ -865,9 +865,25 @@ impl Context {
     }
 }
 
+/// Allows conversion from `Context` to the two underlying context objects.
+///
+/// Both the `ESYS_CONTEXT` and the `TSS2_TCTI_CONTEXT` are needed in order to preserve a communication channel to the TPM.
+impl From<Context> for (MBox<ESYS_CONTEXT>, MBox<TSS2_TCTI_CONTEXT>) {
+    fn from(mut ctx: Context) -> Self {
+        (
+            ctx.esys_context.take().unwrap(),
+            ctx.tcti_context.take().unwrap(),
+        )
+    }
+}
+
 impl Drop for Context {
     fn drop(&mut self) {
         info!("Closing context.");
+        if self.esys_context.is_none() || self.tcti_context.is_none() {
+            info!("Context has been unwrapped, dropping with no action!");
+            return;
+        }
 
         // Flush the open handles.
         self.open_handles.clone().iter().for_each(|handle| {
@@ -880,11 +896,7 @@ impl Drop for Context {
         let esys_context = self.esys_context.take().unwrap(); // should not fail based on how the context is initialised/used
         let tcti_context = self.tcti_context.take().unwrap(); // should not fail based on how the context is initialised/used
 
-        // Close the TCTI context.
-        unsafe { Tss2_TctiLdr_Finalize(&mut tcti_context.into_raw()) };
-
-        // Close the context.
-        unsafe { Esys_Finalize(&mut esys_context.into_raw()) };
+        close_contexts(esys_context, tcti_context);
         info!("Context closed.");
     }
 }

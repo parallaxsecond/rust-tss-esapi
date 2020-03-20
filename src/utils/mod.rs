@@ -26,6 +26,7 @@ use crate::constants::*;
 use crate::response_code::{Error, Result, WrapperErrorKind};
 use crate::tss2_esys::*;
 use bitfield::bitfield;
+use mbox::MBox;
 use primitives::Cipher;
 use serde::{Deserialize, Serialize};
 use std::convert::{TryFrom, TryInto};
@@ -885,4 +886,13 @@ impl TryFrom<TpmtTkVerified> for TPMT_TK_VERIFIED {
             },
         })
     }
+}
+
+/// Close the ESYS and TCTI contexts.
+pub fn close_contexts(esys_context: MBox<ESYS_CONTEXT>, tcti_context: MBox<TSS2_TCTI_CONTEXT>) {
+    // Close the TCTI context.
+    unsafe { Tss2_TctiLdr_Finalize(&mut tcti_context.into_raw()) };
+
+    // Close the context.
+    unsafe { Esys_Finalize(&mut esys_context.into_raw()) };
 }

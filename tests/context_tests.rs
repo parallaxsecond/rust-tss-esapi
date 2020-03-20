@@ -44,12 +44,14 @@ const KEY: [u8; 512] = [
     0, 0, 0, 0, 0,
 ];
 
+use mbox::MBox;
 use std::convert::TryInto;
 use tss_esapi::constants::*;
 use tss_esapi::tss2_esys::*;
 use tss_esapi::utils::{
-    self, primitives::Cipher, AsymSchemeUnion, ObjectAttributes, PublicIdUnion, PublicParmsUnion,
-    Signature, Tpm2BPublicBuilder, TpmaSession, TpmsRsaParmsBuilder, TpmtSymDefBuilder,
+    self, close_contexts, primitives::Cipher, AsymSchemeUnion, ObjectAttributes, PublicIdUnion,
+    PublicParmsUnion, Signature, Tpm2BPublicBuilder, TpmaSession, TpmsRsaParmsBuilder,
+    TpmtSymDefBuilder,
 };
 use tss_esapi::*;
 
@@ -142,6 +144,26 @@ fn comprehensive_test() {
     context
         .verify_signature(key_handle, &HASH[..32], &signature.try_into().unwrap())
         .unwrap();
+}
+
+#[test]
+fn conversion_to_esys_ctx_test() {
+    let ctx = create_ctx_without_session();
+    let (mut esys_ctx, tcti_ctx): (MBox<ESYS_CONTEXT>, MBox<TSS2_TCTI_CONTEXT>) = ctx.into();
+    assert_eq!(
+        unsafe {
+            Esys_SelfTest(
+                esys_ctx.as_mut_ptr(),
+                ESYS_TR_NONE,
+                ESYS_TR_NONE,
+                ESYS_TR_NONE,
+                1, // YES to full-test
+            )
+        },
+        0,
+    );
+
+    close_contexts(esys_ctx, tcti_ctx);
 }
 
 mod test_start_sess {
