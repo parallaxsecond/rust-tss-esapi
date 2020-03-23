@@ -874,7 +874,7 @@ impl Context {
     }
 
     /// Returns a mutable reference to the native ESYS context handle.
-    fn mut_context(&mut self) -> *mut ESYS_CONTEXT {
+    pub fn mut_context(&mut self) -> *mut ESYS_CONTEXT {
         self.esys_context.as_mut().unwrap().as_mut_ptr() // will only fail if called from Drop after .take()
     }
 }
