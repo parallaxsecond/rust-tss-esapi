@@ -461,7 +461,7 @@ pub enum Error {
 }
 
 impl Error {
-    pub(crate) fn from_tss_rc(rc: TSS2_RC) -> Self {
+    pub fn from_tss_rc(rc: TSS2_RC) -> Self {
         Error::Tss2Error(Tss2ResponseCode::from_tss_rc(rc))
     }
 
