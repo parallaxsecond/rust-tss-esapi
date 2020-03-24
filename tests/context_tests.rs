@@ -54,7 +54,7 @@ use tss_esapi::utils::{
 use tss_esapi::*;
 
 fn create_ctx_with_session() -> Context {
-    let mut ctx = unsafe { Context::new(Tcti::Device).unwrap() };
+    let mut ctx = unsafe { Context::new(Tcti::Mssim).unwrap() };
     let session = ctx
         .start_auth_session(
             ESYS_TR_NONE,
@@ -75,7 +75,7 @@ fn create_ctx_with_session() -> Context {
 }
 
 fn create_ctx_without_session() -> Context {
-    unsafe { Context::new(Tcti::Device).unwrap() }
+    unsafe { Context::new(Tcti::Mssim).unwrap() }
 }
 
 #[test]
