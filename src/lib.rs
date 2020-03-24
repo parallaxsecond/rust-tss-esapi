@@ -767,6 +767,38 @@ impl Context {
         }
     }
 
+    pub fn pcr_read(
+        &mut self,
+        pcr_selection: &TPML_PCR_SELECTION,
+    ) -> Result<(UINT32, TPML_PCR_SELECTION, TPML_DIGEST)> {
+        let mut pcr_update_counter: u32 = 0;
+        let mut pcr_selection_out = null_mut();
+        let mut pcr_values = null_mut();
+        let ret = unsafe {
+            Esys_PCR_Read(
+                self.mut_context(),
+                self.sessions.0,
+                self.sessions.1,
+                self.sessions.2,
+                pcr_selection,
+                &mut pcr_update_counter,
+                &mut pcr_selection_out,
+                &mut pcr_values,
+            )
+        };
+        let ret = Error::from_tss_rc(ret);
+
+        if ret.is_success() {
+            let pcr_selection_out =
+                unsafe { MBox::<TPML_PCR_SELECTION>::from_raw(pcr_selection_out) };
+            let pcr_values = unsafe { MBox::<TPML_DIGEST>::from_raw(pcr_values) };
+            Ok((pcr_update_counter, *pcr_selection_out, *pcr_values))
+        } else {
+            error!("Error in creating derived key: {}.", ret);
+            Err(ret)
+        }
+    }
+
     // TODO: Should we really keep `num_bytes` as `u16`?
     /// Get a number of random bytes from the TPM and return them.
     ///

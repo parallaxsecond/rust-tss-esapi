@@ -291,6 +291,26 @@ mod test_start_sess {
     }
 }
 
+mod test_pcr_read {
+    use super::*;
+
+    #[test]
+    fn test_pcr_read_command() {
+        let mut context = create_ctx_without_session();
+        // Read PCR 0
+        let mut selection = TPML_PCR_SELECTION {
+            count: 0,
+            pcrSelections: Default::default(),
+        };
+
+        selection.pcrSelections[0].hash = TPM2_ALG_SHA256;
+        selection.pcrSelections[0].sizeofSelect = 1;
+        selection.pcrSelections[0].pcrSelect[0] = 0x01; // Only pcr 0.
+
+        let _ = context.pcr_read(&selection).unwrap();
+    }
+}
+
 mod test_get_random {
     use super::*;
 
