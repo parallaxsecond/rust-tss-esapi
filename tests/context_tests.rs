@@ -54,7 +54,7 @@ use tss_esapi::utils::{
 use tss_esapi::*;
 
 fn create_ctx_with_session() -> Context {
-    let mut ctx = unsafe { Context::new(Tcti::Mssim).unwrap() };
+    let mut ctx = unsafe { Context::new(Tcti::Device).unwrap() };
     let session = ctx
         .start_auth_session(
             ESYS_TR_NONE,
@@ -75,7 +75,7 @@ fn create_ctx_with_session() -> Context {
 }
 
 fn create_ctx_without_session() -> Context {
-    unsafe { Context::new(Tcti::Mssim).unwrap() }
+    unsafe { Context::new(Tcti::Device).unwrap() }
 }
 
 #[test]
@@ -288,6 +288,26 @@ mod test_start_sess {
                 TPM2_ALG_SHA256,
             )
             .unwrap_err();
+    }
+}
+
+mod test_pcr_read {
+    use super::*;
+
+    #[test]
+    fn test_pcr_read_command() {
+        let mut context = create_ctx_without_session();
+        // Read PCR 0
+        let mut selection = TPML_PCR_SELECTION {
+            count: 0,
+            pcrSelections: Default::default(),
+        };
+
+        selection.pcrSelections[0].hash = TPM2_ALG_SHA256;
+        selection.pcrSelections[0].sizeofSelect = 1;
+        selection.pcrSelections[0].pcrSelect[0] = 0x01; // Only pcr 0.
+
+        let _ = context.pcr_read(&selection).unwrap();
     }
 }
 
