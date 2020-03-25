@@ -12,8 +12,7 @@
 // WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-
-//! Module for algorithm specifiers
+//! Algorithm Specifier Module
 //!
 //! This module specifies the different algorithms and
 //! provides function for converting them to their corresponding
@@ -21,50 +20,20 @@
 //!
 //! TPM 2.0 Library Specification(Rev: 1.59), Part 2, Secion 6.3, Table 8 — Legend for TPM_ALG_ID Table
 
-pub mod constants::{
-    TPM2_ALG_ERROR,
-    TPM2_ALG_RSA,
-    TPM2_ALG_SHA,/// Does not seam to be used any where!
-    TPM2_ALG_SHA1,
-    TPM2_ALG_HMAC,
-    TPM2_ALG_AES,
-    TPM2_ALG_MGF1,
-    TPM2_ALG_KEYEDHASH,
-    TPM2_ALG_XOR,
-    TPM2_ALG_SHA256,
-    TPM2_ALG_SHA384,
-    TPM2_ALG_SHA512,
-    TPM2_ALG_NULL,
-    TPM2_ALG_SM3_256,
-    TPM2_ALG_SM4,
-    TPM2_ALG_RSASSA,
-    TPM2_ALG_RSAES,
-    TPM2_ALG_RSAPSS,
-    TPM2_ALG_OAEP,
-    TPM2_ALG_ECDSA,
-    TPM2_ALG_ECDH,
-    TPM2_ALG_ECDAA,
-    TPM2_ALG_SM2,
-    TPM2_ALG_ECSCHNORR,
-    TPM2_ALG_ECMQV,
-    TPM2_ALG_KDF1_SP800_56A,
-    TPM2_ALG_KDF2,
-    TPM2_ALG_KDF1_SP800_108,
-    TPM2_ALG_ECC,
-    TPM2_ALG_SYMCIPHER:,
-    TPM2_ALG_CAMELLIA,
-    TPM2_ALG_CMAC,
-    TPM2_ALG_CTR,
-    TPM2_ALG_SHA3_256,
-    TPM2_ALG_SHA3_384,
-    TPM2_ALG_SHA3_512,
-    TPM2_ALG_OFB,
-    TPM2_ALG_CBC,
-    TPM2_ALG_CFB,
-    TPM2_ALG_ECB,
-    TPM2_ALG_FIRST,/// Not currently in use
-    TPM2_ALG_LAST,/// Not currently in use
-}
+use crate::constants::{
+    TPM2_ALG_AES, TPM2_ALG_CAMELLIA, TPM2_ALG_CBC, TPM2_ALG_CFB, TPM2_ALG_CTR, TPM2_ALG_ECB,
+    TPM2_ALG_ECC, TPM2_ALG_ECDAA, TPM2_ALG_ECDH, TPM2_ALG_ECDSA, TPM2_ALG_ECMQV,
+    TPM2_ALG_ECSCHNORR, TPM2_ALG_ERROR, TPM2_ALG_HMAC, TPM2_ALG_KDF1_SP800_108,
+    TPM2_ALG_KDF1_SP800_56A, TPM2_ALG_KDF2, TPM2_ALG_KEYEDHASH, TPM2_ALG_MGF1, TPM2_ALG_NULL,
+    TPM2_ALG_OAEP, TPM2_ALG_OFB, TPM2_ALG_RSA, TPM2_ALG_RSAES, TPM2_ALG_RSAPSS, TPM2_ALG_RSASSA,
+    TPM2_ALG_SHA1, TPM2_ALG_SHA256, TPM2_ALG_SHA384, TPM2_ALG_SHA3_256, TPM2_ALG_SHA3_384,
+    TPM2_ALG_SHA3_512, TPM2_ALG_SHA512, TPM2_ALG_SM2, TPM2_ALG_SM3_256, TPM2_ALG_SM4,
+    TPM2_ALG_SYMCIPHER, TPM2_ALG_XOR,
+};
+
+use crate::response_code::{Error, Result, WrapperErrorKind};
+use crate::tss2_esys::TPM2_ALG_ID;
+use std::convert::TryFrom;
 
 ////////////////////////////////////////////////
 ///
@@ -78,25 +47,25 @@ pub mod constants::{
 /// used when setting the type parameter in
 /// TPMT_PUBLIC_PARMS.
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, PartialEq)]
 pub enum ObjectType {
-    NULL,
-    RSA,/// Assymetric
-    ECC,/// Assymetric
-    KEYEDHASH,/// Symmetric
-    SYMCIPHER,/// Symmetric
+    Null,
+    Rsa,
+    Ecc,
+    KeyedHash,
+    SymCipher,
 }
 
 impl ObjectType {
     /// Returns the TPM2_ALG_ID that corresponds to the
-    /// key type.
+    /// object type.
     pub fn alg_id(self) -> TPM2_ALG_ID {
         match self {
-            ObjectType::NULL => TPM2_ALG_NULL,
-            ObjectType::RSA => TPM2_ALG_RSA,
-            ObjectType::ECC => TPM2_ALG_ECC,
-            ObjectType::KEYEDHASH => TPM2_ALG_KEYEDHASH,
-            ObjectType::SYMCIPHER => TPM2_ALG_SYMCIPHER,
+            ObjectType::Null => TPM2_ALG_NULL,
+            ObjectType::Rsa => TPM2_ALG_RSA,
+            ObjectType::Ecc => TPM2_ALG_ECC,
+            ObjectType::KeyedHash => TPM2_ALG_KEYEDHASH,
+            ObjectType::SymCipher => TPM2_ALG_SYMCIPHER,
         }
     }
 }
@@ -106,12 +75,12 @@ impl TryFrom<TPM2_ALG_ID> for ObjectType {
 
     fn try_from(algorithm_id: TPM2_ALG_ID) -> Result<Self> {
         match algorithm_id {
-            TPM2_ALG_NULL => Ok(ObjectType::NULL),
-            TPM2_ALG_RSA => Ok(ObjectType::RSA),
-            TPM2_ALG_ECC => Ok(ObjectType::ECC),
-            TPM2_ALG_KEYEDHASH => Ok(ObjectType::KEYEDHASH),
-            TPM2_ALG_SYMCIPHER => Ok(ObjectType::SYMCIPHER),
-            _ => Err(Error::local_error(WrapperErrorKind::InconsistentParams)),
+            TPM2_ALG_NULL => Ok(ObjectType::Null),
+            TPM2_ALG_RSA => Ok(ObjectType::Rsa),
+            TPM2_ALG_ECC => Ok(ObjectType::Ecc),
+            TPM2_ALG_KEYEDHASH => Ok(ObjectType::KeyedHash),
+            TPM2_ALG_SYMCIPHER => Ok(ObjectType::SymCipher),
+            _ => Err(Error::local_error(WrapperErrorKind::InvalidParam)),
         }
     }
 }
@@ -125,10 +94,10 @@ impl TryFrom<TPM2_ALG_ID> for ObjectType {
 ////////////////////////////////////////////////
 
 /// Enum containing asymmetric algorithms.
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, PartialEq)]
 pub enum AsymmetricAlgorithm {
-    RSA,
-    ECC
+    Rsa,
+    Ecc,
 }
 
 impl AsymmetricAlgorithm {
@@ -136,8 +105,8 @@ impl AsymmetricAlgorithm {
     /// asymmetric algorithm.
     pub fn alg_id(self) -> TPM2_ALG_ID {
         match self {
-            AsymmetricAlgorithm::RSA => TPM2_ALG_RSA,
-            AsymmetricAlgorithm::ECC => TPM2_ALG_ECC,
+            AsymmetricAlgorithm::Rsa => TPM2_ALG_RSA,
+            AsymmetricAlgorithm::Ecc => TPM2_ALG_ECC,
         }
     }
 }
@@ -147,9 +116,9 @@ impl TryFrom<TPM2_ALG_ID> for AsymmetricAlgorithm {
 
     fn try_from(algorithm_id: TPM2_ALG_ID) -> Result<Self> {
         match algorithm_id {
-            TPM2_ALG_RSA => Ok(AsymmetricAlgorithm::RSA),
-            TPM2_ALG_ECC => Ok(AsymmetricAlgorithm::ECC),
-            _ => Err(Error::local_error(WrapperErrorKind::InconsistentParams)),
+            TPM2_ALG_RSA => Ok(AsymmetricAlgorithm::Rsa),
+            TPM2_ALG_ECC => Ok(AsymmetricAlgorithm::Ecc),
+            _ => Err(Error::local_error(WrapperErrorKind::InvalidParam)),
         }
     }
 }
@@ -161,11 +130,10 @@ impl TryFrom<TPM2_ALG_ID> for AsymmetricAlgorithm {
 ////////////////////////////////////////////////
 
 /// Enum containing keyed hash
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, PartialEq)]
 pub enum KeyedHash {
-    HMAC,
-    XOR,
-    CMAC,
+    Hmac,
+    Xor,
 }
 
 impl KeyedHash {
@@ -173,9 +141,8 @@ impl KeyedHash {
     /// keyed hash.
     pub fn alg_id(self) -> TPM2_ALG_ID {
         match self {
-            KeyedHash::HMAC => TPM2_ALG_HMAC,
-            KeyedHash::XOR => TPM2_ALG_XOR,
-            KeyedHash::CMAC => TPM2_ALG_CMAC,
+            KeyedHash::Hmac => TPM2_ALG_HMAC,
+            KeyedHash::Xor => TPM2_ALG_XOR,
         }
     }
 }
@@ -185,10 +152,9 @@ impl TryFrom<TPM2_ALG_ID> for KeyedHash {
 
     fn try_from(algorithm_id: TPM2_ALG_ID) -> Result<Self> {
         match algorithm_id {
-            TPM2_ALG_HMAC => Ok(KeyedHash::HMAC),
-            TPM2_ALG_XOR => Ok(KeyedHash::XOR),
-            TPM2_ALG_CMAC => Ok(KeyedHash::CMAC),
-            _ => Err(Error::local_error(WrapperErrorKind::InconsistentParams)),
+            TPM2_ALG_HMAC => Ok(KeyedHash::Hmac),
+            TPM2_ALG_XOR => Ok(KeyedHash::Xor),
+            _ => Err(Error::local_error(WrapperErrorKind::InvalidParam)),
         }
     }
 }
@@ -200,12 +166,11 @@ impl TryFrom<TPM2_ALG_ID> for KeyedHash {
 ////////////////////////////////////////////////
 
 /// Enum containing symmetric algorithms.
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, PartialEq)]
 pub enum SymmetricAlgorithm {
-    AES,
-    CAMELLIA,
-    SM4,
-    ///TDES, it has been banned.
+    Aes,
+    Camellia,
+    Sm4,
 }
 
 impl SymmetricAlgorithm {
@@ -213,9 +178,9 @@ impl SymmetricAlgorithm {
     /// symmetric algorithm.
     pub fn alg_id(self) -> TPM2_ALG_ID {
         match self {
-            SymmetricAlgorithm::AES => TPM2_ALG_AES,
-            SymmetricAlgorithm::CAMELLIA => TPM2_ALG_CAMELLIA,
-            SymmetricAlgorithm::SM4 => TPM2_ALG_SM4,
+            SymmetricAlgorithm::Aes => TPM2_ALG_AES,
+            SymmetricAlgorithm::Camellia => TPM2_ALG_CAMELLIA,
+            SymmetricAlgorithm::Sm4 => TPM2_ALG_SM4,
         }
     }
 }
@@ -225,10 +190,10 @@ impl TryFrom<TPM2_ALG_ID> for SymmetricAlgorithm {
 
     fn try_from(algorithm_id: TPM2_ALG_ID) -> Result<Self> {
         match algorithm_id {
-            TPM2_ALG_AES => Ok(SymmetricAlgorithm::AES),
-            TPM2_ALG_CAMELLIA => Ok(SymmetricAlgorithm::CAMELLIA),
-            TPM2_ALG_SM4 => Ok(SymmetricAlgorithm::SM4),
-            _ => Err(Error::local_error(WrapperErrorKind::InconsistentParams)),
+            TPM2_ALG_AES => Ok(SymmetricAlgorithm::Aes),
+            TPM2_ALG_CAMELLIA => Ok(SymmetricAlgorithm::Camellia),
+            TPM2_ALG_SM4 => Ok(SymmetricAlgorithm::Sm4),
+            _ => Err(Error::local_error(WrapperErrorKind::InvalidParam)),
         }
     }
 }
@@ -240,16 +205,16 @@ impl TryFrom<TPM2_ALG_ID> for SymmetricAlgorithm {
 ////////////////////////////////////////////////
 
 /// Enum containing the supported hash algorithms
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, PartialEq)]
 pub enum HashingAlgorithm {
-    SHA1,
-    SHA256,
-    SHA384,
-    SHA512,
-    SM3_256,
-    SHA3_256,
-    SHA3_384,
-    SHA3_512,
+    Sha1,
+    Sha256,
+    Sha384,
+    Sha512,
+    Sm3_256,
+    Sha3_256,
+    Sha3_384,
+    Sha3_512,
 }
 
 impl HashingAlgorithm {
@@ -257,14 +222,14 @@ impl HashingAlgorithm {
     /// hash algorithm.
     pub fn alg_id(self) -> TPM2_ALG_ID {
         match self {
-            HashingAlgorithm::SHA1 => TPM2_ALG_SHA1,
-            HashingAlgorithm::SHA256 => TPM2_ALG_SHA256,
-            HashingAlgorithm::SHA384 => TPM2_ALG_SHA384,
-            HashingAlgorithm::SHA512 => TPM2_ALG_SHA512,
-            HashingAlgorithm::SM3_256 => TPM2_ALG_SM3_256,
-            HashingAlgorithm::SHA3_256 => TPM2_ALG_SHA3_256,
-            HashingAlgorithm::SHA3_384 => TPM2_ALG_SHA3_384,
-            HashingAlgorithm::SHA3_512 => TPM2_ALG_SHA3_512,
+            HashingAlgorithm::Sha1 => TPM2_ALG_SHA1,
+            HashingAlgorithm::Sha256 => TPM2_ALG_SHA256,
+            HashingAlgorithm::Sha384 => TPM2_ALG_SHA384,
+            HashingAlgorithm::Sha512 => TPM2_ALG_SHA512,
+            HashingAlgorithm::Sm3_256 => TPM2_ALG_SM3_256,
+            HashingAlgorithm::Sha3_256 => TPM2_ALG_SHA3_256,
+            HashingAlgorithm::Sha3_384 => TPM2_ALG_SHA3_384,
+            HashingAlgorithm::Sha3_512 => TPM2_ALG_SHA3_512,
         }
     }
 }
@@ -274,15 +239,15 @@ impl TryFrom<TPM2_ALG_ID> for HashingAlgorithm {
 
     fn try_from(algorithm_id: TPM2_ALG_ID) -> Result<Self> {
         match algorithm_id {
-            TPM2_ALG_SHA1 => Ok(HashingAlgorithm::SHA1),
-            TPM2_ALG_SHA256 => Ok(HashingAlgorithm::SHA256),
-            TPM2_ALG_SHA384 => Ok(HashingAlgorithm::SHA384),
-            TPM2_ALG_SHA512 => Ok(HashingAlgorithm::SHA512),
-            TPM2_ALG_SM3_256 => Ok(HashingAlgorithm::SM3_256),
-            TPM2_ALG_SHA3_256 => Ok(HashingAlgorithm::SHA3_256),
-            TPM2_ALG_SHA3_384 => Ok(HashingAlgorithm::SHA3_384),
-            TPM2_ALG_SHA3_512 => Ok(HashingAlgorithm::SHA3_512),
-            _ => Err(Error::local_error(WrapperErrorKind::InconsistentParams)),
+            TPM2_ALG_SHA1 => Ok(HashingAlgorithm::Sha1),
+            TPM2_ALG_SHA256 => Ok(HashingAlgorithm::Sha256),
+            TPM2_ALG_SHA384 => Ok(HashingAlgorithm::Sha384),
+            TPM2_ALG_SHA512 => Ok(HashingAlgorithm::Sha512),
+            TPM2_ALG_SM3_256 => Ok(HashingAlgorithm::Sm3_256),
+            TPM2_ALG_SHA3_256 => Ok(HashingAlgorithm::Sha3_256),
+            TPM2_ALG_SHA3_384 => Ok(HashingAlgorithm::Sha3_384),
+            TPM2_ALG_SHA3_512 => Ok(HashingAlgorithm::Sha3_512),
+            _ => Err(Error::local_error(WrapperErrorKind::InvalidParam)),
         }
     }
 }
@@ -294,14 +259,14 @@ impl TryFrom<TPM2_ALG_ID> for HashingAlgorithm {
 ////////////////////////////////////////////////
 
 /// Enum containing signature schemes
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, PartialEq)]
 pub enum SignatureScheme {
-    RSASSA,
-    RSAPSS,
-    ECDSA,
-    ECDAA,
-    ECSCHNORR,
-    SM2,
+    RsaSsa,
+    RsaPss,
+    EcDsa,
+    EcDaa,
+    EcSchnorr,
+    Sm2,
 }
 
 impl SignatureScheme {
@@ -309,12 +274,12 @@ impl SignatureScheme {
     /// signature scheme
     pub fn alg_id(self) -> TPM2_ALG_ID {
         match self {
-            SignatureScheme::RSASSA => TPM2_ALG_RSASSA,
-            SignatureScheme::RSAPSS => TPM2_ALG_RSAPSS,
-            SignatureScheme::ECDSA => TPM2_ALG_ECDSA,
-            SignatureScheme::ECDAA => TPM2_ALG_ECDAA,
-            SignatureScheme::ECSCHNORR => TPM2_ALG_ECSCHNORR,
-            SignatureScheme::SM2 => TPM2_ALG_SM2,
+            SignatureScheme::RsaSsa => TPM2_ALG_RSASSA,
+            SignatureScheme::RsaPss => TPM2_ALG_RSAPSS,
+            SignatureScheme::EcDsa => TPM2_ALG_ECDSA,
+            SignatureScheme::EcDaa => TPM2_ALG_ECDAA,
+            SignatureScheme::EcSchnorr => TPM2_ALG_ECSCHNORR,
+            SignatureScheme::Sm2 => TPM2_ALG_SM2,
         }
     }
 }
@@ -324,13 +289,13 @@ impl TryFrom<TPM2_ALG_ID> for SignatureScheme {
 
     fn try_from(algorithm_id: TPM2_ALG_ID) -> Result<Self> {
         match algorithm_id {
-            TPM2_ALG_RSASSA => Ok(SignatureScheme::RSASSA),
-            TPM2_ALG_RSAPSS => Ok(SignatureScheme::RSAPSS),
-            TPM2_ALG_ECDSA => Ok(SignatureScheme::ECDSA),
-            TPM2_ALG_ECDAA => Ok(SignatureScheme::ECDAA),
-            TPM2_ALG_ECSCHNORR => Ok(SignatureScheme::ECSCHNORR),
-            TPM2_ALG_SM2 => Ok(SignatureScheme::SM2),
-            _ => Err(Error::local_error(WrapperErrorKind::InconsistentParams)),
+            TPM2_ALG_RSASSA => Ok(SignatureScheme::RsaSsa),
+            TPM2_ALG_RSAPSS => Ok(SignatureScheme::RsaPss),
+            TPM2_ALG_ECDSA => Ok(SignatureScheme::EcDsa),
+            TPM2_ALG_ECDAA => Ok(SignatureScheme::EcDaa),
+            TPM2_ALG_ECSCHNORR => Ok(SignatureScheme::EcSchnorr),
+            TPM2_ALG_SM2 => Ok(SignatureScheme::Sm2),
+            _ => Err(Error::local_error(WrapperErrorKind::InvalidParam)),
         }
     }
 }
@@ -342,10 +307,10 @@ impl TryFrom<TPM2_ALG_ID> for SignatureScheme {
 ////////////////////////////////////////////////
 
 /// Enum containing RSA signature schemes
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, PartialEq)]
 pub enum RsaSignatureScheme {
-    RSASSA,
-    RSAPSS,
+    RsaSsa,
+    RsaPss,
 }
 
 impl RsaSignatureScheme {
@@ -353,8 +318,8 @@ impl RsaSignatureScheme {
     /// RSA signature scheme
     pub fn alg_id(self) -> TPM2_ALG_ID {
         match self {
-            RsaSignatureScheme::RSASSA => TPM2_ALG_RSASSA,
-            RsaSignatureScheme::RSAPSS => TPM2_ALG_RSAPSS,
+            RsaSignatureScheme::RsaSsa => TPM2_ALG_RSASSA,
+            RsaSignatureScheme::RsaPss => TPM2_ALG_RSAPSS,
         }
     }
 }
@@ -364,9 +329,9 @@ impl TryFrom<TPM2_ALG_ID> for RsaSignatureScheme {
 
     fn try_from(algorithm_id: TPM2_ALG_ID) -> Result<Self> {
         match algorithm_id {
-            TPM2_ALG_RSASSA => Ok(RsaSignatureScheme::RSASSA),
-            TPM2_ALG_RSAPSS => Ok(RsaSignatureScheme::RSAPSS),
-            _ => Err(Error::local_error(WrapperErrorKind::InconsistentParams)),
+            TPM2_ALG_RSASSA => Ok(RsaSignatureScheme::RsaSsa),
+            TPM2_ALG_RSAPSS => Ok(RsaSignatureScheme::RsaPss),
+            _ => Err(Error::local_error(WrapperErrorKind::InvalidParam)),
         }
     }
 }
@@ -378,12 +343,12 @@ impl TryFrom<TPM2_ALG_ID> for RsaSignatureScheme {
 ////////////////////////////////////////////////
 
 /// Enum containing ECC signature schemes
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, PartialEq)]
 pub enum EccSignatureScheme {
-    ECDSA,
-    ECDAA,
-    ECSCHNORR,
-    SM2,
+    EcDsa,
+    EcDaa,
+    EcSchnorr,
+    Sm2,
 }
 
 impl EccSignatureScheme {
@@ -391,10 +356,10 @@ impl EccSignatureScheme {
     /// signing scheme
     pub fn alg_id(self) -> TPM2_ALG_ID {
         match self {
-            EccSignatureScheme::ECDSA => TPM2_ALG_ECDSA,
-            EccSignatureScheme::ECDAA => TPM2_ALG_ECDAA,
-            EccSignatureScheme::ECSCHNORR => TPM2_ALG_ECSCHNORR,
-            EccSignatureScheme::SM2 => TPM2_ALG_SM2,
+            EccSignatureScheme::EcDsa => TPM2_ALG_ECDSA,
+            EccSignatureScheme::EcDaa => TPM2_ALG_ECDAA,
+            EccSignatureScheme::EcSchnorr => TPM2_ALG_ECSCHNORR,
+            EccSignatureScheme::Sm2 => TPM2_ALG_SM2,
         }
     }
 }
@@ -404,11 +369,11 @@ impl TryFrom<TPM2_ALG_ID> for EccSignatureScheme {
 
     fn try_from(algorithm_id: TPM2_ALG_ID) -> Result<Self> {
         match algorithm_id {
-            TPM2_ALG_ECDSA => Ok(EccSignatureScheme::ECDSA),
-            TPM2_ALG_ECDAA => Ok(EccSignatureScheme::ECDAA),
-            TPM2_ALG_ECSCHNORR => Ok(EccSignatureScheme::ECSCHNORR),
-            TPM2_ALG_SM2 => Ok(EccSignatureScheme::SM2),
-            _ => Err(Error::local_error(WrapperErrorKind::InconsistentParams)),
+            TPM2_ALG_ECDSA => Ok(EccSignatureScheme::EcDsa),
+            TPM2_ALG_ECDAA => Ok(EccSignatureScheme::EcDaa),
+            TPM2_ALG_ECSCHNORR => Ok(EccSignatureScheme::EcSchnorr),
+            TPM2_ALG_SM2 => Ok(EccSignatureScheme::Sm2),
+            _ => Err(Error::local_error(WrapperErrorKind::InvalidParam)),
         }
     }
 }
@@ -420,11 +385,11 @@ impl TryFrom<TPM2_ALG_ID> for EccSignatureScheme {
 ////////////////////////////////////////////////
 
 // Enum containing asymmetric encryption schemes
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, PartialEq)]
 pub enum AsymmetricEncryptionScheme {
-    OAEP,
-    RSAES,
-    ECDH,
+    Oaep,
+    RsaEs,
+    EcDh, //Elliptic-curve Diffie–Hellman
 }
 
 impl AsymmetricEncryptionScheme {
@@ -432,9 +397,9 @@ impl AsymmetricEncryptionScheme {
     /// asymmetric encryption scheme.
     pub fn alg_id(self) -> TPM2_ALG_ID {
         match self {
-            AsymmetricEncryptionScheme::OAEP => TPM2_ALG_OAEP,
-            AsymmetricEncryptionScheme::RSAES => TPM2_ALG_RSAES,
-            AsymmetricEncryptionScheme::ECDH => TPM2_ALG_ECDH,
+            AsymmetricEncryptionScheme::Oaep => TPM2_ALG_OAEP,
+            AsymmetricEncryptionScheme::RsaEs => TPM2_ALG_RSAES,
+            AsymmetricEncryptionScheme::EcDh => TPM2_ALG_ECDH,
         }
     }
 }
@@ -444,10 +409,10 @@ impl TryFrom<TPM2_ALG_ID> for AsymmetricEncryptionScheme {
 
     fn try_from(algorithm_id: TPM2_ALG_ID) -> Result<Self> {
         match algorithm_id {
-            TPM2_ALG_OAEP => Ok(AsymmetricEncryptionScheme::OAEP),
-            TPM2_ALG_RSAES => Ok(AsymmetricEncryptionScheme::RSAES),
-            TPM2_ALG_ECDH => Ok(AsymmetricEncryptionScheme::ECDH),
-            _ => Err(Error::local_error(WrapperErrorKind::InconsistentParams)),
+            TPM2_ALG_OAEP => Ok(AsymmetricEncryptionScheme::Oaep),
+            TPM2_ALG_RSAES => Ok(AsymmetricEncryptionScheme::RsaEs),
+            TPM2_ALG_ECDH => Ok(AsymmetricEncryptionScheme::EcDh),
+            _ => Err(Error::local_error(WrapperErrorKind::InvalidParam)),
         }
     }
 }
@@ -459,13 +424,13 @@ impl TryFrom<TPM2_ALG_ID> for AsymmetricEncryptionScheme {
 ////////////////////////////////////////////////
 
 // Enum containing encryption modes
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, PartialEq)]
 pub enum EncryptionMode {
-    CTR,
-    OFB,
-    CBC,
-    CFB,
-    ECB
+    Ctr,
+    Ofb,
+    Cbc,
+    Cfb,
+    Ecb,
 }
 
 impl EncryptionMode {
@@ -473,11 +438,11 @@ impl EncryptionMode {
     /// encryption mode.
     pub fn alg_id(self) -> TPM2_ALG_ID {
         match self {
-            EncryptionMode::CTR => TPM2_ALG_CTR,
-            EncryptionMode::OFB => TPM2_ALG_OFB,
-            EncryptionMode::CBC => TPM2_ALG_CBC,
-            EncryptionMode::CFB => TPM2_ALG_CFB,
-            EncryptionMode::ECB => TPM2_ALG_ECB,
+            EncryptionMode::Ctr => TPM2_ALG_CTR,
+            EncryptionMode::Ofb => TPM2_ALG_OFB,
+            EncryptionMode::Cbc => TPM2_ALG_CBC,
+            EncryptionMode::Cfb => TPM2_ALG_CFB,
+            EncryptionMode::Ecb => TPM2_ALG_ECB,
         }
     }
 }
@@ -487,12 +452,12 @@ impl TryFrom<TPM2_ALG_ID> for EncryptionMode {
 
     fn try_from(algorithm_id: TPM2_ALG_ID) -> Result<Self> {
         match algorithm_id {
-            TPM2_ALG_CTR => Ok(EncryptionMode::CTR),
-            TPM2_ALG_OFB => Ok(EncryptionMode::OFB),
-            TPM2_ALG_CBC => Ok(EncryptionMode::CBC),
-            TPM2_ALG_CFB => Ok(EncryptionMode::CFB),
-            TPM2_ALG_ECB => Ok(EncryptionMode::ECB),
-            _ => Err(Error::local_error(WrapperErrorKind::InconsistentParams)),
+            TPM2_ALG_CTR => Ok(EncryptionMode::Ctr),
+            TPM2_ALG_OFB => Ok(EncryptionMode::Ofb),
+            TPM2_ALG_CBC => Ok(EncryptionMode::Cbc),
+            TPM2_ALG_CFB => Ok(EncryptionMode::Cfb),
+            TPM2_ALG_ECB => Ok(EncryptionMode::Ecb),
+            _ => Err(Error::local_error(WrapperErrorKind::InvalidParam)),
         }
     }
 }
@@ -504,9 +469,9 @@ impl TryFrom<TPM2_ALG_ID> for EncryptionMode {
 ////////////////////////////////////////////////
 
 // Enum containing mask generation functions.
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, PartialEq)]
 pub enum MaskGenerationFunction {
-    MGF1,
+    Mgf1,
 }
 
 impl MaskGenerationFunction {
@@ -514,7 +479,7 @@ impl MaskGenerationFunction {
     /// mask generation function.
     pub fn alg_id(self) -> TPM2_ALG_ID {
         match self {
-            MaskGenerationFunction::MGF1 => TPM2_ALG_MGF1,
+            MaskGenerationFunction::Mgf1 => TPM2_ALG_MGF1,
         }
     }
 }
@@ -524,8 +489,8 @@ impl TryFrom<TPM2_ALG_ID> for MaskGenerationFunction {
 
     fn try_from(algorithm_id: TPM2_ALG_ID) -> Result<Self> {
         match algorithm_id {
-            TPM2_ALG_MGF1 => Ok(MaskGenerationFunction::MGF1),
-            _ => Err(Error::local_error(WrapperErrorKind::InconsistentParams)),
+            TPM2_ALG_MGF1 => Ok(MaskGenerationFunction::Mgf1),
+            _ => Err(Error::local_error(WrapperErrorKind::InvalidParam)),
         }
     }
 }
@@ -536,12 +501,12 @@ impl TryFrom<TPM2_ALG_ID> for MaskGenerationFunction {
 ////////////////////////////////////////////////
 
 // Enum containing key derivation functions.
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, PartialEq)]
 pub enum KeyDerivationFunction {
-    KDF1_SP800_56A,
-    KDF2,
-    KDF1_SP800_108,
-    ECMQV,
+    Kdf1Sp800_56a,
+    Kdf2,
+    Kdf1Sp800_108,
+    EcMqv,
 }
 
 impl KeyDerivationFunction {
@@ -549,10 +514,10 @@ impl KeyDerivationFunction {
     /// key derivation function.
     pub fn alg_id(self) -> TPM2_ALG_ID {
         match self {
-            KeyDerivationFunction::KDF1_SP800_56A => TPM2_ALG_KDF1_SP800_56A,
-            KeyDerivationFunction::KDF2 => TPM2_ALG_KDF2,
-            KeyDerivationFunction::KDF1_SP800_108 => TPM2_ALG_KDF1_SP800_108,
-            KeyDerivationFunction::ECMQV => TPM2_ALG_ECMQV,
+            KeyDerivationFunction::Kdf1Sp800_56a => TPM2_ALG_KDF1_SP800_56A,
+            KeyDerivationFunction::Kdf2 => TPM2_ALG_KDF2,
+            KeyDerivationFunction::Kdf1Sp800_108 => TPM2_ALG_KDF1_SP800_108,
+            KeyDerivationFunction::EcMqv => TPM2_ALG_ECMQV,
         }
     }
 }
@@ -562,11 +527,11 @@ impl TryFrom<TPM2_ALG_ID> for KeyDerivationFunction {
 
     fn try_from(algorithm_id: TPM2_ALG_ID) -> Result<Self> {
         match algorithm_id {
-            TPM2_ALG_KDF1_SP800_56A => Ok(KeyDerivationFunction::KDF1_SP800_56A),
-            TPM2_ALG_KDF2 => Ok(KeyDerivationFunction::KDF2),
-            TPM2_ALG_KDF1_SP800_108 => Ok(KeyDerivationFunction::KDF1_SP800_108),
-            TPM2_ALG_ECMQV => Ok(KeyDerivationFunction::ECMQV),
-            _ => Err(Error::local_error(WrapperErrorKind::InconsistentParams)),
+            TPM2_ALG_KDF1_SP800_56A => Ok(KeyDerivationFunction::Kdf1Sp800_56a),
+            TPM2_ALG_KDF2 => Ok(KeyDerivationFunction::Kdf2),
+            TPM2_ALG_KDF1_SP800_108 => Ok(KeyDerivationFunction::Kdf1Sp800_108),
+            TPM2_ALG_ECMQV => Ok(KeyDerivationFunction::EcMqv),
+            _ => Err(Error::local_error(WrapperErrorKind::InvalidParam)),
         }
     }
 }
@@ -578,9 +543,9 @@ impl TryFrom<TPM2_ALG_ID> for KeyDerivationFunction {
 ////////////////////////////////////////////////
 
 /// Enum continaing algorithmic errors.
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, PartialEq)]
 pub enum AlgorithmicError {
-    ERROR,
+    Error,
 }
 
 impl AlgorithmicError {
@@ -588,7 +553,7 @@ impl AlgorithmicError {
     /// algorithmic error.
     pub fn alg_id(self) -> TPM2_ALG_ID {
         match self {
-            AlgorithmicError::ERROR => TPM2_ALG_ERROR,
+            AlgorithmicError::Error => TPM2_ALG_ERROR,
         }
     }
 }
@@ -598,8 +563,8 @@ impl TryFrom<TPM2_ALG_ID> for AlgorithmicError {
 
     fn try_from(algorithm_id: TPM2_ALG_ID) -> Result<Self> {
         match algorithm_id {
-            TPM2_ALG_ERROR => Ok(AlgorithmicError::ERROR),
-            _ => Err(Error::local_error(WrapperErrorKind::InconsistentParams)),
+            TPM2_ALG_ERROR => Ok(AlgorithmicError::Error),
+            _ => Err(Error::local_error(WrapperErrorKind::InvalidParam)),
         }
     }
 }
