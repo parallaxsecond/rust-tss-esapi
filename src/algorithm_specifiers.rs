@@ -18,6 +18,8 @@
 //! This module specifies the different algorithms and
 //! provides function for converting them to their corresponding
 //! TPM2_ALG_ID
+//!
+//! TPM 2.0 Library Specification(Rev: 1.59), Part 2, Secion 6.3, Table 8 — Legend for TPM_ALG_ID Table
 
 pub mod constants::{
     TPM2_ALG_ERROR,
@@ -66,16 +68,18 @@ pub mod constants::{
 
 ////////////////////////////////////////////////
 ///
-/// Key Types
+/// Object Types
 ///
 ////////////////////////////////////////////////
 
-/// Enum containing key types. These are typically
+/// Enum containing object types form the
+/// TPM2 Library Specification.
+/// These are typically
 /// used when setting the type parameter in
 /// TPMT_PUBLIC_PARMS.
 
 #[derive(Copy, Clone, Debug)]
-pub enum KeyType {
+pub enum ObjectType {
     NULL,
     RSA,/// Assymetric
     ECC,/// Assymetric
@@ -83,30 +87,30 @@ pub enum KeyType {
     SYMCIPHER,/// Symmetric
 }
 
-impl KeyType {
+impl ObjectType {
     /// Returns the TPM2_ALG_ID that corresponds to the
     /// key type.
     pub fn alg_id(self) -> TPM2_ALG_ID {
         match self {
-            KeyDerivationFunction::NULL => TPM2_ALG_NULL,
-            KeyDerivationFunction::RSA => TPM2_ALG_RSA,
-            KeyDerivationFunction::ECC => TPM2_ALG_ECC,
-            KeyDerivationFunction::KEYEDHASH => TPM2_ALG_KEYEDHASH,
-            KeyDerivationFunction::SYMCIPHER => TPM2_ALG_SYMCIPHER,
+            ObjectType::NULL => TPM2_ALG_NULL,
+            ObjectType::RSA => TPM2_ALG_RSA,
+            ObjectType::ECC => TPM2_ALG_ECC,
+            ObjectType::KEYEDHASH => TPM2_ALG_KEYEDHASH,
+            ObjectType::SYMCIPHER => TPM2_ALG_SYMCIPHER,
         }
     }
 }
 
-impl TryFrom<TPM2_ALG_ID> for KeyType {
+impl TryFrom<TPM2_ALG_ID> for ObjectType {
     type Error = Error;
 
     fn try_from(algorithm_id: TPM2_ALG_ID) -> Result<Self> {
         match algorithm_id {
-            TPM2_ALG_NULL => Ok(KeyType::NULL),
-            TPM2_ALG_RSA => Ok(KeyType::RSA),
-            TPM2_ALG_ECC => Ok(KeyType::ECC),
-            TPM2_ALG_KEYEDHASH => Ok(KeyType::KEYEDHASH),
-            TPM2_ALG_SYMCIPHER => Ok(KeyType::SYMCIPHER),
+            TPM2_ALG_NULL => Ok(ObjectType::NULL),
+            TPM2_ALG_RSA => Ok(ObjectType::RSA),
+            TPM2_ALG_ECC => Ok(ObjectType::ECC),
+            TPM2_ALG_KEYEDHASH => Ok(ObjectType::KEYEDHASH),
+            TPM2_ALG_SYMCIPHER => Ok(ObjectType::SYMCIPHER),
             _ => Err(Error::local_error(WrapperErrorKind::InconsistentParams)),
         }
     }
@@ -114,35 +118,37 @@ impl TryFrom<TPM2_ALG_ID> for KeyType {
 
 ////////////////////////////////////////////////
 ///
-/// Asymmetric cryptographic algorithms.
+/// Asymmetric algorithms.
 ///
+/// The specification specifies these as
+/// "asymmetric algorithm with a public and private key".
 ////////////////////////////////////////////////
 
-/// Enum containing asymmetric cryptographic algorithms.
+/// Enum containing asymmetric algorithms.
 #[derive(Copy, Clone, Debug)]
-pub enum AsymmetricCryptographicAlgorithm {
+pub enum AsymmetricAlgorithm {
     RSA,
     ECC
 }
 
-impl AsymmetricCryptographicAlgorithm {
+impl AsymmetricAlgorithm {
     /// Returns the TPM2_ALG_ID that corresponds to the
-    /// asymmetric cryptographic algorithm.
+    /// asymmetric algorithm.
     pub fn alg_id(self) -> TPM2_ALG_ID {
         match self {
-            AsymmetricCryptographicAlgorithm::RSA => TPM2_ALG_RSA,
-            AsymmetricCryptographicAlgorithm::ECC => TPM2_ALG_ECC,
+            AsymmetricAlgorithm::RSA => TPM2_ALG_RSA,
+            AsymmetricAlgorithm::ECC => TPM2_ALG_ECC,
         }
     }
 }
 
-impl TryFrom<TPM2_ALG_ID> for AsymmetricCryptographicAlgorithm {
+impl TryFrom<TPM2_ALG_ID> for AsymmetricAlgorithm {
     type Error = Error;
 
     fn try_from(algorithm_id: TPM2_ALG_ID) -> Result<Self> {
         match algorithm_id {
-            TPM2_ALG_RSA => Ok(AsymmetricCryptographicAlgorithm::RSA),
-            TPM2_ALG_ECC => Ok(AsymmetricCryptographicAlgorithm::ECC),
+            TPM2_ALG_RSA => Ok(AsymmetricAlgorithm::RSA),
+            TPM2_ALG_ECC => Ok(AsymmetricAlgorithm::ECC),
             _ => Err(Error::local_error(WrapperErrorKind::InconsistentParams)),
         }
     }
@@ -189,38 +195,39 @@ impl TryFrom<TPM2_ALG_ID> for KeyedHash {
 
 ////////////////////////////////////////////////
 ///
-/// Symmetric cryptographic algorithms.(SYMCIPHER)
+/// Symmetric algorithms.(SYMCIPHER)
 ///
 ////////////////////////////////////////////////
 
-/// Enum containing symmetric cryptographic algorithms.
+/// Enum containing symmetric algorithms.
 #[derive(Copy, Clone, Debug)]
-pub enum SymmetricCryptographicAlgorithm {
+pub enum SymmetricAlgorithm {
     AES,
     CAMELLIA,
     SM4,
+    ///TDES, it has been banned.
 }
 
-impl SymmetricCryptographicAlgorithm {
+impl SymmetricAlgorithm {
     /// Returns the TPM2_ALG_ID that corresponds to the
-    /// symmetric cryptographic algorithms
+    /// symmetric algorithm.
     pub fn alg_id(self) -> TPM2_ALG_ID {
         match self {
-            SymmetricCryptographicAlgorithm::AES => TPM2_ALG_AES,
-            SymmetricCryptographicAlgorithm::CAMELLIA => TPM2_ALG_CAMELLIA,
-            SymmetricCryptographicAlgorithm::SM4 => TPM2_ALG_SM4,
+            SymmetricAlgorithm::AES => TPM2_ALG_AES,
+            SymmetricAlgorithm::CAMELLIA => TPM2_ALG_CAMELLIA,
+            SymmetricAlgorithm::SM4 => TPM2_ALG_SM4,
         }
     }
 }
 
-impl TryFrom<TPM2_ALG_ID> for Symmetric {
+impl TryFrom<TPM2_ALG_ID> for SymmetricAlgorithm {
     type Error = Error;
 
     fn try_from(algorithm_id: TPM2_ALG_ID) -> Result<Self> {
         match algorithm_id {
-            TPM2_ALG_AES => Ok(SymmetricCryptographicAlgorithm::AES),
-            TPM2_ALG_CAMELLIA => Ok(SymmetricCryptographicAlgorithm::CAMELLIA),
-            TPM2_ALG_SM4 => Ok(SymmetricCryptographicAlgorithm::SM4),
+            TPM2_ALG_AES => Ok(SymmetricAlgorithm::AES),
+            TPM2_ALG_CAMELLIA => Ok(SymmetricAlgorithm::CAMELLIA),
+            TPM2_ALG_SM4 => Ok(SymmetricAlgorithm::SM4),
             _ => Err(Error::local_error(WrapperErrorKind::InconsistentParams)),
         }
     }
