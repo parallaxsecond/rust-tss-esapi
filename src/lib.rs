@@ -118,7 +118,6 @@ pub mod tss2_esys {
     include!(concat!(env!("CARGO_MANIFEST_DIR"), "/doc_bindings.rs"));
 }
 pub mod abstraction;
-pub mod algorithm_specifiers;
 #[allow(
     non_snake_case,
     non_camel_case_types,

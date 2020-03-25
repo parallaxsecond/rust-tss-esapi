@@ -20,6 +20,7 @@
 //! guidelines to them. Structures that are meant to act as builders have `Builder` appended to
 //! type name. Unions are converted to Rust `enum`s by dropping the `TPMU` qualifier and appending
 //! `Union`.
+pub mod algorithm_specifiers;
 pub mod primitives;
 
 use crate::constants::*;

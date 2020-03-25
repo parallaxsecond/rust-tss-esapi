@@ -14,8 +14,8 @@
 // limitations under the License.
 
 use std::convert::TryFrom;
-use tss_esapi::algorithm_specifiers::*;
 use tss_esapi::constants::*;
+use tss_esapi::utils::algorithm_specifiers::*;
 
 mod test_object_type {
     use super::*;
