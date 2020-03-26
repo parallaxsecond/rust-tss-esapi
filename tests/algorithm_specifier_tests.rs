@@ -14,21 +14,26 @@
 // limitations under the License.
 
 use std::convert::TryFrom;
-use tss_esapi::tss2_esys::TPM2_ALG_ID;
 use tss_esapi::constants::*;
+use tss_esapi::tss2_esys::TPM2_ALG_ID;
 use tss_esapi::utils::algorithm_specifiers::*;
 
 mod test_object_type {
     use super::*;
-
 
     #[test]
     fn test_into_alogithm_id() {
         assert_eq!(Into::<TPM2_ALG_ID>::into(ObjectType::Null), TPM2_ALG_NULL);
         assert_eq!(Into::<TPM2_ALG_ID>::into(ObjectType::Rsa), TPM2_ALG_RSA);
         assert_eq!(Into::<TPM2_ALG_ID>::into(ObjectType::Ecc), TPM2_ALG_ECC);
-        assert_eq!(Into::<TPM2_ALG_ID>::into(ObjectType::KeyedHash), TPM2_ALG_KEYEDHASH);
-        assert_eq!(Into::<TPM2_ALG_ID>::into(ObjectType::SymCipher), TPM2_ALG_SYMCIPHER);
+        assert_eq!(
+            Into::<TPM2_ALG_ID>::into(ObjectType::KeyedHash),
+            TPM2_ALG_KEYEDHASH
+        );
+        assert_eq!(
+            Into::<TPM2_ALG_ID>::into(ObjectType::SymCipher),
+            TPM2_ALG_SYMCIPHER
+        );
     }
 
     #[test]
@@ -59,8 +64,14 @@ mod test_asymmetric_algorithm {
 
     #[test]
     fn test_into_alogithm_id() {
-        assert_eq!(Into::<TPM2_ALG_ID>::into(AsymmetricAlgorithm::Rsa), TPM2_ALG_RSA);
-        assert_eq!(Into::<TPM2_ALG_ID>::into(AsymmetricAlgorithm::Ecc), TPM2_ALG_ECC);
+        assert_eq!(
+            Into::<TPM2_ALG_ID>::into(AsymmetricAlgorithm::Rsa),
+            TPM2_ALG_RSA
+        );
+        assert_eq!(
+            Into::<TPM2_ALG_ID>::into(AsymmetricAlgorithm::Ecc),
+            TPM2_ALG_ECC
+        );
     }
 
     #[test]
@@ -105,9 +116,18 @@ mod test_symmetric_algorithm {
 
     #[test]
     fn test_into_alogithm_id() {
-        assert_eq!(Into::<TPM2_ALG_ID>::into(SymmetricAlgorithm::Aes), TPM2_ALG_AES);
-        assert_eq!(Into::<TPM2_ALG_ID>::into(SymmetricAlgorithm::Camellia), TPM2_ALG_CAMELLIA);
-        assert_eq!(Into::<TPM2_ALG_ID>::into(SymmetricAlgorithm::Sm4), TPM2_ALG_SM4);
+        assert_eq!(
+            Into::<TPM2_ALG_ID>::into(SymmetricAlgorithm::Aes),
+            TPM2_ALG_AES
+        );
+        assert_eq!(
+            Into::<TPM2_ALG_ID>::into(SymmetricAlgorithm::Camellia),
+            TPM2_ALG_CAMELLIA
+        );
+        assert_eq!(
+            Into::<TPM2_ALG_ID>::into(SymmetricAlgorithm::Sm4),
+            TPM2_ALG_SM4
+        );
     }
 
     #[test]
@@ -136,14 +156,38 @@ mod test_hashing_algorithm {
 
     #[test]
     fn test_into_alogithm_id() {
-        assert_eq!(Into::<TPM2_ALG_ID>::into(HashingAlgorithm::Sha1), TPM2_ALG_SHA1);
-        assert_eq!(Into::<TPM2_ALG_ID>::into(HashingAlgorithm::Sha256), TPM2_ALG_SHA256);
-        assert_eq!(Into::<TPM2_ALG_ID>::into(HashingAlgorithm::Sha384), TPM2_ALG_SHA384);
-        assert_eq!(Into::<TPM2_ALG_ID>::into(HashingAlgorithm::Sha512), TPM2_ALG_SHA512);
-        assert_eq!(Into::<TPM2_ALG_ID>::into(HashingAlgorithm::Sm3_256), TPM2_ALG_SM3_256);
-        assert_eq!(Into::<TPM2_ALG_ID>::into(HashingAlgorithm::Sha3_256), TPM2_ALG_SHA3_256);
-        assert_eq!(Into::<TPM2_ALG_ID>::into(HashingAlgorithm::Sha3_384), TPM2_ALG_SHA3_384);
-        assert_eq!(Into::<TPM2_ALG_ID>::into(HashingAlgorithm::Sha3_512), TPM2_ALG_SHA3_512);
+        assert_eq!(
+            Into::<TPM2_ALG_ID>::into(HashingAlgorithm::Sha1),
+            TPM2_ALG_SHA1
+        );
+        assert_eq!(
+            Into::<TPM2_ALG_ID>::into(HashingAlgorithm::Sha256),
+            TPM2_ALG_SHA256
+        );
+        assert_eq!(
+            Into::<TPM2_ALG_ID>::into(HashingAlgorithm::Sha384),
+            TPM2_ALG_SHA384
+        );
+        assert_eq!(
+            Into::<TPM2_ALG_ID>::into(HashingAlgorithm::Sha512),
+            TPM2_ALG_SHA512
+        );
+        assert_eq!(
+            Into::<TPM2_ALG_ID>::into(HashingAlgorithm::Sm3_256),
+            TPM2_ALG_SM3_256
+        );
+        assert_eq!(
+            Into::<TPM2_ALG_ID>::into(HashingAlgorithm::Sha3_256),
+            TPM2_ALG_SHA3_256
+        );
+        assert_eq!(
+            Into::<TPM2_ALG_ID>::into(HashingAlgorithm::Sha3_384),
+            TPM2_ALG_SHA3_384
+        );
+        assert_eq!(
+            Into::<TPM2_ALG_ID>::into(HashingAlgorithm::Sha3_512),
+            TPM2_ALG_SHA3_512
+        );
     }
 
     #[test]
@@ -192,12 +236,30 @@ mod test_signature_scheme {
 
     #[test]
     fn test_into_alogithm_id() {
-        assert_eq!(Into::<TPM2_ALG_ID>::into(SignatureScheme::RsaSsa), TPM2_ALG_RSASSA);
-        assert_eq!(Into::<TPM2_ALG_ID>::into(SignatureScheme::RsaPss), TPM2_ALG_RSAPSS);
-        assert_eq!(Into::<TPM2_ALG_ID>::into(SignatureScheme::EcDsa), TPM2_ALG_ECDSA);
-        assert_eq!(Into::<TPM2_ALG_ID>::into(SignatureScheme::EcDaa), TPM2_ALG_ECDAA);
-        assert_eq!(Into::<TPM2_ALG_ID>::into(SignatureScheme::EcSchnorr), TPM2_ALG_ECSCHNORR);
-        assert_eq!(Into::<TPM2_ALG_ID>::into(SignatureScheme::Sm2), TPM2_ALG_SM2);
+        assert_eq!(
+            Into::<TPM2_ALG_ID>::into(SignatureScheme::RsaSsa),
+            TPM2_ALG_RSASSA
+        );
+        assert_eq!(
+            Into::<TPM2_ALG_ID>::into(SignatureScheme::RsaPss),
+            TPM2_ALG_RSAPSS
+        );
+        assert_eq!(
+            Into::<TPM2_ALG_ID>::into(SignatureScheme::EcDsa),
+            TPM2_ALG_ECDSA
+        );
+        assert_eq!(
+            Into::<TPM2_ALG_ID>::into(SignatureScheme::EcDaa),
+            TPM2_ALG_ECDAA
+        );
+        assert_eq!(
+            Into::<TPM2_ALG_ID>::into(SignatureScheme::EcSchnorr),
+            TPM2_ALG_ECSCHNORR
+        );
+        assert_eq!(
+            Into::<TPM2_ALG_ID>::into(SignatureScheme::Sm2),
+            TPM2_ALG_SM2
+        );
     }
 
     #[test]
@@ -238,8 +300,14 @@ mod test_rsa_signature_scheme {
 
     #[test]
     fn test_into_alogithm_id() {
-        assert_eq!(Into::<TPM2_ALG_ID>::into(RsaSignatureScheme::RsaPss), TPM2_ALG_RSAPSS);
-        assert_eq!(Into::<TPM2_ALG_ID>::into(RsaSignatureScheme::RsaSsa), TPM2_ALG_RSASSA);
+        assert_eq!(
+            Into::<TPM2_ALG_ID>::into(RsaSignatureScheme::RsaPss),
+            TPM2_ALG_RSAPSS
+        );
+        assert_eq!(
+            Into::<TPM2_ALG_ID>::into(RsaSignatureScheme::RsaSsa),
+            TPM2_ALG_RSASSA
+        );
     }
 
     #[test]
@@ -264,10 +332,22 @@ mod test_ecc_signature_scheme {
 
     #[test]
     fn test_into_alogithm_id() {
-        assert_eq!(Into::<TPM2_ALG_ID>::into(EccSignatureScheme::EcDsa), TPM2_ALG_ECDSA);
-        assert_eq!(Into::<TPM2_ALG_ID>::into(EccSignatureScheme::EcDaa), TPM2_ALG_ECDAA);
-        assert_eq!(Into::<TPM2_ALG_ID>::into(EccSignatureScheme::EcSchnorr), TPM2_ALG_ECSCHNORR);
-        assert_eq!(Into::<TPM2_ALG_ID>::into(EccSignatureScheme::Sm2), TPM2_ALG_SM2);
+        assert_eq!(
+            Into::<TPM2_ALG_ID>::into(EccSignatureScheme::EcDsa),
+            TPM2_ALG_ECDSA
+        );
+        assert_eq!(
+            Into::<TPM2_ALG_ID>::into(EccSignatureScheme::EcDaa),
+            TPM2_ALG_ECDAA
+        );
+        assert_eq!(
+            Into::<TPM2_ALG_ID>::into(EccSignatureScheme::EcSchnorr),
+            TPM2_ALG_ECSCHNORR
+        );
+        assert_eq!(
+            Into::<TPM2_ALG_ID>::into(EccSignatureScheme::Sm2),
+            TPM2_ALG_SM2
+        );
     }
 
     #[test]
@@ -300,9 +380,18 @@ mod test_asymmetric_encrytion_scheme {
 
     #[test]
     fn test_into_alogithm_id() {
-        assert_eq!(Into::<TPM2_ALG_ID>::into(AsymmetricEncryptionScheme::Oaep), TPM2_ALG_OAEP);
-        assert_eq!(Into::<TPM2_ALG_ID>::into(AsymmetricEncryptionScheme::RsaEs), TPM2_ALG_RSAES);
-        assert_eq!(Into::<TPM2_ALG_ID>::into(AsymmetricEncryptionScheme::EcDh), TPM2_ALG_ECDH);
+        assert_eq!(
+            Into::<TPM2_ALG_ID>::into(AsymmetricEncryptionScheme::Oaep),
+            TPM2_ALG_OAEP
+        );
+        assert_eq!(
+            Into::<TPM2_ALG_ID>::into(AsymmetricEncryptionScheme::RsaEs),
+            TPM2_ALG_RSAES
+        );
+        assert_eq!(
+            Into::<TPM2_ALG_ID>::into(AsymmetricEncryptionScheme::EcDh),
+            TPM2_ALG_ECDH
+        );
     }
 
     #[test]
@@ -372,7 +461,10 @@ mod test_mask_generation_function {
 
     #[test]
     fn test_into_alogithm_id() {
-        assert_eq!(Into::<TPM2_ALG_ID>::into(MaskGenerationFunction::Mgf1), TPM2_ALG_MGF1);
+        assert_eq!(
+            Into::<TPM2_ALG_ID>::into(MaskGenerationFunction::Mgf1),
+            TPM2_ALG_MGF1
+        );
     }
 
     #[test]
@@ -441,7 +533,10 @@ mod test_algorithmic_error {
 
     #[test]
     fn test_into_alogithm_id() {
-        assert_eq!(Into::<TPM2_ALG_ID>::into(AlgorithmicError::Error), TPM2_ALG_ERROR);
+        assert_eq!(
+            Into::<TPM2_ALG_ID>::into(AlgorithmicError::Error),
+            TPM2_ALG_ERROR
+        );
     }
 
     #[test]

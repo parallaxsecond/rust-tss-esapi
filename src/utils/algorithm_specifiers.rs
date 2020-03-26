@@ -32,9 +32,9 @@ use crate::constants::{
 };
 
 use crate::response_code::{Error, Result, WrapperErrorKind};
-use crate::tss2_esys::{TPM2_ALG_ID, TPMT_SYM_DEF_OBJECT, TPMT_SYM_DEF, TPMS_SYMCIPHER_PARMS};
+use crate::tss2_esys::{TPM2_ALG_ID, TPMS_SYMCIPHER_PARMS, TPMT_SYM_DEF, TPMT_SYM_DEF_OBJECT};
 use crate::utils::TpmtSymDefBuilder;
-use std::convert::{TryFrom, From};
+use std::convert::{From, TryFrom};
 
 ////////////////////////////////////////////////
 ///
@@ -539,7 +539,7 @@ pub enum AlgorithmicError {
 impl From<AlgorithmicError> for TPM2_ALG_ID {
     fn from(algorithmic_error: AlgorithmicError) -> Self {
         match algorithmic_error {
-            AlgorithmicError::Error => TPM2_ALG_ERROR
+            AlgorithmicError::Error => TPM2_ALG_ERROR,
         }
     }
 }

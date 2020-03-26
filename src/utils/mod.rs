@@ -25,8 +25,8 @@ pub mod algorithm_specifiers;
 use crate::constants::*;
 use crate::response_code::{Error, Result, WrapperErrorKind};
 use crate::tss2_esys::*;
-use bitfield::bitfield;
 use algorithm_specifiers::Cipher;
+use bitfield::bitfield;
 use serde::{Deserialize, Serialize};
 use std::convert::{TryFrom, TryInto};
 
