@@ -1,18 +1,6 @@
 <!--
-  -- Copyright (c) 2019, Arm Limited, All Rights Reserved
+  -- Copyright 2019 Contributors to the Parsec project.
   -- SPDX-License-Identifier: Apache-2.0
-  --
-  -- Licensed under the Apache License, Version 2.0 (the "License"); you may
-  -- not use this file except in compliance with the License.
-  -- You may obtain a copy of the License at
-  --
-  -- http://www.apache.org/licenses/LICENSE-2.0
-  --
-  -- Unless required by applicable law or agreed to in writing, software
-  -- distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-  -- WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  -- See the License for the specific language governing permissions and
-  -- limitations under the License.
 --->
 # Contributing to the `tss-esapi` Rust crate
 
@@ -26,3 +14,4 @@ Contributions to the `tss-esapi` crate need to follow the process below.
 Author: Full Name <email address>
 Signed-off-by: Full Name <email address>
 ```
+* The files of this project use a copyright notice referring to "Contributors to the Parsec project". The contributors are specified in the [`CONTRIBUTORS.md`](https://github.com/parallaxsecond/parsec/blob/master/CONTRIBUTORS.md) file in the `parallaxsecond/parsec` repository. If you want to, please make a pull-request in that repository to include your name or your organization.
