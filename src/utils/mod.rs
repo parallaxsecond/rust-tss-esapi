@@ -21,13 +21,12 @@
 //! type name. Unions are converted to Rust `enum`s by dropping the `TPMU` qualifier and appending
 //! `Union`.
 pub mod algorithm_specifiers;
-pub mod primitives;
 
 use crate::constants::*;
 use crate::response_code::{Error, Result, WrapperErrorKind};
 use crate::tss2_esys::*;
 use bitfield::bitfield;
-use primitives::Cipher;
+use algorithm_specifiers::Cipher;
 use serde::{Deserialize, Serialize};
 use std::convert::{TryFrom, TryInto};
 

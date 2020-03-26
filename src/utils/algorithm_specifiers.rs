@@ -32,8 +32,9 @@ use crate::constants::{
 };
 
 use crate::response_code::{Error, Result, WrapperErrorKind};
-use crate::tss2_esys::TPM2_ALG_ID;
-use std::convert::TryFrom;
+use crate::tss2_esys::{TPM2_ALG_ID, TPMT_SYM_DEF_OBJECT, TPMT_SYM_DEF, TPMS_SYMCIPHER_PARMS};
+use crate::utils::TpmtSymDefBuilder;
+use std::convert::{TryFrom, From};
 
 ////////////////////////////////////////////////
 ///
@@ -56,11 +57,9 @@ pub enum ObjectType {
     SymCipher,
 }
 
-impl ObjectType {
-    /// Returns the TPM2_ALG_ID that corresponds to the
-    /// object type.
-    pub fn alg_id(self) -> TPM2_ALG_ID {
-        match self {
+impl From<ObjectType> for TPM2_ALG_ID {
+    fn from(object_type: ObjectType) -> Self {
+        match object_type {
             ObjectType::Null => TPM2_ALG_NULL,
             ObjectType::Rsa => TPM2_ALG_RSA,
             ObjectType::Ecc => TPM2_ALG_ECC,
@@ -100,11 +99,9 @@ pub enum AsymmetricAlgorithm {
     Ecc,
 }
 
-impl AsymmetricAlgorithm {
-    /// Returns the TPM2_ALG_ID that corresponds to the
-    /// asymmetric algorithm.
-    pub fn alg_id(self) -> TPM2_ALG_ID {
-        match self {
+impl From<AsymmetricAlgorithm> for TPM2_ALG_ID {
+    fn from(asymmetric_algorithm: AsymmetricAlgorithm) -> Self {
+        match asymmetric_algorithm {
             AsymmetricAlgorithm::Rsa => TPM2_ALG_RSA,
             AsymmetricAlgorithm::Ecc => TPM2_ALG_ECC,
         }
@@ -147,6 +144,15 @@ impl KeyedHash {
     }
 }
 
+impl From<KeyedHash> for TPM2_ALG_ID {
+    fn from(keyed_hash: KeyedHash) -> Self {
+        match keyed_hash {
+            KeyedHash::Hmac => TPM2_ALG_HMAC,
+            KeyedHash::Xor => TPM2_ALG_XOR,
+        }
+    }
+}
+
 impl TryFrom<TPM2_ALG_ID> for KeyedHash {
     type Error = Error;
 
@@ -173,11 +179,9 @@ pub enum SymmetricAlgorithm {
     Sm4,
 }
 
-impl SymmetricAlgorithm {
-    /// Returns the TPM2_ALG_ID that corresponds to the
-    /// symmetric algorithm.
-    pub fn alg_id(self) -> TPM2_ALG_ID {
-        match self {
+impl From<SymmetricAlgorithm> for TPM2_ALG_ID {
+    fn from(symmetric_algorithm: SymmetricAlgorithm) -> Self {
+        match symmetric_algorithm {
             SymmetricAlgorithm::Aes => TPM2_ALG_AES,
             SymmetricAlgorithm::Camellia => TPM2_ALG_CAMELLIA,
             SymmetricAlgorithm::Sm4 => TPM2_ALG_SM4,
@@ -217,11 +221,9 @@ pub enum HashingAlgorithm {
     Sha3_512,
 }
 
-impl HashingAlgorithm {
-    /// Returns the TPM2_ALG_ID that corresponds to the
-    /// hash algorithm.
-    pub fn alg_id(self) -> TPM2_ALG_ID {
-        match self {
+impl From<HashingAlgorithm> for TPM2_ALG_ID {
+    fn from(hashing_algorithm: HashingAlgorithm) -> Self {
+        match hashing_algorithm {
             HashingAlgorithm::Sha1 => TPM2_ALG_SHA1,
             HashingAlgorithm::Sha256 => TPM2_ALG_SHA256,
             HashingAlgorithm::Sha384 => TPM2_ALG_SHA384,
@@ -269,11 +271,9 @@ pub enum SignatureScheme {
     Sm2,
 }
 
-impl SignatureScheme {
-    /// Returns the TPM2_ALG_ID that corresponds to the
-    /// signature scheme
-    pub fn alg_id(self) -> TPM2_ALG_ID {
-        match self {
+impl From<SignatureScheme> for TPM2_ALG_ID {
+    fn from(signature_scheme: SignatureScheme) -> Self {
+        match signature_scheme {
             SignatureScheme::RsaSsa => TPM2_ALG_RSASSA,
             SignatureScheme::RsaPss => TPM2_ALG_RSAPSS,
             SignatureScheme::EcDsa => TPM2_ALG_ECDSA,
@@ -313,11 +313,9 @@ pub enum RsaSignatureScheme {
     RsaPss,
 }
 
-impl RsaSignatureScheme {
-    /// Returns the TPM2_ALG_ID that corresponds to the
-    /// RSA signature scheme
-    pub fn alg_id(self) -> TPM2_ALG_ID {
-        match self {
+impl From<RsaSignatureScheme> for TPM2_ALG_ID {
+    fn from(rsa_signature_scheme: RsaSignatureScheme) -> Self {
+        match rsa_signature_scheme {
             RsaSignatureScheme::RsaSsa => TPM2_ALG_RSASSA,
             RsaSignatureScheme::RsaPss => TPM2_ALG_RSAPSS,
         }
@@ -351,11 +349,9 @@ pub enum EccSignatureScheme {
     Sm2,
 }
 
-impl EccSignatureScheme {
-    /// Returns the TPM2_ALG_ID that corresponds to the
-    /// signing scheme
-    pub fn alg_id(self) -> TPM2_ALG_ID {
-        match self {
+impl From<EccSignatureScheme> for TPM2_ALG_ID {
+    fn from(ecc_signature_scheme: EccSignatureScheme) -> Self {
+        match ecc_signature_scheme {
             EccSignatureScheme::EcDsa => TPM2_ALG_ECDSA,
             EccSignatureScheme::EcDaa => TPM2_ALG_ECDAA,
             EccSignatureScheme::EcSchnorr => TPM2_ALG_ECSCHNORR,
@@ -392,11 +388,9 @@ pub enum AsymmetricEncryptionScheme {
     EcDh, //Elliptic-curve Diffie–Hellman
 }
 
-impl AsymmetricEncryptionScheme {
-    /// Returns the TPM2_ALG_ID that corresponds to the
-    /// asymmetric encryption scheme.
-    pub fn alg_id(self) -> TPM2_ALG_ID {
-        match self {
+impl From<AsymmetricEncryptionScheme> for TPM2_ALG_ID {
+    fn from(asymmetric_encryption_scheme: AsymmetricEncryptionScheme) -> Self {
+        match asymmetric_encryption_scheme {
             AsymmetricEncryptionScheme::Oaep => TPM2_ALG_OAEP,
             AsymmetricEncryptionScheme::RsaEs => TPM2_ALG_RSAES,
             AsymmetricEncryptionScheme::EcDh => TPM2_ALG_ECDH,
@@ -433,11 +427,9 @@ pub enum EncryptionMode {
     Ecb,
 }
 
-impl EncryptionMode {
-    /// Returns the TPM2_ALG_ID that corresponds to the
-    /// encryption mode.
-    pub fn alg_id(self) -> TPM2_ALG_ID {
-        match self {
+impl From<EncryptionMode> for TPM2_ALG_ID {
+    fn from(encryption_mode: EncryptionMode) -> Self {
+        match encryption_mode {
             EncryptionMode::Ctr => TPM2_ALG_CTR,
             EncryptionMode::Ofb => TPM2_ALG_OFB,
             EncryptionMode::Cbc => TPM2_ALG_CBC,
@@ -474,11 +466,9 @@ pub enum MaskGenerationFunction {
     Mgf1,
 }
 
-impl MaskGenerationFunction {
-    /// Returns the TPM2_ALG_ID that corresponds to the
-    /// mask generation function.
-    pub fn alg_id(self) -> TPM2_ALG_ID {
-        match self {
+impl From<MaskGenerationFunction> for TPM2_ALG_ID {
+    fn from(mask_generation_function: MaskGenerationFunction) -> Self {
+        match mask_generation_function {
             MaskGenerationFunction::Mgf1 => TPM2_ALG_MGF1,
         }
     }
@@ -509,11 +499,9 @@ pub enum KeyDerivationFunction {
     EcMqv,
 }
 
-impl KeyDerivationFunction {
-    /// Returns the TPM2_ALG_ID that corresponds to the
-    /// key derivation function.
-    pub fn alg_id(self) -> TPM2_ALG_ID {
-        match self {
+impl From<KeyDerivationFunction> for TPM2_ALG_ID {
+    fn from(key_derivation_function: KeyDerivationFunction) -> Self {
+        match key_derivation_function {
             KeyDerivationFunction::Kdf1Sp800_56a => TPM2_ALG_KDF1_SP800_56A,
             KeyDerivationFunction::Kdf2 => TPM2_ALG_KDF2,
             KeyDerivationFunction::Kdf1Sp800_108 => TPM2_ALG_KDF1_SP800_108,
@@ -548,12 +536,10 @@ pub enum AlgorithmicError {
     Error,
 }
 
-impl AlgorithmicError {
-    /// Returns the TPM2_ALG_ID that corresponds to the
-    /// algorithmic error.
-    pub fn alg_id(self) -> TPM2_ALG_ID {
-        match self {
-            AlgorithmicError::Error => TPM2_ALG_ERROR,
+impl From<AlgorithmicError> for TPM2_ALG_ID {
+    fn from(algorithmic_error: AlgorithmicError) -> Self {
+        match algorithmic_error {
+            AlgorithmicError::Error => TPM2_ALG_ERROR
         }
     }
 }
@@ -566,5 +552,148 @@ impl TryFrom<TPM2_ALG_ID> for AlgorithmicError {
             TPM2_ALG_ERROR => Ok(AlgorithmicError::Error),
             _ => Err(Error::local_error(WrapperErrorKind::InvalidParam)),
         }
+    }
+}
+
+/// Block cipher identifiers
+///
+/// Enum useful for handling an abstract representation of ciphers. Each cipher is defined by a
+/// mode and a key length, or, in the case of `XOR`, by the hash function used with it.
+#[derive(Copy, Clone, Debug)]
+pub enum Cipher {
+    AES {
+        key_bits: CipherKeyLength,
+        mode: EncryptionMode,
+    },
+    XOR {
+        hash: TPM2_ALG_ID,
+    },
+    SM4 {
+        mode: EncryptionMode,
+    },
+    Camellia {
+        key_bits: CipherKeyLength,
+        mode: EncryptionMode,
+    },
+}
+
+impl Cipher {
+    /// Get general object type for symmetric ciphers.
+    pub fn object_type() -> TPM2_ALG_ID {
+        TPM2_ALG_SYMCIPHER
+    }
+
+    /// Get the cipher key length.
+    pub fn key_bits(self) -> Option<CipherKeyLength> {
+        match self {
+            Cipher::AES { key_bits, .. } => Some(key_bits),
+            Cipher::Camellia { key_bits, .. } => Some(key_bits),
+            Cipher::SM4 { .. } => Some(CipherKeyLength::Bits128),
+            Cipher::XOR { .. } => None,
+        }
+    }
+
+    /// Get the cipher mode.
+    pub fn mode(self) -> Option<EncryptionMode> {
+        match self {
+            Cipher::AES { mode, .. } => Some(mode),
+            Cipher::Camellia { mode, .. } => Some(mode),
+            Cipher::SM4 { mode, .. } => Some(mode),
+            Cipher::XOR { .. } => None,
+        }
+    }
+
+    /// Get the TSS algorithm ID.
+    pub fn algorithm_id(self) -> TPM2_ALG_ID {
+        match self {
+            Cipher::AES { .. } => TPM2_ALG_AES,
+            Cipher::Camellia { .. } => TPM2_ALG_CAMELLIA,
+            Cipher::SM4 { .. } => TPM2_ALG_SM4,
+            Cipher::XOR { .. } => TPM2_ALG_XOR,
+        }
+    }
+
+    /// Constructor for 128 bit AES in CFB mode.
+    pub fn aes_128_cfb() -> Self {
+        Cipher::AES {
+            key_bits: CipherKeyLength::Bits128,
+            mode: EncryptionMode::Cfb,
+        }
+    }
+
+    /// Constructor for 256 bit AES in CFB mode.
+    pub fn aes_256_cfb() -> Self {
+        Cipher::AES {
+            key_bits: CipherKeyLength::Bits256,
+            mode: EncryptionMode::Cfb,
+        }
+    }
+}
+
+/// Statically enforceable cipher key length
+///
+/// Enum restricting allowed cipher key lengths to pre-defined values.
+#[derive(Copy, Clone, Debug)]
+pub enum CipherKeyLength {
+    Bits128,
+    Bits192,
+    Bits256,
+}
+
+impl From<CipherKeyLength> for u16 {
+    fn from(len: CipherKeyLength) -> Self {
+        match len {
+            CipherKeyLength::Bits128 => 128,
+            CipherKeyLength::Bits192 => 192,
+            CipherKeyLength::Bits256 => 256,
+        }
+    }
+}
+
+impl From<Cipher> for TPMT_SYM_DEF {
+    fn from(cipher: Cipher) -> Self {
+        let key_bits = match cipher {
+            Cipher::XOR { hash } => hash,
+            _ => cipher.key_bits().unwrap().into(), // should not fail since XOR is covered above
+        };
+
+        let mode = match cipher {
+            Cipher::XOR { .. } => TPM2_ALG_NULL,
+            _ => cipher.mode().unwrap().into(), // should not fail since XOR is covered above
+        };
+
+        TpmtSymDefBuilder::new()
+            .with_algorithm(cipher.algorithm_id())
+            .with_key_bits(key_bits)
+            .with_mode(mode)
+            .build()
+            .unwrap() // all params are strictly controlled, should not fail
+    }
+}
+
+impl From<Cipher> for TPMT_SYM_DEF_OBJECT {
+    fn from(cipher: Cipher) -> Self {
+        let key_bits = match cipher {
+            Cipher::XOR { hash } => hash,
+            _ => cipher.key_bits().unwrap().into(), // should not fail since XOR is covered above
+        };
+
+        let mode = match cipher {
+            Cipher::XOR { .. } => TPM2_ALG_NULL,
+            _ => cipher.mode().unwrap().into(), // should not fail since XOR is covered above
+        };
+
+        TpmtSymDefBuilder::new()
+            .with_algorithm(cipher.algorithm_id())
+            .with_key_bits(key_bits)
+            .with_mode(mode)
+            .build_object()
+            .unwrap() // all params are strictly controlled, should not fail
+    }
+}
+
+impl From<Cipher> for TPMS_SYMCIPHER_PARMS {
+    fn from(cipher: Cipher) -> Self {
+        TPMS_SYMCIPHER_PARMS { sym: cipher.into() }
     }
 }
