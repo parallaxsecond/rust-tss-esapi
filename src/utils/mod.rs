@@ -647,29 +647,44 @@ impl TryFrom<Signature> for TPMT_SIGNATURE {
 }
 
 /// Rust native wrapper for session attributes objects.
+///
+/// If no mask has been specified then it will be
+/// defaulted to be have the same value as the flags.
 #[derive(Copy, Clone, Debug, Default)]
-pub struct TpmaSession(TPMA_SESSION);
+pub struct TpmaSession {
+    flags: TPMA_SESSION,
+    mask: Option<TPMA_SESSION>,
+}
 
 impl TpmaSession {
     /// Create a new session attributes object.
     pub fn new() -> TpmaSession {
-        TpmaSession(0)
+        TpmaSession {
+            flags: 0,
+            mask: None,
+        }
     }
 
     /// Set flag.
     pub fn with_flag(mut self, flag: TPMA_SESSION) -> Self {
-        self.0 |= flag;
+        self.flags |= flag;
         self
     }
 
-    /// Get mask for all set flags.
+    /// Set a mask
+    pub fn with_mask(mut self, mask: TPMA_SESSION) -> Self {
+        self.mask = Some(self.mask.unwrap_or(0) | mask);
+        self
+    }
+
+    /// Get mask.
     pub fn mask(self) -> TPMA_SESSION {
-        self.0
+        self.mask.unwrap_or(self.flags)
     }
 
     /// Get all set flags.
     pub fn flags(self) -> TPMA_SESSION {
-        self.0
+        self.flags
     }
 }
 

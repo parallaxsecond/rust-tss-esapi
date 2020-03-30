@@ -188,7 +188,7 @@ impl TransientKeyContext {
         self.set_session_attrs()?;
         let key_handle = self.context.context_load(key_context)?;
         self.context
-            .set_handle_auth(key_handle, key_auth)
+            .tr_set_auth(key_handle, key_auth)
             .or_else(|e| {
                 self.context.flush_context(key_handle)?;
                 Err(e)
@@ -259,7 +259,7 @@ impl TransientKeyContext {
         let session_attr = utils::TpmaSession::new()
             .with_flag(TPMA_SESSION_DECRYPT)
             .with_flag(TPMA_SESSION_ENCRYPT);
-        self.context.set_session_attr(session, session_attr)?;
+        self.context.tr_sess_set_attributes(session, session_attr)?;
         Ok(())
     }
 }
@@ -383,7 +383,7 @@ impl TransientKeyContextBuilder {
         let session_attr = TpmaSession::new()
             .with_flag(TPMA_SESSION_DECRYPT)
             .with_flag(TPMA_SESSION_ENCRYPT);
-        context.set_session_attr(session, session_attr)?;
+        context.tr_sess_set_attributes(session, session_attr)?;
 
         context.set_sessions((session, ESYS_TR_NONE, ESYS_TR_NONE));
         let root_key_auth: Vec<u8> = if self.root_key_auth_size > 0 {
@@ -392,7 +392,7 @@ impl TransientKeyContextBuilder {
             vec![]
         };
         if !self.hierarchy_auth.is_empty() {
-            context.set_handle_auth(self.hierarchy.esys_rh(), &self.hierarchy_auth)?;
+            context.tr_set_auth(self.hierarchy.esys_rh(), &self.hierarchy_auth)?;
         }
 
         let root_key_handle = context.create_primary_key(

@@ -852,7 +852,13 @@ impl Context {
     /// TPM Resource Section
     ///////////////////////////////////////////////////////////////////////////
 
-    /// Set the authorization value of an ESYS_TR
+    /// Set the authentication value for a given object handle in the ESYS context.
+    ///
+    /// # Constraints
+    /// * `auth_value` must be at most 64 elements long
+    ///
+    /// # Errors
+    /// * if `auth_value` is larger than the limit, a `WrongParamSize` wrapper error is returned
     pub fn tr_set_auth(&mut self, handle: ESYS_TR, auth_value: &[u8]) -> Result<()> {
         let auth = wrap_buffer!(auth_value, TPM2B_AUTH, 64);
         let ret = unsafe { Esys_TR_SetAuth(self.mut_context(), handle, &auth) };
@@ -878,14 +884,20 @@ impl Context {
         }
     }
 
-    // Set session attributes
+    /// Set the given attributes on a given session.
     pub fn tr_sess_set_attributes(
         &mut self,
         handle: ESYS_TR,
-        flags: TPMA_SESSION,
-        mask: TPMA_SESSION,
+        attributes: TpmaSession,
     ) -> Result<()> {
-        let ret = unsafe { Esys_TRSess_SetAttributes(self.mut_context(), handle, flags, mask) };
+        let ret = unsafe {
+            Esys_TRSess_SetAttributes(
+                self.mut_context(),
+                handle,
+                attributes.flags(),
+                attributes.mask(),
+            )
+        };
         let ret = Error::from_tss_rc(ret);
         if ret.is_success() {
             Ok(())
@@ -895,31 +907,15 @@ impl Context {
     }
 
     /// Get session attribute flags.
-    pub fn tr_sess_get_attributes(&mut self, handle: ESYS_TR) -> Result<TPMA_SESSION> {
+    pub fn tr_sess_get_attributes(&mut self, handle: ESYS_TR) -> Result<TpmaSession> {
         let mut flags: TPMA_SESSION = 0;
         let ret = unsafe { Esys_TRSess_GetAttributes(self.mut_context(), handle, &mut flags) };
         let ret = Error::from_tss_rc(ret);
         if ret.is_success() {
-            Ok(flags)
+            Ok(TpmaSession::new().with_flag(flags))
         } else {
             Err(ret)
         }
-    }
-
-    /// Set the authentication value for a given object handle in the ESYS context.
-    ///
-    /// # Constraints
-    /// * `auth_value` must be at most 64 elements long
-    ///
-    /// # Errors
-    /// * if `auth_value` is larger than the limit, a `WrongParamSize` wrapper error is returned
-    pub fn set_handle_auth(&mut self, handle: ESYS_TR, auth_value: &[u8]) -> Result<()> {
-        self.tr_set_auth(handle, auth_value)
-    }
-
-    /// Set the given attributes on a given session.
-    pub fn set_session_attr(&mut self, handle: ESYS_TR, attrs: TpmaSession) -> Result<()> {
-        self.tr_sess_set_attributes(handle, attrs.flags(), attrs.mask())
     }
 
     /// Returns a mutable reference to the native ESYS context handle.
