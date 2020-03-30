@@ -488,6 +488,8 @@ pub enum WrapperErrorKind {
     InconsistentParams,
     /// Returned when the value of a parameter is not yet supported.
     UnsupportedParam,
+    /// Returend when the value of a parameter is invalid for that type.
+    InvalidParam,
 }
 
 impl std::fmt::Display for WrapperErrorKind {
@@ -507,6 +509,9 @@ impl std::fmt::Display for WrapperErrorKind {
                 f,
                 "the provided parameter is not yet supported by the library"
             ),
+            WrapperErrorKind::InvalidParam => {
+                write!(f, "the provided parameter is invalid for that type.")
+            }
         }
     }
 }

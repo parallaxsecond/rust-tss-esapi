@@ -16,7 +16,7 @@
 use crate::constants::*;
 use crate::response_code::{Error, Result, WrapperErrorKind as ErrorKind};
 use crate::tss2_esys::*;
-use crate::utils::primitives::Cipher;
+use crate::utils::algorithm_specifiers::Cipher;
 use crate::utils::{
     self, get_rsa_public, Hierarchy, PublicIdUnion, TpmaSession, TpmsContext, TpmtTkVerified,
 };

@@ -8,13 +8,13 @@
 //! guidelines to them. Structures that are meant to act as builders have `Builder` appended to
 //! type name. Unions are converted to Rust `enum`s by dropping the `TPMU` qualifier and appending
 //! `Union`.
-pub mod primitives;
+pub mod algorithm_specifiers;
 
 use crate::constants::*;
 use crate::response_code::{Error, Result, WrapperErrorKind};
 use crate::tss2_esys::*;
+use algorithm_specifiers::Cipher;
 use bitfield::bitfield;
-use primitives::Cipher;
 use serde::{Deserialize, Serialize};
 use std::convert::{TryFrom, TryInto};
 

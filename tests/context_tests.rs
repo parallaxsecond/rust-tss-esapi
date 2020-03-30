@@ -36,8 +36,9 @@ use std::convert::TryInto;
 use tss_esapi::constants::*;
 use tss_esapi::tss2_esys::*;
 use tss_esapi::utils::{
-    self, primitives::Cipher, AsymSchemeUnion, ObjectAttributes, PublicIdUnion, PublicParmsUnion,
-    Signature, Tpm2BPublicBuilder, TpmaSession, TpmsRsaParmsBuilder, TpmtSymDefBuilder,
+    self, algorithm_specifiers::Cipher, AsymSchemeUnion, ObjectAttributes, PublicIdUnion,
+    PublicParmsUnion, Signature, Tpm2BPublicBuilder, TpmaSession, TpmsRsaParmsBuilder,
+    TpmtSymDefBuilder,
 };
 use tss_esapi::*;
 
