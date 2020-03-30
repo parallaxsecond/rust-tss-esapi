@@ -57,7 +57,7 @@ fn create_ctx_with_session() -> Context {
     let session_attr = TpmaSession::new()
         .with_flag(TPMA_SESSION_DECRYPT)
         .with_flag(TPMA_SESSION_ENCRYPT);
-    ctx.set_session_attr(session, session_attr).unwrap();
+    ctx.tr_sess_set_attributes(session, session_attr).unwrap();
     ctx.set_sessions((session, ESYS_TR_NONE, ESYS_TR_NONE));
 
     ctx
@@ -98,7 +98,9 @@ fn comprehensive_test() {
     let session_attr = TpmaSession::new()
         .with_flag(TPMA_SESSION_DECRYPT)
         .with_flag(TPMA_SESSION_ENCRYPT);
-    context.set_session_attr(new_session, session_attr).unwrap();
+    context
+        .tr_sess_set_attributes(new_session, session_attr)
+        .unwrap();
     context.set_sessions((new_session, ESYS_TR_NONE, ESYS_TR_NONE));
 
     let (key_priv, key_pub) = context
@@ -115,7 +117,7 @@ fn comprehensive_test() {
 
     let key_context = context.context_save(key_handle).unwrap();
     let key_handle = context.context_load(key_context).unwrap();
-    context.set_handle_auth(key_handle, &key_auth).unwrap();
+    context.tr_set_auth(key_handle, &key_auth).unwrap();
     let scheme = TPMT_SIG_SCHEME {
         scheme: TPM2_ALG_NULL,
         details: Default::default(),
@@ -237,7 +239,7 @@ mod test_start_sess {
             .with_flag(TPMA_SESSION_ENCRYPT)
             .with_flag(TPMA_SESSION_AUDIT);
         context
-            .set_session_attr(encrypted_sess, session_attr)
+            .tr_sess_set_attributes(encrypted_sess, session_attr)
             .unwrap();
 
         let _ = context
@@ -321,7 +323,7 @@ mod test_get_random {
             .with_flag(TPMA_SESSION_ENCRYPT)
             .with_flag(TPMA_SESSION_AUDIT);
         context
-            .set_session_attr(encrypted_sess, session_attr)
+            .tr_sess_set_attributes(encrypted_sess, session_attr)
             .unwrap();
 
         context.set_sessions((encrypted_sess, ESYS_TR_NONE, ESYS_TR_NONE));
@@ -1081,7 +1083,7 @@ mod test_handle_auth {
             digest: Default::default(),
         };
 
-        context.set_handle_auth(new_key_handle, &key_auth).unwrap();
+        context.tr_set_auth(new_key_handle, &key_auth).unwrap();
         let _ = context
             .sign(new_key_handle, &HASH[..32], scheme, &validation)
             .unwrap();
@@ -1104,7 +1106,7 @@ mod test_handle_auth {
             .unwrap();
 
         context
-            .set_handle_auth(prim_key_handle, &[0xff; 100])
+            .tr_set_auth(prim_key_handle, &[0xff; 100])
             .unwrap_err();
     }
 
@@ -1115,9 +1117,7 @@ mod test_handle_auth {
     #[test]
     fn test_invalid_handle() {
         let mut context = create_ctx_with_session();
-        context
-            .set_handle_auth(ESYS_TR_NONE, &[0x11; 10])
-            .unwrap_err();
+        context.tr_set_auth(ESYS_TR_NONE, &[0x11; 10]).unwrap_err();
     }
 }
 
@@ -1142,7 +1142,9 @@ mod test_session_attr {
             .with_flag(TPMA_SESSION_DECRYPT)
             .with_flag(TPMA_SESSION_ENCRYPT)
             .with_flag(TPMA_SESSION_AUDIT);
-        context.set_session_attr(sess_handle, sess_attr).unwrap();
+        context
+            .tr_sess_set_attributes(sess_handle, sess_attr)
+            .unwrap();
         context.set_sessions((sess_handle, ESYS_TR_NONE, ESYS_TR_NONE));
 
         let _ = context.get_random(10).unwrap();
