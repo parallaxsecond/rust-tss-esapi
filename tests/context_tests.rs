@@ -37,7 +37,7 @@ use tss_esapi::constants::*;
 use tss_esapi::tss2_esys::*;
 use tss_esapi::utils::{
     self, algorithm_specifiers::Cipher, AsymSchemeUnion, ObjectAttributes, PublicIdUnion,
-    PublicParmsUnion, Signature, Tpm2BPublicBuilder, TpmaSession, TpmsRsaParmsBuilder,
+    PublicParmsUnion, Signature, Tpm2BPublicBuilder, TpmaSessionBuilder, TpmsRsaParmsBuilder,
     TpmtSymDefBuilder,
 };
 use tss_esapi::*;
@@ -54,9 +54,10 @@ fn create_ctx_with_session() -> Context {
             TPM2_ALG_SHA256,
         )
         .unwrap();
-    let session_attr = TpmaSession::new()
+    let session_attr = TpmaSessionBuilder::new()
         .with_flag(TPMA_SESSION_DECRYPT)
-        .with_flag(TPMA_SESSION_ENCRYPT);
+        .with_flag(TPMA_SESSION_ENCRYPT)
+        .build();
     ctx.tr_sess_set_attributes(session, session_attr).unwrap();
     ctx.set_sessions((session, ESYS_TR_NONE, ESYS_TR_NONE));
 
@@ -95,9 +96,10 @@ fn comprehensive_test() {
             TPM2_ALG_SHA256,
         )
         .unwrap();
-    let session_attr = TpmaSession::new()
+    let session_attr = TpmaSessionBuilder::new()
         .with_flag(TPMA_SESSION_DECRYPT)
-        .with_flag(TPMA_SESSION_ENCRYPT);
+        .with_flag(TPMA_SESSION_ENCRYPT)
+        .build();
     context
         .tr_sess_set_attributes(new_session, session_attr)
         .unwrap();
@@ -234,10 +236,11 @@ mod test_start_sess {
                 TPM2_ALG_SHA256,
             )
             .unwrap();
-        let session_attr = utils::TpmaSession::new()
+        let session_attr = utils::TpmaSessionBuilder::new()
             .with_flag(TPMA_SESSION_DECRYPT)
             .with_flag(TPMA_SESSION_ENCRYPT)
-            .with_flag(TPMA_SESSION_AUDIT);
+            .with_flag(TPMA_SESSION_AUDIT)
+            .build();
         context
             .tr_sess_set_attributes(encrypted_sess, session_attr)
             .unwrap();
@@ -318,10 +321,11 @@ mod test_get_random {
                 TPM2_ALG_SHA256,
             )
             .unwrap();
-        let session_attr = utils::TpmaSession::new()
+        let session_attr = utils::TpmaSessionBuilder::new()
             .with_flag(TPMA_SESSION_DECRYPT)
             .with_flag(TPMA_SESSION_ENCRYPT)
-            .with_flag(TPMA_SESSION_AUDIT);
+            .with_flag(TPMA_SESSION_AUDIT)
+            .build();
         context
             .tr_sess_set_attributes(encrypted_sess, session_attr)
             .unwrap();
@@ -1138,10 +1142,11 @@ mod test_session_attr {
             )
             .unwrap();
 
-        let sess_attr = TpmaSession::new()
+        let sess_attr = TpmaSessionBuilder::new()
             .with_flag(TPMA_SESSION_DECRYPT)
             .with_flag(TPMA_SESSION_ENCRYPT)
-            .with_flag(TPMA_SESSION_AUDIT);
+            .with_flag(TPMA_SESSION_AUDIT)
+            .build();
         context
             .tr_sess_set_attributes(sess_handle, sess_attr)
             .unwrap();
