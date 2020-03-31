@@ -647,44 +647,72 @@ impl TryFrom<Signature> for TPMT_SIGNATURE {
 }
 
 /// Rust native wrapper for session attributes objects.
-///
-/// If no mask has been specified then it will be
-/// defaulted to be have the same value as the flags.
 #[derive(Copy, Clone, Debug, Default)]
 pub struct TpmaSession {
+    flags: TPMA_SESSION,
+    mask: TPMA_SESSION,
+}
+
+impl TpmaSession {
+    // Clones the TpmaSession but adds a new mask.
+    pub fn clone_with_new_mask(self, new_mask: TPMA_SESSION) -> TpmaSession {
+        TpmaSession {
+            flags: self.flags,
+            mask: new_mask,
+        }
+    }
+
+    /// Function to retrieve the masks
+    /// that have been set.
+    pub fn mask(self) -> TPMA_SESSION {
+        self.mask
+    }
+
+    /// Function to retrive the flags that
+    /// gave been set.
+    pub fn flags(self) -> TPMA_SESSION {
+        self.flags
+    }
+}
+
+/// A builder for TpmaSession.
+///
+/// If no mask have been added then the mask
+/// will be set till all flags.
+#[derive(Copy, Clone, Debug, Default)]
+pub struct TpmaSessionBuilder {
     flags: TPMA_SESSION,
     mask: Option<TPMA_SESSION>,
 }
 
-impl TpmaSession {
-    /// Create a new session attributes object.
-    pub fn new() -> TpmaSession {
-        TpmaSession {
+impl TpmaSessionBuilder {
+    pub fn new() -> TpmaSessionBuilder {
+        TpmaSessionBuilder {
             flags: 0,
             mask: None,
         }
     }
 
-    /// Set flag.
+    /// Function used to add flags.
     pub fn with_flag(mut self, flag: TPMA_SESSION) -> Self {
         self.flags |= flag;
         self
     }
 
-    /// Set a mask
+    /// Function used to add masks.
     pub fn with_mask(mut self, mask: TPMA_SESSION) -> Self {
         self.mask = Some(self.mask.unwrap_or(0) | mask);
         self
     }
 
-    /// Get mask.
-    pub fn mask(self) -> TPMA_SESSION {
-        self.mask.unwrap_or(self.flags)
-    }
-
-    /// Get all set flags.
-    pub fn flags(self) -> TPMA_SESSION {
-        self.flags
+    /// Function used to build a TpmaSession
+    /// from the parameters that have been
+    /// added.
+    pub fn build(self) -> TpmaSession {
+        TpmaSession {
+            flags: self.flags,
+            mask: self.mask.unwrap_or(self.flags),
+        }
     }
 }
 

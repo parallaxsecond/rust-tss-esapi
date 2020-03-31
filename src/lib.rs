@@ -127,7 +127,7 @@ use std::convert::{TryFrom, TryInto};
 use std::ffi::CString;
 use std::ptr::{null, null_mut};
 use tss2_esys::*;
-use utils::{PublicParmsUnion, Signature, TpmaSession, TpmsContext};
+use utils::{PublicParmsUnion, Signature, TpmaSession, TpmaSessionBuilder, TpmsContext};
 
 #[macro_use]
 macro_rules! wrap_buffer {
@@ -912,7 +912,7 @@ impl Context {
         let ret = unsafe { Esys_TRSess_GetAttributes(self.mut_context(), handle, &mut flags) };
         let ret = Error::from_tss_rc(ret);
         if ret.is_success() {
-            Ok(TpmaSession::new().with_flag(flags))
+            Ok(TpmaSessionBuilder::new().with_flag(flags).build())
         } else {
             Err(ret)
         }

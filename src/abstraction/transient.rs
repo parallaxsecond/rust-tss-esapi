@@ -18,7 +18,7 @@ use crate::response_code::{Error, Result, WrapperErrorKind as ErrorKind};
 use crate::tss2_esys::*;
 use crate::utils::algorithm_specifiers::Cipher;
 use crate::utils::{
-    self, get_rsa_public, Hierarchy, PublicIdUnion, TpmaSession, TpmsContext, TpmtTkVerified,
+    self, get_rsa_public, Hierarchy, PublicIdUnion, TpmaSessionBuilder, TpmsContext, TpmtTkVerified,
 };
 use crate::{Context, Tcti};
 use log::error;
@@ -256,9 +256,10 @@ impl TransientKeyContext {
     /// * if `Context::set_session_attr` returns an error, that error is propagated through
     fn set_session_attrs(&mut self) -> Result<()> {
         let (session, _, _) = self.context.sessions();
-        let session_attr = utils::TpmaSession::new()
+        let session_attr = utils::TpmaSessionBuilder::new()
             .with_flag(TPMA_SESSION_DECRYPT)
-            .with_flag(TPMA_SESSION_ENCRYPT);
+            .with_flag(TPMA_SESSION_ENCRYPT)
+            .build();
         self.context.tr_sess_set_attributes(session, session_attr)?;
         Ok(())
     }
@@ -380,9 +381,10 @@ impl TransientKeyContextBuilder {
             self.session_encr_cipher.into(),
             self.session_hash_alg,
         )?;
-        let session_attr = TpmaSession::new()
+        let session_attr = TpmaSessionBuilder::new()
             .with_flag(TPMA_SESSION_DECRYPT)
-            .with_flag(TPMA_SESSION_ENCRYPT);
+            .with_flag(TPMA_SESSION_ENCRYPT)
+            .build();
         context.tr_sess_set_attributes(session, session_attr)?;
 
         context.set_sessions((session, ESYS_TR_NONE, ESYS_TR_NONE));
