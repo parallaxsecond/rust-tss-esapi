@@ -127,7 +127,7 @@ use std::convert::{TryFrom, TryInto};
 use std::ffi::CString;
 use std::ptr::{null, null_mut};
 use tss2_esys::*;
-use utils::{PublicParmsUnion, Signature, TpmaSession, TpmsContext};
+use utils::{PublicParmsUnion, Signature, TpmaSession, TpmaSessionBuilder, TpmsContext};
 
 #[macro_use]
 macro_rules! wrap_buffer {
@@ -848,6 +848,10 @@ impl Context {
         }
     }
 
+    ///////////////////////////////////////////////////////////////////////////
+    /// TPM Resource Section
+    ///////////////////////////////////////////////////////////////////////////
+
     /// Set the authentication value for a given object handle in the ESYS context.
     ///
     /// # Constraints
@@ -855,7 +859,7 @@ impl Context {
     ///
     /// # Errors
     /// * if `auth_value` is larger than the limit, a `WrongParamSize` wrapper error is returned
-    pub fn set_handle_auth(&mut self, handle: ESYS_TR, auth_value: &[u8]) -> Result<()> {
+    pub fn tr_set_auth(&mut self, handle: ESYS_TR, auth_value: &[u8]) -> Result<()> {
         let auth = wrap_buffer!(auth_value, TPM2B_AUTH, 64);
         let ret = unsafe { Esys_TR_SetAuth(self.mut_context(), handle, &auth) };
         let ret = Error::from_tss_rc(ret);
@@ -881,13 +885,34 @@ impl Context {
     }
 
     /// Set the given attributes on a given session.
-    pub fn set_session_attr(&mut self, handle: ESYS_TR, attrs: TpmaSession) -> Result<()> {
+    pub fn tr_sess_set_attributes(
+        &mut self,
+        handle: ESYS_TR,
+        attributes: TpmaSession,
+    ) -> Result<()> {
         let ret = unsafe {
-            Esys_TRSess_SetAttributes(self.mut_context(), handle, attrs.flags(), attrs.mask())
+            Esys_TRSess_SetAttributes(
+                self.mut_context(),
+                handle,
+                attributes.flags(),
+                attributes.mask(),
+            )
         };
         let ret = Error::from_tss_rc(ret);
         if ret.is_success() {
             Ok(())
+        } else {
+            Err(ret)
+        }
+    }
+
+    /// Get session attribute flags.
+    pub fn tr_sess_get_attributes(&mut self, handle: ESYS_TR) -> Result<TpmaSession> {
+        let mut flags: TPMA_SESSION = 0;
+        let ret = unsafe { Esys_TRSess_GetAttributes(self.mut_context(), handle, &mut flags) };
+        let ret = Error::from_tss_rc(ret);
+        if ret.is_success() {
+            Ok(TpmaSessionBuilder::new().with_flag(flags).build())
         } else {
             Err(ret)
         }
