@@ -13,9 +13,10 @@ pub mod algorithm_specifiers;
 use crate::constants::*;
 use crate::response_code::{Error, Result, WrapperErrorKind};
 use crate::tss2_esys::*;
-use algorithm_specifiers::Cipher;
+use algorithm_specifiers::{Cipher, HashingAlgorithm};
 use bitfield::bitfield;
 use serde::{Deserialize, Serialize};
+use std::collections::{HashMap, HashSet};
 use std::convert::{TryFrom, TryInto};
 
 /// Helper for building `TPM2B_PUBLIC` values out of its subcomponents.
@@ -1009,4 +1010,165 @@ pub fn create_unrestricted_signing_rsa_public(
         .with_object_attributes(object_attributes)
         .with_parms(PublicParmsUnion::RsaDetail(rsa_parms))
         .build() // should not fail as we control the params
+}
+
+#[derive(Hash, Eq, PartialEq, Copy, Clone, Debug)]
+pub enum PcrSlot {
+    Slot0 = 0,
+    Slot1,
+    Slot2,
+    Slot3,
+    Slot4,
+    Slot5,
+    Slot6,
+    Slot7,
+    Slot8,
+    Slot9,
+    Slot10,
+    Slot11,
+    Slot12,
+    Slot13,
+    Slot14,
+    Slot15,
+    Slot16,
+    Slot17,
+    Slot18,
+    Slot19,
+    Slot20,
+    Slot21,
+    Slot22,
+    Slot23,
+}
+
+impl TryFrom<u32> for PcrSlot {
+    type Error = Error;
+    fn try_from(pcr_slot_number: u32) -> Result<Self> {
+        match pcr_slot_number {
+            0 => Ok(PcrSlot::Slot0),
+            1 => Ok(PcrSlot::Slot1),
+            2 => Ok(PcrSlot::Slot2),
+            3 => Ok(PcrSlot::Slot3),
+            4 => Ok(PcrSlot::Slot4),
+            5 => Ok(PcrSlot::Slot5),
+            6 => Ok(PcrSlot::Slot6),
+            7 => Ok(PcrSlot::Slot7),
+            8 => Ok(PcrSlot::Slot8),
+            9 => Ok(PcrSlot::Slot9),
+            10 => Ok(PcrSlot::Slot10),
+            11 => Ok(PcrSlot::Slot11),
+            12 => Ok(PcrSlot::Slot12),
+            13 => Ok(PcrSlot::Slot13),
+            14 => Ok(PcrSlot::Slot14),
+            15 => Ok(PcrSlot::Slot15),
+            16 => Ok(PcrSlot::Slot16),
+            17 => Ok(PcrSlot::Slot17),
+            18 => Ok(PcrSlot::Slot18),
+            19 => Ok(PcrSlot::Slot19),
+            20 => Ok(PcrSlot::Slot20),
+            21 => Ok(PcrSlot::Slot21),
+            22 => Ok(PcrSlot::Slot22),
+            23 => Ok(PcrSlot::Slot23),
+            _ => Err(Error::local_error(WrapperErrorKind::InvalidParam)),
+        }
+    }
+}
+
+/// TPML_PCR_SELECTION is a structure that can contain up to
+/// 16 TPMS_PCR_SELECTION
+///
+/// The TPMS_PCR_SELECTION is a variable size bitmask
+/// where the position of each bit is the selected index.
+///
+/// The minimum number of octets in a TPMS_PCR_SELECT.sizeOfSelect
+/// is not determined by the number of PCR implemented but by the
+/// number of PCR required by the platform-specific
+/// specification with which the TPM is compliant or by the implementer if
+/// not adhering to a platform-specific specification.
+///
+/// So to make things simple 3 octets are
+/// used which means that size of selections always will be
+/// 3.
+// For example, selecting PCRs 3 and 9 looks like:
+// size(3)  mask     mask     mask     mask
+// 00000011 00000000 00000000 00000001 00000100
+#[derive(Debug, Default)]
+pub struct PcrSelections {
+    items: HashMap<HashingAlgorithm, HashSet<PcrSlot>>,
+}
+
+impl From<PcrSelections> for TPML_PCR_SELECTION {
+    fn from(pcr_selections: PcrSelections) -> TPML_PCR_SELECTION {
+        let mut ret: TPML_PCR_SELECTION = Default::default();
+        for (hash_algorithm, pcr_slots) in &pcr_selections.items {
+            ret.pcrSelections[ret.count as usize].hash = hash_algorithm.clone().into();
+            ret.pcrSelections[ret.count as usize].sizeofSelect = 3;
+            for &pcr_slot in pcr_slots {
+                let index: usize = (pcr_slot as usize) / 8;
+                let value: u8 = 1 << ((pcr_slot as u8) % 8);
+                ret.pcrSelections[ret.count as usize].pcrSelect[index] |= value;
+            }
+            ret.count += 1;
+        }
+        ret
+    }
+}
+
+impl From<TPML_PCR_SELECTION> for PcrSelections {
+    fn from(tpml_pcr_selection: TPML_PCR_SELECTION) -> PcrSelections {
+        let mut ret: PcrSelections = Default::default();
+        for selection_index in 0..(tpml_pcr_selection.count as usize) {
+            let selection = &tpml_pcr_selection.pcrSelections[selection_index];
+            let mut pcr_slots: HashSet<PcrSlot> = HashSet::<PcrSlot>::new();
+            for slot_nr in 1..(3 * 8) {
+                let index = slot_nr / 8;
+                let mask: u8 = (slot_nr as u8) % 8;
+                let is_set = (selection.pcrSelect[index] & mask) == mask;
+                if is_set {
+                    let _ = pcr_slots.insert(PcrSlot::try_from(slot_nr as u32).unwrap());
+                }
+            }
+            let _ = ret.items.insert(
+                HashingAlgorithm::try_from(selection.hash).unwrap(),
+                pcr_slots,
+            );
+        }
+        ret
+    }
+}
+
+#[derive(Debug, Default)]
+pub struct PcrSelectionsBuilder {
+    items: HashMap<HashingAlgorithm, HashSet<PcrSlot>>,
+}
+
+impl PcrSelectionsBuilder {
+    pub fn new() -> Self {
+        PcrSelectionsBuilder {
+            items: Default::default(),
+        }
+    }
+
+    pub fn with_selection(
+        mut self,
+        hash_algorithm: HashingAlgorithm,
+        pcr_slots: &[PcrSlot],
+    ) -> Self {
+        let selected_pcr_slots: HashSet<PcrSlot> = pcr_slots.iter().cloned().collect();
+        match self.items.get_mut(&hash_algorithm) {
+            Some(previously_selected_pcr_slots) => {
+                *previously_selected_pcr_slots = previously_selected_pcr_slots
+                    .union(&selected_pcr_slots)
+                    .cloned()
+                    .collect();
+            }
+            None => {
+                let _ = self.items.insert(hash_algorithm, selected_pcr_slots);
+            }
+        }
+        self
+    }
+
+    pub fn build(self) -> PcrSelections {
+        PcrSelections { items: self.items }
+    }
 }

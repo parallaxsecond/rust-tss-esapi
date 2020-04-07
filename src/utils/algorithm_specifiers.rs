@@ -190,7 +190,7 @@ impl TryFrom<TPM2_ALG_ID> for SymmetricAlgorithm {
 ////////////////////////////////////////////////
 
 /// Enum containing the supported hash algorithms
-#[derive(Copy, Clone, Debug, PartialEq)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
 pub enum HashingAlgorithm {
     Sha1,
     Sha256,
