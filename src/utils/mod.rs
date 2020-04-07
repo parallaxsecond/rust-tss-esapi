@@ -1093,6 +1093,7 @@ impl TryFrom<u32> for PcrSlot {
 // 00000011 00000000 00000000 00000001 00000100
 #[derive(Debug, Default, Clone)]
 pub struct PcrSelections {
+    size_of_select: u8,
     items: HashMap<HashingAlgorithm, HashSet<PcrSlot>>,
 }
 
@@ -1101,7 +1102,7 @@ impl From<PcrSelections> for TPML_PCR_SELECTION {
         let mut ret: TPML_PCR_SELECTION = Default::default();
         for (hash_algorithm, pcr_slots) in &pcr_selections.items {
             ret.pcrSelections[ret.count as usize].hash = hash_algorithm.clone().into();
-            ret.pcrSelections[ret.count as usize].sizeofSelect = 3;
+            ret.pcrSelections[ret.count as usize].sizeofSelect = pcr_selections.size_of_select;
             for &pcr_slot in pcr_slots {
                 let index: usize = (pcr_slot as usize) / 8;
                 let value: u8 = 1 << ((pcr_slot as u8) % 8);
@@ -1119,9 +1120,9 @@ impl From<TPML_PCR_SELECTION> for PcrSelections {
         for selection_index in 0..(tpml_pcr_selection.count as usize) {
             let selection = &tpml_pcr_selection.pcrSelections[selection_index];
             let mut pcr_slots: HashSet<PcrSlot> = HashSet::<PcrSlot>::new();
-            for slot_nr in 1..(3 * 8) {
-                let index = slot_nr / 8;
-                let mask: u8 = (slot_nr as u8) % 8;
+            for slot_nr in 1..(selection.sizeofSelect * 8) {
+                let index: usize = (slot_nr / 8) as usize;
+                let mask: u8 = slot_nr % 8;
                 let is_set = (selection.pcrSelect[index] & mask) == mask;
                 if is_set {
                     let _ = pcr_slots.insert(PcrSlot::try_from(slot_nr as u32).unwrap());
@@ -1138,16 +1139,36 @@ impl From<TPML_PCR_SELECTION> for PcrSelections {
 
 #[derive(Debug, Default)]
 pub struct PcrSelectionsBuilder {
+    size_of_select: Option<u8>,
     items: HashMap<HashingAlgorithm, HashSet<PcrSlot>>,
 }
 
+/// A builder for the PcrSelection struct.
 impl PcrSelectionsBuilder {
     pub fn new() -> Self {
         PcrSelectionsBuilder {
+            size_of_select: None,
             items: Default::default(),
         }
     }
 
+    /// Set the size of the pcr selection(sizeofSelect)
+    ///
+    /// # Arguments
+    /// size_of_select -- The size that will be used for all selections(sizeofSelect).
+    pub fn with_size_of_select(mut self, size_of_select: u8) -> Self {
+        self.size_of_select = Some(size_of_select);
+        self
+    }
+
+    /// Adds a selection associated with a specific HashingAlgorithm.
+    ///
+    /// This function will not overwrite the values already associated
+    /// with a specific HashingAlgorithm only update.
+    ///
+    /// # Arguments
+    /// hash_algorithm -- The HashingAlgorithm associated with the pcr selection
+    /// pcr_slots -- The PCR slots in the selection.
     pub fn with_selection(
         mut self,
         hash_algorithm: HashingAlgorithm,
@@ -1168,7 +1189,21 @@ impl PcrSelectionsBuilder {
         self
     }
 
+    /// Builds a PcrSelections with the values that have been
+    /// provided.
+    ///
+    /// If no size of select have been provided then it will
+    /// be defaulted to 3. This may not be the correct size for
+    /// the current platform. The correct values can be obtained
+    /// by quering the tpm for its capabilities.
     pub fn build(self) -> PcrSelections {
-        PcrSelections { items: self.items }
+        let select_size = match self.size_of_select {
+            Some(value) => value,
+            None => 3,
+        };
+        PcrSelections {
+            size_of_select: select_size,
+            items: self.items,
+        }
     }
 }
