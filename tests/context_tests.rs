@@ -36,7 +36,9 @@ use std::convert::TryInto;
 use tss_esapi::constants::*;
 use tss_esapi::tss2_esys::*;
 use tss_esapi::utils::{
-    self, algorithm_specifiers::Cipher, AsymSchemeUnion, ObjectAttributes, PublicIdUnion,
+    self,
+    algorithm_specifiers::{Cipher, HashingAlgorithm},
+    AsymSchemeUnion, ObjectAttributes, PcrSelectionsBuilder, PcrSlot, PublicIdUnion,
     PublicParmsUnion, Signature, Tpm2BPublicBuilder, TpmaSessionBuilder, TpmsRsaParmsBuilder,
 };
 use tss_esapi::*;
@@ -293,16 +295,46 @@ mod test_pcr_read {
     fn test_pcr_read_command() {
         let mut context = create_ctx_without_session();
         // Read PCR 0
-        let mut selection = TPML_PCR_SELECTION {
-            count: 0,
-            pcrSelections: Default::default(),
-        };
+        let pcr_selections = PcrSelectionsBuilder::new()
+            .with_selection(HashingAlgorithm::Sha256, &[PcrSlot::Slot0])
+            .build();
+        let input: TPML_PCR_SELECTION = pcr_selections.clone().into();
+        // Verify input
+        assert_eq!(input.count, 1);
+        assert_eq!(input.pcrSelections[0].sizeofSelect, 3);
+        assert_eq!(
+            input.pcrSelections[0].hash,
+            Into::<TPM2_ALG_ID>::into(HashingAlgorithm::Sha256)
+        );
+        assert_eq!(input.pcrSelections[0].pcrSelect[0], 0b0000_0001);
+        assert_eq!(input.pcrSelections[0].pcrSelect[1], 0b0000_0000);
+        assert_eq!(input.pcrSelections[0].pcrSelect[2], 0b0000_0000);
+        // Read the pcr slots.
+        let (update_counter, output, tpml_digest) = context.pcr_read(pcr_selections).unwrap();
 
-        selection.pcrSelections[0].hash = TPM2_ALG_SHA256;
-        selection.pcrSelections[0].sizeofSelect = 1;
-        selection.pcrSelections[0].pcrSelect[0] = 0x01; // Only pcr 0.
+        // Verify that the selected slots have been read.
+        assert_ne!(update_counter, 0);
+        assert_eq!(output.count, input.count);
+        assert_eq!(
+            output.pcrSelections[0].sizeofSelect,
+            input.pcrSelections[0].sizeofSelect
+        );
+        assert_eq!(input.pcrSelections[0].hash, output.pcrSelections[0].hash);
+        assert_eq!(
+            input.pcrSelections[0].pcrSelect[0],
+            output.pcrSelections[0].pcrSelect[0]
+        );
+        assert_eq!(
+            input.pcrSelections[0].pcrSelect[1],
+            output.pcrSelections[0].pcrSelect[1]
+        );
+        assert_eq!(
+            input.pcrSelections[0].pcrSelect[2],
+            output.pcrSelections[0].pcrSelect[2]
+        );
 
-        let _ = context.pcr_read(&selection).unwrap();
+        // Check that there exist a digest that is not empty
+        assert_eq!(tpml_digest.count, 1);
     }
 }
 

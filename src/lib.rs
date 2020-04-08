@@ -127,7 +127,9 @@ use std::convert::{TryFrom, TryInto};
 use std::ffi::CString;
 use std::ptr::{null, null_mut};
 use tss2_esys::*;
-use utils::{PublicParmsUnion, Signature, TpmaSession, TpmaSessionBuilder, TpmsContext};
+use utils::{
+    PcrSelections, PublicParmsUnion, Signature, TpmaSession, TpmaSessionBuilder, TpmsContext,
+};
 
 #[macro_use]
 macro_rules! wrap_buffer {
@@ -757,8 +759,9 @@ impl Context {
 
     pub fn pcr_read(
         &mut self,
-        pcr_selection: &TPML_PCR_SELECTION,
+        pcr_selection: PcrSelections,
     ) -> Result<(UINT32, TPML_PCR_SELECTION, TPML_DIGEST)> {
+        let tpml_pcr_selection: TPML_PCR_SELECTION = pcr_selection.into();
         let mut pcr_update_counter: u32 = 0;
         let mut pcr_selection_out = null_mut();
         let mut pcr_values = null_mut();
@@ -768,7 +771,7 @@ impl Context {
                 self.sessions.0,
                 self.sessions.1,
                 self.sessions.2,
-                pcr_selection,
+                &tpml_pcr_selection,
                 &mut pcr_update_counter,
                 &mut pcr_selection_out,
                 &mut pcr_values,
