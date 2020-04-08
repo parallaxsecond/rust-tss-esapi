@@ -1091,7 +1091,7 @@ impl TryFrom<u32> for PcrSlot {
 // For example, selecting PCRs 3 and 9 looks like:
 // size(3)  mask     mask     mask     mask
 // 00000011 00000000 00000000 00000001 00000100
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct PcrSelections {
     items: HashMap<HashingAlgorithm, HashSet<PcrSlot>>,
 }
