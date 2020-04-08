@@ -95,11 +95,11 @@ impl Tpm2BPublicBuilder {
     ///
     /// # Panics
     /// * will panic on unsupported platforms (i.e. on 8 bit processors)
-    pub fn build(mut self) -> Result<TPM2B_PUBLIC> {
+    pub fn build(self) -> Result<TPM2B_PUBLIC> {
         match self.type_ {
             Some(TPM2_ALG_RSA) => {
                 // RSA key
-                let mut parameters;
+                let parameters;
                 let unique;
                 if let Some(PublicParmsUnion::RsaDetail(parms)) = self.parameters {
                     parameters = TPMU_PUBLIC_PARMS { rsaDetail: parms };
@@ -115,24 +115,6 @@ impl Tpm2BPublicBuilder {
                     unique = Default::default();
                 } else {
                     return Err(Error::local_error(WrapperErrorKind::InconsistentParams));
-                }
-
-                if self.object_attributes.sign_encrypt() && self.object_attributes.decrypt() {
-                    self.object_attributes.set_restricted(false);
-                }
-
-                // the checks around the scheme definition could be improved/expanded
-                if self.object_attributes.decrypt() && self.object_attributes.restricted() {
-                    parameters.rsaDetail.scheme.scheme = TPM2_ALG_NULL;
-                    parameters.rsaDetail.scheme.details = TPMU_ASYM_SCHEME {
-                        anySig: TPMS_SCHEME_HASH {
-                            hashAlg: TPM2_ALG_NULL,
-                        },
-                    };
-                }
-
-                if !(self.object_attributes.decrypt() && self.object_attributes.restricted()) {
-                    parameters.rsaDetail.symmetric.algorithm = TPM2_ALG_NULL;
                 }
 
                 Ok(TPM2B_PUBLIC {
@@ -165,48 +147,55 @@ impl Default for Tpm2BPublicBuilder {
 #[allow(missing_debug_implementations)]
 #[derive(Copy, Clone, Default)]
 pub struct TpmsRsaParmsBuilder {
-    symmetric: TPMT_SYM_DEF_OBJECT,
-    scheme: Option<AsymSchemeUnion>,
-    key_bits: TPMI_RSA_KEY_BITS,
-    exponent: u32,
+    /// Symmetric cipher to be used in conjuction with the key
+    pub symmetric: Option<TPMT_SYM_DEF_OBJECT>,
+    /// Asymmetric scheme to be used for key operations
+    pub scheme: Option<AsymSchemeUnion>,
+    /// Size of key, in bits
+    pub key_bits: TPMI_RSA_KEY_BITS,
+    /// Public exponent of the key. A value of 0 defaults to 2 ^ 16 + 1
+    pub exponent: u32,
+    /// Flag indicating whether the key shall be used for signing
+    pub for_signing: bool,
+    /// Flag indicating whether the key shall be used for decryption
+    pub for_decryption: bool,
+    /// Flag indicating whether the key is restricted
+    pub restricted: bool,
 }
 
 impl TpmsRsaParmsBuilder {
-    /// Create a new builder with default (i.e. empty or null) placeholder values.
-    pub fn new() -> Self {
-        let mut builder = TpmsRsaParmsBuilder {
-            symmetric: Default::default(),
-            scheme: None,
-            key_bits: 2048,
-            exponent: 0,
-        };
-        builder.symmetric.algorithm = TPM2_ALG_NULL;
-
-        builder
+    /// Create parameters for a restricted decryption key
+    pub fn new_restricted_decryption_key(
+        symmetric: TPMT_SYM_DEF_OBJECT,
+        key_bits: TPMI_RSA_KEY_BITS,
+        exponent: u32,
+    ) -> Self {
+        TpmsRsaParmsBuilder {
+            symmetric: Some(symmetric),
+            scheme: Some(AsymSchemeUnion::AnySig(TPM2_ALG_NULL)),
+            key_bits,
+            exponent,
+            for_signing: false,
+            for_decryption: true,
+            restricted: true,
+        }
     }
 
-    /// Set the symmetric algorithm for parameter encryption.
-    pub fn with_symmetric(mut self, symmetric: TPMT_SYM_DEF_OBJECT) -> Self {
-        self.symmetric = symmetric;
-        self
-    }
-
-    /// Set the asymmetric scheme for the object.
-    pub fn with_scheme(mut self, scheme: AsymSchemeUnion) -> Self {
-        self.scheme = Some(scheme);
-        self
-    }
-
-    /// Set the size of the key in bits.
-    pub fn with_key_bits(mut self, key_bits: TPMI_RSA_KEY_BITS) -> Self {
-        self.key_bits = key_bits;
-        self
-    }
-
-    /// Set the RSA exponent.
-    pub fn with_exponent(mut self, exponent: u32) -> Self {
-        self.exponent = exponent;
-        self
+    /// Create parameters for an unrestricted signing key
+    pub fn new_unrestricted_signing_key(
+        scheme: AsymSchemeUnion,
+        key_bits: TPMI_RSA_KEY_BITS,
+        exponent: u32,
+    ) -> Self {
+        TpmsRsaParmsBuilder {
+            symmetric: None,
+            scheme: Some(scheme),
+            key_bits,
+            exponent,
+            for_signing: true,
+            for_decryption: false,
+            restricted: false,
+        }
     }
 
     /// Build an object given the previously provded parameters.
@@ -215,18 +204,70 @@ impl TpmsRsaParmsBuilder {
     ///
     /// # Errors
     /// * if no asymmetric scheme is set, `ParamsMissing` wrapper error is returned.
+    /// * if the `for_signing`, `for_decryption` and `restricted` parameters are
+    /// inconsistent with the rest of the parameters, `InconsistentParams` wrapper
+    /// error is returned
     pub fn build(self) -> Result<TPMS_RSA_PARMS> {
+        if self.restricted && self.for_decryption {
+            if self.symmetric.is_none() {
+                return Err(Error::local_error(WrapperErrorKind::ParamsMissing));
+            }
+        } else if self.symmetric.is_some() {
+            return Err(Error::local_error(WrapperErrorKind::InconsistentParams));
+        }
+        let symmetric = self.symmetric.unwrap_or_else(|| {
+            let mut def: TPMT_SYM_DEF_OBJECT = Default::default();
+            def.algorithm = TPM2_ALG_NULL;
+
+            def
+        });
+
+        let scheme = self
+            .scheme
+            .ok_or_else(|| Error::local_error(WrapperErrorKind::ParamsMissing))?
+            .get_rsa_scheme();
+        if self.restricted {
+            if self.for_signing
+                && scheme.scheme != TPM2_ALG_RSAPSS
+                && scheme.scheme != TPM2_ALG_RSASSA
+            {
+                return Err(Error::local_error(WrapperErrorKind::InconsistentParams));
+            }
+
+            if self.for_decryption && scheme.scheme != TPM2_ALG_NULL {
+                return Err(Error::local_error(WrapperErrorKind::InconsistentParams));
+            }
+        } else {
+            if self.for_decryption && self.for_signing && scheme.scheme != TPM2_ALG_NULL {
+                return Err(Error::local_error(WrapperErrorKind::InconsistentParams));
+            }
+            if self.for_signing
+                && scheme.scheme != TPM2_ALG_RSAPSS
+                && scheme.scheme != TPM2_ALG_RSASSA
+                && scheme.scheme != TPM2_ALG_NULL
+            {
+                return Err(Error::local_error(WrapperErrorKind::InconsistentParams));
+            }
+
+            if self.for_decryption
+                && scheme.scheme != TPM2_ALG_RSAES
+                && scheme.scheme != TPM2_ALG_OAEP
+                && scheme.scheme != TPM2_ALG_NULL
+            {
+                return Err(Error::local_error(WrapperErrorKind::InconsistentParams));
+            }
+        }
         Ok(TPMS_RSA_PARMS {
-            symmetric: self.symmetric,
-            scheme: self
-                .scheme
-                .ok_or_else(|| Error::local_error(WrapperErrorKind::ParamsMissing))?
-                .get_rsa_scheme(),
+            symmetric,
+            scheme,
             keyBits: self.key_bits,
             exponent: self.exponent,
         })
     }
 }
+
+/// Supported sizes for RSA key modulus
+pub const RSA_KEY_SIZES: [u16; 4] = [1024, 2048, 3072, 4096];
 
 /// Builder for `TPMT_SYM_DEF` objects.
 #[derive(Copy, Clone, Debug)]
@@ -384,6 +425,30 @@ bitfield! {
     pub restricted, set_restricted: 16;
     pub decrypt, set_decrypt: 17;
     pub sign_encrypt, set_sign_encrypt: 18;
+}
+
+impl ObjectAttributes {
+    pub fn new_fixed_parent_key() -> Self {
+        let mut attrs = ObjectAttributes(0);
+        attrs.set_fixed_tpm(true);
+        attrs.set_fixed_parent(true);
+        attrs.set_sensitive_data_origin(true);
+        attrs.set_user_with_auth(true);
+        attrs.set_decrypt(true);
+        attrs.set_restricted(true);
+        attrs
+    }
+
+    pub fn new_fixed_signing_key() -> Self {
+        let mut attrs = ObjectAttributes(0);
+        attrs.set_fixed_tpm(true);
+        attrs.set_fixed_parent(true);
+        attrs.set_sensitive_data_origin(true);
+        attrs.set_user_with_auth(true);
+        attrs.set_sign_encrypt(true);
+
+        attrs
+    }
 }
 
 /// Rust enum representation of `TPMU_PUBLIC_ID`.
@@ -778,41 +843,6 @@ impl TryFrom<TpmsContext> for TPMS_CONTEXT {
     }
 }
 
-/// Convenience method for generating `TPM2B_PUBLIC` objects for RSA keys based on the provided
-/// parameters.
-///
-/// The method defaults the following values:
-/// * asymmetric scheme used - RSA SSA with SHA-256 as the hash algorithm
-/// * symmetric algorithm associated with the object - 256 bit AES in CFB mode
-/// * name algorithm - SHA-256
-/// * object attributes - fixed TPM, fixed parent, sensitive data origin and user with auth are set
-pub fn get_rsa_public(restricted: bool, decrypt: bool, sign: bool, key_bits: u16) -> TPM2B_PUBLIC {
-    let symmetric = TpmtSymDefBuilder::aes_256_cfb_object();
-    let scheme = AsymSchemeUnion::RSASSA(TPM2_ALG_SHA256);
-    let rsa_parms = TpmsRsaParmsBuilder::new()
-        .with_symmetric(symmetric)
-        .with_key_bits(key_bits)
-        .with_scheme(scheme)
-        .build()
-        .unwrap(); // should not fail as we control the params
-    let mut object_attributes = ObjectAttributes(0);
-    object_attributes.set_fixed_tpm(true);
-    object_attributes.set_fixed_parent(true);
-    object_attributes.set_sensitive_data_origin(true);
-    object_attributes.set_user_with_auth(true);
-    object_attributes.set_decrypt(decrypt);
-    object_attributes.set_sign_encrypt(sign);
-    object_attributes.set_restricted(restricted);
-
-    Tpm2BPublicBuilder::new()
-        .with_type(TPM2_ALG_RSA)
-        .with_name_alg(TPM2_ALG_SHA256)
-        .with_object_attributes(object_attributes)
-        .with_parms(PublicParmsUnion::RsaDetail(rsa_parms))
-        .build()
-        .unwrap() // should not fail as we control the params
-}
-
 /// Enum describing the object hierarchies in a TPM 2.0.
 #[derive(Debug, Clone, Copy)]
 pub enum Hierarchy {
@@ -916,4 +946,67 @@ impl TryFrom<TpmtTkVerified> for TPMT_TK_VERIFIED {
             },
         })
     }
+}
+
+/// Create the TPM2B_PUBLIC structure for a restricted decryption key.
+///
+/// * `symmetric` - Cipher to be used for decrypting children of the key
+/// * `key_bits` - Size in bits of the decryption key
+/// * `pub_exponent` - Public exponent of the RSA key. A value of 0 defaults to 2^16 + 1
+pub fn create_restricted_decryption_rsa_public(
+    symmetric: Cipher,
+    key_bits: u16,
+    pub_exponent: u32,
+) -> Result<TPM2B_PUBLIC> {
+    let rsa_parms = TpmsRsaParmsBuilder::new_restricted_decryption_key(
+        symmetric.into(),
+        key_bits,
+        pub_exponent,
+    )
+    .build()?;
+    let mut object_attributes = ObjectAttributes(0);
+    object_attributes.set_fixed_tpm(true);
+    object_attributes.set_fixed_parent(true);
+    object_attributes.set_sensitive_data_origin(true);
+    object_attributes.set_user_with_auth(true);
+    object_attributes.set_decrypt(true);
+    object_attributes.set_sign_encrypt(false);
+    object_attributes.set_restricted(true);
+
+    Tpm2BPublicBuilder::new()
+        .with_type(TPM2_ALG_RSA)
+        .with_name_alg(TPM2_ALG_SHA256)
+        .with_object_attributes(object_attributes)
+        .with_parms(PublicParmsUnion::RsaDetail(rsa_parms))
+        .build()
+}
+
+/// Create the TPM2B_PUBLIC structure for an unrestricted signing key.
+///
+/// * `scheme` - Asymmetric key to be used for signing
+/// * `key_bits` - Size in bits of the decryption key
+/// * `pub_exponent` - Public exponent of the RSA key. A value of 0 defaults to 2^16 + 1
+pub fn create_unrestricted_signing_rsa_public(
+    scheme: AsymSchemeUnion,
+    key_bits: u16,
+    pub_exponent: u32,
+) -> Result<TPM2B_PUBLIC> {
+    let rsa_parms =
+        TpmsRsaParmsBuilder::new_unrestricted_signing_key(scheme, key_bits, pub_exponent)
+            .build()?; // should not fail as we control the params
+    let mut object_attributes = ObjectAttributes(0);
+    object_attributes.set_fixed_tpm(true);
+    object_attributes.set_fixed_parent(true);
+    object_attributes.set_sensitive_data_origin(true);
+    object_attributes.set_user_with_auth(true);
+    object_attributes.set_decrypt(false);
+    object_attributes.set_sign_encrypt(true);
+    object_attributes.set_restricted(false);
+
+    Tpm2BPublicBuilder::new()
+        .with_type(TPM2_ALG_RSA)
+        .with_name_alg(TPM2_ALG_SHA256)
+        .with_object_attributes(object_attributes)
+        .with_parms(PublicParmsUnion::RsaDetail(rsa_parms))
+        .build() // should not fail as we control the params
 }
