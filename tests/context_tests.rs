@@ -337,16 +337,6 @@ mod test_pcr_read {
         assert_eq!(tpml_digest.count, 1);
         let digest = &tpml_digest.digests[0];
         assert_ne!(digest.size, 0);
-        let is_not_empty = |buffer: &[u8]| -> bool {
-            for item in buffer {
-                if *item != 0 {
-                    return true;
-                }
-            }
-            false
-        };
-        let data = &digest.buffer[0..((digest.size - 1) as usize)];
-        assert!(is_not_empty(data), "The data was empty.");
     }
 }
 
