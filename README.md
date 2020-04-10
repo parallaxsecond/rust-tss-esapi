@@ -49,3 +49,5 @@ This project uses the following third party crates:
 * mbox (MIT)
 * bitfield (MIT and Apache-2.0)
 * pkg-config (MIT and Apache-2.0)
+* num-traits (MIT/Apache-2.0)
+* num-derive (MIT/Apache-2.0)

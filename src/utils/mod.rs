@@ -15,6 +15,8 @@ use crate::response_code::{Error, Result, WrapperErrorKind};
 use crate::tss2_esys::*;
 use algorithm_specifiers::{Cipher, HashingAlgorithm};
 use bitfield::bitfield;
+use num_derive::FromPrimitive;
+use num_traits::FromPrimitive;
 use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, HashSet};
 use std::convert::{TryFrom, TryInto};
@@ -1012,7 +1014,7 @@ pub fn create_unrestricted_signing_rsa_public(
         .build() // should not fail as we control the params
 }
 
-#[derive(Hash, Eq, PartialEq, Copy, Clone, Debug)]
+#[derive(Hash, Eq, PartialEq, Copy, Clone, Debug, FromPrimitive)]
 pub enum PcrSlot {
     Slot0 = 0,
     Slot1,
@@ -1040,57 +1042,23 @@ pub enum PcrSlot {
     Slot23,
 }
 
-impl TryFrom<u32> for PcrSlot {
-    type Error = Error;
-    fn try_from(pcr_slot_number: u32) -> Result<Self> {
-        match pcr_slot_number {
-            0 => Ok(PcrSlot::Slot0),
-            1 => Ok(PcrSlot::Slot1),
-            2 => Ok(PcrSlot::Slot2),
-            3 => Ok(PcrSlot::Slot3),
-            4 => Ok(PcrSlot::Slot4),
-            5 => Ok(PcrSlot::Slot5),
-            6 => Ok(PcrSlot::Slot6),
-            7 => Ok(PcrSlot::Slot7),
-            8 => Ok(PcrSlot::Slot8),
-            9 => Ok(PcrSlot::Slot9),
-            10 => Ok(PcrSlot::Slot10),
-            11 => Ok(PcrSlot::Slot11),
-            12 => Ok(PcrSlot::Slot12),
-            13 => Ok(PcrSlot::Slot13),
-            14 => Ok(PcrSlot::Slot14),
-            15 => Ok(PcrSlot::Slot15),
-            16 => Ok(PcrSlot::Slot16),
-            17 => Ok(PcrSlot::Slot17),
-            18 => Ok(PcrSlot::Slot18),
-            19 => Ok(PcrSlot::Slot19),
-            20 => Ok(PcrSlot::Slot20),
-            21 => Ok(PcrSlot::Slot21),
-            22 => Ok(PcrSlot::Slot22),
-            23 => Ok(PcrSlot::Slot23),
-            _ => Err(Error::local_error(WrapperErrorKind::InvalidParam)),
-        }
-    }
-}
-
+/// A struct representing pcr selections
+///
+///
 /// TPML_PCR_SELECTION is a structure that can contain up to
 /// 16 TPMS_PCR_SELECTION
 ///
-/// The TPMS_PCR_SELECTION is a variable size bitmask
-/// where the position of each bit is the selected index.
+/// The TPMS_PCR_SELECTION contains:
+/// - A hashing algorithm
+/// - A size of the select i.e. how many bytes of the variale
+/// bit mask to use.
+/// - A variable bitmask where each bit represents a pcr slot.
 ///
-/// The minimum number of octets in a TPMS_PCR_SELECT.sizeOfSelect
+/// The minimum number of octets allowed in a TPMS_PCR_SELECT.sizeOfSelect
 /// is not determined by the number of PCR implemented but by the
 /// number of PCR required by the platform-specific
 /// specification with which the TPM is compliant or by the implementer if
 /// not adhering to a platform-specific specification.
-///
-/// So to make things simple 3 octets are
-/// used which means that size of selections always will be
-/// 3.
-// For example, selecting PCRs 3 and 9 looks like:
-// size(3)  mask     mask     mask     mask
-// 00000011 00000000 00000000 00000001 00000100
 #[derive(Debug, Default, Clone)]
 pub struct PcrSelections {
     size_of_select: u8,
@@ -1129,13 +1097,13 @@ impl TryFrom<TPML_PCR_SELECTION> for PcrSelections {
                 return Err(Error::local_error(WrapperErrorKind::InconsistentParams));
             }
             size_of_select = Some(selection.sizeofSelect);
-            // Loop over pcr slots to find the selected ones.
+            // Check all the bits in the bitmask
             for slot_nr in 0..((selection.sizeofSelect * 8) - 1) {
                 let index: usize = (slot_nr / 8) as usize;
                 let mask: u8 = 1 << (slot_nr % 8);
                 let is_set = (selection.pcrSelect[index] & mask) == mask;
                 if is_set {
-                    let _ = pcr_slots.insert(PcrSlot::try_from(slot_nr as u32).unwrap());
+                    let _ = pcr_slots.insert(FromPrimitive::from_u8(slot_nr).unwrap());
                 }
             }
             let _ = ret.items.insert(
