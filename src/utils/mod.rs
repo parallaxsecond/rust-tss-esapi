@@ -1114,15 +1114,25 @@ impl From<PcrSelections> for TPML_PCR_SELECTION {
     }
 }
 
-impl From<TPML_PCR_SELECTION> for PcrSelections {
-    fn from(tpml_pcr_selection: TPML_PCR_SELECTION) -> PcrSelections {
+impl TryFrom<TPML_PCR_SELECTION> for PcrSelections {
+    type Error = Error;
+    fn try_from(tpml_pcr_selection: TPML_PCR_SELECTION) -> Result<PcrSelections> {
         let mut ret: PcrSelections = Default::default();
+        let mut size_of_select: Option<u8> = None;
+        // Loop over available selections
         for selection_index in 0..(tpml_pcr_selection.count as usize) {
             let selection = &tpml_pcr_selection.pcrSelections[selection_index];
             let mut pcr_slots: HashSet<PcrSlot> = HashSet::<PcrSlot>::new();
-            for slot_nr in 1..(selection.sizeofSelect * 8) {
+            // Check for variations in sizeofSelect.
+            // Something that currently is not supported.
+            if selection.sizeofSelect != size_of_select.unwrap_or(selection.sizeofSelect) {
+                return Err(Error::local_error(WrapperErrorKind::InconsistentParams));
+            }
+            size_of_select = Some(selection.sizeofSelect);
+            // Loop over pcr slots to find the selected ones.
+            for slot_nr in 0..((selection.sizeofSelect * 8) - 1) {
                 let index: usize = (slot_nr / 8) as usize;
-                let mask: u8 = slot_nr % 8;
+                let mask: u8 = 1 << (slot_nr % 8);
                 let is_set = (selection.pcrSelect[index] & mask) == mask;
                 if is_set {
                     let _ = pcr_slots.insert(PcrSlot::try_from(slot_nr as u32).unwrap());
@@ -1133,7 +1143,8 @@ impl From<TPML_PCR_SELECTION> for PcrSelections {
                 pcr_slots,
             );
         }
-        ret
+        ret.size_of_select = size_of_select.unwrap();
+        Ok(ret)
     }
 }
 

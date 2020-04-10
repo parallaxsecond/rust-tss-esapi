@@ -1,7 +1,7 @@
 use std::convert::TryFrom;
 use tss_esapi::tss2_esys::{TPM2_ALG_ID, TPML_PCR_SELECTION};
 use tss_esapi::utils::algorithm_specifiers::HashingAlgorithm;
-use tss_esapi::utils::{PcrSelectionsBuilder, PcrSlot};
+use tss_esapi::utils::{PcrSelections, PcrSelectionsBuilder, PcrSlot};
 
 mod test_pcr_selection_builder {
     use super::*;
@@ -65,5 +65,41 @@ mod test_pcr_selection_builder {
                 _ => panic!("Encountered incorrect Hashing Algorithm"),
             }
         }
+    }
+
+    #[test]
+    fn test_multiple_conversions() {
+        let pcr_selections = PcrSelectionsBuilder::new()
+            .with_size_of_select(3)
+            .with_selection(
+                HashingAlgorithm::Sha256,
+                &[PcrSlot::Slot0, PcrSlot::Slot8, PcrSlot::Slot16],
+            )
+            .build();
+        let converted: TPML_PCR_SELECTION = pcr_selections.into();
+        let from_converted = PcrSelections::try_from(converted).unwrap();
+        let re_converted: TPML_PCR_SELECTION = from_converted.into();
+
+        assert_eq!(converted.count, re_converted.count);
+        assert_eq!(
+            converted.pcrSelections[0].sizeofSelect,
+            re_converted.pcrSelections[0].sizeofSelect
+        );
+        assert_eq!(
+            converted.pcrSelections[0].hash,
+            re_converted.pcrSelections[0].hash
+        );
+        assert_eq!(
+            converted.pcrSelections[0].pcrSelect[0],
+            re_converted.pcrSelections[0].pcrSelect[0]
+        );
+        assert_eq!(
+            converted.pcrSelections[0].pcrSelect[1],
+            re_converted.pcrSelections[0].pcrSelect[1]
+        );
+        assert_eq!(
+            converted.pcrSelections[0].pcrSelect[2],
+            re_converted.pcrSelections[0].pcrSelect[2]
+        );
     }
 }
