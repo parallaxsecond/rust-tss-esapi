@@ -1083,7 +1083,7 @@ impl TryFrom<TPML_PCR_SELECTION> for PcrSelections {
             // Check for variations in sizeofSelect.
             // Something that currently is not supported.
             if selection.sizeofSelect != size_of_select.unwrap_or(selection.sizeofSelect) {
-                return Err(Error::local_error(WrapperErrorKind::InconsistentParams));
+                return Err(Error::local_error(WrapperErrorKind::UnsupportedParam));
             }
             size_of_select = Some(selection.sizeofSelect);
             let _ = ret.items.insert(
