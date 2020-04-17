@@ -5,8 +5,11 @@
 
 # TSS 2.0 Enhanced System API Rust Wrapper 
 
-[![CI tests](https://github.com/parallaxsecond/rust-tss-esapi/workflows/Continuous%20Integration/badge.svg)](https://github.com/parallaxsecond/rust-tss-esapi/actions?query=workflow%3A%22Continuous+Integration%22)
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+<p align="center">
+  <a href="https://crates.io/crates/tss-esapi"><img alt="Crates.io" src="https://img.shields.io/crates/v/tss-esapi"></a>
+  <a href="https://docs.rs/tss-esapi"><img src="https://docs.rs/tss-esapi/badge.svg" alt="Code documentation"/></a>
+  <a href="https://github.com/parallaxsecond/rust-tss-esapi/actions?query=workflow%3A%22Continuous+Integration%22"><img src="https://github.com/parallaxsecond/rust-tss-esapi/workflows/Continuous%20Integration/badge.svg" alt="CI tests"/></a>
+</p>
 
 The `tss-esapi` Rust crate provides an idiomatic interface to the TCG TSS 2.0 Enhanced System API. We expose both direct FFI bindings and abstracted versions, aimed at improved convenience of using the API.
 
@@ -31,11 +34,9 @@ Come and talk to us in [our Slack channel](https://app.slack.com/client/T0JK1PCN
 
 ## Contributing
 
-We would be happy for you to contribute to the `tss-esapi` crate! Check the [**Contributing**](CONTRIBUTING.md)
-file to know more about the contribution process.
-You can see a list of current contributors [here](https://github.com/parallaxsecond/parsec/blob/master/CONTRIBUTORS.md).
-Check the [open issues](https://github.com/orgs/parallaxsecond/projects/1) on the board if you
-need any ideas 🙂!
+We would be happy for you to contribute to the `tss-esapi` crate!
+Please check the [**Contribution Guidelines**](https://parallaxsecond.github.io/parsec-book/contributing.html)
+to know more about the contribution process.
 
 ## License
 
