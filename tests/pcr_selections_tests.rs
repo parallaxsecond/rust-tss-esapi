@@ -102,4 +102,24 @@ mod test_pcr_selection_builder {
             re_converted.pcrSelections[0].pcrSelect[2]
         );
     }
+
+    #[test]
+    fn test_conversion_of_data_with_invalid_pcr_select_bit_flags() {
+        let mut tpml_pcr_selection: TPML_PCR_SELECTION = PcrSelectionsBuilder::new()
+            .with_size_of_select(3)
+            .with_selection(
+                HashingAlgorithm::Sha256,
+                &[PcrSlot::Slot0, PcrSlot::Slot8, PcrSlot::Slot16],
+            )
+            .build()
+            .into();
+
+        // Size of select is 3 the maximum value supported.
+        // Setting a value in the fourth octet is creating
+        // a none supported bit flag
+        tpml_pcr_selection.pcrSelections[0].pcrSelect[3] = 1;
+
+        // The try_from should then fail.
+        PcrSelections::try_from(tpml_pcr_selection).unwrap_err();
+    }
 }

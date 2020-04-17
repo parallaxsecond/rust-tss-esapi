@@ -16,6 +16,7 @@ use crate::tss2_esys::*;
 use algorithm_specifiers::{Cipher, HashingAlgorithm};
 use bitfield::bitfield;
 use enumflags2::BitFlags;
+use log::error;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::convert::{TryFrom, TryInto};
@@ -1078,8 +1079,15 @@ impl TryFrom<TPML_PCR_SELECTION> for PcrSelections {
         // Loop over available selections
         for selection_index in 0..(tpml_pcr_selection.count as usize) {
             let selection = &tpml_pcr_selection.pcrSelections[selection_index];
-            let pcr_slots: BitFlags<PcrSlot> =
-                BitFlags::<PcrSlot>::try_from(u32::from_le_bytes(selection.pcrSelect)).unwrap();
+            // Make sure the selection does not contain unsupported
+            // bit flags.
+            let pcr_slots: BitFlags<PcrSlot> = BitFlags::<PcrSlot>::try_from(u32::from_le_bytes(
+                selection.pcrSelect,
+            ))
+            .or_else(|e| {
+                error!("Error found pcrSelect to a BitFlags<PcrSlot>: {}.", e);
+                Err(Error::local_error(WrapperErrorKind::UnsupportedParam))
+            })?;
             // Check for variations in sizeofSelect.
             // Something that currently is not supported.
             if selection.sizeofSelect != size_of_select.unwrap_or(selection.sizeofSelect) {
