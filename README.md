@@ -50,3 +50,5 @@ This project uses the following third party crates:
 * bitfield (MIT and Apache-2.0)
 * pkg-config (MIT and Apache-2.0)
 * enumflags2 (MIT and Apache-2.0)
+* num-derive (MIT and Apache-2.0)
+* num-traits (MIT and Apache-2.0)
