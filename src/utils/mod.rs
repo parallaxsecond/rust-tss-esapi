@@ -13,9 +13,14 @@ pub mod algorithm_specifiers;
 use crate::constants::*;
 use crate::response_code::{Error, Result, WrapperErrorKind};
 use crate::tss2_esys::*;
-use algorithm_specifiers::Cipher;
+use algorithm_specifiers::{Cipher, HashingAlgorithm};
 use bitfield::bitfield;
+use enumflags2::BitFlags;
+use log::error;
+use num_derive::{FromPrimitive, ToPrimitive};
+use num_traits::{FromPrimitive, ToPrimitive};
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 use std::convert::{TryFrom, TryInto};
 
 /// Helper for building `TPM2B_PUBLIC` values out of its subcomponents.
@@ -1009,4 +1014,202 @@ pub fn create_unrestricted_signing_rsa_public(
         .with_object_attributes(object_attributes)
         .with_parms(PublicParmsUnion::RsaDetail(rsa_parms))
         .build() // should not fail as we control the params
+}
+
+// Enum with the bit flag for each PCR slot.
+#[derive(BitFlags, Hash, Debug, PartialEq, Clone, Copy)]
+#[repr(u32)]
+pub enum PcrSlot {
+    Slot0 = 0x0000_0001,
+    Slot1 = 0x0000_0002,
+    Slot2 = 0x0000_0004,
+    Slot3 = 0x0000_0008,
+    Slot4 = 0x0000_0010,
+    Slot5 = 0x0000_0020,
+    Slot6 = 0x0000_0040,
+    Slot7 = 0x0000_0080,
+    Slot8 = 0x0000_0100,
+    Slot9 = 0x0000_0200,
+    Slot10 = 0x0000_0400,
+    Slot11 = 0x0000_0800,
+    Slot12 = 0x0000_1000,
+    Slot13 = 0x0000_2000,
+    Slot14 = 0x0000_4000,
+    Slot15 = 0x0000_8000,
+    Slot16 = 0x0001_0000,
+    Slot17 = 0x0002_0000,
+    Slot18 = 0x0004_0000,
+    Slot19 = 0x0008_0000,
+    Slot20 = 0x0010_0000,
+    Slot21 = 0x0020_0000,
+    Slot22 = 0x0040_0000,
+    Slot23 = 0x0080_0000,
+}
+
+// Enum with the possible values for sizeofSelect.
+#[derive(FromPrimitive, ToPrimitive, Debug, Copy, Clone, PartialEq)]
+#[repr(u8)]
+pub enum PcrSelectSize {
+    OneByte = 1,
+    TwoBytes = 2,
+    ThreeBytes = 3,
+    FourBytes = 4,
+}
+
+// The default for PcrSelectSize is three bytes.
+// A value for the sizeofSelect that works
+// on most platforms.
+impl Default for PcrSelectSize {
+    fn default() -> PcrSelectSize {
+        PcrSelectSize::ThreeBytes
+    }
+}
+
+/// A struct representing pcr selections
+///
+/// The minimum number of octets allowed in a TPMS_PCR_SELECT.sizeOfSelect
+/// is not determined by the number of PCR implemented but by the
+/// number of PCR required by the platform-specific
+/// specification with which the TPM is compliant or by the implementer if
+/// not adhering to a platform-specific specification.
+#[derive(Debug, Default, Clone)]
+pub struct PcrSelections {
+    size_of_select: PcrSelectSize,
+    items: HashMap<HashingAlgorithm, BitFlags<PcrSlot>>,
+}
+
+impl From<PcrSelections> for TPML_PCR_SELECTION {
+    fn from(pcr_selections: PcrSelections) -> TPML_PCR_SELECTION {
+        let mut ret: TPML_PCR_SELECTION = Default::default();
+        for (hash_algorithm, pcr_slots) in pcr_selections.items {
+            let tpms_pcr_selection = &mut ret.pcrSelections[ret.count as usize];
+            tpms_pcr_selection.hash = hash_algorithm.clone().into();
+            tpms_pcr_selection.sizeofSelect = pcr_selections.size_of_select.to_u8().unwrap();
+            tpms_pcr_selection.pcrSelect = pcr_slots.bits().to_le_bytes();
+            ret.count += 1;
+        }
+        ret
+    }
+}
+
+impl TryFrom<TPML_PCR_SELECTION> for PcrSelections {
+    type Error = Error;
+    fn try_from(tpml_pcr_selection: TPML_PCR_SELECTION) -> Result<PcrSelections> {
+        let mut ret: PcrSelections = Default::default();
+        let mut size_of_select: Option<PcrSelectSize> = None;
+        // Loop over available selections
+        for selection_index in 0..(tpml_pcr_selection.count as usize) {
+            let selection = &tpml_pcr_selection.pcrSelections[selection_index];
+            // Parse the pcr slots from the pcrSelect bit mask.
+            let parsed_pcr_slots: BitFlags<PcrSlot> = BitFlags::<PcrSlot>::try_from(
+                u32::from_le_bytes(selection.pcrSelect),
+            )
+            .or_else(|e| {
+                error!("Error parsing pcrSelect to a BitFlags<PcrSlot>: {}.", e);
+                Err(Error::local_error(WrapperErrorKind::UnsupportedParam))
+            })?;
+            // Parse the sizeofSelect into a SelectSize.
+            let parsed_size_of_select = match PcrSelectSize::from_u8(selection.sizeofSelect) {
+                Some(val) => val,
+                None => {
+                    error!(
+                        "Error converting sizeofSelect to a SelectSize: Invalid value {}",
+                        selection.sizeofSelect
+                    );
+                    return Err(Error::local_error(WrapperErrorKind::InvalidParam));
+                }
+            };
+            // Check for variations in sizeofSelect.
+            // Something that currently is not supported.
+            if parsed_size_of_select != size_of_select.unwrap_or(parsed_size_of_select) {
+                return Err(Error::local_error(WrapperErrorKind::UnsupportedParam));
+            }
+            size_of_select = Some(parsed_size_of_select);
+            // Parse the hash
+            let parsed_hash_algorithm =
+                HashingAlgorithm::try_from(selection.hash).or_else(|e| {
+                    error!("Error converting hash to a HashingAlgorithm: {}.", e);
+                    Err(Error::local_error(WrapperErrorKind::InvalidParam))
+                })?;
+            // Insert the select into the storage. Or update
+            // if the item already exists
+            match ret.items.get_mut(&parsed_hash_algorithm) {
+                Some(previously_parsed_pcr_slots) => {
+                    *previously_parsed_pcr_slots |= parsed_pcr_slots;
+                }
+                None => {
+                    let _ = ret.items.insert(parsed_hash_algorithm, parsed_pcr_slots);
+                }
+            }
+        }
+        // Default case will only happen with a completely empty
+        // selection.
+        ret.size_of_select = size_of_select.unwrap_or_default();
+        Ok(ret)
+    }
+}
+
+/// A builder for the PcrSelection struct.
+#[derive(Debug, Default)]
+pub struct PcrSelectionsBuilder {
+    size_of_select: Option<PcrSelectSize>,
+    items: HashMap<HashingAlgorithm, BitFlags<PcrSlot>>,
+}
+
+impl PcrSelectionsBuilder {
+    pub fn new() -> Self {
+        PcrSelectionsBuilder {
+            size_of_select: None,
+            items: Default::default(),
+        }
+    }
+
+    /// Set the size of the pcr selection(sizeofSelect)
+    ///
+    /// # Arguments
+    /// size_of_select -- The size that will be used for all selections(sizeofSelect).
+    pub fn with_size_of_select(mut self, size_of_select: PcrSelectSize) -> Self {
+        self.size_of_select = Some(size_of_select);
+        self
+    }
+
+    /// Adds a selection associated with a specific HashingAlgorithm.
+    ///
+    /// This function will not overwrite the values already associated
+    /// with a specific HashingAlgorithm only update.
+    ///
+    /// # Arguments
+    /// hash_algorithm -- The HashingAlgorithm associated with the pcr selection
+    /// pcr_slots -- The PCR slots in the selection.
+    pub fn with_selection(
+        mut self,
+        hash_algorithm: HashingAlgorithm,
+        pcr_slots: &[PcrSlot],
+    ) -> Self {
+        let selected_pcr_slots: BitFlags<PcrSlot> = pcr_slots.iter().cloned().collect();
+        match self.items.get_mut(&hash_algorithm) {
+            Some(previously_selected_pcr_slots) => {
+                *previously_selected_pcr_slots |= selected_pcr_slots;
+            }
+            None => {
+                let _ = self.items.insert(hash_algorithm, selected_pcr_slots);
+            }
+        }
+        self
+    }
+
+    /// Builds a PcrSelections with the values that have been
+    /// provided.
+    ///
+    /// If no size of select have been provided then it will
+    /// be defaulted to 3. This may not be the correct size for
+    /// the current platform. The correct values can be obtained
+    /// by quering the tpm for its capabilities.
+    pub fn build(self) -> PcrSelections {
+        let select_size = self.size_of_select.unwrap_or_default();
+        PcrSelections {
+            size_of_select: select_size,
+            items: self.items,
+        }
+    }
 }

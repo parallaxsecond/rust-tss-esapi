@@ -17,6 +17,10 @@ bitfield = "0.13.2"
 serde = { version = "1.0.103", features = ["derive"] }
 mbox = "0.5.0"
 log = "0.4.8"
+enumflags2 = "0.6.3"
+num-derive = "0.3.0"
+num-traits = "0.2.11"
+
 
 [dev-dependencies]
 env_logger = "0.7.1"
