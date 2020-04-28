@@ -4,6 +4,7 @@ use crate::tss2_esys::*;
 
 pub const TPM2_ALG_ERROR: TPM2_ALG_ID = 0x0000;
 pub const TPM2_ALG_RSA: TPM2_ALG_ID = 0x0001;
+pub const TPM2_ALG_TDES: TPM2_ALG_ID = 0x0003;
 pub const TPM2_ALG_SHA: TPM2_ALG_ID = 0x0004;
 pub const TPM2_ALG_SHA1: TPM2_ALG_ID = 0x0004;
 pub const TPM2_ALG_HMAC: TPM2_ALG_ID = 0x0005;
