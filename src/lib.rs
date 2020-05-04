@@ -757,10 +757,11 @@ impl Context {
         }
     }
 
+    /// Read values from selected PCRs
     pub fn pcr_read(
         &mut self,
         pcr_selection: PcrSelections,
-    ) -> Result<(UINT32, TPML_PCR_SELECTION, TPML_DIGEST)> {
+    ) -> Result<(u32, TPML_PCR_SELECTION, TPML_DIGEST)> {
         let tpml_pcr_selection: TPML_PCR_SELECTION = pcr_selection.into();
         let mut pcr_update_counter: u32 = 0;
         let mut pcr_selection_out = null_mut();
@@ -786,6 +787,50 @@ impl Context {
             Ok((pcr_update_counter, *pcr_selection_out, *pcr_values))
         } else {
             error!("Error in creating derived key: {}.", ret);
+            Err(ret)
+        }
+    }
+
+    /// Generate a quote on the selected PCRs
+    ///
+    /// # Constraints
+    /// * `qualifying_data` must be at most 64 elements long
+    ///
+    /// # Errors
+    /// * if the qualifying data provided is too long, a `WrongParamSize` wrapper error will be returned
+    pub fn quote(
+        &mut self,
+        signing_key_handle: ESYS_TR,
+        qualifying_data: &[u8],
+        signing_scheme: TPMT_SIG_SCHEME,
+        pcr_selection: PcrSelections,
+    ) -> Result<(TPM2B_ATTEST, Signature)> {
+        let mut quoted = null_mut();
+        let mut signature = null_mut();
+        let qualifying_data = wrap_buffer!(qualifying_data, TPM2B_DATA, 64);
+
+        let ret = unsafe {
+            Esys_Quote(
+                self.mut_context(),
+                signing_key_handle,
+                self.sessions.0,
+                self.sessions.1,
+                self.sessions.2,
+                &qualifying_data,
+                &signing_scheme,
+                &pcr_selection.into(),
+                &mut quoted,
+                &mut signature,
+            )
+        };
+        let ret = Error::from_tss_rc(ret);
+
+        if ret.is_success() {
+            let quoted = unsafe { MBox::<TPM2B_ATTEST>::from_raw(quoted) };
+            let signature = unsafe { MBox::from_raw(signature) };
+            Ok((*quoted, unsafe { Signature::try_from(*signature)? }))
+        } else {
+            error!("Error in quoting PCR: {}", ret);
             Err(ret)
         }
     }

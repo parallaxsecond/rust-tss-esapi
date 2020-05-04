@@ -340,6 +340,34 @@ mod test_pcr_read {
     }
 }
 
+mod test_quote {
+    use super::*;
+
+    #[test]
+    fn pcr_quote() {
+        let mut context = create_ctx_with_session();
+        // Quote PCR 0
+        let pcr_selections = PcrSelectionsBuilder::new()
+            .with_selection(HashingAlgorithm::Sha256, &[PcrSlot::Slot0])
+            .build();
+        let scheme = TPMT_SIG_SCHEME {
+            scheme: TPM2_ALG_NULL,
+            details: Default::default(),
+        };
+        // No qualifying data
+        let qualifying_data = vec![0xff; 16];
+
+        let key_handle = context
+            .create_primary_key(ESYS_TR_RH_OWNER, &signing_key_pub(), &[], &[], &[], &[])
+            .unwrap();
+
+        let res = context
+            .quote(key_handle, &qualifying_data, scheme, pcr_selections)
+            .expect("Failed to get a quote");
+        assert!(res.0.size != 0);
+    }
+}
+
 mod test_get_random {
     use super::*;
 

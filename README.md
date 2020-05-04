@@ -13,12 +13,18 @@
 
 The `tss-esapi` Rust crate provides an idiomatic interface to the TCG TSS 2.0 Enhanced System API. We expose both direct FFI bindings and abstracted versions, aimed at improved convenience of using the API.
 
+Our end-goal is to achieve a fully Rust-native interface that offers strong safety and security guarantees. Check out our [documentation](https://docs.rs/tss-esapi/*/tss_esapi/#notes-on-code-safety) for an overview of our code safety approach.
+
+## Versioning
+
+The crate is still under development and thus the interface is not stable (despite the version number). As a rule of thumb, all versions marked `alpha` are expected to be short-lived and superseded by a better, more complete interface that relies on breaking changes.
+
 ## Requirements
 
 This crate has currently only been tested with the TSS 2.0
 [open-source implementation](https://github.com/tpm2-software/tpm2-tss).
 It uses `pkg-config` to find the include and library files for the `tss2-esys` and `tss2-tctildr`
-libraries. `pkg-config` tool is needed to build this crate.
+libraries. A minimum version of `2.3.3` is required for both. `pkg-config` tool is needed to build this crate.
 
 Having installed the open-source implementation libraries at `/usr/local/lib` (by default), it
 might happen that `pkg-config` can not find them. Run the following command if that is the

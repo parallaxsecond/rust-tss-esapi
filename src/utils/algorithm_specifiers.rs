@@ -9,7 +9,7 @@ use crate::constants::{
     TPM2_ALG_OAEP, TPM2_ALG_OFB, TPM2_ALG_RSA, TPM2_ALG_RSAES, TPM2_ALG_RSAPSS, TPM2_ALG_RSASSA,
     TPM2_ALG_SHA1, TPM2_ALG_SHA256, TPM2_ALG_SHA384, TPM2_ALG_SHA3_256, TPM2_ALG_SHA3_384,
     TPM2_ALG_SHA3_512, TPM2_ALG_SHA512, TPM2_ALG_SM2, TPM2_ALG_SM3_256, TPM2_ALG_SM4,
-    TPM2_ALG_SYMCIPHER, TPM2_ALG_XOR,
+    TPM2_ALG_SYMCIPHER, TPM2_ALG_TDES, TPM2_ALG_XOR,
 };
 
 use crate::response_code::{Error, Result, WrapperErrorKind};
@@ -158,6 +158,8 @@ pub enum SymmetricAlgorithm {
     Aes,
     Camellia,
     Sm4,
+    Tdes,
+    Xor,
 }
 
 impl From<SymmetricAlgorithm> for TPM2_ALG_ID {
@@ -166,6 +168,8 @@ impl From<SymmetricAlgorithm> for TPM2_ALG_ID {
             SymmetricAlgorithm::Aes => TPM2_ALG_AES,
             SymmetricAlgorithm::Camellia => TPM2_ALG_CAMELLIA,
             SymmetricAlgorithm::Sm4 => TPM2_ALG_SM4,
+            SymmetricAlgorithm::Tdes => TPM2_ALG_TDES,
+            SymmetricAlgorithm::Xor => TPM2_ALG_XOR,
         }
     }
 }
@@ -178,6 +182,8 @@ impl TryFrom<TPM2_ALG_ID> for SymmetricAlgorithm {
             TPM2_ALG_AES => Ok(SymmetricAlgorithm::Aes),
             TPM2_ALG_CAMELLIA => Ok(SymmetricAlgorithm::Camellia),
             TPM2_ALG_SM4 => Ok(SymmetricAlgorithm::Sm4),
+            TPM2_ALG_TDES => Ok(SymmetricAlgorithm::Tdes),
+            TPM2_ALG_XOR => Ok(SymmetricAlgorithm::Xor),
             _ => Err(Error::local_error(WrapperErrorKind::InvalidParam)),
         }
     }
@@ -538,109 +544,149 @@ impl TryFrom<TPM2_ALG_ID> for AlgorithmicError {
 
 /// Block cipher identifiers
 ///
-/// Enum useful for handling an abstract representation of ciphers. Each cipher is defined by a
-/// mode and a key length, or, in the case of `XOR`, by the hash function used with it.
+/// Structure useful for handling an abstract representation of ciphers. Ciphers are
+/// defined foremost through their symmetric algorithm and, depending on the type of that
+/// algorithm, on a set of other values.
 #[derive(Copy, Clone, Debug)]
-pub enum Cipher {
-    AES {
-        key_bits: CipherKeyLength,
-        mode: EncryptionMode,
-    },
-    XOR {
-        hash: TPM2_ALG_ID,
-    },
-    SM4 {
-        mode: EncryptionMode,
-    },
-    Camellia {
-        key_bits: CipherKeyLength,
-        mode: EncryptionMode,
-    },
+pub struct Cipher {
+    algorithm: SymmetricAlgorithm,
+    mode: Option<EncryptionMode>,
+    key_bits: Option<u16>,
+    hash: Option<HashingAlgorithm>,
 }
 
 impl Cipher {
+    /// Constructor for AES cipher identifier
+    ///
+    /// `key_bits` must be one of 128, 192 or 256.
+    pub fn aes(mode: EncryptionMode, key_bits: u16) -> Result<Self> {
+        match key_bits {
+            128 | 192 | 256 => (),
+            _ => return Err(Error::local_error(WrapperErrorKind::InvalidParam)),
+        }
+
+        Ok(Cipher {
+            algorithm: SymmetricAlgorithm::Aes,
+            mode: Some(mode),
+            key_bits: Some(key_bits),
+            hash: None,
+        })
+    }
+
+    /// Constructor for Camellia cipher identifier
+    ///
+    /// `key_bits` must be one of 128, 192 or 256.
+    pub fn camellia(mode: EncryptionMode, key_bits: u16) -> Result<Self> {
+        match key_bits {
+            128 | 192 | 256 => (),
+            _ => return Err(Error::local_error(WrapperErrorKind::InvalidParam)),
+        }
+
+        Ok(Cipher {
+            algorithm: SymmetricAlgorithm::Camellia,
+            mode: Some(mode),
+            key_bits: Some(key_bits),
+            hash: None,
+        })
+    }
+
+    /// Constructor for Triple DES cipher identifier
+    ///
+    /// `key_bits` must be one of 56, 112 or 168.
+    pub fn tdes(mode: EncryptionMode, key_bits: u16) -> Result<Self> {
+        match key_bits {
+            56 | 112 | 168 => (),
+            _ => return Err(Error::local_error(WrapperErrorKind::InvalidParam)),
+        }
+
+        Ok(Cipher {
+            algorithm: SymmetricAlgorithm::Tdes,
+            mode: Some(mode),
+            key_bits: Some(key_bits),
+            hash: None,
+        })
+    }
+
+    /// Constructor for SM4 cipher identifier
+    pub fn sm4(mode: EncryptionMode) -> Self {
+        Cipher {
+            algorithm: SymmetricAlgorithm::Sm4,
+            mode: Some(mode),
+            key_bits: Some(128),
+            hash: None,
+        }
+    }
+
+    /// Constructor for XOR "cipher" identifier
+    pub fn xor(hash: HashingAlgorithm) -> Self {
+        Cipher {
+            algorithm: SymmetricAlgorithm::Xor,
+            mode: None,
+            key_bits: None,
+            hash: Some(hash),
+        }
+    }
+
     /// Get general object type for symmetric ciphers.
     pub fn object_type() -> TPM2_ALG_ID {
         TPM2_ALG_SYMCIPHER
     }
 
     /// Get the cipher key length.
-    pub fn key_bits(self) -> Option<CipherKeyLength> {
-        match self {
-            Cipher::AES { key_bits, .. } => Some(key_bits),
-            Cipher::Camellia { key_bits, .. } => Some(key_bits),
-            Cipher::SM4 { .. } => Some(CipherKeyLength::Bits128),
-            Cipher::XOR { .. } => None,
-        }
+    pub fn key_bits(self) -> Option<u16> {
+        self.key_bits
     }
 
     /// Get the cipher mode.
     pub fn mode(self) -> Option<EncryptionMode> {
-        match self {
-            Cipher::AES { mode, .. } => Some(mode),
-            Cipher::Camellia { mode, .. } => Some(mode),
-            Cipher::SM4 { mode, .. } => Some(mode),
-            Cipher::XOR { .. } => None,
-        }
+        self.mode
+    }
+
+    /// Get the hash algorithm used with an XOR cipher
+    pub fn hash(self) -> Option<HashingAlgorithm> {
+        self.hash
     }
 
     /// Get the TSS algorithm ID.
     pub fn algorithm_id(self) -> TPM2_ALG_ID {
-        match self {
-            Cipher::AES { .. } => TPM2_ALG_AES,
-            Cipher::Camellia { .. } => TPM2_ALG_CAMELLIA,
-            Cipher::SM4 { .. } => TPM2_ALG_SM4,
-            Cipher::XOR { .. } => TPM2_ALG_XOR,
-        }
+        self.algorithm.into()
     }
 
     /// Constructor for 128 bit AES in CFB mode.
     pub fn aes_128_cfb() -> Self {
-        Cipher::AES {
-            key_bits: CipherKeyLength::Bits128,
-            mode: EncryptionMode::Cfb,
+        Cipher {
+            algorithm: SymmetricAlgorithm::Aes,
+            mode: Some(EncryptionMode::Cfb),
+            key_bits: Some(128),
+            hash: None,
         }
     }
 
     /// Constructor for 256 bit AES in CFB mode.
     pub fn aes_256_cfb() -> Self {
-        Cipher::AES {
-            key_bits: CipherKeyLength::Bits256,
-            mode: EncryptionMode::Cfb,
-        }
-    }
-}
-
-/// Statically enforceable cipher key length
-///
-/// Enum restricting allowed cipher key lengths to pre-defined values.
-#[derive(Copy, Clone, Debug)]
-pub enum CipherKeyLength {
-    Bits128,
-    Bits192,
-    Bits256,
-}
-
-impl From<CipherKeyLength> for u16 {
-    fn from(len: CipherKeyLength) -> Self {
-        match len {
-            CipherKeyLength::Bits128 => 128,
-            CipherKeyLength::Bits192 => 192,
-            CipherKeyLength::Bits256 => 256,
+        Cipher {
+            algorithm: SymmetricAlgorithm::Aes,
+            mode: Some(EncryptionMode::Cfb),
+            key_bits: Some(256),
+            hash: None,
         }
     }
 }
 
 impl From<Cipher> for TPMT_SYM_DEF {
     fn from(cipher: Cipher) -> Self {
-        let key_bits = match cipher {
-            Cipher::XOR { hash } => hash,
-            _ => cipher.key_bits().unwrap().into(), // should not fail since XOR is covered above
+        let key_bits = if let Some(bits) = cipher.key_bits {
+            bits
+        } else if let Some(hash) = cipher.hash {
+            hash.into()
+        } else {
+            TPM2_ALG_NULL
         };
 
-        let mode = match cipher {
-            Cipher::XOR { .. } => TPM2_ALG_NULL,
-            _ => cipher.mode().unwrap().into(), // should not fail since XOR is covered above
+        let mode = if let Some(mode) = cipher.mode {
+            mode.into()
+        } else {
+            TPM2_ALG_NULL
         };
 
         TpmtSymDefBuilder::new()
@@ -654,14 +700,18 @@ impl From<Cipher> for TPMT_SYM_DEF {
 
 impl From<Cipher> for TPMT_SYM_DEF_OBJECT {
     fn from(cipher: Cipher) -> Self {
-        let key_bits = match cipher {
-            Cipher::XOR { hash } => hash,
-            _ => cipher.key_bits().unwrap().into(), // should not fail since XOR is covered above
+        let key_bits = if let Some(bits) = cipher.key_bits {
+            bits
+        } else if let Some(hash) = cipher.hash {
+            hash.into()
+        } else {
+            TPM2_ALG_NULL
         };
 
-        let mode = match cipher {
-            Cipher::XOR { .. } => TPM2_ALG_NULL,
-            _ => cipher.mode().unwrap().into(), // should not fail since XOR is covered above
+        let mode = if let Some(mode) = cipher.mode {
+            mode.into()
+        } else {
+            TPM2_ALG_NULL
         };
 
         TpmtSymDefBuilder::new()
