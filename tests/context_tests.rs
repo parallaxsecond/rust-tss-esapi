@@ -39,7 +39,8 @@ use tss_esapi::utils::{
     self,
     algorithm_specifiers::{Cipher, HashingAlgorithm},
     AsymSchemeUnion, ObjectAttributes, PcrSelectionsBuilder, PcrSlot, PublicIdUnion,
-    PublicParmsUnion, Signature, Tpm2BPublicBuilder, TpmaSessionBuilder, TpmsRsaParmsBuilder,
+    PublicParmsUnion, Signature, SignatureData, Tpm2BPublicBuilder, TpmaSessionBuilder,
+    TpmsRsaParmsBuilder,
 };
 use tss_esapi::*;
 
@@ -70,8 +71,12 @@ fn create_ctx_without_session() -> Context {
 }
 
 fn signing_key_pub() -> TPM2B_PUBLIC {
-    utils::create_unrestricted_signing_rsa_public(AsymSchemeUnion::RSASSA(TPM2_ALG_SHA256), 2048, 0)
-        .unwrap()
+    utils::create_unrestricted_signing_rsa_public(
+        AsymSchemeUnion::RSASSA(HashingAlgorithm::Sha256),
+        2048,
+        0,
+    )
+    .unwrap()
 }
 
 fn decryption_key_pub() -> TPM2B_PUBLIC {
@@ -846,7 +851,9 @@ mod test_verify_sig {
             .sign(key_handle, &HASH[..32], scheme, &validation)
             .unwrap();
 
-        signature.signature.reverse();
+        if let SignatureData::RsaSignature(signature) = &mut signature.signature {
+            signature.reverse();
+        }
         assert!(context
             .verify_signature(key_handle, &HASH[..32], &signature.try_into().unwrap())
             .is_err());
@@ -869,8 +876,8 @@ mod test_verify_sig {
             .unwrap();
 
         let signature = Signature {
-            scheme: AsymSchemeUnion::RSASSA(TPM2_ALG_SHA256),
-            signature: vec![0xab; 500],
+            scheme: AsymSchemeUnion::RSASSA(HashingAlgorithm::Sha256),
+            signature: SignatureData::RsaSignature(vec![0xab; 500]),
         };
         assert!(context
             .verify_signature(key_handle, &HASH[..32], &signature.try_into().unwrap())
@@ -894,8 +901,8 @@ mod test_verify_sig {
             .unwrap();
 
         let signature = Signature {
-            scheme: AsymSchemeUnion::RSASSA(TPM2_ALG_SHA256),
-            signature: vec![0; 0],
+            scheme: AsymSchemeUnion::RSASSA(HashingAlgorithm::Sha256),
+            signature: SignatureData::RsaSignature(vec![0; 0]),
         };
         assert!(context
             .verify_signature(key_handle, &HASH[..32], &signature.try_into().unwrap())
@@ -907,7 +914,7 @@ mod test_load_ext {
     use super::*;
 
     pub fn get_ext_rsa_pub() -> TPM2B_PUBLIC {
-        let scheme = AsymSchemeUnion::RSASSA(TPM2_ALG_SHA256);
+        let scheme = AsymSchemeUnion::RSASSA(HashingAlgorithm::Sha256);
         let rsa_parms = TpmsRsaParmsBuilder::new_unrestricted_signing_key(scheme, 2048, 0)
             .build()
             .unwrap(); // should not fail as we control the params

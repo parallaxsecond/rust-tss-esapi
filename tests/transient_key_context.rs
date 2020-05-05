@@ -3,8 +3,12 @@
 use tss_esapi::response_code::{
     Error, Error::Tss2Error, Tss2ResponseCodeKind, WrapperErrorKind as ErrorKind,
 };
-use tss_esapi::utils::{AsymSchemeUnion, Signature};
-use tss_esapi::{abstraction::transient::TransientKeyContextBuilder, Tcti, TransientKeyContext};
+use tss_esapi::utils::algorithm_specifiers::{EllipticCurve, HashingAlgorithm};
+use tss_esapi::utils::{AsymSchemeUnion, PublicKey, Signature, SignatureData};
+use tss_esapi::{
+    abstraction::transient::{KeyParams, TransientKeyContextBuilder},
+    Tcti, TransientKeyContext,
+};
 
 const HASH: [u8; 32] = [
     0x69, 0x3E, 0xDB, 0x1B, 0x22, 0x79, 0x03, 0xF4, 0xC0, 0xBF, 0xD6, 0x91, 0x76, 0x37, 0x84, 0xA2,
@@ -110,8 +114,8 @@ fn verify() {
     ];
 
     let signature = Signature {
-        scheme: AsymSchemeUnion::RSASSA(tss_esapi::constants::TPM2_ALG_SHA256),
-        signature: vec![
+        scheme: AsymSchemeUnion::RSASSA(HashingAlgorithm::Sha256),
+        signature: SignatureData::RsaSignature(vec![
             0x8c, 0xf8, 0x87, 0x3a, 0xb2, 0x9a, 0x18, 0xf9, 0xe0, 0x2e, 0xb9, 0x2d, 0xe7, 0xc8,
             0x32, 0x12, 0xd6, 0xd9, 0x2d, 0x98, 0xec, 0x9e, 0x47, 0xb7, 0x5b, 0x26, 0x86, 0x9d,
             0xf5, 0xa2, 0x6b, 0x8b, 0x6f, 0x00, 0xd3, 0xbb, 0x68, 0x88, 0xe1, 0xad, 0xcf, 0x1c,
@@ -122,7 +126,7 @@ fn verify() {
             0x83, 0x4f, 0xb5, 0x52, 0x92, 0x6e, 0xda, 0xb2, 0x55, 0x77, 0xa7, 0x58, 0xcc, 0x10,
             0xa6, 0x7f, 0xc5, 0x26, 0x4e, 0x5b, 0x75, 0x9d, 0x83, 0x05, 0x9f, 0x99, 0xde, 0xc6,
             0xf5, 0x12,
-        ],
+        ]),
     };
 
     let mut ctx = create_ctx();
@@ -135,7 +139,16 @@ fn verify() {
 #[test]
 fn sign_with_bad_auth() {
     let mut ctx = create_ctx();
-    let (key, mut auth) = ctx.create_rsa_signing_key(2048, 16).unwrap();
+    let (key, mut auth) = ctx
+        .create_signing_key(
+            KeyParams::Rsa {
+                size: 2048,
+                scheme: AsymSchemeUnion::RSASSA(HashingAlgorithm::Sha256),
+                pub_exponent: 0,
+            },
+            16,
+        )
+        .unwrap();
     auth[6] = 0xDE;
     auth[7] = 0xAD;
     auth[8] = 0xBE;
@@ -146,15 +159,42 @@ fn sign_with_bad_auth() {
 #[test]
 fn sign_with_no_auth() {
     let mut ctx = create_ctx();
-    let (key, _) = ctx.create_rsa_signing_key(2048, 16).unwrap();
+    let (key, _) = ctx
+        .create_signing_key(
+            KeyParams::Rsa {
+                size: 2048,
+                scheme: AsymSchemeUnion::RSASSA(HashingAlgorithm::Sha256),
+                pub_exponent: 0,
+            },
+            16,
+        )
+        .unwrap();
     ctx.sign(key, &[], &HASH).unwrap_err();
 }
 
 #[test]
 fn two_signatures_different_digest() {
     let mut ctx = create_ctx();
-    let (key1, auth1) = ctx.create_rsa_signing_key(2048, 16).unwrap();
-    let (key2, auth2) = ctx.create_rsa_signing_key(2048, 16).unwrap();
+    let (key1, auth1) = ctx
+        .create_signing_key(
+            KeyParams::Rsa {
+                size: 2048,
+                scheme: AsymSchemeUnion::RSASSA(HashingAlgorithm::Sha256),
+                pub_exponent: 0,
+            },
+            16,
+        )
+        .unwrap();
+    let (key2, auth2) = ctx
+        .create_signing_key(
+            KeyParams::Rsa {
+                size: 2048,
+                scheme: AsymSchemeUnion::RSASSA(HashingAlgorithm::Sha256),
+                pub_exponent: 0,
+            },
+            16,
+        )
+        .unwrap();
     let signature1 = ctx.sign(key1, &auth1, &HASH).unwrap();
     let signature2 = ctx.sign(key2, &auth2, &HASH).unwrap();
 
@@ -164,14 +204,36 @@ fn two_signatures_different_digest() {
 #[test]
 fn verify_wrong_key() {
     let mut ctx = create_ctx();
-    let (key1, auth1) = ctx.create_rsa_signing_key(2048, 16).unwrap();
-    let (key2, _) = ctx.create_rsa_signing_key(2048, 16).unwrap();
+    let (key1, auth1) = ctx
+        .create_signing_key(
+            KeyParams::Rsa {
+                size: 2048,
+                scheme: AsymSchemeUnion::RSASSA(HashingAlgorithm::Sha256),
+                pub_exponent: 0,
+            },
+            16,
+        )
+        .unwrap();
+    let (key2, _) = ctx
+        .create_signing_key(
+            KeyParams::Rsa {
+                size: 2048,
+                scheme: AsymSchemeUnion::RSASSA(HashingAlgorithm::Sha256),
+                pub_exponent: 0,
+            },
+            16,
+        )
+        .unwrap();
 
     // Sign with the first key
     let signature = ctx.sign(key1, &auth1, &HASH).unwrap();
 
     // Import and verify with the second key
     let pub_key = ctx.read_public_key(key2).unwrap();
+    let pub_key = match pub_key {
+        PublicKey::Rsa(pub_key) => pub_key,
+        _ => panic!("Got wrong type of key!"),
+    };
     let pub_key = ctx.load_external_rsa_public_key(&pub_key).unwrap();
     if let Tss2Error(error) = ctx.verify_signature(pub_key, &HASH, signature).unwrap_err() {
         assert_eq!(error.kind(), Some(Tss2ResponseCodeKind::Signature));
@@ -182,10 +244,23 @@ fn verify_wrong_key() {
 #[test]
 fn verify_wrong_digest() {
     let mut ctx = create_ctx();
-    let (key, auth) = ctx.create_rsa_signing_key(2048, 16).unwrap();
+    let (key, auth) = ctx
+        .create_signing_key(
+            KeyParams::Rsa {
+                size: 2048,
+                scheme: AsymSchemeUnion::RSASSA(HashingAlgorithm::Sha256),
+                pub_exponent: 0,
+            },
+            16,
+        )
+        .unwrap();
 
     let signature = ctx.sign(key.clone(), &auth, &HASH).unwrap();
     let pub_key = ctx.read_public_key(key).unwrap();
+    let pub_key = match pub_key {
+        PublicKey::Rsa(pub_key) => pub_key,
+        _ => panic!("Got wrong type of key!"),
+    };
     let pub_key = ctx.load_external_rsa_public_key(&pub_key).unwrap();
 
     let mut digest_copy = HASH.to_vec();
@@ -207,10 +282,84 @@ fn verify_wrong_digest() {
 fn full_test() {
     let mut ctx = create_ctx();
     for _ in 0..4 {
-        let (key, auth) = ctx.create_rsa_signing_key(2048, 16).unwrap();
+        let (key, auth) = ctx
+            .create_signing_key(
+                KeyParams::Rsa {
+                    size: 2048,
+                    scheme: AsymSchemeUnion::RSASSA(HashingAlgorithm::Sha256),
+                    pub_exponent: 0,
+                },
+                16,
+            )
+            .unwrap();
         let signature = ctx.sign(key.clone(), &auth, &HASH).unwrap();
         let pub_key = ctx.read_public_key(key).unwrap();
+        let pub_key = match pub_key {
+            PublicKey::Rsa(pub_key) => pub_key,
+            _ => panic!("Got wrong type of key!"),
+        };
         let pub_key = ctx.load_external_rsa_public_key(&pub_key).unwrap();
         let _ = ctx.verify_signature(pub_key, &HASH, signature).unwrap();
+    }
+}
+
+#[test]
+fn create_ecc_key() {
+    let mut ctx = create_ctx();
+    let _ = ctx
+        .create_signing_key(
+            KeyParams::Ecc {
+                curve: EllipticCurve::NistP256,
+                scheme: AsymSchemeUnion::ECDSA(HashingAlgorithm::Sha256),
+            },
+            16,
+        )
+        .unwrap();
+}
+
+#[test]
+fn create_ecc_key_rsa_scheme() {
+    let mut ctx = create_ctx();
+    let _ = ctx
+        .create_signing_key(
+            KeyParams::Ecc {
+                curve: EllipticCurve::NistP256,
+                scheme: AsymSchemeUnion::RSASSA(HashingAlgorithm::Sha256),
+            },
+            16,
+        )
+        .unwrap_err();
+}
+
+#[test]
+fn create_ecc_key_decryption_scheme() {
+    let mut ctx = create_ctx();
+    let _ = ctx
+        .create_signing_key(
+            KeyParams::Ecc {
+                curve: EllipticCurve::NistP256,
+                scheme: AsymSchemeUnion::ECDH(HashingAlgorithm::Sha256),
+            },
+            16,
+        )
+        .unwrap_err();
+}
+
+#[test]
+fn full_ecc_test() {
+    let mut ctx = create_ctx();
+    for _ in 0..4 {
+        let (key, auth) = ctx
+            .create_signing_key(
+                KeyParams::Ecc {
+                    curve: EllipticCurve::NistP256,
+                    scheme: AsymSchemeUnion::ECDSA(HashingAlgorithm::Sha256),
+                },
+                16,
+            )
+            .unwrap();
+        let signature = ctx.sign(key.clone(), &auth, &HASH).unwrap();
+        let _pub_key = ctx.read_public_key(key.clone()).unwrap();
+        let _ = ctx.verify_signature(key, &HASH, signature).unwrap();
     }
 }
