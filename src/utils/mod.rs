@@ -13,7 +13,7 @@ pub mod algorithm_specifiers;
 use crate::constants::*;
 use crate::response_code::{Error, Result, WrapperErrorKind};
 use crate::tss2_esys::*;
-use algorithm_specifiers::{Cipher, HashingAlgorithm};
+use algorithm_specifiers::{Cipher, EllipticCurve, HashingAlgorithm};
 use bitfield::bitfield;
 use enumflags2::BitFlags;
 use log::error;
@@ -136,6 +136,40 @@ impl Tpm2BPublicBuilder {
                     },
                 })
             }
+            Some(TPM2_ALG_ECC) => {
+                // ECC key
+                let parameters;
+                let unique;
+                if let Some(PublicParmsUnion::EccDetail(parms)) = self.parameters {
+                    parameters = TPMU_PUBLIC_PARMS { eccDetail: parms };
+                } else if self.parameters.is_none() {
+                    return Err(Error::local_error(WrapperErrorKind::ParamsMissing));
+                } else {
+                    return Err(Error::local_error(WrapperErrorKind::InconsistentParams));
+                }
+
+                if let Some(PublicIdUnion::Ecc(rsa_unique)) = self.unique {
+                    unique = TPMU_PUBLIC_ID { ecc: *rsa_unique };
+                } else if self.unique.is_none() {
+                    unique = Default::default();
+                } else {
+                    return Err(Error::local_error(WrapperErrorKind::InconsistentParams));
+                }
+
+                Ok(TPM2B_PUBLIC {
+                    size: std::mem::size_of::<TPMT_PUBLIC>()
+                        .try_into()
+                        .expect("Failed to convert usize to u16"), // should not fail on valid targets
+                    publicArea: TPMT_PUBLIC {
+                        type_: self.type_.unwrap(), // cannot fail given that this is inside a match on `type_`
+                        nameAlg: self.name_alg,
+                        objectAttributes: self.object_attributes.0,
+                        authPolicy: self.auth_policy,
+                        parameters,
+                        unique,
+                    },
+                })
+            }
             _ => Err(Error::local_error(WrapperErrorKind::UnsupportedParam)),
         }
     }
@@ -177,7 +211,7 @@ impl TpmsRsaParmsBuilder {
     ) -> Self {
         TpmsRsaParmsBuilder {
             symmetric: Some(symmetric),
-            scheme: Some(AsymSchemeUnion::AnySig(TPM2_ALG_NULL)),
+            scheme: Some(AsymSchemeUnion::AnySig(None)),
             key_bits,
             exponent,
             for_signing: false,
@@ -230,7 +264,7 @@ impl TpmsRsaParmsBuilder {
         let scheme = self
             .scheme
             .ok_or_else(|| Error::local_error(WrapperErrorKind::ParamsMissing))?
-            .get_rsa_scheme();
+            .get_rsa_scheme_struct();
         if self.restricted {
             if self.for_signing
                 && scheme.scheme != TPM2_ALG_RSAPSS
@@ -273,6 +307,115 @@ impl TpmsRsaParmsBuilder {
 
 /// Supported sizes for RSA key modulus
 pub const RSA_KEY_SIZES: [u16; 4] = [1024, 2048, 3072, 4096];
+
+/// Builder for `TPMS_ECC_PARMS` values.
+#[derive(Copy, Clone, Debug)]
+pub struct TpmsEccParmsBuilder {
+    /// Symmetric cipher to be used in conjuction with the key
+    pub symmetric: Option<Cipher>,
+    /// Asymmetric scheme to be used for key operations
+    pub scheme: AsymSchemeUnion,
+    /// Curve to be used with the key
+    pub curve: EllipticCurve,
+    /// Flag indicating whether the key shall be used for signing
+    pub for_signing: bool,
+    /// Flag indicating whether the key shall be used for decryption
+    pub for_decryption: bool,
+    /// Flag indicating whether the key is restricted
+    pub restricted: bool,
+}
+
+impl TpmsEccParmsBuilder {
+    /// Create parameters for a restricted decryption key (i.e. a storage key)
+    pub fn new_restricted_decryption_key(symmetric: Cipher, curve: EllipticCurve) -> Self {
+        TpmsEccParmsBuilder {
+            symmetric: Some(symmetric),
+            scheme: AsymSchemeUnion::AnySig(None),
+            curve,
+            for_signing: false,
+            for_decryption: true,
+            restricted: true,
+        }
+    }
+
+    /// Create parameters for an unrestricted signing key
+    pub fn new_unrestricted_signing_key(scheme: AsymSchemeUnion, curve: EllipticCurve) -> Self {
+        TpmsEccParmsBuilder {
+            symmetric: None,
+            scheme,
+            curve,
+            for_signing: true,
+            for_decryption: false,
+            restricted: false,
+        }
+    }
+
+    /// Build an object given the previously provded parameters.
+    ///
+    /// The only mandatory parameters are the asymmetric scheme and the elliptic curve.
+    ///
+    /// # Errors
+    /// * if no asymmetric scheme is set, `ParamsMissing` wrapper error is returned.
+    /// * if the `for_signing`, `for_decryption` and `restricted` parameters are
+    /// inconsistent with the rest of the parameters, `InconsistentParams` wrapper
+    /// error is returned
+    pub fn build(self) -> Result<TPMS_ECC_PARMS> {
+        if self.restricted && self.for_decryption {
+            if self.symmetric.is_none() {
+                return Err(Error::local_error(WrapperErrorKind::ParamsMissing));
+            }
+        } else if self.symmetric.is_some() {
+            return Err(Error::local_error(WrapperErrorKind::InconsistentParams));
+        }
+        if self.for_decryption && self.for_signing {
+            return Err(Error::local_error(WrapperErrorKind::InconsistentParams));
+        }
+
+        let scheme = self.scheme.get_ecc_scheme_struct();
+        if self.for_signing
+            && scheme.scheme != TPM2_ALG_ECDSA
+            && scheme.scheme != TPM2_ALG_ECDAA
+            && scheme.scheme != TPM2_ALG_SM2
+            && scheme.scheme != TPM2_ALG_ECSCHNORR
+        {
+            return Err(Error::local_error(WrapperErrorKind::InconsistentParams));
+        }
+
+        if self.for_decryption
+            && scheme.scheme != TPM2_ALG_SM2
+            && scheme.scheme != TPM2_ALG_ECDH
+            && scheme.scheme != TPM2_ALG_ECMQV
+            && scheme.scheme != TPM2_ALG_NULL
+        {
+            return Err(Error::local_error(WrapperErrorKind::InconsistentParams));
+        }
+
+        if (self.curve == EllipticCurve::BnP256 || self.curve == EllipticCurve::BnP638)
+            && scheme.scheme != TPM2_ALG_ECDAA
+        {
+            return Err(Error::local_error(WrapperErrorKind::InconsistentParams));
+        }
+
+        let symmetric = match self.symmetric {
+            Some(symmetric) => symmetric.into(),
+            None => {
+                let mut def: TPMT_SYM_DEF_OBJECT = Default::default();
+                def.algorithm = TPM2_ALG_NULL;
+                def
+            }
+        };
+
+        Ok(TPMS_ECC_PARMS {
+            symmetric,
+            scheme,
+            curveID: self.curve.into(),
+            kdf: TPMT_KDF_SCHEME {
+                scheme: TPM2_ALG_NULL,
+                details: Default::default(),
+            },
+        })
+    }
+}
 
 /// Builder for `TPMT_SYM_DEF` objects.
 #[derive(Copy, Clone, Debug)]
@@ -479,7 +622,7 @@ impl PublicIdUnion {
     pub unsafe fn from_public(public: &TPM2B_PUBLIC) -> Result<Self> {
         match public.publicArea.type_ {
             TPM2_ALG_RSA => Ok(PublicIdUnion::Rsa(Box::from(public.publicArea.unique.rsa))),
-            TPM2_ALG_ECC => Err(Error::local_error(WrapperErrorKind::UnsupportedParam)),
+            TPM2_ALG_ECC => Ok(PublicIdUnion::Ecc(Box::from(public.publicArea.unique.ecc))),
             TPM2_ALG_SYMCIPHER => Err(Error::local_error(WrapperErrorKind::UnsupportedParam)),
             TPM2_ALG_KEYEDHASH => Err(Error::local_error(WrapperErrorKind::UnsupportedParam)),
             _ => Err(Error::local_error(WrapperErrorKind::UnsupportedParam)),
@@ -538,17 +681,17 @@ impl From<PublicParmsUnion> for TPMU_PUBLIC_PARMS {
 /// Rust enum representation of `TPMU_ASYM_SCHEME`.
 #[derive(Copy, Clone, Debug)]
 pub enum AsymSchemeUnion {
-    ECDH(TPMI_ALG_HASH),
-    ECMQV(TPMI_ALG_HASH),
-    RSASSA(TPMI_ALG_HASH),
-    RSAPSS(TPMI_ALG_HASH),
-    ECDSA(TPMI_ALG_HASH),
-    ECDAA(TPMI_ALG_HASH, u16),
-    SM2(TPMI_ALG_HASH),
-    ECSchnorr(TPMI_ALG_HASH),
+    ECDH(HashingAlgorithm),
+    ECMQV(HashingAlgorithm),
+    RSASSA(HashingAlgorithm),
+    RSAPSS(HashingAlgorithm),
+    ECDSA(HashingAlgorithm),
+    ECDAA(HashingAlgorithm, u16),
+    SM2(HashingAlgorithm),
+    ECSchnorr(HashingAlgorithm),
     RSAES,
-    RSAOAEP(TPMI_ALG_HASH),
-    AnySig(TPMI_ALG_HASH),
+    RSAOAEP(HashingAlgorithm),
+    AnySig(Option<HashingAlgorithm>),
 }
 
 impl AsymSchemeUnion {
@@ -569,49 +712,143 @@ impl AsymSchemeUnion {
         }
     }
 
-    /// Convert scheme object to `TPMT_RSA_SCHEME`.
-    fn get_rsa_scheme(self) -> TPMT_RSA_SCHEME {
-        let scheme = self.scheme_id();
-        let details = match self {
+    fn get_details(self) -> TPMU_ASYM_SCHEME {
+        match self {
             AsymSchemeUnion::ECDH(hash_alg) => TPMU_ASYM_SCHEME {
-                ecdh: TPMS_SCHEME_HASH { hashAlg: hash_alg },
+                ecdh: TPMS_SCHEME_HASH {
+                    hashAlg: hash_alg.into(),
+                },
             },
             AsymSchemeUnion::ECMQV(hash_alg) => TPMU_ASYM_SCHEME {
-                ecmqv: TPMS_SCHEME_HASH { hashAlg: hash_alg },
+                ecmqv: TPMS_SCHEME_HASH {
+                    hashAlg: hash_alg.into(),
+                },
             },
             AsymSchemeUnion::RSASSA(hash_alg) => TPMU_ASYM_SCHEME {
-                rsassa: TPMS_SCHEME_HASH { hashAlg: hash_alg },
+                rsassa: TPMS_SCHEME_HASH {
+                    hashAlg: hash_alg.into(),
+                },
             },
             AsymSchemeUnion::RSAPSS(hash_alg) => TPMU_ASYM_SCHEME {
-                rsapss: TPMS_SCHEME_HASH { hashAlg: hash_alg },
+                rsapss: TPMS_SCHEME_HASH {
+                    hashAlg: hash_alg.into(),
+                },
             },
             AsymSchemeUnion::ECDSA(hash_alg) => TPMU_ASYM_SCHEME {
-                ecdsa: TPMS_SCHEME_HASH { hashAlg: hash_alg },
+                ecdsa: TPMS_SCHEME_HASH {
+                    hashAlg: hash_alg.into(),
+                },
             },
             AsymSchemeUnion::ECDAA(hash_alg, count) => TPMU_ASYM_SCHEME {
                 ecdaa: TPMS_SCHEME_ECDAA {
-                    hashAlg: hash_alg,
+                    hashAlg: hash_alg.into(),
                     count,
                 },
             },
             AsymSchemeUnion::SM2(hash_alg) => TPMU_ASYM_SCHEME {
-                sm2: TPMS_SCHEME_HASH { hashAlg: hash_alg },
+                sm2: TPMS_SCHEME_HASH {
+                    hashAlg: hash_alg.into(),
+                },
             },
             AsymSchemeUnion::ECSchnorr(hash_alg) => TPMU_ASYM_SCHEME {
-                ecschnorr: TPMS_SCHEME_HASH { hashAlg: hash_alg },
+                ecschnorr: TPMS_SCHEME_HASH {
+                    hashAlg: hash_alg.into(),
+                },
             },
             AsymSchemeUnion::RSAES => TPMU_ASYM_SCHEME {
                 rsaes: Default::default(),
             },
             AsymSchemeUnion::RSAOAEP(hash_alg) => TPMU_ASYM_SCHEME {
-                oaep: TPMS_SCHEME_HASH { hashAlg: hash_alg },
+                oaep: TPMS_SCHEME_HASH {
+                    hashAlg: hash_alg.into(),
+                },
             },
             AsymSchemeUnion::AnySig(hash_alg) => TPMU_ASYM_SCHEME {
-                anySig: TPMS_SCHEME_HASH { hashAlg: hash_alg },
+                anySig: TPMS_SCHEME_HASH {
+                    hashAlg: hash_alg.map(u16::from).or(Some(TPM2_ALG_NULL)).unwrap(),
+                },
             },
-        };
+        }
+    }
+
+    /// Convert scheme object to `TPMT_RSA_SCHEME`.
+    fn get_rsa_scheme_struct(self) -> TPMT_RSA_SCHEME {
+        let scheme = self.scheme_id();
+        let details = self.get_details();
 
         TPMT_RSA_SCHEME { scheme, details }
+    }
+
+    /// Convert scheme object to `TPMT_ECC_SCHEME`.
+    fn get_ecc_scheme_struct(self) -> TPMT_ECC_SCHEME {
+        let scheme = self.scheme_id();
+        let details = self.get_details();
+
+        TPMT_ECC_SCHEME { scheme, details }
+    }
+
+    pub fn is_signing(self) -> bool {
+        match self {
+            AsymSchemeUnion::ECDH(_)
+            | AsymSchemeUnion::ECMQV(_)
+            | AsymSchemeUnion::RSAOAEP(_)
+            | AsymSchemeUnion::RSAES => false,
+            AsymSchemeUnion::RSASSA(_)
+            | AsymSchemeUnion::RSAPSS(_)
+            | AsymSchemeUnion::ECDSA(_)
+            | AsymSchemeUnion::ECDAA(_, _)
+            | AsymSchemeUnion::SM2(_)
+            | AsymSchemeUnion::ECSchnorr(_)
+            | AsymSchemeUnion::AnySig(_) => true,
+        }
+    }
+
+    pub fn is_decryption(self) -> bool {
+        match self {
+            AsymSchemeUnion::ECDH(_)
+            | AsymSchemeUnion::ECMQV(_)
+            | AsymSchemeUnion::RSAOAEP(_)
+            | AsymSchemeUnion::RSAES => true,
+            AsymSchemeUnion::RSASSA(_)
+            | AsymSchemeUnion::RSAPSS(_)
+            | AsymSchemeUnion::ECDSA(_)
+            | AsymSchemeUnion::ECDAA(_, _)
+            | AsymSchemeUnion::SM2(_)
+            | AsymSchemeUnion::ECSchnorr(_)
+            | AsymSchemeUnion::AnySig(_) => false,
+        }
+    }
+
+    pub fn is_rsa(self) -> bool {
+        match self {
+            AsymSchemeUnion::RSASSA(_)
+            | AsymSchemeUnion::RSAOAEP(_)
+            | AsymSchemeUnion::RSAPSS(_)
+            | AsymSchemeUnion::AnySig(_)
+            | AsymSchemeUnion::RSAES => true,
+            AsymSchemeUnion::ECDH(_)
+            | AsymSchemeUnion::ECMQV(_)
+            | AsymSchemeUnion::ECDSA(_)
+            | AsymSchemeUnion::ECDAA(_, _)
+            | AsymSchemeUnion::SM2(_)
+            | AsymSchemeUnion::ECSchnorr(_) => false,
+        }
+    }
+
+    pub fn is_ecc(self) -> bool {
+        match self {
+            AsymSchemeUnion::RSASSA(_)
+            | AsymSchemeUnion::RSAOAEP(_)
+            | AsymSchemeUnion::RSAPSS(_)
+            | AsymSchemeUnion::AnySig(_)
+            | AsymSchemeUnion::RSAES => false,
+            AsymSchemeUnion::ECDH(_)
+            | AsymSchemeUnion::ECMQV(_)
+            | AsymSchemeUnion::ECDSA(_)
+            | AsymSchemeUnion::ECDAA(_, _)
+            | AsymSchemeUnion::SM2(_)
+            | AsymSchemeUnion::ECSchnorr(_) => true,
+        }
     }
 }
 
@@ -622,7 +859,13 @@ impl AsymSchemeUnion {
 #[derive(Debug)]
 pub struct Signature {
     pub scheme: AsymSchemeUnion,
-    pub signature: Vec<u8>,
+    pub signature: SignatureData,
+}
+
+#[derive(Debug, PartialEq)]
+pub enum SignatureData {
+    RsaSignature(Vec<u8>),
+    EccSignature { r: Vec<u8>, s: Vec<u8> },
 }
 
 impl Signature {
@@ -639,7 +882,7 @@ impl Signature {
         match tss_signature.sigAlg {
             TPM2_ALG_RSASSA => {
                 let hash_alg = tss_signature.signature.rsassa.hash;
-                let scheme = AsymSchemeUnion::RSASSA(hash_alg);
+                let scheme = AsymSchemeUnion::RSASSA(hash_alg.try_into()?);
                 let signature_buf = tss_signature.signature.rsassa.sig;
                 let mut signature = signature_buf.buffer.to_vec();
                 let buf_size = signature_buf.size.into();
@@ -648,17 +891,54 @@ impl Signature {
                 }
                 signature.truncate(buf_size);
 
-                Ok(Signature { scheme, signature })
+                Ok(Signature {
+                    scheme,
+                    signature: SignatureData::RsaSignature(signature),
+                })
             }
-            TPM2_ALG_ECDH => Err(Error::local_error(WrapperErrorKind::UnsupportedParam)),
-            TPM2_ALG_ECDSA => Err(Error::local_error(WrapperErrorKind::UnsupportedParam)),
-            TPM2_ALG_OAEP => Err(Error::local_error(WrapperErrorKind::UnsupportedParam)),
-            TPM2_ALG_RSAPSS => Err(Error::local_error(WrapperErrorKind::UnsupportedParam)),
-            TPM2_ALG_RSAES => Err(Error::local_error(WrapperErrorKind::UnsupportedParam)),
-            TPM2_ALG_ECMQV => Err(Error::local_error(WrapperErrorKind::UnsupportedParam)),
-            TPM2_ALG_SM2 => Err(Error::local_error(WrapperErrorKind::UnsupportedParam)),
-            TPM2_ALG_ECSCHNORR => Err(Error::local_error(WrapperErrorKind::UnsupportedParam)),
-            TPM2_ALG_ECDAA => Err(Error::local_error(WrapperErrorKind::UnsupportedParam)),
+            TPM2_ALG_RSAPSS => {
+                let hash_alg = tss_signature.signature.rsapss.hash;
+                let scheme = AsymSchemeUnion::RSAPSS(hash_alg.try_into()?);
+                let signature_buf = tss_signature.signature.rsassa.sig;
+                let mut signature = signature_buf.buffer.to_vec();
+                let buf_size = signature_buf.size.into();
+                if buf_size > signature.len() {
+                    return Err(Error::local_error(WrapperErrorKind::InconsistentParams));
+                }
+                signature.truncate(buf_size);
+
+                Ok(Signature {
+                    scheme,
+                    signature: SignatureData::RsaSignature(signature),
+                })
+            }
+            TPM2_ALG_ECDSA => {
+                let hash_alg = tss_signature.signature.ecdsa.hash;
+                let scheme = AsymSchemeUnion::ECDSA(hash_alg.try_into()?);
+                let buf = tss_signature.signature.ecdsa.signatureR;
+                let mut r = buf.buffer.to_vec();
+                let buf_size = buf.size.into();
+                if buf_size > r.len() {
+                    return Err(Error::local_error(WrapperErrorKind::InconsistentParams));
+                }
+                r.truncate(buf_size);
+
+                let buf = tss_signature.signature.ecdsa.signatureS;
+                let mut s = buf.buffer.to_vec();
+                let buf_size = buf.size.into();
+                if buf_size > s.len() {
+                    return Err(Error::local_error(WrapperErrorKind::InconsistentParams));
+                }
+                s.truncate(buf_size);
+
+                Ok(Signature {
+                    scheme,
+                    signature: SignatureData::EccSignature { r, s },
+                })
+            }
+            TPM2_ALG_SM2 | TPM2_ALG_ECSCHNORR | TPM2_ALG_ECDAA => {
+                Err(Error::local_error(WrapperErrorKind::UnsupportedParam))
+            }
             _ => Err(Error::local_error(WrapperErrorKind::InconsistentParams)),
         }
     }
@@ -667,51 +947,108 @@ impl Signature {
 impl TryFrom<Signature> for TPMT_SIGNATURE {
     type Error = Error;
     fn try_from(sig: Signature) -> Result<Self> {
-        let len = sig.signature.len();
-        if len > 512 {
-            return Err(Error::local_error(WrapperErrorKind::WrongParamSize));
+        if sig.scheme.is_decryption() {
+            return Err(Error::local_error(WrapperErrorKind::InconsistentParams));
         }
-
-        let mut buffer = [0_u8; 512];
-        buffer[..len].clone_from_slice(&sig.signature[..len]);
-
         match sig.scheme {
-            AsymSchemeUnion::ECDH(_) => Err(Error::local_error(WrapperErrorKind::UnsupportedParam)),
-            AsymSchemeUnion::ECMQV(_) => {
-                Err(Error::local_error(WrapperErrorKind::UnsupportedParam))
-            }
-            AsymSchemeUnion::RSASSA(hash_alg) => Ok(TPMT_SIGNATURE {
-                sigAlg: TPM2_ALG_RSASSA,
-                signature: TPMU_SIGNATURE {
-                    rsassa: TPMS_SIGNATURE_RSA {
-                        hash: hash_alg,
-                        sig: TPM2B_PUBLIC_KEY_RSA {
-                            size: len.try_into().expect("Failed to convert length to u16"), // Should never panic as per the check above
-                            buffer,
+            AsymSchemeUnion::RSASSA(hash_alg) => {
+                let signature = match sig.signature {
+                    SignatureData::RsaSignature(signature) => signature,
+                    SignatureData::EccSignature { .. } => {
+                        return Err(Error::local_error(WrapperErrorKind::InconsistentParams))
+                    }
+                };
+
+                let len = signature.len();
+                if len > 512 {
+                    return Err(Error::local_error(WrapperErrorKind::WrongParamSize));
+                }
+
+                let mut buffer = [0_u8; 512];
+                buffer[..len].clone_from_slice(&signature[..len]);
+                Ok(TPMT_SIGNATURE {
+                    sigAlg: TPM2_ALG_RSASSA,
+                    signature: TPMU_SIGNATURE {
+                        rsassa: TPMS_SIGNATURE_RSA {
+                            hash: hash_alg.into(),
+                            sig: TPM2B_PUBLIC_KEY_RSA {
+                                size: len.try_into().expect("Failed to convert length to u16"), // Should never panic as per the check above
+                                buffer,
+                            },
                         },
                     },
-                },
-            }),
-            AsymSchemeUnion::RSAPSS(_) => {
-                Err(Error::local_error(WrapperErrorKind::UnsupportedParam))
+                })
             }
-            AsymSchemeUnion::ECDSA(_) => {
-                Err(Error::local_error(WrapperErrorKind::UnsupportedParam))
+            AsymSchemeUnion::RSAPSS(hash_alg) => {
+                let signature = match sig.signature {
+                    SignatureData::RsaSignature(signature) => signature,
+                    SignatureData::EccSignature { .. } => {
+                        return Err(Error::local_error(WrapperErrorKind::InconsistentParams))
+                    }
+                };
+
+                let len = signature.len();
+                if len > 512 {
+                    return Err(Error::local_error(WrapperErrorKind::WrongParamSize));
+                }
+
+                let mut buffer = [0_u8; 512];
+                buffer[..len].clone_from_slice(&signature[..len]);
+                Ok(TPMT_SIGNATURE {
+                    sigAlg: TPM2_ALG_RSAPSS,
+                    signature: TPMU_SIGNATURE {
+                        rsapss: TPMS_SIGNATURE_RSA {
+                            hash: hash_alg.into(),
+                            sig: TPM2B_PUBLIC_KEY_RSA {
+                                size: len.try_into().expect("Failed to convert length to u16"), // Should never panic as per the check above
+                                buffer,
+                            },
+                        },
+                    },
+                })
             }
-            AsymSchemeUnion::ECDAA(_, _) => {
-                Err(Error::local_error(WrapperErrorKind::UnsupportedParam))
+            AsymSchemeUnion::ECDSA(hash_alg) => {
+                let signature = match sig.signature {
+                    SignatureData::EccSignature { r, s } => (r, s),
+                    SignatureData::RsaSignature(_) => {
+                        return Err(Error::local_error(WrapperErrorKind::InconsistentParams))
+                    }
+                };
+
+                let r_len = signature.0.len();
+                if r_len > 128 {
+                    return Err(Error::local_error(WrapperErrorKind::WrongParamSize));
+                }
+
+                let mut r_buffer = [0_u8; 128];
+                r_buffer[..r_len].clone_from_slice(&signature.0[..r_len]);
+
+                let s_len = signature.1.len();
+                if s_len > 128 {
+                    return Err(Error::local_error(WrapperErrorKind::WrongParamSize));
+                }
+
+                let mut s_buffer = [0_u8; 128];
+                s_buffer[..s_len].clone_from_slice(&signature.1[..s_len]);
+
+                Ok(TPMT_SIGNATURE {
+                    sigAlg: TPM2_ALG_ECDSA,
+                    signature: TPMU_SIGNATURE {
+                        ecdsa: TPMS_SIGNATURE_ECDSA {
+                            hash: hash_alg.into(),
+                            signatureR: TPM2B_ECC_PARAMETER {
+                                size: r_len.try_into().expect("Failed to convert length to u16"), // Should never panic as per the check above
+                                buffer: r_buffer,
+                            },
+                            signatureS: TPM2B_ECC_PARAMETER {
+                                size: s_len.try_into().expect("Failed to convert length to u16"), // Should never panic as per the check above
+                                buffer: s_buffer,
+                            },
+                        },
+                    },
+                })
             }
-            AsymSchemeUnion::SM2(_) => Err(Error::local_error(WrapperErrorKind::UnsupportedParam)),
-            AsymSchemeUnion::ECSchnorr(_) => {
-                Err(Error::local_error(WrapperErrorKind::UnsupportedParam))
-            }
-            AsymSchemeUnion::RSAES => Err(Error::local_error(WrapperErrorKind::UnsupportedParam)),
-            AsymSchemeUnion::RSAOAEP(_) => {
-                Err(Error::local_error(WrapperErrorKind::UnsupportedParam))
-            }
-            AsymSchemeUnion::AnySig(_) => {
-                Err(Error::local_error(WrapperErrorKind::UnsupportedParam))
-            }
+            _ => Err(Error::local_error(WrapperErrorKind::UnsupportedParam)),
         }
     }
 }
@@ -986,9 +1323,9 @@ pub fn create_restricted_decryption_rsa_public(
         .build()
 }
 
-/// Create the TPM2B_PUBLIC structure for an unrestricted signing key.
+/// Create the TPM2B_PUBLIC structure for an RSA unrestricted signing key.
 ///
-/// * `scheme` - Asymmetric key to be used for signing
+/// * `scheme` - Asymmetric scheme to be used for signing
 /// * `key_bits` - Size in bits of the decryption key
 /// * `pub_exponent` - Public exponent of the RSA key. A value of 0 defaults to 2^16 + 1
 pub fn create_unrestricted_signing_rsa_public(
@@ -998,7 +1335,7 @@ pub fn create_unrestricted_signing_rsa_public(
 ) -> Result<TPM2B_PUBLIC> {
     let rsa_parms =
         TpmsRsaParmsBuilder::new_unrestricted_signing_key(scheme, key_bits, pub_exponent)
-            .build()?; // should not fail as we control the params
+            .build()?;
     let mut object_attributes = ObjectAttributes(0);
     object_attributes.set_fixed_tpm(true);
     object_attributes.set_fixed_parent(true);
@@ -1013,7 +1350,33 @@ pub fn create_unrestricted_signing_rsa_public(
         .with_name_alg(TPM2_ALG_SHA256)
         .with_object_attributes(object_attributes)
         .with_parms(PublicParmsUnion::RsaDetail(rsa_parms))
-        .build() // should not fail as we control the params
+        .build()
+}
+
+/// Create the TPM2B_PUBLIC structure for an ECC unrestricted signing key.
+///
+/// * `scheme` - Asymmetric scheme to be used for signing; *must* be an RSA signing scheme
+/// * `curve` - identifier of the precise curve to be used with the key
+pub fn create_unrestricted_signing_ecc_public(
+    scheme: AsymSchemeUnion,
+    curve: EllipticCurve,
+) -> Result<TPM2B_PUBLIC> {
+    let ecc_parms = TpmsEccParmsBuilder::new_unrestricted_signing_key(scheme, curve).build()?;
+    let mut object_attributes = ObjectAttributes(0);
+    object_attributes.set_fixed_tpm(true);
+    object_attributes.set_fixed_parent(true);
+    object_attributes.set_sensitive_data_origin(true);
+    object_attributes.set_user_with_auth(true);
+    object_attributes.set_decrypt(false);
+    object_attributes.set_sign_encrypt(true);
+    object_attributes.set_restricted(false);
+
+    Tpm2BPublicBuilder::new()
+        .with_type(TPM2_ALG_ECC)
+        .with_name_alg(TPM2_ALG_SHA256)
+        .with_object_attributes(object_attributes)
+        .with_parms(PublicParmsUnion::EccDetail(ecc_parms))
+        .build()
 }
 
 // Enum with the bit flag for each PCR slot.
@@ -1212,4 +1575,10 @@ impl PcrSelectionsBuilder {
             items: self.items,
         }
     }
+}
+
+#[derive(Debug, Clone)]
+pub enum PublicKey {
+    Rsa(Vec<u8>),
+    Ecc { x: Vec<u8>, y: Vec<u8> },
 }

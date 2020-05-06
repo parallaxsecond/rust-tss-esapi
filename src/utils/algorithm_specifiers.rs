@@ -9,11 +9,15 @@ use crate::constants::{
     TPM2_ALG_OAEP, TPM2_ALG_OFB, TPM2_ALG_RSA, TPM2_ALG_RSAES, TPM2_ALG_RSAPSS, TPM2_ALG_RSASSA,
     TPM2_ALG_SHA1, TPM2_ALG_SHA256, TPM2_ALG_SHA384, TPM2_ALG_SHA3_256, TPM2_ALG_SHA3_384,
     TPM2_ALG_SHA3_512, TPM2_ALG_SHA512, TPM2_ALG_SM2, TPM2_ALG_SM3_256, TPM2_ALG_SM4,
-    TPM2_ALG_SYMCIPHER, TPM2_ALG_TDES, TPM2_ALG_XOR,
+    TPM2_ALG_SYMCIPHER, TPM2_ALG_TDES, TPM2_ALG_XOR, TPM2_ECC_BN_P256, TPM2_ECC_BN_P638,
+    TPM2_ECC_NIST_P192, TPM2_ECC_NIST_P224, TPM2_ECC_NIST_P256, TPM2_ECC_NIST_P384,
+    TPM2_ECC_NIST_P521, TPM2_ECC_SM2_P256,
 };
 
 use crate::response_code::{Error, Result, WrapperErrorKind};
-use crate::tss2_esys::{TPM2_ALG_ID, TPMS_SYMCIPHER_PARMS, TPMT_SYM_DEF, TPMT_SYM_DEF_OBJECT};
+use crate::tss2_esys::{
+    TPM2_ALG_ID, TPMI_ECC_CURVE, TPMS_SYMCIPHER_PARMS, TPMT_SYM_DEF, TPMT_SYM_DEF_OBJECT,
+};
 use crate::utils::TpmtSymDefBuilder;
 use std::convert::{From, TryFrom};
 
@@ -726,5 +730,51 @@ impl From<Cipher> for TPMT_SYM_DEF_OBJECT {
 impl From<Cipher> for TPMS_SYMCIPHER_PARMS {
     fn from(cipher: Cipher) -> Self {
         TPMS_SYMCIPHER_PARMS { sym: cipher.into() }
+    }
+}
+
+/// Identifiers for elliptic curves supported by TPMs.
+#[derive(Debug, Copy, Clone, PartialEq)]
+pub enum EllipticCurve {
+    NistP192,
+    NistP224,
+    NistP256,
+    NistP384,
+    NistP521,
+    BnP256,
+    BnP638,
+    Sm2P256,
+}
+
+impl From<EllipticCurve> for TPMI_ECC_CURVE {
+    fn from(curve: EllipticCurve) -> Self {
+        match curve {
+            EllipticCurve::NistP192 => TPM2_ECC_NIST_P192,
+            EllipticCurve::NistP224 => TPM2_ECC_NIST_P224,
+            EllipticCurve::NistP256 => TPM2_ECC_NIST_P256,
+            EllipticCurve::NistP384 => TPM2_ECC_NIST_P384,
+            EllipticCurve::NistP521 => TPM2_ECC_NIST_P521,
+            EllipticCurve::BnP256 => TPM2_ECC_BN_P256,
+            EllipticCurve::BnP638 => TPM2_ECC_BN_P638,
+            EllipticCurve::Sm2P256 => TPM2_ECC_SM2_P256,
+        }
+    }
+}
+
+impl TryFrom<TPMI_ECC_CURVE> for EllipticCurve {
+    type Error = Error;
+
+    fn try_from(curve: TPMI_ECC_CURVE) -> Result<Self> {
+        match curve {
+            TPM2_ECC_NIST_P192 => Ok(EllipticCurve::NistP192),
+            TPM2_ECC_NIST_P224 => Ok(EllipticCurve::NistP224),
+            TPM2_ECC_NIST_P256 => Ok(EllipticCurve::NistP256),
+            TPM2_ECC_NIST_P384 => Ok(EllipticCurve::NistP384),
+            TPM2_ECC_NIST_P521 => Ok(EllipticCurve::NistP521),
+            TPM2_ECC_BN_P256 => Ok(EllipticCurve::BnP256),
+            TPM2_ECC_BN_P638 => Ok(EllipticCurve::BnP638),
+            TPM2_ECC_SM2_P256 => Ok(EllipticCurve::Sm2P256),
+            _ => Err(Error::local_error(WrapperErrorKind::InvalidParam)),
+        }
     }
 }
