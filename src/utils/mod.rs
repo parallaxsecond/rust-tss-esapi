@@ -865,7 +865,7 @@ pub struct Signature {
 #[derive(Debug, PartialEq)]
 pub enum SignatureData {
     RsaSignature(Vec<u8>),
-    EccSignature { r: Vec<u8>, s: Vec<u8> },
+    EcdsaSignature { r: Vec<u8>, s: Vec<u8> },
 }
 
 impl Signature {
@@ -933,7 +933,7 @@ impl Signature {
 
                 Ok(Signature {
                     scheme,
-                    signature: SignatureData::EccSignature { r, s },
+                    signature: SignatureData::EcdsaSignature { r, s },
                 })
             }
             TPM2_ALG_SM2 | TPM2_ALG_ECSCHNORR | TPM2_ALG_ECDAA => {
@@ -954,7 +954,7 @@ impl TryFrom<Signature> for TPMT_SIGNATURE {
             AsymSchemeUnion::RSASSA(hash_alg) => {
                 let signature = match sig.signature {
                     SignatureData::RsaSignature(signature) => signature,
-                    SignatureData::EccSignature { .. } => {
+                    SignatureData::EcdsaSignature { .. } => {
                         return Err(Error::local_error(WrapperErrorKind::InconsistentParams))
                     }
                 };
@@ -982,7 +982,7 @@ impl TryFrom<Signature> for TPMT_SIGNATURE {
             AsymSchemeUnion::RSAPSS(hash_alg) => {
                 let signature = match sig.signature {
                     SignatureData::RsaSignature(signature) => signature,
-                    SignatureData::EccSignature { .. } => {
+                    SignatureData::EcdsaSignature { .. } => {
                         return Err(Error::local_error(WrapperErrorKind::InconsistentParams))
                     }
                 };
@@ -1009,7 +1009,7 @@ impl TryFrom<Signature> for TPMT_SIGNATURE {
             }
             AsymSchemeUnion::ECDSA(hash_alg) => {
                 let signature = match sig.signature {
-                    SignatureData::EccSignature { r, s } => (r, s),
+                    SignatureData::EcdsaSignature { r, s } => (r, s),
                     SignatureData::RsaSignature(_) => {
                         return Err(Error::local_error(WrapperErrorKind::InconsistentParams))
                     }
