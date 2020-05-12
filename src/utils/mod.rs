@@ -9,6 +9,8 @@
 //! type name. Unions are converted to Rust `enum`s by dropping the `TPMU` qualifier and appending
 //! `Union`.
 pub mod algorithm_specifiers;
+pub mod tags;
+pub mod tickets;
 
 use crate::constants::*;
 use crate::response_code::{Error, Result, WrapperErrorKind};
@@ -865,7 +867,7 @@ pub struct Signature {
 #[derive(Debug, PartialEq)]
 pub enum SignatureData {
     RsaSignature(Vec<u8>),
-    EccSignature { r: Vec<u8>, s: Vec<u8> },
+    EcdsaSignature { r: Vec<u8>, s: Vec<u8> },
 }
 
 impl Signature {
@@ -933,7 +935,7 @@ impl Signature {
 
                 Ok(Signature {
                     scheme,
-                    signature: SignatureData::EccSignature { r, s },
+                    signature: SignatureData::EcdsaSignature { r, s },
                 })
             }
             TPM2_ALG_SM2 | TPM2_ALG_ECSCHNORR | TPM2_ALG_ECDAA => {
@@ -954,7 +956,7 @@ impl TryFrom<Signature> for TPMT_SIGNATURE {
             AsymSchemeUnion::RSASSA(hash_alg) => {
                 let signature = match sig.signature {
                     SignatureData::RsaSignature(signature) => signature,
-                    SignatureData::EccSignature { .. } => {
+                    SignatureData::EcdsaSignature { .. } => {
                         return Err(Error::local_error(WrapperErrorKind::InconsistentParams))
                     }
                 };
@@ -982,7 +984,7 @@ impl TryFrom<Signature> for TPMT_SIGNATURE {
             AsymSchemeUnion::RSAPSS(hash_alg) => {
                 let signature = match sig.signature {
                     SignatureData::RsaSignature(signature) => signature,
-                    SignatureData::EccSignature { .. } => {
+                    SignatureData::EcdsaSignature { .. } => {
                         return Err(Error::local_error(WrapperErrorKind::InconsistentParams))
                     }
                 };
@@ -1009,7 +1011,7 @@ impl TryFrom<Signature> for TPMT_SIGNATURE {
             }
             AsymSchemeUnion::ECDSA(hash_alg) => {
                 let signature = match sig.signature {
-                    SignatureData::EccSignature { r, s } => (r, s),
+                    SignatureData::EcdsaSignature { r, s } => (r, s),
                     SignatureData::RsaSignature(_) => {
                         return Err(Error::local_error(WrapperErrorKind::InconsistentParams))
                     }
@@ -1186,7 +1188,7 @@ impl TryFrom<TpmsContext> for TPMS_CONTEXT {
 }
 
 /// Enum describing the object hierarchies in a TPM 2.0.
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Hierarchy {
     Null,
     Owner,
@@ -1227,66 +1229,6 @@ impl TryFrom<TPM2_HANDLE> for Hierarchy {
             TPM2_RH_ENDORSEMENT | ESYS_TR_RH_ENDORSEMENT => Ok(Hierarchy::Endorsement),
             _ => Err(Error::local_error(WrapperErrorKind::InconsistentParams)),
         }
-    }
-}
-
-/// Rust native wrapper for `TPMT_TK_VERIFIED` objects.
-#[derive(Debug)]
-pub struct TpmtTkVerified {
-    hierarchy: Hierarchy,
-    digest: Vec<u8>,
-}
-
-impl TpmtTkVerified {
-    /// Get the hierarchy associated with the verification ticket.
-    pub fn hierarchy(&self) -> Hierarchy {
-        self.hierarchy
-    }
-
-    /// Get the digest associated with the verification ticket.
-    pub fn digest(&self) -> &[u8] {
-        &self.digest
-    }
-}
-
-impl TryFrom<TPMT_TK_VERIFIED> for TpmtTkVerified {
-    type Error = Error;
-
-    fn try_from(tss_verif: TPMT_TK_VERIFIED) -> Result<Self> {
-        if tss_verif.tag != TPM2_ST_VERIFIED {
-            return Err(Error::local_error(WrapperErrorKind::InconsistentParams));
-        }
-
-        let len = tss_verif.digest.size.into();
-        let mut digest = tss_verif.digest.buffer.to_vec();
-        digest.truncate(len);
-
-        let hierarchy = tss_verif.hierarchy.try_into()?;
-
-        Ok(TpmtTkVerified { hierarchy, digest })
-    }
-}
-
-impl TryFrom<TpmtTkVerified> for TPMT_TK_VERIFIED {
-    type Error = Error;
-
-    fn try_from(verif: TpmtTkVerified) -> Result<Self> {
-        let digest = verif.digest;
-        if digest.len() > 64 {
-            return Err(Error::local_error(WrapperErrorKind::WrongParamSize));
-        }
-
-        let mut buffer = [0; 64];
-        buffer[..digest.len()].clone_from_slice(&digest[..digest.len()]);
-
-        Ok(TPMT_TK_VERIFIED {
-            tag: TPM2_ST_VERIFIED,
-            hierarchy: verif.hierarchy.rh(),
-            digest: TPM2B_DIGEST {
-                size: digest.len().try_into().unwrap(), // should not fail based on the checks done above
-                buffer,
-            },
-        })
     }
 }
 

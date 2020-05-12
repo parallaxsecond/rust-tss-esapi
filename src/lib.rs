@@ -128,7 +128,8 @@ use std::ffi::CString;
 use std::ptr::{null, null_mut};
 use tss2_esys::*;
 use utils::{
-    PcrSelections, PublicParmsUnion, Signature, TpmaSession, TpmaSessionBuilder, TpmsContext,
+    algorithm_specifiers::HashingAlgorithm, tickets::HashcheckTicket, Hierarchy, PcrSelections,
+    PublicParmsUnion, Signature, TpmaSession, TpmaSessionBuilder, TpmsContext,
 };
 
 #[macro_use]
@@ -892,6 +893,44 @@ impl Context {
             Ok(())
         } else {
             error!("Error while testing parameters: {}.", ret);
+            Err(ret)
+        }
+    }
+
+    /// Function for invoking TPM2_Hash command.
+    ///
+    pub fn hash(
+        &mut self,
+        data: &[u8],
+        hashing_algorithm: HashingAlgorithm,
+        hierarchy: Hierarchy,
+    ) -> Result<(Vec<u8>, HashcheckTicket)> {
+        let data = wrap_buffer!(data, TPM2B_MAX_BUFFER, 1024);
+        let mut out_hash_ptr = null_mut();
+        let mut validation_ptr = null_mut();
+        let ret = unsafe {
+            Esys_Hash(
+                self.mut_context(),
+                self.sessions.0,
+                self.sessions.1,
+                self.sessions.2,
+                &data,
+                hashing_algorithm.into(),
+                hierarchy.rh(),
+                &mut out_hash_ptr,
+                &mut validation_ptr,
+            )
+        };
+        let ret = Error::from_tss_rc(ret);
+        if ret.is_success() {
+            let out_hash = unsafe { MBox::<TPM2B_DIGEST>::from_raw(out_hash_ptr) };
+            let validation = unsafe { MBox::<TPMT_TK_HASHCHECK>::from_raw(validation_ptr) };
+            Ok((
+                out_hash.buffer[..out_hash.size as usize].to_vec(),
+                HashcheckTicket::try_from(*validation)?,
+            ))
+        } else {
+            error!("Error failed to peform hash operation: {}.", ret);
             Err(ret)
         }
     }

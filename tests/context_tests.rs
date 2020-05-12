@@ -38,7 +38,8 @@ use tss_esapi::tss2_esys::*;
 use tss_esapi::utils::{
     self,
     algorithm_specifiers::{Cipher, HashingAlgorithm},
-    AsymSchemeUnion, ObjectAttributes, PcrSelectionsBuilder, PcrSlot, PublicIdUnion,
+    tickets::Ticket,
+    AsymSchemeUnion, Hierarchy, ObjectAttributes, PcrSelectionsBuilder, PcrSlot, PublicIdUnion,
     PublicParmsUnion, Signature, SignatureData, Tpm2BPublicBuilder, TpmaSessionBuilder,
     TpmsRsaParmsBuilder,
 };
@@ -1232,5 +1233,32 @@ mod test_test_parms {
         context
             .test_parms(PublicParmsUnion::SymDetail(cipher))
             .unwrap();
+    }
+}
+
+mod test_hash {
+    use super::*;
+
+    #[test]
+    fn test_hash_with_sha_256() {
+        let mut context = create_ctx_without_session();
+        let data = "There is no spoon";
+        let expected_hashed_data: [u8; 32] = [
+            0x6b, 0x38, 0x4d, 0x2b, 0xfb, 0x0e, 0x0d, 0xfb, 0x64, 0x89, 0xdb, 0xf4, 0xf8, 0xe9,
+            0xe5, 0x2f, 0x71, 0xee, 0xb1, 0x0d, 0x06, 0x4c, 0x56, 0x59, 0x70, 0xcd, 0xd9, 0x44,
+            0x43, 0x18, 0x5d, 0xc1,
+        ];
+        let expected_hierarchy = Hierarchy::Owner;
+        let (actual_hashed_data, ticket) = context
+            .hash(
+                data.as_bytes(),
+                HashingAlgorithm::Sha256,
+                expected_hierarchy,
+            )
+            .unwrap();
+        assert_eq!(expected_hashed_data.len(), actual_hashed_data.len());
+        assert_eq!(&expected_hashed_data[..], &actual_hashed_data[..]);
+        assert_eq!(ticket.hierarchy(), expected_hierarchy);
+        assert_ne!(ticket.digest().len(), 0); // Should do some better checking of the digest
     }
 }

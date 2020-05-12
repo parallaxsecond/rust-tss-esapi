@@ -17,10 +17,11 @@ use crate::constants::*;
 use crate::response_code::{Error, Result, WrapperErrorKind as ErrorKind};
 use crate::tss2_esys::*;
 use crate::utils::algorithm_specifiers::{Cipher, EllipticCurve, HashingAlgorithm};
+use crate::utils::tickets::VerifiedTicket;
 use crate::utils::{
     self, create_restricted_decryption_rsa_public, create_unrestricted_signing_ecc_public,
     create_unrestricted_signing_rsa_public, AsymSchemeUnion, Hierarchy, PublicIdUnion, PublicKey,
-    TpmaSessionBuilder, TpmsContext, TpmtTkVerified, RSA_KEY_SIZES,
+    TpmaSessionBuilder, TpmsContext, RSA_KEY_SIZES,
 };
 use crate::{Context, Tcti};
 use log::error;
@@ -141,31 +142,26 @@ impl TransientKeyContext {
         }
         let mut pk_buffer = [0_u8; 512];
         pk_buffer[..public_key.len()].clone_from_slice(&public_key[..public_key.len()]);
-
         let pk = TPMU_PUBLIC_ID {
             rsa: TPM2B_PUBLIC_KEY_RSA {
                 size: public_key.len().try_into().unwrap(), // should not fail on valid targets, given the checks above
                 buffer: pk_buffer,
             },
         };
-
         let mut public = create_unrestricted_signing_rsa_public(
             AsymSchemeUnion::RSASSA(HashingAlgorithm::Sha256),
             u16::try_from(public_key.len()).unwrap() * 8_u16,
             0,
         )?;
         public.publicArea.unique = pk;
-
         self.set_session_attrs()?;
         let key_handle = self.context.load_external_public(&public, TPM2_RH_OWNER)?;
-
         self.set_session_attrs()?;
         let key_context = self.context.context_save(key_handle).or_else(|e| {
             self.context.flush_context(key_handle)?;
             Err(e)
         })?;
         self.context.flush_context(key_handle)?;
-
         Ok(key_context)
     }
 
@@ -266,7 +262,7 @@ impl TransientKeyContext {
         key_context: TpmsContext,
         digest: &[u8],
         signature: utils::Signature,
-    ) -> Result<TpmtTkVerified> {
+    ) -> Result<VerifiedTicket> {
         self.set_session_attrs()?;
         let key_handle = self.context.context_load(key_context)?;
 

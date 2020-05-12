@@ -340,6 +340,7 @@ pub const TPM2_ST_ATTEST_QUOTE: TPM2_ST = 0x8018; /* tag for an attestation stru
 pub const TPM2_ST_ATTEST_TIME: TPM2_ST = 0x8019; /* tag for an attestation structure */
 pub const TPM2_ST_ATTEST_CREATION: TPM2_ST = 0x801A; /* tag for an attestation structure */
 pub const TPM2_ST_RESERVED3: TPM2_ST = 0x801B; /* do not use . NOTE This was previously assigned to TPM2_ST_ATTEST_NV. The tag is changed because the structure has changed */
+pub const TPM2_ST_ATTEST_NV_DIGEST: TPM2_ST = 0x801c; /* tag for an attestation structure */
 pub const TPM2_ST_CREATION: TPM2_ST = 0x8021; /* tag for a ticket type */
 pub const TPM2_ST_VERIFIED: TPM2_ST = 0x8022; /* tag for a ticket type */
 pub const TPM2_ST_AUTH_SECRET: TPM2_ST = 0x8023; /* tag for a ticket type */
