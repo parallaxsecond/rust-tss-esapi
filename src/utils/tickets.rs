@@ -8,16 +8,17 @@ use std::convert::{TryFrom, TryInto};
 /// Macro used for implementing try_from
 /// TssTicketType -> TicketType
 /// TicketType -> TssTicketType
+const TPM2B_DIGEST_BUFFER_SIZE: usize = 64;
 macro_rules! impl_ticket_try_froms {
     ($ticket_type:ident, $tss_ticket_type:ident) => {
         impl TryFrom<$ticket_type> for $tss_ticket_type {
             type Error = Error;
             fn try_from(ticket: $ticket_type) -> Result<Self> {
                 let digest = ticket.digest;
-                if digest.len() > 64 {
+                if digest.len() > TPM2B_DIGEST_BUFFER_SIZE {
                     return Err(Error::local_error(WrapperErrorKind::WrongParamSize));
                 }
-                let mut buffer = [0; 64];
+                let mut buffer = [0; TPM2B_DIGEST_BUFFER_SIZE];
                 buffer[..digest.len()].clone_from_slice(&digest[..digest.len()]);
                 Ok($tss_ticket_type {
                     tag: <$ticket_type>::TAG.into(),
@@ -47,6 +48,13 @@ macro_rules! impl_ticket_try_froms {
                 };
 
                 let len = tss_ticket.digest.size.into();
+                if len > TPM2B_DIGEST_BUFFER_SIZE {
+                    error!(
+                        "Error: Invalid digest size.(Digest size: {0} > Digest buffer size: {1})",
+                        len, TPM2B_DIGEST_BUFFER_SIZE,
+                    );
+                    return Err(Error::local_error(WrapperErrorKind::InvalidParam));
+                }
                 let mut digest = tss_ticket.digest.buffer.to_vec();
                 digest.truncate(len);
 
