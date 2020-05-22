@@ -128,8 +128,8 @@ use std::ffi::CString;
 use std::ptr::{null, null_mut};
 use tss2_esys::*;
 use utils::{
-    algorithm_specifiers::HashingAlgorithm, tickets::HashcheckTicket, Hierarchy, PcrSelections,
-    PublicParmsUnion, Signature, TpmaSession, TpmaSessionBuilder, TpmsContext,
+    algorithm_specifiers::HashingAlgorithm, tickets::HashcheckTicket, Hierarchy, PcrData,
+    PcrSelections, PublicParmsUnion, Signature, TpmaSession, TpmaSessionBuilder, TpmsContext,
 };
 
 #[macro_use]
@@ -758,34 +758,48 @@ impl Context {
         }
     }
 
-    /// Read values from selected PCRs
+    /// Reads the value of a PCR slot associated with
+    /// a specific hashing algorithm
+    ///
+    /// # Constraints
+    /// * If the selection contains more pcr values then 16 (number of
+    /// elements in TPML_DIGEST). Then not all values will be read. The
+    /// Selection in the return value will indicate what values that have
+    /// been read.
+    ///
+    /// # Errors
+    /// * Several different errors can occur if conversion of return
+    ///   data fails.
     pub fn pcr_read(
         &mut self,
-        pcr_selection: PcrSelections,
-    ) -> Result<(u32, TPML_PCR_SELECTION, TPML_DIGEST)> {
-        let tpml_pcr_selection: TPML_PCR_SELECTION = pcr_selection.into();
+        pcr_selections: PcrSelections,
+    ) -> Result<(u32, PcrSelections, PcrData)> {
         let mut pcr_update_counter: u32 = 0;
-        let mut pcr_selection_out = null_mut();
-        let mut pcr_values = null_mut();
+        let mut tpml_pcr_selection_out_ptr = null_mut();
+        let mut tpml_digest_ptr = null_mut();
         let ret = unsafe {
             Esys_PCR_Read(
                 self.mut_context(),
                 self.sessions.0,
                 self.sessions.1,
                 self.sessions.2,
-                &tpml_pcr_selection,
+                &pcr_selections.into(),
                 &mut pcr_update_counter,
-                &mut pcr_selection_out,
-                &mut pcr_values,
+                &mut tpml_pcr_selection_out_ptr,
+                &mut tpml_digest_ptr,
             )
         };
         let ret = Error::from_tss_rc(ret);
 
         if ret.is_success() {
-            let pcr_selection_out =
-                unsafe { MBox::<TPML_PCR_SELECTION>::from_raw(pcr_selection_out) };
-            let pcr_values = unsafe { MBox::<TPML_DIGEST>::from_raw(pcr_values) };
-            Ok((pcr_update_counter, *pcr_selection_out, *pcr_values))
+            let tpml_pcr_selection_out =
+                unsafe { MBox::<TPML_PCR_SELECTION>::from_raw(tpml_pcr_selection_out_ptr) };
+            let tpml_digest = unsafe { MBox::<TPML_DIGEST>::from_raw(tpml_digest_ptr) };
+            Ok((
+                pcr_update_counter,
+                PcrSelections::try_from(*tpml_pcr_selection_out)?,
+                PcrData::new(tpml_pcr_selection_out.as_ref(), tpml_digest.as_ref())?,
+            ))
         } else {
             error!("Error in creating derived key: {}.", ret);
             Err(ret)
@@ -832,6 +846,51 @@ impl Context {
             Ok((*quoted, unsafe { Signature::try_from(*signature)? }))
         } else {
             error!("Error in quoting PCR: {}", ret);
+            Err(ret)
+        }
+    }
+    /// Cause conditional gating of a policy based on PCR.
+    ///
+    /// The TPM will use the hash algorithm of the policy_session
+    /// to calculate a digest from the values of the pcr slots
+    /// specified in the pcr_selections.
+    /// This is then compared to pcr_policy_digest if they match then
+    /// the policyDigest of the policy session is extended.
+    ///
+    /// # Constraints
+    /// * `pcr_policy_digest` must be at most 64 elements long
+    ///
+    /// # Errors
+    /// * if the pcr policy digest provided is too long, a `WrongParamSize` wrapper error will be returned
+    ///
+    /// See:
+    /// "Trusted Platform Module Library",
+    /// "Part 3: Commands"
+    /// "Family “2.0”
+    /// Level 00 Revision 01.59
+    /// Section: 23.7 TPM2_PolicyPCR
+    pub fn policy_pcr(
+        &mut self,
+        policy_session: ESYS_TR,
+        pcr_policy_digest: &[u8],
+        pcr_selections: PcrSelections,
+    ) -> Result<()> {
+        let pcr_digest = wrap_buffer!(pcr_policy_digest, TPM2B_DIGEST, 64);
+        let ret = unsafe {
+            Esys_PolicyPCR(
+                self.mut_context(),
+                policy_session,
+                self.sessions.0,
+                self.sessions.1,
+                self.sessions.2,
+                &pcr_digest,
+                &pcr_selections.into(),
+            )
+        };
+        let ret = Error::from_tss_rc(ret);
+        if ret.is_success() {
+            Ok(())
+        } else {
             Err(ret)
         }
     }
@@ -1004,6 +1063,10 @@ impl Context {
             Err(ret)
         }
     }
+
+    ///////////////////////////////////////////////////////////////////////////
+    /// Private Methods Section
+    ///////////////////////////////////////////////////////////////////////////
 
     /// Returns a mutable reference to the native ESYS context handle.
     fn mut_context(&mut self) -> *mut ESYS_CONTEXT {
