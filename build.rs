@@ -16,8 +16,12 @@ fn main() {
             .atleast_version(MINIMUM_VERSION)
             .probe("tss2-tctildr")
             .expect("Error with pkg-config finding tss2-tctildr.");
+        let tss2_mu = pkg_config::Config::new()
+            .atleast_version(MINIMUM_VERSION)
+            .probe("tss2-mu")
+            .expect("Error with pkg-config finding tss2-mu.");
 
-        // These two pkg-config files should contain only one include/lib path.
+        // These three pkg-config files should contain only one include/lib path.
         let tss2_esys_include_path = tss2_esys.include_paths[0]
             .clone()
             .into_os_string()
@@ -28,13 +32,20 @@ fn main() {
             .into_os_string()
             .into_string()
             .expect("Error converting OsString to String.");
+        let tss2_mu_include_path = tss2_mu.include_paths[0]
+            .clone()
+            .into_os_string()
+            .into_string()
+            .expect("Error converting OsString to String.");
 
         let bindings = bindgen::Builder::default()
             .clang_arg(format!("-I{}/tss2/", tss2_esys_include_path))
             .clang_arg(format!("-I{}/tss2/", tss2_tctildr_include_path))
+            .clang_arg(format!("-I{}/tss2/", tss2_mu_include_path))
             .rustfmt_bindings(true)
             .header(format!("{}/tss2/tss2_esys.h", tss2_esys_include_path))
             .header(format!("{}/tss2/tss2_tctildr.h", tss2_tctildr_include_path))
+            .header(format!("{}/tss2/tss2_mu.h", tss2_mu_include_path))
             .generate_comments(false)
             .derive_default(true)
             .generate()
