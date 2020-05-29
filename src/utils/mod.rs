@@ -22,9 +22,8 @@ use log::error;
 use num_derive::{FromPrimitive, ToPrimitive};
 use num_traits::{FromPrimitive, ToPrimitive};
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
+use std::collections::{BTreeMap, HashMap};
 use std::convert::{TryFrom, TryInto};
-
 /// Helper for building `TPM2B_PUBLIC` values out of its subcomponents.
 ///
 /// Currently the implementation is incomplete, focusing on creating objects of RSA type.
@@ -1322,7 +1321,7 @@ pub fn create_unrestricted_signing_ecc_public(
 }
 
 // Enum with the bit flag for each PCR slot.
-#[derive(BitFlags, Hash, Debug, PartialEq, Clone, Copy)]
+#[derive(BitFlags, Hash, Debug, Eq, PartialEq, Ord, PartialOrd, Clone, Copy)]
 #[repr(u32)]
 pub enum PcrSlot {
     Slot0 = 0x0000_0001,
@@ -1352,7 +1351,7 @@ pub enum PcrSlot {
 }
 
 // Enum with the possible values for sizeofSelect.
-#[derive(FromPrimitive, ToPrimitive, Debug, Copy, Clone, PartialEq)]
+#[derive(FromPrimitive, ToPrimitive, Debug, Copy, Clone, PartialEq, Eq)]
 #[repr(u8)]
 pub enum PcrSelectSize {
     OneByte = 1,
@@ -1377,10 +1376,110 @@ impl Default for PcrSelectSize {
 /// number of PCR required by the platform-specific
 /// specification with which the TPM is compliant or by the implementer if
 /// not adhering to a platform-specific specification.
-#[derive(Debug, Default, Clone)]
+#[derive(Debug, Default, Clone, PartialEq, Eq)]
 pub struct PcrSelections {
     size_of_select: PcrSelectSize,
     items: HashMap<HashingAlgorithm, BitFlags<PcrSlot>>,
+}
+
+impl PcrSelections {
+    /// Function for retrieiving the number of banks in the selection
+    pub fn len(&self) -> usize {
+        self.items.len()
+    }
+
+    /// Returns true if the selection is empty.
+    pub fn is_empty(&self) -> bool {
+        self.items.is_empty()
+    }
+
+    /// Removes items in `other` from `self.
+    ///
+    /// # Arguments
+    ///
+    /// * `other` - A PcrSelections containing items
+    ///             that will be removed from `self`.
+    ///     
+    ///
+    /// # Constraints
+    ///
+    /// * Cannot be called with `other` that contains items that
+    ///   are not present in `self`.
+    ///
+    /// * Cannot be called with `other` that has a size_of_select
+    ///   that is different from the one in `self`.
+    ///
+    /// # Errors
+    ///
+    /// * Calling the method with `other` that contains items
+    ///   not present in `self` will result in an InvalidParam error.
+    ///
+    /// * Calling the method with `other` that contains a size_of_select
+    ///   that is different then the one in `self` will result in
+    ///   a InvalidParam error.
+    ///
+    /// # Examples
+    /// ```
+    /// use tss_esapi::utils::{PcrSelectionsBuilder, PcrSlot, algorithm_specifiers::HashingAlgorithm};
+    /// // pcr selections
+    /// let mut pcr_selections = PcrSelectionsBuilder::new()
+    ///     .with_size_of_select(Default::default())
+    ///     .with_selection(HashingAlgorithm::Sha256, &[PcrSlot::Slot0, PcrSlot::Slot8])
+    ///     .build();
+    ///
+    /// // Another pcr selections
+    /// let other = PcrSelectionsBuilder::new()
+    ///     .with_size_of_select(Default::default())
+    ///     .with_selection(
+    ///         HashingAlgorithm::Sha256, &[PcrSlot::Slot0],
+    ///     )
+    ///     .build();
+    /// pcr_selections.subtract(&other).unwrap();
+    /// assert_eq!(pcr_selections.len(), 1);
+    /// ```
+    pub fn subtract(&mut self, other: &Self) -> Result<()> {
+        if self == other {
+            self.items.clear();
+            return Ok(());
+        }
+
+        if self.is_empty() {
+            error!("Error: Trying to remove item that did not exist.");
+            return Err(Error::local_error(WrapperErrorKind::InvalidParam));
+        }
+
+        if self.size_of_select != other.size_of_select {
+            error!("Error: Non matching size of select.");
+            return Err(Error::local_error(WrapperErrorKind::InconsistentParams));
+        }
+
+        for hashing_algorithm in other.items.keys() {
+            // Get selection from difference in order to modify it.
+            let selection = match self.items.get_mut(&hashing_algorithm) {
+                Some(val) => val,
+                None => {
+                    error!("Error: Trying to remove item that did not exist.");
+                    return Err(Error::local_error(WrapperErrorKind::InconsistentParams));
+                }
+            };
+            // Check if value exists in other and if not then nothing needs to be done
+            if let Some(val) = other.items.get(&hashing_algorithm) {
+                if !selection.contains(*val) {
+                    error!("Error: Trying to remove item that did not exist.");
+                    return Err(Error::local_error(WrapperErrorKind::InvalidParam));
+                }
+
+                if selection == val {
+                    // They are equal so everything can be removed.
+                    let _ = self.items.remove(&hashing_algorithm);
+                } else {
+                    // Remove values
+                    selection.remove(*val);
+                }
+            }
+        }
+        Ok(())
+    }
 }
 
 impl From<PcrSelections> for TPML_PCR_SELECTION {
@@ -1523,4 +1622,177 @@ impl PcrSelectionsBuilder {
 pub enum PublicKey {
     Rsa(Vec<u8>),
     Ecc { x: Vec<u8>, y: Vec<u8> },
+}
+
+/// Struct holding a pcr value.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct PcrValue {
+    value: Vec<u8>,
+}
+
+impl PcrValue {
+    /// Function for retrieving the value.
+    pub fn value(&self) -> &[u8] {
+        &self.value
+    }
+}
+
+impl TryFrom<TPM2B_DIGEST> for PcrValue {
+    type Error = Error;
+    fn try_from(tss_digest: TPM2B_DIGEST) -> Result<Self> {
+        let size = tss_digest.size as usize;
+        if size > 64 {
+            error!("Error: Invalid TPM2B_DIGEST size(> 64)");
+            return Err(Error::local_error(WrapperErrorKind::InvalidParam));
+        }
+        Ok(PcrValue {
+            value: tss_digest.buffer[..size].to_vec(),
+        })
+    }
+}
+
+/// Struct for holding PcrSlots and their
+/// corresponding values.
+#[derive(Debug, Clone, Eq, PartialEq)]
+pub struct PcrBank {
+    bank: BTreeMap<PcrSlot, PcrValue>,
+}
+
+impl PcrBank {
+    /// Function for retrieving a pcr value corresponding to a pcr slot.
+    pub fn pcr_value(&self, pcr_slot: PcrSlot) -> Option<&PcrValue> {
+        self.bank.get(&pcr_slot)
+    }
+
+    /// Function for retrieiving the number of pcr slot values in the bank.
+    pub fn len(&self) -> usize {
+        self.bank.len()
+    }
+
+    /// Returns true if there are no pcr slot values in the bank.
+    pub fn is_empty(&self) -> bool {
+        self.bank.is_empty()
+    }
+}
+
+impl<'a> IntoIterator for &'a PcrBank {
+    type Item = (&'a PcrSlot, &'a PcrValue);
+    type IntoIter = ::std::collections::btree_map::Iter<'a, PcrSlot, PcrValue>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.bank.iter()
+    }
+}
+
+/// Struct holding pcr banks and their associated
+/// hashing algorithm
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct PcrData {
+    data: HashMap<HashingAlgorithm, PcrBank>,
+}
+
+impl PcrData {
+    /// Contrustctor that creates a PcrData from
+    /// tss types.
+    pub fn new(
+        tpml_pcr_selections: &TPML_PCR_SELECTION,
+        tpml_digests: &TPML_DIGEST,
+    ) -> Result<Self> {
+        // Check digests
+        let digests_count = tpml_digests.count as usize;
+        if digests_count > 8 {
+            error!("Error: Invalid TPML_DIGEST count(> 8)");
+            return Err(Error::local_error(WrapperErrorKind::InvalidParam));
+        }
+        let digests = &tpml_digests.digests[..digests_count];
+        // Check selections
+        let selections_count = tpml_pcr_selections.count as usize;
+        if selections_count > 16 {
+            error!("Error: Invalid TPML_SELECTIONS count(> 16)");
+            return Err(Error::local_error(WrapperErrorKind::InvalidParam));
+        }
+        let pcr_selections = &tpml_pcr_selections.pcrSelections[..selections_count];
+
+        let mut digest_iter = digests.iter();
+        let mut parsed_pcr_data = PcrData {
+            data: Default::default(),
+        };
+        for &pcr_selection in pcr_selections {
+            // Parse hash algorithm from selection
+            let parsed_hash_algorithm =
+                HashingAlgorithm::try_from(pcr_selection.hash).or_else(|e| {
+                    error!("Error converting hash to a HashingAlgorithm: {}.", e);
+                    Err(Error::local_error(WrapperErrorKind::InvalidParam))
+                })?;
+            // Parse pcr slots from selection
+            let parsed_pcr_slots: BitFlags<PcrSlot> =
+                BitFlags::<PcrSlot>::try_from(u32::from_le_bytes(pcr_selection.pcrSelect))
+                    .or_else(|e| {
+                        error!("Error parsing pcrSelect to a BitFlags<PcrSlot>: {}.", e);
+                        Err(Error::local_error(WrapperErrorKind::UnsupportedParam))
+                    })?;
+            // Create PCR bank by mapping the pcr slots to the pcr values
+            let mut parsed_pcr_bank = PcrBank {
+                bank: Default::default(),
+            };
+            for pcr_slot in parsed_pcr_slots.iter() {
+                // Make sure there are still data
+                let digest = match digest_iter.next() {
+                    Some(val) => val,
+                    None => {
+                        error!("Error number of items in selection does not match number of items in data.");
+                        return Err(Error::local_error(WrapperErrorKind::InconsistentParams));
+                    }
+                };
+                // Add the value corresponding to the pcr slot.
+                if parsed_pcr_bank
+                    .bank
+                    .insert(pcr_slot, PcrValue::try_from(*digest)?)
+                    .is_some()
+                {
+                    error!("Error trying to insert data into PcrSlot where data have already been inserted.");
+                    return Err(Error::local_error(WrapperErrorKind::InconsistentParams));
+                }
+            }
+            // Add the parsed pcr bank for the parsed hashing algorithm.
+            if parsed_pcr_data
+                .data
+                .insert(parsed_hash_algorithm, parsed_pcr_bank)
+                .is_some()
+            {
+                error!("Error trying to insert data into a PcrBank where data have already been inserted.");
+                return Err(Error::local_error(WrapperErrorKind::InconsistentParams));
+            }
+        }
+        // Make sure all values in the digest have been read.
+        if digest_iter.next().is_some() {
+            error!("Error not all values in the digest have been handled.");
+            return Err(Error::local_error(WrapperErrorKind::InconsistentParams));
+        }
+
+        Ok(parsed_pcr_data)
+    }
+    /// Function for retriving a bank associated with the hashing_algorithm.
+    pub fn pcr_bank(&self, hashing_algorithm: HashingAlgorithm) -> Option<&PcrBank> {
+        self.data.get(&hashing_algorithm)
+    }
+
+    /// Function for retrieving the number of banks in the data.
+    pub fn len(&self) -> usize {
+        self.data.len()
+    }
+
+    /// Returns true if there are no banks in the data.
+    pub fn is_empty(&self) -> bool {
+        self.data.is_empty()
+    }
+}
+
+impl<'a> IntoIterator for &'a PcrData {
+    type Item = (&'a HashingAlgorithm, &'a PcrBank);
+    type IntoIter = ::std::collections::hash_map::Iter<'a, HashingAlgorithm, PcrBank>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.data.iter()
+    }
 }

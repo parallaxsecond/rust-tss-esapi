@@ -306,7 +306,8 @@ mod test_pcr_read {
             .build();
         let input: TPML_PCR_SELECTION = pcr_selections.clone().into();
         // Verify input
-        assert_eq!(input.count, 1);
+        assert_eq!(pcr_selections.len(), 1);
+        assert_eq!(input.count as usize, pcr_selections.len());
         assert_eq!(input.pcrSelections[0].sizeofSelect, 3);
         assert_eq!(
             input.pcrSelections[0].hash,
@@ -316,10 +317,11 @@ mod test_pcr_read {
         assert_eq!(input.pcrSelections[0].pcrSelect[1], 0b0000_0000);
         assert_eq!(input.pcrSelections[0].pcrSelect[2], 0b0000_0000);
         // Read the pcr slots.
-        let (update_counter, output, tpml_digest) = context.pcr_read(pcr_selections).unwrap();
+        let (update_counter, pcr_selections, pcr_data) = context.pcr_read(pcr_selections).unwrap();
 
         // Verify that the selected slots have been read.
         assert_ne!(update_counter, 0);
+        let output: TPML_PCR_SELECTION = pcr_selections.into();
         assert_eq!(output.count, input.count);
         assert_eq!(
             output.pcrSelections[0].sizeofSelect,
@@ -339,10 +341,49 @@ mod test_pcr_read {
             output.pcrSelections[0].pcrSelect[2]
         );
 
-        // Check that there exist a digest that is not empty
-        assert_eq!(tpml_digest.count, 1);
-        let digest = &tpml_digest.digests[0];
-        assert_ne!(digest.size, 0);
+        // Only the specified in the selection should be present.
+        assert_eq!(pcr_data.len(), output.count as usize);
+        let pcr_bank = pcr_data.pcr_bank(HashingAlgorithm::Sha256).unwrap();
+        // Only one value selected
+        assert_eq!(pcr_bank.len(), 1);
+        let pcr_value = pcr_bank.pcr_value(PcrSlot::Slot0).unwrap();
+        // Needs to have the length of associated with the hashing algorithm
+        assert_eq!(pcr_value.value().len(), TPM2_SHA256_DIGEST_SIZE as usize);
+    }
+
+    #[test]
+    fn test_pcr_read_large_pcr_selections() {
+        // If the pcr Selection contains more then 16 values
+        // then not all can be read at once and the returned
+        // pcr selections will differ from the original.
+        let mut context = create_ctx_without_session();
+        let pcr_selections = PcrSelectionsBuilder::new()
+            .with_selection(
+                HashingAlgorithm::Sha256,
+                &[
+                    PcrSlot::Slot0,
+                    PcrSlot::Slot1,
+                    PcrSlot::Slot2,
+                    PcrSlot::Slot3,
+                    PcrSlot::Slot4,
+                    PcrSlot::Slot5,
+                    PcrSlot::Slot6,
+                    PcrSlot::Slot7,
+                    PcrSlot::Slot8,
+                    PcrSlot::Slot9,
+                    PcrSlot::Slot10,
+                    PcrSlot::Slot11,
+                    PcrSlot::Slot12,
+                    PcrSlot::Slot13,
+                    PcrSlot::Slot14,
+                    PcrSlot::Slot15,
+                    PcrSlot::Slot16,
+                ],
+            )
+            .build();
+        let (_update_counter, pcr_selections_read, _pcr_data) =
+            context.pcr_read(pcr_selections.clone()).unwrap();
+        assert_ne!(pcr_selections, pcr_selections_read);
     }
 }
 
@@ -371,6 +412,74 @@ mod test_quote {
             .quote(key_handle, &qualifying_data, scheme, pcr_selections)
             .expect("Failed to get a quote");
         assert!(res.0.size != 0);
+    }
+}
+
+mod test_policy_pcr {
+    use super::*;
+
+    #[test]
+    fn test_policy_pcr_sha_256() {
+        let mut context = create_ctx_without_session();
+        let trial_session = context
+            .start_auth_session(
+                ESYS_TR_NONE,
+                ESYS_TR_NONE,
+                &[],
+                TPM2_SE_TRIAL,
+                utils::TpmtSymDefBuilder::aes_256_cfb(),
+                TPM2_ALG_SHA256,
+            )
+            .unwrap();
+        let trial_session_attr = TpmaSessionBuilder::new()
+            .with_flag(TPMA_SESSION_DECRYPT)
+            .with_flag(TPMA_SESSION_ENCRYPT)
+            .build();
+        context
+            .tr_sess_set_attributes(trial_session, trial_session_attr)
+            .unwrap();
+
+        // Read the pcr values using pcr_read
+        let pcr_selections = PcrSelectionsBuilder::new()
+            .with_selection(HashingAlgorithm::Sha256, &[PcrSlot::Slot0, PcrSlot::Slot1])
+            .build();
+
+        let (_update_counter, pcr_selections, pcr_data) = context.pcr_read(pcr_selections).unwrap();
+
+        // Run pcr_policy command.
+        //
+        // "If this command is used for a trial policySession,
+        // policySession→policyDigest will be updated using the
+        // values from the command rather than the values from a digest of the TPM PCR."
+        //
+        // "TPM2_Quote() and TPM2_PolicyPCR() digest the concatenation of PCR."
+        let concatenated_pcr_values = [
+            pcr_data
+                .pcr_bank(HashingAlgorithm::Sha256)
+                .unwrap()
+                .pcr_value(PcrSlot::Slot0)
+                .unwrap()
+                .value(),
+            pcr_data
+                .pcr_bank(HashingAlgorithm::Sha256)
+                .unwrap()
+                .pcr_value(PcrSlot::Slot1)
+                .unwrap()
+                .value(),
+        ]
+        .concat();
+
+        let (hashed_data, _ticket) = context
+            .hash(
+                &concatenated_pcr_values,
+                HashingAlgorithm::Sha256,
+                Hierarchy::Owner,
+            )
+            .unwrap();
+        // There should be no errors setting pcr policy for trial session.
+        context
+            .policy_pcr(trial_session, &hashed_data, pcr_selections)
+            .unwrap();
     }
 }
 
