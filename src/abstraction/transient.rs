@@ -155,7 +155,9 @@ impl TransientKeyContext {
         )?;
         public.publicArea.unique = pk;
         self.set_session_attrs()?;
-        let key_handle = self.context.load_external_public(&public, TPM2_RH_OWNER)?;
+        let key_handle = self
+            .context
+            .load_external_public(&public, Hierarchy::Owner)?;
         self.set_session_attrs()?;
         let key_context = self.context.context_save(key_handle).or_else(|e| {
             self.context.flush_context(key_handle)?;

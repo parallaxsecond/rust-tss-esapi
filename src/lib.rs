@@ -611,7 +611,7 @@ impl Context {
         &mut self,
         private: &TPM2B_SENSITIVE,
         public: &TPM2B_PUBLIC,
-        hierarchy: TPMI_RH_HIERARCHY,
+        hierarchy: Hierarchy,
     ) -> Result<ESYS_TR> {
         let mut key_handle = ESYS_TR_NONE;
         let ret = unsafe {
@@ -622,7 +622,7 @@ impl Context {
                 self.sessions.2,
                 private,
                 public,
-                hierarchy,
+                hierarchy.rh(),
                 &mut key_handle,
             )
         };
@@ -642,7 +642,7 @@ impl Context {
     pub fn load_external_public(
         &mut self,
         public: &TPM2B_PUBLIC,
-        hierarchy: TPMI_RH_HIERARCHY,
+        hierarchy: Hierarchy,
     ) -> Result<ESYS_TR> {
         let mut key_handle = ESYS_TR_NONE;
         let ret = unsafe {
@@ -653,7 +653,7 @@ impl Context {
                 self.sessions.2,
                 null(),
                 public,
-                hierarchy,
+                hierarchy.rh(),
                 &mut key_handle,
             )
         };

@@ -1056,7 +1056,7 @@ mod test_load_ext {
         let pub_key = get_ext_rsa_pub();
 
         context
-            .load_external_public(&pub_key, TPM2_RH_OWNER)
+            .load_external_public(&pub_key, Hierarchy::Owner)
             .unwrap();
     }
 }
