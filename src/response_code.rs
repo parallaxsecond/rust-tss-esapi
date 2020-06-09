@@ -28,6 +28,15 @@ bitfield! {
     severity, _: 11;
 }
 
+impl std::fmt::Display for FormatZeroResponseCode {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        // Display response code as "Response code value: 0xdeadbeef"
+        write!(f, "Response code value: {:#x}", self.0)
+    }
+}
+
+impl std::error::Error for FormatZeroResponseCode {}
+
 bitfield! {
     #[derive(PartialEq, Copy, Clone)]
     pub struct FormatOneResponseCode(TSS2_RC);
@@ -37,6 +46,15 @@ bitfield! {
     format_selector, _: 7;
     number, _: 11, 8;
 }
+
+impl std::fmt::Display for FormatOneResponseCode {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        // Display response code as "Response code value: 0xdeadbeef"
+        write!(f, "Response code value: {:#x}", self.0)
+    }
+}
+
+impl std::error::Error for FormatOneResponseCode {}
 
 /// Rust native representation of the TSS2 response codes as defined in the spec.
 #[allow(clippy::module_name_repetitions)]
@@ -439,6 +457,16 @@ impl From<TSS2_RC> for Tss2ResponseCode {
     }
 }
 
+impl std::error::Error for Tss2ResponseCode {
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+        match self {
+            Tss2ResponseCode::FormatOne(response_code) => Some(response_code),
+            Tss2ResponseCode::FormatZero(response_code) => Some(response_code),
+            Tss2ResponseCode::Success => None,
+        }
+    }
+}
+
 /// Main error type used by the crate to return issues with a method call. The value can either be
 /// a TSS-generated response code or a wrapper error - marking an issue caught within the wrapping
 /// layer.
@@ -472,6 +500,15 @@ impl std::fmt::Display for Error {
         match self {
             Error::WrapperError(e) => e.fmt(f),
             Error::Tss2Error(e) => e.fmt(f),
+        }
+    }
+}
+
+impl std::error::Error for Error {
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+        match self {
+            Error::WrapperError(wrapper_error) => Some(wrapper_error),
+            Error::Tss2Error(response_code) => Some(response_code),
         }
     }
 }
@@ -515,3 +552,5 @@ impl std::fmt::Display for WrapperErrorKind {
         }
     }
 }
+
+impl std::error::Error for WrapperErrorKind {}
