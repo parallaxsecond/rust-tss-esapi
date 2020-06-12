@@ -994,6 +994,33 @@ impl Context {
         }
     }
 
+    /// Function for retriving the current policy digest for
+    /// the session.
+    pub fn policy_get_digest(&mut self, policy_session: ESYS_TR) -> Result<Vec<u8>> {
+        let mut policy_digest_ptr = null_mut();
+        let ret = unsafe {
+            Esys_PolicyGetDigest(
+                self.mut_context(),
+                policy_session,
+                self.sessions.0,
+                self.sessions.1,
+                self.sessions.2,
+                &mut policy_digest_ptr,
+            )
+        };
+        let ret = Error::from_tss_rc(ret);
+        if ret.is_success() {
+            let policy_digest = unsafe { MBox::<TPM2B_DIGEST>::from_raw(policy_digest_ptr) };
+            Ok(policy_digest.buffer[..policy_digest.size as usize].to_vec())
+        } else {
+            error!(
+                "Error failed to peform policy get digest operation: {}.",
+                ret
+            );
+            Err(ret)
+        }
+    }
+
     ///////////////////////////////////////////////////////////////////////////
     /// TPM Resource Section
     ///////////////////////////////////////////////////////////////////////////
