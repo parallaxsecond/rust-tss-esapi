@@ -853,6 +853,54 @@ impl AsymSchemeUnion {
     }
 }
 
+/// Rust native representation of sensitive data.
+///
+/// The structure contains the sensitive data as a byte vector.
+#[derive(Clone, Debug, Default)]
+pub struct SensitiveData {
+    value: Vec<u8>,
+}
+
+impl SensitiveData {
+    pub fn new() -> Self {
+        SensitiveData {
+            value: Vec::<u8>::new(),
+        }
+    }
+
+    pub fn value(&self) -> &[u8] {
+        &self.value
+    }
+}
+
+impl TryFrom<TPM2B_SENSITIVE_DATA> for SensitiveData {
+    type Error = Error;
+
+    fn try_from(tpm2b_sensitive_data: TPM2B_SENSITIVE_DATA) -> Result<Self> {
+        if tpm2b_sensitive_data.size > 255 {
+            return Err(Error::local_error(WrapperErrorKind::WrongParamSize));
+        }
+        Ok(SensitiveData {
+            value: tpm2b_sensitive_data.buffer[..tpm2b_sensitive_data.size as usize].to_vec(),
+        })
+    }
+}
+
+impl TryFrom<SensitiveData> for TPM2B_SENSITIVE_DATA {
+    type Error = Error;
+
+    fn try_from(sensitive_data: SensitiveData) -> Result<Self> {
+        let value = sensitive_data.value();
+        if value.len() > 255 {
+            return Err(Error::local_error(WrapperErrorKind::WrongParamSize));
+        }
+        let mut rv: TPM2B_SENSITIVE_DATA = Default::default();
+        rv.size = value.len() as u16;
+        rv.buffer[..rv.size as usize].copy_from_slice(value);
+        Ok(rv)
+    }
+}
+
 /// Rust native representation of an asymmetric signature.
 ///
 /// The structure contains the signature as a byte vector and the scheme with which the signature
@@ -1399,7 +1447,7 @@ impl PcrSelections {
     ///
     /// * `other` - A PcrSelections containing items
     ///             that will be removed from `self`.
-    ///     
+    ///
     ///
     /// # Constraints
     ///
