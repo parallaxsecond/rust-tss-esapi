@@ -1759,6 +1759,16 @@ impl Digest {
     }
 }
 
+impl TryFrom<Vec<u8>> for Digest {
+    type Error = Error;
+    fn try_from(digest: Vec<u8>) -> Result<Self> {
+        if digest.len() > 64 {
+            return Err(Error::local_error(WrapperErrorKind::WrongParamSize));
+        }
+        Ok(Digest { value: digest })
+    }
+}
+
 impl TryFrom<TPM2B_DIGEST> for Digest {
     type Error = Error;
     fn try_from(tss_digest: TPM2B_DIGEST) -> Result<Self> {
