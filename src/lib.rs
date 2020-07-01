@@ -127,6 +127,7 @@ use std::convert::{TryFrom, TryInto};
 use std::ffi::CString;
 use std::ptr::{null, null_mut};
 use tss2_esys::*;
+use utils::tcti::Tcti;
 use utils::{
     algorithm_specifiers::HashingAlgorithm, tickets::HashcheckTicket, Hierarchy, PcrData,
     PcrSelections, PublicParmsUnion, Signature, TpmaSession, TpmaSessionBuilder, TpmsContext,
@@ -146,22 +147,6 @@ macro_rules! wrap_buffer {
         buf_struct
     }};
 }
-
-// Possible TCTI to use with the ESYS API.
-// TODO: add to each variant a structure for its configuration. Currently using the default
-// configuration.
-/// Placeholder TCTI types that can be used when initialising a `Context` to determine which
-/// interface will be used to communicate with the TPM.
-#[derive(Copy, Clone, Debug)]
-pub enum Tcti {
-    Device,
-    Mssim,
-    Tabrmd,
-}
-
-const DEVICE: &str = "device";
-const MSSIM: &str = "mssim";
-const TABRMD: &str = "tabrmd";
 
 /// Safe abstraction over an ESYS_CONTEXT.
 ///
@@ -216,12 +201,7 @@ impl Context {
         let mut esys_context = null_mut();
         let mut tcti_context = null_mut();
 
-        let tcti_name_conf = match tcti {
-            Tcti::Device => DEVICE,
-            Tcti::Mssim => MSSIM,
-            Tcti::Tabrmd => TABRMD,
-        };
-        let tcti_name_conf = CString::new(tcti_name_conf).expect("Failed conversion to CString"); // should never panic
+        let tcti_name_conf = CString::try_from(tcti)?; // should never panic
 
         let ret = Tss2_TctiLdr_Initialize(tcti_name_conf.as_ptr(), &mut tcti_context);
         let ret = Error::from_tss_rc(ret);
