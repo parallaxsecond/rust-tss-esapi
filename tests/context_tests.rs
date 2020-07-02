@@ -39,9 +39,9 @@ use tss_esapi::utils::{
     self,
     algorithm_specifiers::{Cipher, HashingAlgorithm},
     tickets::Ticket,
-    AsymSchemeUnion, Hierarchy, ObjectAttributes, PcrSelectionsBuilder, PcrSlot, PublicIdUnion,
-    PublicParmsUnion, Signature, SignatureData, Tpm2BPublicBuilder, TpmaSessionBuilder,
-    TpmsRsaParmsBuilder,
+    AsymSchemeUnion, Digest, DigestList, Hierarchy, ObjectAttributes, PcrSelectionsBuilder,
+    PcrSlot, PublicIdUnion, PublicParmsUnion, Signature, SignatureData, Tpm2BPublicBuilder,
+    TpmaSessionBuilder, TpmsRsaParmsBuilder,
 };
 use tss_esapi::*;
 
@@ -465,6 +465,120 @@ mod test_quote {
             .quote(key_handle, &qualifying_data, scheme, pcr_selections)
             .expect("Failed to get a quote");
         assert!(res.0.size != 0);
+    }
+}
+
+mod test_policy_or {
+    use super::*;
+
+    fn get_pcr_policy_digest(context: &mut Context, mangle: bool) -> Digest {
+        let old_ses = context.sessions();
+
+        let trial_session = context
+            .start_auth_session(
+                ESYS_TR_NONE,
+                ESYS_TR_NONE,
+                &[],
+                TPM2_SE_TRIAL,
+                utils::TpmtSymDefBuilder::aes_256_cfb(),
+                TPM2_ALG_SHA256,
+            )
+            .unwrap();
+        let trial_session_attr = TpmaSessionBuilder::new()
+            .with_flag(TPMA_SESSION_DECRYPT)
+            .with_flag(TPMA_SESSION_ENCRYPT)
+            .build();
+        context
+            .tr_sess_set_attributes(trial_session, trial_session_attr)
+            .unwrap();
+
+        // Read the pcr values using pcr_read
+        let pcr_selections = PcrSelectionsBuilder::new()
+            .with_selection(HashingAlgorithm::Sha256, &[PcrSlot::Slot0, PcrSlot::Slot1])
+            .build();
+
+        let (_update_counter, pcr_selections, pcr_data) = context.pcr_read(pcr_selections).unwrap();
+
+        // Run pcr_policy command.
+        //
+        // "If this command is used for a trial policySession,
+        // policySession→policyDigest will be updated using the
+        // values from the command rather than the values from a digest of the TPM PCR."
+        //
+        // "TPM2_Quote() and TPM2_PolicyPCR() digest the concatenation of PCR."
+        let mut concatenated_pcr_values = [
+            pcr_data
+                .pcr_bank(HashingAlgorithm::Sha256)
+                .unwrap()
+                .pcr_value(PcrSlot::Slot0)
+                .unwrap()
+                .value(),
+            pcr_data
+                .pcr_bank(HashingAlgorithm::Sha256)
+                .unwrap()
+                .pcr_value(PcrSlot::Slot1)
+                .unwrap()
+                .value(),
+        ]
+        .concat();
+
+        if mangle {
+            concatenated_pcr_values[0] = 0x00;
+        }
+
+        let (hashed_data, _ticket) = context
+            .hash(
+                &concatenated_pcr_values,
+                HashingAlgorithm::Sha256,
+                Hierarchy::Owner,
+            )
+            .unwrap();
+
+        // There should be no errors setting pcr policy for trial session.
+        context
+            .policy_pcr(trial_session, &hashed_data, pcr_selections)
+            .unwrap();
+
+        // There is now a policy digest that can be retrived and used.
+        let digest = context.policy_get_digest(trial_session).unwrap();
+
+        // Restore old sessions
+        context.set_sessions(old_ses);
+
+        digest
+    }
+
+    #[test]
+    fn test_policy_or() {
+        let mut context = create_ctx_without_session();
+        let trial_session = context
+            .start_auth_session(
+                ESYS_TR_NONE,
+                ESYS_TR_NONE,
+                &[],
+                TPM2_SE_TRIAL,
+                utils::TpmtSymDefBuilder::aes_256_cfb(),
+                TPM2_ALG_SHA256,
+            )
+            .unwrap();
+        let trial_session_attr = TpmaSessionBuilder::new()
+            .with_flag(TPMA_SESSION_DECRYPT)
+            .with_flag(TPMA_SESSION_ENCRYPT)
+            .build();
+        context
+            .tr_sess_set_attributes(trial_session, trial_session_attr)
+            .unwrap();
+
+        let mut digest_list = DigestList::new();
+        digest_list
+            .add(get_pcr_policy_digest(&mut context, true))
+            .unwrap();
+        digest_list
+            .add(get_pcr_policy_digest(&mut context, false))
+            .unwrap();
+
+        // There should be no errors setting an Or for a TRIAL session
+        context.policy_or(trial_session, digest_list).unwrap();
     }
 }
 
@@ -1494,6 +1608,6 @@ mod test_policy_get_digest {
         let retrieved_policy_digest = context.policy_get_digest(trial_session).unwrap();
 
         // The algorithm is SHA256 so the expected size of the digest should be 32.
-        assert_eq!(retrieved_policy_digest.len(), 32);
+        assert_eq!(retrieved_policy_digest.value().len(), 32);
     }
 }

@@ -128,9 +128,9 @@ use std::ffi::CString;
 use std::ptr::{null, null_mut};
 use tss2_esys::*;
 use utils::{
-    algorithm_specifiers::HashingAlgorithm, tickets::HashcheckTicket, Hierarchy, PcrData,
-    PcrSelections, PublicParmsUnion, SensitiveData, Signature, TpmaSession, TpmaSessionBuilder,
-    TpmsContext,
+    algorithm_specifiers::HashingAlgorithm, tickets::HashcheckTicket, Digest, DigestList,
+    Hierarchy, PcrData, PcrSelections, PublicParmsUnion, SensitiveData, Signature, TpmaSession,
+    TpmaSessionBuilder, TpmsContext,
 };
 
 #[macro_use]
@@ -921,6 +921,39 @@ impl Context {
         }
     }
 
+    /// Cause conditional gating of a policy based on an OR'd condition.
+    ///
+    /// The TPM will ensure that the current policy digest equals at least
+    /// one of the digests.
+    /// If this is the case, the policyDigest of the policy session is replaced
+    /// by the value of the different hashes.
+    ///
+    /// # Constraints
+    /// * `hash_list` must be at least 2 and at most 8 elements long
+    ///
+    /// # Errors
+    /// * if the hash list provided is too short or too long, a `WrongParamSize` wrapper error will be returned
+    pub fn policy_or(&mut self, policy_session: ESYS_TR, digest_list: DigestList) -> Result<()> {
+        let digest_list = TPML_DIGEST::try_from(digest_list)?;
+
+        let ret = unsafe {
+            Esys_PolicyOR(
+                self.mut_context(),
+                policy_session,
+                self.sessions.0,
+                self.sessions.1,
+                self.sessions.2,
+                &digest_list,
+            )
+        };
+        let ret = Error::from_tss_rc(ret);
+        if ret.is_success() {
+            Ok(())
+        } else {
+            Err(ret)
+        }
+    }
+
     // TODO: Should we really keep `num_bytes` as `u16`?
     /// Get a number of random bytes from the TPM and return them.
     ///
@@ -1022,7 +1055,7 @@ impl Context {
 
     /// Function for retriving the current policy digest for
     /// the session.
-    pub fn policy_get_digest(&mut self, policy_session: ESYS_TR) -> Result<Vec<u8>> {
+    pub fn policy_get_digest(&mut self, policy_session: ESYS_TR) -> Result<Digest> {
         let mut policy_digest_ptr = null_mut();
         let ret = unsafe {
             Esys_PolicyGetDigest(
@@ -1037,7 +1070,7 @@ impl Context {
         let ret = Error::from_tss_rc(ret);
         if ret.is_success() {
             let policy_digest = unsafe { MBox::<TPM2B_DIGEST>::from_raw(policy_digest_ptr) };
-            Ok(policy_digest.buffer[..policy_digest.size as usize].to_vec())
+            Ok(Digest::try_from(*policy_digest)?)
         } else {
             error!(
                 "Error failed to peform policy get digest operation: {}.",
