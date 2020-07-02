@@ -32,7 +32,7 @@ const KEY: [u8; 512] = [
     0, 0, 0, 0, 0,
 ];
 
-use std::convert::TryInto;
+use std::convert::{TryFrom, TryInto};
 use tss_esapi::constants::*;
 use tss_esapi::tss2_esys::*;
 use tss_esapi::utils::{
@@ -469,85 +469,144 @@ mod test_quote {
     }
 }
 
-mod test_policy_or {
+fn get_pcr_policy_digest(context: &mut Context, mangle: bool, do_trial: bool) -> (Digest, ESYS_TR) {
+    let old_ses = context.sessions();
+    context.set_sessions((ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE));
+
+    // Read the pcr values using pcr_read
+    let pcr_selections = PcrSelectionsBuilder::new()
+        .with_selection(HashingAlgorithm::Sha256, &[PcrSlot::Slot0, PcrSlot::Slot1])
+        .build();
+
+    let (_update_counter, pcr_selections, pcr_data) = context.pcr_read(pcr_selections).unwrap();
+
+    // Run pcr_policy command.
+    //
+    // "If this command is used for a trial policySession,
+    // policySession→policyDigest will be updated using the
+    // values from the command rather than the values from a digest of the TPM PCR."
+    //
+    // "TPM2_Quote() and TPM2_PolicyPCR() digest the concatenation of PCR."
+    let mut concatenated_pcr_values = [
+        pcr_data
+            .pcr_bank(HashingAlgorithm::Sha256)
+            .unwrap()
+            .pcr_value(PcrSlot::Slot0)
+            .unwrap()
+            .value(),
+        pcr_data
+            .pcr_bank(HashingAlgorithm::Sha256)
+            .unwrap()
+            .pcr_value(PcrSlot::Slot1)
+            .unwrap()
+            .value(),
+    ]
+    .concat();
+
+    if mangle {
+        concatenated_pcr_values[0] = 0x00;
+    }
+
+    let (hashed_data, _ticket) = context
+        .hash(
+            &concatenated_pcr_values,
+            HashingAlgorithm::Sha256,
+            Hierarchy::Owner,
+        )
+        .unwrap();
+
+    let pcr_ses = context
+        .start_auth_session(
+            ESYS_TR_NONE,
+            ESYS_TR_NONE,
+            &[],
+            if do_trial {
+                TPM2_SE_TRIAL
+            } else {
+                TPM2_SE_POLICY
+            },
+            utils::TpmtSymDefBuilder::aes_256_cfb(),
+            TPM2_ALG_SHA256,
+        )
+        .unwrap();
+    let pcr_ses_attr = TpmaSessionBuilder::new()
+        .with_flag(TPMA_SESSION_DECRYPT)
+        .with_flag(TPMA_SESSION_ENCRYPT)
+        .build();
+    context
+        .tr_sess_set_attributes(pcr_ses, pcr_ses_attr)
+        .unwrap();
+
+    // There should be no errors setting pcr policy for trial session.
+    context
+        .policy_pcr(pcr_ses, &hashed_data, pcr_selections)
+        .unwrap();
+
+    // There is now a policy digest that can be retrived and used.
+    let digest = context.policy_get_digest(pcr_ses).unwrap();
+
+    // Restore old sessions
+    context.set_sessions(old_ses);
+
+    (digest, pcr_ses)
+}
+
+mod test_policy_authorize {
     use super::*;
 
-    fn get_pcr_policy_digest(context: &mut Context, mangle: bool) -> Digest {
-        let old_ses = context.sessions();
+    #[test]
+    fn test_policy_authorize() {
+        let mut context = create_ctx_with_session();
+        let key_auth: Vec<u8> = context.get_random(16).unwrap();
 
-        let trial_session = context
-            .start_auth_session(
-                ESYS_TR_NONE,
-                ESYS_TR_NONE,
+        let key_handle = context
+            .create_primary_key(
+                ESYS_TR_RH_OWNER,
+                &signing_key_pub(),
+                &key_auth,
                 &[],
-                TPM2_SE_TRIAL,
-                utils::TpmtSymDefBuilder::aes_256_cfb(),
-                TPM2_ALG_SHA256,
+                &[],
+                &[],
             )
             .unwrap();
-        let trial_session_attr = TpmaSessionBuilder::new()
-            .with_flag(TPMA_SESSION_DECRYPT)
-            .with_flag(TPMA_SESSION_ENCRYPT)
-            .build();
+        let key_name = context.tr_get_name(key_handle).unwrap();
+
+        let policy_ref: TPM2B_NONCE = Default::default();
+        let (policy_digest, policy_ses) = get_pcr_policy_digest(&mut context, false, false);
+
+        // aHash ≔ H_{aHashAlg}(approvedPolicy || policyRef)
+        let ahash = context
+            .hash(&policy_digest, HashingAlgorithm::Sha256, Hierarchy::Null)
+            .unwrap()
+            .0;
+        let ahash = Digest::try_from(ahash).unwrap();
+
+        let scheme = TPMT_SIG_SCHEME {
+            scheme: TPM2_ALG_NULL,
+            details: Default::default(),
+        };
+        let validation = TPMT_TK_HASHCHECK {
+            tag: TPM2_ST_HASHCHECK,
+            hierarchy: TPM2_RH_NULL,
+            digest: Default::default(),
+        };
+        // A signature over just the policy_digest, since the policy_ref is empty
+        let signature = context
+            .sign(key_handle, &ahash, scheme, &validation)
+            .unwrap();
+        let tkt = context
+            .verify_signature(key_handle, &ahash, &signature.try_into().unwrap())
+            .unwrap();
+
+        // Since the signature is over this sessions' state, it should be valid
         context
-            .tr_sess_set_attributes(trial_session, trial_session_attr)
+            .policy_authorize(policy_ses, policy_digest, policy_ref, key_name, tkt)
             .unwrap();
-
-        // Read the pcr values using pcr_read
-        let pcr_selections = PcrSelectionsBuilder::new()
-            .with_selection(HashingAlgorithm::Sha256, &[PcrSlot::Slot0, PcrSlot::Slot1])
-            .build();
-
-        let (_update_counter, pcr_selections, pcr_data) = context.pcr_read(pcr_selections).unwrap();
-
-        // Run pcr_policy command.
-        //
-        // "If this command is used for a trial policySession,
-        // policySession→policyDigest will be updated using the
-        // values from the command rather than the values from a digest of the TPM PCR."
-        //
-        // "TPM2_Quote() and TPM2_PolicyPCR() digest the concatenation of PCR."
-        let mut concatenated_pcr_values = [
-            pcr_data
-                .pcr_bank(HashingAlgorithm::Sha256)
-                .unwrap()
-                .pcr_value(PcrSlot::Slot0)
-                .unwrap()
-                .value(),
-            pcr_data
-                .pcr_bank(HashingAlgorithm::Sha256)
-                .unwrap()
-                .pcr_value(PcrSlot::Slot1)
-                .unwrap()
-                .value(),
-        ]
-        .concat();
-
-        if mangle {
-            concatenated_pcr_values[0] = 0x00;
-        }
-
-        let (hashed_data, _ticket) = context
-            .hash(
-                &concatenated_pcr_values,
-                HashingAlgorithm::Sha256,
-                Hierarchy::Owner,
-            )
-            .unwrap();
-
-        // There should be no errors setting pcr policy for trial session.
-        context
-            .policy_pcr(trial_session, &hashed_data, pcr_selections)
-            .unwrap();
-
-        // There is now a policy digest that can be retrived and used.
-        let digest = context.policy_get_digest(trial_session).unwrap();
-
-        // Restore old sessions
-        context.set_sessions(old_ses);
-
-        digest
     }
+}
+
+mod test_policy_or {
+    use super::*;
 
     #[test]
     fn test_policy_or() {
@@ -572,10 +631,10 @@ mod test_policy_or {
 
         let mut digest_list = DigestList::new();
         digest_list
-            .add(get_pcr_policy_digest(&mut context, true))
+            .add(get_pcr_policy_digest(&mut context, true, true).0)
             .unwrap();
         digest_list
-            .add(get_pcr_policy_digest(&mut context, false))
+            .add(get_pcr_policy_digest(&mut context, false, true).0)
             .unwrap();
 
         // There should be no errors setting an Or for a TRIAL session
