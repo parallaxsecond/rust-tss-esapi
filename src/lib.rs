@@ -129,7 +129,8 @@ use std::ptr::{null, null_mut};
 use tss2_esys::*;
 use utils::{
     algorithm_specifiers::HashingAlgorithm, tickets::HashcheckTicket, Hierarchy, PcrData,
-    PcrSelections, PublicParmsUnion, Signature, TpmaSession, TpmaSessionBuilder, TpmsContext,
+    PcrSelections, PublicParmsUnion, SensitiveData, Signature, TpmaSession, TpmaSessionBuilder,
+    TpmsContext,
 };
 
 #[macro_use]
@@ -489,6 +490,31 @@ impl Context {
             Ok((*outprivate, *outpublic))
         } else {
             error!("Error in creating derived key: {}.", ret);
+            Err(ret)
+        }
+    }
+
+    /// Unseal and return data from a Sealed Data Object
+    pub fn unseal(&mut self, item_handle: ESYS_TR) -> Result<SensitiveData> {
+        let mut out_data = null_mut();
+
+        let ret = unsafe {
+            Esys_Unseal(
+                self.mut_context(),
+                item_handle,
+                self.sessions.0,
+                self.sessions.1,
+                self.sessions.2,
+                &mut out_data,
+            )
+        };
+        let ret = Error::from_tss_rc(ret);
+
+        if ret.is_success() {
+            let out_data = unsafe { MBox::from_raw(out_data) };
+            Ok(SensitiveData::try_from(*out_data)?)
+        } else {
+            error!("Error in unsealing: {}.", ret);
             Err(ret)
         }
     }

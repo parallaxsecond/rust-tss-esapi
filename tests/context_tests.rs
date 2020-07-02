@@ -67,6 +67,30 @@ fn create_ctx_with_session() -> Context {
     ctx
 }
 
+fn create_public_sealed_object() -> tss_esapi::tss2_esys::TPM2B_PUBLIC {
+    let mut object_attributes = utils::ObjectAttributes(0);
+    object_attributes.set_fixed_tpm(true);
+    object_attributes.set_fixed_parent(true);
+    object_attributes.set_no_da(true);
+    object_attributes.set_admin_with_policy(true);
+    object_attributes.set_user_with_auth(true);
+
+    let mut params: tss2_esys::TPMU_PUBLIC_PARMS = Default::default();
+    params.keyedHashDetail.scheme.scheme = tss_esapi::constants::TPM2_ALG_NULL;
+
+    tss_esapi::tss2_esys::TPM2B_PUBLIC {
+        size: std::mem::size_of::<tss_esapi::tss2_esys::TPMT_PUBLIC>() as u16,
+        publicArea: tss_esapi::tss2_esys::TPMT_PUBLIC {
+            type_: tss_esapi::constants::TPM2_ALG_KEYEDHASH,
+            nameAlg: tss_esapi::constants::TPM2_ALG_SHA256,
+            objectAttributes: object_attributes.0,
+            authPolicy: Default::default(),
+            parameters: params,
+            unique: Default::default(),
+        },
+    }
+}
+
 fn create_ctx_without_session() -> Context {
     unsafe { Context::new(Tcti::Mssim).unwrap() }
 }
@@ -384,6 +408,35 @@ mod test_pcr_read {
         let (_update_counter, pcr_selections_read, _pcr_data) =
             context.pcr_read(pcr_selections.clone()).unwrap();
         assert_ne!(pcr_selections, pcr_selections_read);
+    }
+}
+
+mod test_unseal {
+    use super::*;
+
+    #[test]
+    fn unseal() {
+        let testbytes: [u8; 5] = [0x01, 0x02, 0x03, 0x04, 0x42];
+
+        let mut context = create_ctx_with_session();
+
+        let key_handle_seal = context
+            .create_primary_key(ESYS_TR_RH_OWNER, &decryption_key_pub(), &[], &[], &[], &[])
+            .unwrap();
+        let key_handle_unseal = context
+            .create_primary_key(ESYS_TR_RH_OWNER, &decryption_key_pub(), &[], &[], &[], &[])
+            .unwrap();
+
+        let key_pub = create_public_sealed_object();
+        let (sealed_priv, sealed_pub) = context
+            .create_key(key_handle_seal, &key_pub, &[], &testbytes, &[], &[])
+            .unwrap();
+        let loaded_key = context
+            .load(key_handle_unseal, sealed_priv, sealed_pub)
+            .unwrap();
+        let unsealed = context.unseal(loaded_key).unwrap();
+        let unsealed = unsealed.value();
+        assert!(unsealed == testbytes);
     }
 }
 
