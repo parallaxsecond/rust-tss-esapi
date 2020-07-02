@@ -24,6 +24,7 @@ use num_traits::{FromPrimitive, ToPrimitive};
 use serde::{Deserialize, Serialize};
 use std::collections::{BTreeMap, HashMap};
 use std::convert::{TryFrom, TryInto};
+use std::ops::Deref;
 /// Helper for building `TPM2B_PUBLIC` values out of its subcomponents.
 ///
 /// Currently the implementation is incomplete, focusing on creating objects of RSA type.
@@ -608,6 +609,71 @@ pub enum PublicIdUnion {
     Sym(TPM2B_DIGEST),
     Rsa(Box<TPM2B_PUBLIC_KEY_RSA>),
     Ecc(Box<TPMS_ECC_POINT>),
+}
+
+#[derive(Debug, Clone, Default)]
+pub struct DigestList {
+    digests: Vec<Digest>,
+}
+
+impl DigestList {
+    pub fn new() -> Self {
+        DigestList {
+            digests: Vec::new(),
+        }
+    }
+
+    pub fn value(&self) -> &[Digest] {
+        &self.digests
+    }
+
+    pub fn add(&mut self, dig: Digest) -> Result<()> {
+        if self.digests.len() >= 8 {
+            return Err(Error::local_error(WrapperErrorKind::WrongParamSize));
+        }
+        self.digests.push(dig);
+        Ok(())
+    }
+}
+
+impl TryFrom<TPML_DIGEST> for DigestList {
+    type Error = Error;
+    fn try_from(tpml_digest: TPML_DIGEST) -> Result<Self> {
+        let digests_count = tpml_digest.count as usize;
+        if digests_count < 2 {
+            error!("Error: Invalid TPML_DIGEST count(< 2)");
+            return Err(Error::local_error(WrapperErrorKind::InvalidParam));
+        }
+        if digests_count > 8 {
+            error!("Error: Invalid TPML_DIGEST count(> 8)");
+            return Err(Error::local_error(WrapperErrorKind::InvalidParam));
+        }
+        let digests = &tpml_digest.digests[..digests_count];
+        let digests: Result<Vec<Digest>> = digests.iter().map(|x| Digest::try_from(*x)).collect();
+        Ok(DigestList { digests: digests? })
+    }
+}
+
+impl TryFrom<DigestList> for TPML_DIGEST {
+    type Error = Error;
+    fn try_from(digest_list: DigestList) -> Result<Self> {
+        if digest_list.digests.len() < 2 {
+            return Err(Error::local_error(WrapperErrorKind::WrongParamSize));
+        }
+        if digest_list.digests.len() > 8 {
+            return Err(Error::local_error(WrapperErrorKind::WrongParamSize));
+        }
+        let mut digests: [TPM2B_DIGEST; 8] = Default::default();
+
+        for (pos, digest) in digest_list.digests.iter().enumerate() {
+            digests[pos] = TPM2B_DIGEST::try_from(digest.clone())?;
+        }
+
+        Ok(TPML_DIGEST {
+            count: digest_list.digests.len() as u32,
+            digests,
+        })
+    }
 }
 
 impl PublicIdUnion {
@@ -1674,18 +1740,26 @@ pub enum PublicKey {
 
 /// Struct holding a pcr value.
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct PcrValue {
+pub struct Digest {
     value: Vec<u8>,
 }
 
-impl PcrValue {
+impl Deref for Digest {
+    type Target = Vec<u8>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.value
+    }
+}
+
+impl Digest {
     /// Function for retrieving the value.
     pub fn value(&self) -> &[u8] {
         &self.value
     }
 }
 
-impl TryFrom<TPM2B_DIGEST> for PcrValue {
+impl TryFrom<TPM2B_DIGEST> for Digest {
     type Error = Error;
     fn try_from(tss_digest: TPM2B_DIGEST) -> Result<Self> {
         let size = tss_digest.size as usize;
@@ -1693,11 +1767,30 @@ impl TryFrom<TPM2B_DIGEST> for PcrValue {
             error!("Error: Invalid TPM2B_DIGEST size(> 64)");
             return Err(Error::local_error(WrapperErrorKind::InvalidParam));
         }
-        Ok(PcrValue {
+        Ok(Digest {
             value: tss_digest.buffer[..size].to_vec(),
         })
     }
 }
+
+impl TryFrom<Digest> for TPM2B_DIGEST {
+    type Error = Error;
+    fn try_from(digest: Digest) -> Result<Self> {
+        if digest.len() > 64 {
+            return Err(Error::local_error(WrapperErrorKind::WrongParamSize));
+        }
+        let mut buffer: [u8; 64] = [0; 64];
+        for (pos, val) in digest.iter().enumerate() {
+            buffer[pos] = *val;
+        }
+        Ok(TPM2B_DIGEST {
+            size: digest.len() as u16,
+            buffer,
+        })
+    }
+}
+
+type PcrValue = Digest;
 
 /// Struct for holding PcrSlots and their
 /// corresponding values.
