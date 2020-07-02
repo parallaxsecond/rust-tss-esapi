@@ -1,3 +1,5 @@
+// Copyright 2020 Contributors to the Parsec project.
+// SPDX-License-Identifier: Apache-2.0
 use crate::constants::{
     TPM2_ST_ATTEST_CERTIFY, TPM2_ST_ATTEST_COMMAND_AUDIT, TPM2_ST_ATTEST_CREATION,
     TPM2_ST_ATTEST_NV, TPM2_ST_ATTEST_NV_DIGEST, TPM2_ST_ATTEST_QUOTE,

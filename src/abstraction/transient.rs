@@ -23,9 +23,10 @@ use crate::utils::{
     create_unrestricted_signing_rsa_public, AsymSchemeUnion, Hierarchy, PublicIdUnion, PublicKey,
     TpmaSessionBuilder, TpmsContext, RSA_KEY_SIZES,
 };
-use crate::{Context, Tcti};
+use crate::Context;
 use log::error;
 use std::convert::{TryFrom, TryInto};
+use utils::tcti::Tcti;
 
 /// Structure offering an abstracted programming experience.
 ///
@@ -324,7 +325,7 @@ impl TransientKeyContextBuilder {
     /// Create a new builder.
     pub fn new() -> Self {
         TransientKeyContextBuilder {
-            tcti: Tcti::Device,
+            tcti: Tcti::Device(Default::default()),
             hierarchy: Hierarchy::Owner,
             root_key_size: 2048,
             root_key_auth_size: 32,

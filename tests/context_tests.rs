@@ -38,6 +38,7 @@ use tss_esapi::tss2_esys::*;
 use tss_esapi::utils::{
     self,
     algorithm_specifiers::{Cipher, HashingAlgorithm},
+    tcti::Tcti,
     tickets::Ticket,
     AsymSchemeUnion, Digest, DigestList, Hierarchy, ObjectAttributes, PcrSelectionsBuilder,
     PcrSlot, PublicIdUnion, PublicParmsUnion, Signature, SignatureData, Tpm2BPublicBuilder,
@@ -46,7 +47,7 @@ use tss_esapi::utils::{
 use tss_esapi::*;
 
 fn create_ctx_with_session() -> Context {
-    let mut ctx = unsafe { Context::new(Tcti::Mssim).unwrap() };
+    let mut ctx = unsafe { Context::new(Tcti::Mssim(Default::default())).unwrap() };
     let session = ctx
         .start_auth_session(
             ESYS_TR_NONE,
@@ -92,7 +93,7 @@ fn create_public_sealed_object() -> tss_esapi::tss2_esys::TPM2B_PUBLIC {
 }
 
 fn create_ctx_without_session() -> Context {
-    unsafe { Context::new(Tcti::Mssim).unwrap() }
+    unsafe { Context::new(Tcti::Mssim(Default::default())).unwrap() }
 }
 
 fn signing_key_pub() -> TPM2B_PUBLIC {

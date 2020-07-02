@@ -59,3 +59,5 @@ This project uses the following third party crates:
 * enumflags2 (MIT and Apache-2.0)
 * num-derive (MIT and Apache-2.0)
 * num-traits (MIT and Apache-2.0)
+* hostname-validator (MIT)
+* regex (MIT and Apache-2.0)

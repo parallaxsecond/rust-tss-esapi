@@ -4,10 +4,11 @@ use tss_esapi::response_code::{
     Error, Error::Tss2Error, Tss2ResponseCodeKind, WrapperErrorKind as ErrorKind,
 };
 use tss_esapi::utils::algorithm_specifiers::{EllipticCurve, HashingAlgorithm};
+use tss_esapi::utils::tcti::Tcti;
 use tss_esapi::utils::{AsymSchemeUnion, PublicKey, Signature, SignatureData};
 use tss_esapi::{
     abstraction::transient::{KeyParams, TransientKeyContextBuilder},
-    Tcti, TransientKeyContext,
+    TransientKeyContext,
 };
 
 const HASH: [u8; 32] = [
@@ -18,7 +19,7 @@ const HASH: [u8; 32] = [
 fn create_ctx() -> TransientKeyContext {
     unsafe {
         TransientKeyContextBuilder::new()
-            .with_tcti(Tcti::Mssim)
+            .with_tcti(Tcti::Mssim(Default::default()))
             .build()
             .unwrap()
     }
@@ -29,7 +30,7 @@ fn wrong_key_sizes() {
     assert_eq!(
         unsafe {
             TransientKeyContextBuilder::new()
-                .with_tcti(Tcti::Mssim)
+                .with_tcti(Tcti::Mssim(Default::default()))
                 .with_root_key_size(1023)
                 .build()
                 .unwrap_err()
@@ -39,7 +40,7 @@ fn wrong_key_sizes() {
     assert_eq!(
         unsafe {
             TransientKeyContextBuilder::new()
-                .with_tcti(Tcti::Mssim)
+                .with_tcti(Tcti::Mssim(Default::default()))
                 .with_root_key_size(1025)
                 .build()
                 .unwrap_err()
@@ -49,7 +50,7 @@ fn wrong_key_sizes() {
     assert_eq!(
         unsafe {
             TransientKeyContextBuilder::new()
-                .with_tcti(Tcti::Mssim)
+                .with_tcti(Tcti::Mssim(Default::default()))
                 .with_root_key_size(2047)
                 .build()
                 .unwrap_err()
@@ -59,7 +60,7 @@ fn wrong_key_sizes() {
     assert_eq!(
         unsafe {
             TransientKeyContextBuilder::new()
-                .with_tcti(Tcti::Mssim)
+                .with_tcti(Tcti::Mssim(Default::default()))
                 .with_root_key_size(2049)
                 .build()
                 .unwrap_err()
@@ -73,7 +74,7 @@ fn wrong_auth_size() {
     assert_eq!(
         unsafe {
             TransientKeyContextBuilder::new()
-                .with_tcti(Tcti::Mssim)
+                .with_tcti(Tcti::Mssim(Default::default()))
                 .with_root_key_auth_size(33)
                 .build()
                 .unwrap_err()
