@@ -13,10 +13,11 @@
 //!
 //! Object contexts thus act as an opaque handle that can, however, be used by the client to seralize
 //! and persist the underlying data.
+use crate::algorithm::specifiers::{Cipher, EllipticCurve, HashingAlgorithm};
 use crate::constants::*;
 use crate::response_code::{Error, Result, WrapperErrorKind as ErrorKind};
+use crate::structures::{Auth, Digest};
 use crate::tss2_esys::*;
-use crate::utils::algorithm_specifiers::{Cipher, EllipticCurve, HashingAlgorithm};
 use crate::utils::tickets::VerifiedTicket;
 use crate::utils::{
     self, create_restricted_decryption_rsa_public, create_unrestricted_signing_ecc_public,
@@ -66,24 +67,25 @@ impl TransientKeyContext {
         &mut self,
         key_params: KeyParams,
         auth_size: usize,
-    ) -> Result<(TpmsContext, Vec<u8>)> {
+    ) -> Result<(TpmsContext, Option<Auth>)> {
         if auth_size > 32 {
             return Err(Error::local_error(ErrorKind::WrongParamSize));
         }
         let key_auth = if auth_size > 0 {
             self.set_session_attrs()?;
-            self.context.get_random(auth_size)?
+            let random_bytes = self.context.get_random(auth_size)?;
+            Some(Auth::try_from(random_bytes.value().to_vec())?)
         } else {
-            vec![]
+            None
         };
 
         self.set_session_attrs()?;
         let (key_priv, key_pub) = self.context.create_key(
             self.root_key_handle,
             &self.get_public_from_params(key_params)?,
-            &key_auth,
-            &[],
-            &[],
+            key_auth.as_ref(),
+            None,
+            None,
             &[],
         )?;
         self.set_session_attrs()?;
@@ -217,18 +219,19 @@ impl TransientKeyContext {
     pub fn sign(
         &mut self,
         key_context: TpmsContext,
-        key_auth: &[u8],
-        digest: &[u8],
+        key_auth: Option<Auth>,
+        digest: Digest,
     ) -> Result<utils::Signature> {
         self.set_session_attrs()?;
         let key_handle = self.context.context_load(key_context)?;
-        self.context
-            .tr_set_auth(key_handle, key_auth)
-            .or_else(|e| {
-                self.context.flush_context(key_handle)?;
-                Err(e)
-            })?;
-
+        if let Some(key_auth_value) = key_auth {
+            self.context
+                .tr_set_auth(key_handle, &key_auth_value)
+                .or_else(|e| {
+                    self.context.flush_context(key_handle)?;
+                    Err(e)
+                })?;
+        }
         let scheme = TPMT_SIG_SCHEME {
             scheme: TPM2_ALG_NULL,
             details: Default::default(),
@@ -241,7 +244,7 @@ impl TransientKeyContext {
         self.set_session_attrs()?;
         let signature = self
             .context
-            .sign(key_handle, digest, scheme, &validation)
+            .sign(key_handle, &digest, scheme, &validation)
             .or_else(|e| {
                 self.context.flush_context(key_handle)?;
                 Err(e)
@@ -263,7 +266,7 @@ impl TransientKeyContext {
     pub fn verify_signature(
         &mut self,
         key_context: TpmsContext,
-        digest: &[u8],
+        digest: Digest,
         signature: utils::Signature,
     ) -> Result<VerifiedTicket> {
         self.set_session_attrs()?;
@@ -276,7 +279,7 @@ impl TransientKeyContext {
         self.set_session_attrs()?;
         let verified = self
             .context
-            .verify_signature(key_handle, digest, &signature)
+            .verify_signature(key_handle, &digest, &signature)
             .or_else(|e| {
                 self.context.flush_context(key_handle)?;
                 Err(e)
@@ -420,7 +423,7 @@ impl TransientKeyContextBuilder {
         let session = context.start_auth_session(
             ESYS_TR_NONE,
             ESYS_TR_NONE,
-            &[],
+            None,
             TPM2_SE_HMAC,
             self.default_context_cipher.into(),
             self.session_hash_alg,
@@ -432,13 +435,16 @@ impl TransientKeyContextBuilder {
         context.tr_sess_set_attributes(session, session_attr)?;
 
         context.set_sessions((session, ESYS_TR_NONE, ESYS_TR_NONE));
-        let root_key_auth: Vec<u8> = if self.root_key_auth_size > 0 {
-            context.get_random(self.root_key_auth_size)?
+        let root_key_auth = if self.root_key_auth_size > 0 {
+            let random = context.get_random(self.root_key_auth_size)?;
+            Some(Auth::try_from(random.value().to_vec())?)
         } else {
-            vec![]
+            None
         };
+
         if !self.hierarchy_auth.is_empty() {
-            context.tr_set_auth(self.hierarchy.esys_rh(), &self.hierarchy_auth)?;
+            let auth_hierarchy = Auth::try_from(self.hierarchy_auth)?;
+            context.tr_set_auth(self.hierarchy.esys_rh(), &auth_hierarchy)?;
         }
 
         let root_key_handle = context.create_primary_key(
@@ -448,16 +454,16 @@ impl TransientKeyContextBuilder {
                 self.root_key_size,
                 0,
             )?,
-            &root_key_auth,
-            &[],
-            &[],
+            root_key_auth.as_ref(),
+            None,
+            None,
             &[],
         )?;
 
         let new_session = context.start_auth_session(
             root_key_handle,
             ESYS_TR_NONE,
-            &[],
+            None,
             TPM2_SE_HMAC,
             self.default_context_cipher.into(),
             self.session_hash_alg,

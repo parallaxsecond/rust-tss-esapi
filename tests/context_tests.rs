@@ -33,16 +33,17 @@ const KEY: [u8; 512] = [
 ];
 
 use std::convert::{TryFrom, TryInto};
+use tss_esapi::algorithm::{
+    specifiers::{Cipher, HashingAlgorithm},
+    structures::SensitiveData,
+};
 use tss_esapi::constants::*;
+use tss_esapi::structures::{Auth, Data, Digest, MaxBuffer, Nonce};
 use tss_esapi::tss2_esys::*;
 use tss_esapi::utils::{
-    self,
-    algorithm_specifiers::{Cipher, HashingAlgorithm},
-    tcti::Tcti,
-    tickets::Ticket,
-    AsymSchemeUnion, Digest, DigestList, Hierarchy, ObjectAttributes, PcrSelectionsBuilder,
-    PcrSlot, PublicIdUnion, PublicParmsUnion, Signature, SignatureData, Tpm2BPublicBuilder,
-    TpmaSessionBuilder, TpmsRsaParmsBuilder,
+    self, tcti::Tcti, tickets::Ticket, AsymSchemeUnion, DigestList, Hierarchy, ObjectAttributes,
+    PcrSelectionsBuilder, PcrSlot, PublicIdUnion, PublicParmsUnion, Signature, SignatureData,
+    Tpm2BPublicBuilder, TpmaSessionBuilder, TpmsRsaParmsBuilder,
 };
 use tss_esapi::*;
 
@@ -52,7 +53,7 @@ fn create_ctx_with_session() -> Context {
         .start_auth_session(
             ESYS_TR_NONE,
             ESYS_TR_NONE,
-            &[],
+            None,
             TPM2_SE_HMAC,
             utils::TpmtSymDefBuilder::aes_256_cfb(),
             TPM2_ALG_SHA256,
@@ -114,15 +115,16 @@ fn comprehensive_test() {
     env_logger::init();
 
     let mut context = create_ctx_with_session();
-    let key_auth: Vec<u8> = context.get_random(16).unwrap();
+    let random_digest = context.get_random(16).unwrap();
+    let key_auth = Auth::try_from(random_digest.value().to_vec()).unwrap();
 
     let prim_key_handle = context
         .create_primary_key(
             ESYS_TR_RH_OWNER,
             &decryption_key_pub(),
-            &key_auth,
-            &[],
-            &[],
+            Some(&key_auth),
+            None,
+            None,
             &[],
         )
         .unwrap();
@@ -131,7 +133,7 @@ fn comprehensive_test() {
         .start_auth_session(
             ESYS_TR_NONE,
             prim_key_handle,
-            &[],
+            None,
             TPM2_SE_HMAC,
             utils::TpmtSymDefBuilder::aes_256_cfb(),
             TPM2_ALG_SHA256,
@@ -150,9 +152,9 @@ fn comprehensive_test() {
         .create_key(
             prim_key_handle,
             &signing_key_pub(),
-            &key_auth,
-            &[],
-            &[],
+            Some(&key_auth),
+            None,
+            None,
             &[],
         )
         .unwrap();
@@ -171,10 +173,19 @@ fn comprehensive_test() {
         digest: Default::default(),
     };
     let signature = context
-        .sign(key_handle, &HASH[..32], scheme, &validation)
+        .sign(
+            key_handle,
+            &Digest::try_from(HASH[..32].to_vec()).unwrap(),
+            scheme,
+            &validation,
+        )
         .unwrap();
     context
-        .verify_signature(key_handle, &HASH[..32], &signature.try_into().unwrap())
+        .verify_signature(
+            key_handle,
+            &Digest::try_from(HASH[..32].to_vec()).unwrap(),
+            &signature.try_into().unwrap(),
+        )
         .unwrap();
 }
 
@@ -188,7 +199,7 @@ mod test_start_sess {
             .start_auth_session(
                 ESYS_TR_NONE,
                 ESYS_TR_NONE,
-                &[],
+                None,
                 TPM2_SE_HMAC,
                 utils::TpmtSymDefBuilder::aes_256_cfb(),
                 TPM2_ALG_SHA256,
@@ -203,53 +214,42 @@ mod test_start_sess {
             .start_auth_session(
                 ESYS_TR_NONE,
                 ESYS_TR_NONE,
-                &[
-                    128, 85, 22, 124, 85, 9, 12, 55, 23, 73, 1, 244, 102, 44, 95, 39, 10,
-                ],
+                Some(
+                    Nonce::try_from(
+                        [
+                            128, 85, 22, 124, 85, 9, 12, 55, 23, 73, 1, 244, 102, 44, 95, 39, 10,
+                        ]
+                        .to_vec(),
+                    )
+                    .unwrap(),
+                )
+                .as_ref(),
                 TPM2_SE_HMAC,
                 utils::TpmtSymDefBuilder::aes_256_cfb(),
                 TPM2_ALG_SHA256,
             )
             .unwrap();
-    }
-
-    #[test]
-    fn test_long_nonce_sess() {
-        let mut context = create_ctx_without_session();
-        context
-            .start_auth_session(
-                ESYS_TR_NONE,
-                ESYS_TR_NONE,
-                &[
-                    231, 97, 201, 180, 0, 1, 185, 150, 85, 90, 174, 188, 105, 133, 188, 3, 206, 5,
-                    222, 71, 185, 1, 209, 243, 36, 130, 250, 116, 17, 0, 24, 4, 25, 225, 250, 198,
-                    245, 210, 140, 23, 139, 169, 15, 193, 4, 145, 52, 138, 149, 155, 238, 36, 74,
-                    152, 179, 108, 200, 248, 250, 100, 115, 214, 166, 165, 1, 27, 51, 11, 11, 244,
-                    218, 157, 3, 174, 171, 142, 45, 8, 9, 36, 202, 171, 165, 43, 208, 186, 232, 15,
-                    241, 95, 81, 174, 189, 30, 213, 47, 86, 115, 239, 49, 214, 235, 151, 9, 189,
-                    174, 144, 238, 200, 201, 241, 157, 43, 37, 6, 96, 94, 152, 159, 205, 54, 9,
-                    181, 14, 35, 246, 49, 150, 163, 118, 242, 59, 54, 42, 221, 215, 248, 23, 18,
-                    223,
-                ],
-                TPM2_SE_HMAC,
-                utils::TpmtSymDefBuilder::aes_256_cfb(),
-                TPM2_ALG_SHA256,
-            )
-            .unwrap_err();
     }
 
     #[test]
     fn test_bound_sess() {
         let mut context = create_ctx_with_session();
         let prim_key_handle = context
-            .create_primary_key(ESYS_TR_RH_OWNER, &decryption_key_pub(), &[], &[], &[], &[])
+            .create_primary_key(
+                ESYS_TR_RH_OWNER,
+                &decryption_key_pub(),
+                None,
+                None,
+                None,
+                &[],
+            )
             .unwrap();
 
         context
             .start_auth_session(
                 prim_key_handle,
                 prim_key_handle,
-                &[],
+                None,
                 TPM2_SE_HMAC,
                 utils::TpmtSymDefBuilder::aes_256_cfb(),
                 TPM2_ALG_SHA256,
@@ -264,7 +264,7 @@ mod test_start_sess {
             .start_auth_session(
                 ESYS_TR_NONE,
                 ESYS_TR_NONE,
-                &[],
+                None,
                 TPM2_SE_HMAC,
                 utils::TpmtSymDefBuilder::aes_256_cfb(),
                 TPM2_ALG_SHA256,
@@ -283,7 +283,7 @@ mod test_start_sess {
             .start_auth_session(
                 ESYS_TR_NONE,
                 ESYS_TR_NONE,
-                &[],
+                None,
                 TPM2_SE_HMAC,
                 utils::TpmtSymDefBuilder::aes_256_cfb(),
                 TPM2_ALG_SHA256,
@@ -298,7 +298,7 @@ mod test_start_sess {
             .start_auth_session(
                 ESYS_TR_NONE,
                 ESYS_TR_NONE,
-                &[],
+                None,
                 TPM2_SE_HMAC,
                 utils::TpmtSymDefBuilder::aes_256_cfb(),
                 TPM2_ALG_SHA256,
@@ -310,7 +310,7 @@ mod test_start_sess {
             .start_auth_session(
                 ESYS_TR_NONE,
                 ESYS_TR_NONE,
-                &[],
+                None,
                 TPM2_SE_HMAC,
                 utils::TpmtSymDefBuilder::aes_256_cfb(),
                 TPM2_ALG_SHA256,
@@ -422,15 +422,36 @@ mod test_unseal {
         let mut context = create_ctx_with_session();
 
         let key_handle_seal = context
-            .create_primary_key(ESYS_TR_RH_OWNER, &decryption_key_pub(), &[], &[], &[], &[])
+            .create_primary_key(
+                ESYS_TR_RH_OWNER,
+                &decryption_key_pub(),
+                None,
+                None,
+                None,
+                &[],
+            )
             .unwrap();
         let key_handle_unseal = context
-            .create_primary_key(ESYS_TR_RH_OWNER, &decryption_key_pub(), &[], &[], &[], &[])
+            .create_primary_key(
+                ESYS_TR_RH_OWNER,
+                &decryption_key_pub(),
+                None,
+                None,
+                None,
+                &[],
+            )
             .unwrap();
 
         let key_pub = create_public_sealed_object();
         let (sealed_priv, sealed_pub) = context
-            .create_key(key_handle_seal, &key_pub, &[], &testbytes, &[], &[])
+            .create_key(
+                key_handle_seal,
+                &key_pub,
+                None,
+                Some(SensitiveData::try_from(testbytes.to_vec()).unwrap()).as_ref(),
+                None,
+                &[],
+            )
             .unwrap();
         let loaded_key = context
             .load(key_handle_unseal, sealed_priv, sealed_pub)
@@ -459,11 +480,16 @@ mod test_quote {
         let qualifying_data = vec![0xff; 16];
 
         let key_handle = context
-            .create_primary_key(ESYS_TR_RH_OWNER, &signing_key_pub(), &[], &[], &[], &[])
+            .create_primary_key(ESYS_TR_RH_OWNER, &signing_key_pub(), None, None, None, &[])
             .unwrap();
 
         let res = context
-            .quote(key_handle, &qualifying_data, scheme, pcr_selections)
+            .quote(
+                key_handle,
+                &Data::try_from(qualifying_data).unwrap(),
+                scheme,
+                pcr_selections,
+            )
             .expect("Failed to get a quote");
         assert!(res.0.size != 0);
     }
@@ -509,7 +535,7 @@ fn get_pcr_policy_digest(context: &mut Context, mangle: bool, do_trial: bool) ->
 
     let (hashed_data, _ticket) = context
         .hash(
-            &concatenated_pcr_values,
+            &MaxBuffer::try_from(concatenated_pcr_values.to_vec()).unwrap(),
             HashingAlgorithm::Sha256,
             Hierarchy::Owner,
         )
@@ -519,7 +545,7 @@ fn get_pcr_policy_digest(context: &mut Context, mangle: bool, do_trial: bool) ->
         .start_auth_session(
             ESYS_TR_NONE,
             ESYS_TR_NONE,
-            &[],
+            None,
             if do_trial {
                 TPM2_SE_TRIAL
             } else {
@@ -557,15 +583,16 @@ mod test_policies {
     #[test]
     fn test_policy_authorize() {
         let mut context = create_ctx_with_session();
-        let key_auth: Vec<u8> = context.get_random(16).unwrap();
+        let random_digest = context.get_random(16).unwrap();
+        let key_auth = Auth::try_from(random_digest.value().to_vec()).unwrap();
 
         let key_handle = context
             .create_primary_key(
                 ESYS_TR_RH_OWNER,
                 &signing_key_pub(),
-                &key_auth,
-                &[],
-                &[],
+                Some(&key_auth),
+                None,
+                None,
                 &[],
             )
             .unwrap();
@@ -576,7 +603,11 @@ mod test_policies {
 
         // aHash ≔ H_{aHashAlg}(approvedPolicy || policyRef)
         let ahash = context
-            .hash(&policy_digest, HashingAlgorithm::Sha256, Hierarchy::Null)
+            .hash(
+                &MaxBuffer::try_from(policy_digest.value().to_vec()).unwrap(),
+                HashingAlgorithm::Sha256,
+                Hierarchy::Null,
+            )
             .unwrap()
             .0;
         let ahash = Digest::try_from(ahash).unwrap();
@@ -600,7 +631,13 @@ mod test_policies {
 
         // Since the signature is over this sessions' state, it should be valid
         context
-            .policy_authorize(policy_ses, policy_digest, policy_ref, key_name, tkt)
+            .policy_authorize(
+                policy_ses,
+                &policy_digest,
+                &Nonce::try_from(policy_ref).unwrap(),
+                &key_name,
+                tkt,
+            )
             .unwrap();
     }
 
@@ -611,7 +648,7 @@ mod test_policies {
             .start_auth_session(
                 ESYS_TR_NONE,
                 ESYS_TR_NONE,
-                &[],
+                None,
                 TPM2_SE_TRIAL,
                 utils::TpmtSymDefBuilder::aes_256_cfb(),
                 TPM2_ALG_SHA256,
@@ -644,7 +681,7 @@ mod test_policies {
             .start_auth_session(
                 ESYS_TR_NONE,
                 ESYS_TR_NONE,
-                &[],
+                None,
                 TPM2_SE_TRIAL,
                 utils::TpmtSymDefBuilder::aes_256_cfb(),
                 TPM2_ALG_SHA256,
@@ -669,7 +706,7 @@ mod test_policies {
             .start_auth_session(
                 ESYS_TR_NONE,
                 ESYS_TR_NONE,
-                &[],
+                None,
                 TPM2_SE_TRIAL,
                 utils::TpmtSymDefBuilder::aes_256_cfb(),
                 TPM2_ALG_SHA256,
@@ -696,7 +733,7 @@ mod test_policies {
             .start_auth_session(
                 ESYS_TR_NONE,
                 ESYS_TR_NONE,
-                &[],
+                None,
                 TPM2_SE_TRIAL,
                 utils::TpmtSymDefBuilder::aes_256_cfb(),
                 TPM2_ALG_SHA256,
@@ -721,7 +758,7 @@ mod test_policies {
             .start_auth_session(
                 ESYS_TR_NONE,
                 ESYS_TR_NONE,
-                &[],
+                None,
                 TPM2_SE_TRIAL,
                 utils::TpmtSymDefBuilder::aes_256_cfb(),
                 TPM2_ALG_SHA256,
@@ -742,7 +779,7 @@ mod test_policies {
         .unwrap();
 
         // There should be no errors setting an Or for a TRIAL session
-        context.policy_cp_hash(trial_session, test_dig).unwrap();
+        context.policy_cp_hash(trial_session, &test_dig).unwrap();
     }
     #[test]
     fn test_policy_name_hash() {
@@ -751,7 +788,7 @@ mod test_policies {
             .start_auth_session(
                 ESYS_TR_NONE,
                 ESYS_TR_NONE,
-                &[],
+                None,
                 TPM2_SE_TRIAL,
                 utils::TpmtSymDefBuilder::aes_256_cfb(),
                 TPM2_ALG_SHA256,
@@ -772,7 +809,7 @@ mod test_policies {
         .unwrap();
 
         // There should be no errors setting an Or for a TRIAL session
-        context.policy_name_hash(trial_session, test_dig).unwrap();
+        context.policy_name_hash(trial_session, &test_dig).unwrap();
     }
     #[test]
     fn test_policy_auth_value() {
@@ -781,7 +818,7 @@ mod test_policies {
             .start_auth_session(
                 ESYS_TR_NONE,
                 ESYS_TR_NONE,
-                &[],
+                None,
                 TPM2_SE_TRIAL,
                 utils::TpmtSymDefBuilder::aes_256_cfb(),
                 TPM2_ALG_SHA256,
@@ -805,7 +842,7 @@ mod test_policies {
             .start_auth_session(
                 ESYS_TR_NONE,
                 ESYS_TR_NONE,
-                &[],
+                None,
                 TPM2_SE_TRIAL,
                 utils::TpmtSymDefBuilder::aes_256_cfb(),
                 TPM2_ALG_SHA256,
@@ -829,7 +866,7 @@ mod test_policies {
             .start_auth_session(
                 ESYS_TR_NONE,
                 ESYS_TR_NONE,
-                &[],
+                None,
                 TPM2_SE_TRIAL,
                 utils::TpmtSymDefBuilder::aes_256_cfb(),
                 TPM2_ALG_SHA256,
@@ -858,7 +895,7 @@ mod test_policy_pcr {
             .start_auth_session(
                 ESYS_TR_NONE,
                 ESYS_TR_NONE,
-                &[],
+                None,
                 TPM2_SE_TRIAL,
                 utils::TpmtSymDefBuilder::aes_256_cfb(),
                 TPM2_ALG_SHA256,
@@ -886,21 +923,25 @@ mod test_policy_pcr {
         // values from the command rather than the values from a digest of the TPM PCR."
         //
         // "TPM2_Quote() and TPM2_PolicyPCR() digest the concatenation of PCR."
-        let concatenated_pcr_values = [
-            pcr_data
-                .pcr_bank(HashingAlgorithm::Sha256)
-                .unwrap()
-                .pcr_value(PcrSlot::Slot0)
-                .unwrap()
-                .value(),
-            pcr_data
-                .pcr_bank(HashingAlgorithm::Sha256)
-                .unwrap()
-                .pcr_value(PcrSlot::Slot1)
-                .unwrap()
-                .value(),
-        ]
-        .concat();
+        let concatenated_pcr_values = MaxBuffer::try_from(
+            [
+                pcr_data
+                    .pcr_bank(HashingAlgorithm::Sha256)
+                    .unwrap()
+                    .pcr_value(PcrSlot::Slot0)
+                    .unwrap()
+                    .value(),
+                pcr_data
+                    .pcr_bank(HashingAlgorithm::Sha256)
+                    .unwrap()
+                    .pcr_value(PcrSlot::Slot1)
+                    .unwrap()
+                    .value(),
+            ]
+            .concat()
+            .to_vec(),
+        )
+        .unwrap();
 
         let (hashed_data, _ticket) = context
             .hash(
@@ -926,7 +967,7 @@ mod test_get_random {
             .start_auth_session(
                 ESYS_TR_NONE,
                 ESYS_TR_NONE,
-                &[],
+                None,
                 TPM2_SE_HMAC,
                 utils::TpmtSymDefBuilder::aes_256_cfb(),
                 TPM2_ALG_SHA256,
@@ -952,7 +993,7 @@ mod test_get_random {
             .start_auth_session(
                 ESYS_TR_NONE,
                 ESYS_TR_NONE,
-                &[],
+                None,
                 TPM2_SE_HMAC,
                 utils::TpmtSymDefBuilder::aes_256_cfb(),
                 TPM2_ALG_SHA256,
@@ -976,67 +1017,20 @@ mod test_create_primary {
     #[test]
     fn test_create_primary() {
         let mut context = create_ctx_with_session();
-        let key_auth: Vec<u8> = context.get_random(16).unwrap();
+        let random_digest = context.get_random(16).unwrap();
+        let key_auth = Auth::try_from(random_digest.value().to_vec()).unwrap();
 
         let key_handle = context
             .create_primary_key(
                 ESYS_TR_RH_OWNER,
                 &decryption_key_pub(),
-                &key_auth,
-                &[],
-                &[],
+                Some(&key_auth),
+                None,
+                None,
                 &[],
             )
             .unwrap();
         assert!(key_handle != ESYS_TR_NONE);
-    }
-
-    #[test]
-    fn test_long_auth_create_primary() {
-        let mut context = create_ctx_with_session();
-
-        let _ = context
-            .create_primary_key(
-                ESYS_TR_RH_OWNER,
-                &decryption_key_pub(),
-                &[0xa5; 100],
-                &[],
-                &[],
-                &[],
-            )
-            .unwrap_err();
-    }
-
-    #[test]
-    fn test_long_init_data_create_primary() {
-        let mut context = create_ctx_with_session();
-
-        let _ = context
-            .create_primary_key(
-                ESYS_TR_RH_OWNER,
-                &decryption_key_pub(),
-                &[],
-                &[0xa5; 300],
-                &[],
-                &[],
-            )
-            .unwrap_err();
-    }
-
-    #[test]
-    fn test_long_outside_info_create_primary() {
-        let mut context = create_ctx_with_session();
-
-        let _ = context
-            .create_primary_key(
-                ESYS_TR_RH_OWNER,
-                &decryption_key_pub(),
-                &[],
-                &[],
-                &[0xfe; 80],
-                &[],
-            )
-            .unwrap_err();
     }
 
     #[test]
@@ -1047,9 +1041,9 @@ mod test_create_primary {
             .create_primary_key(
                 ESYS_TR_RH_OWNER,
                 &decryption_key_pub(),
-                &[],
-                &[],
-                &[],
+                None,
+                None,
+                None,
                 &[Default::default(); 20],
             )
             .unwrap_err();
@@ -1062,15 +1056,16 @@ mod test_create {
     #[test]
     fn test_create() {
         let mut context = create_ctx_with_session();
-        let key_auth: Vec<u8> = context.get_random(16).unwrap();
+        let random_digest = context.get_random(16).unwrap();
+        let key_auth = Auth::try_from(random_digest.value().to_vec()).unwrap();
 
         let prim_key_handle = context
             .create_primary_key(
                 ESYS_TR_RH_OWNER,
                 &decryption_key_pub(),
-                &key_auth,
-                &[],
-                &[],
+                Some(&key_auth),
+                None,
+                None,
                 &[],
             )
             .unwrap();
@@ -1079,110 +1074,27 @@ mod test_create {
             .create_key(
                 prim_key_handle,
                 &decryption_key_pub(),
-                &key_auth,
-                &[],
-                &[],
-                &[],
-            )
-            .unwrap();
-    }
-
-    #[test]
-    fn test_long_auth_create() {
-        let mut context = create_ctx_with_session();
-        let key_auth: Vec<u8> = context.get_random(16).unwrap();
-
-        let prim_key_handle = context
-            .create_primary_key(
-                ESYS_TR_RH_OWNER,
-                &decryption_key_pub(),
-                &key_auth,
-                &[],
-                &[],
+                Some(&key_auth),
+                None,
+                None,
                 &[],
             )
             .unwrap();
-
-        assert!(context
-            .create_key(
-                prim_key_handle,
-                &decryption_key_pub(),
-                &[0xa5; 100],
-                &[],
-                &[],
-                &[],
-            )
-            .is_err());
-    }
-
-    #[test]
-    fn test_long_init_data_create() {
-        let mut context = create_ctx_with_session();
-        let key_auth: Vec<u8> = context.get_random(16).unwrap();
-
-        let prim_key_handle = context
-            .create_primary_key(
-                ESYS_TR_RH_OWNER,
-                &decryption_key_pub(),
-                &key_auth,
-                &[],
-                &[],
-                &[],
-            )
-            .unwrap();
-
-        assert!(context
-            .create_key(
-                prim_key_handle,
-                &decryption_key_pub(),
-                &[],
-                &[0xa5; 300],
-                &[],
-                &[],
-            )
-            .is_err());
-    }
-
-    #[test]
-    fn test_long_outside_info_create() {
-        let mut context = create_ctx_with_session();
-        let key_auth: Vec<u8> = context.get_random(16).unwrap();
-
-        let prim_key_handle = context
-            .create_primary_key(
-                ESYS_TR_RH_OWNER,
-                &decryption_key_pub(),
-                &key_auth,
-                &[],
-                &[],
-                &[],
-            )
-            .unwrap();
-
-        assert!(context
-            .create_key(
-                prim_key_handle,
-                &decryption_key_pub(),
-                &[],
-                &[],
-                &[0xfe; 80],
-                &[],
-            )
-            .is_err());
     }
 
     #[test]
     fn test_long_pcrs_create() {
         let mut context = create_ctx_with_session();
-        let key_auth: Vec<u8> = context.get_random(16).unwrap();
+        let random_digest = context.get_random(16).unwrap();
+        let key_auth = Auth::try_from(random_digest.value().to_vec()).unwrap();
 
         let prim_key_handle = context
             .create_primary_key(
                 ESYS_TR_RH_OWNER,
                 &decryption_key_pub(),
-                &key_auth,
-                &[],
-                &[],
+                Some(&key_auth),
+                None,
+                None,
                 &[],
             )
             .unwrap();
@@ -1191,9 +1103,9 @@ mod test_create {
             .create_key(
                 prim_key_handle,
                 &decryption_key_pub(),
-                &[],
-                &[],
-                &[],
+                None,
+                None,
+                None,
                 &[Default::default(); 20],
             )
             .is_err());
@@ -1206,15 +1118,16 @@ mod test_load {
     #[test]
     fn test_load() {
         let mut context = create_ctx_with_session();
-        let key_auth: Vec<u8> = context.get_random(16).unwrap();
+        let random_digest = context.get_random(16).unwrap();
+        let key_auth = Auth::try_from(random_digest.value().to_vec()).unwrap();
 
         let prim_key_handle = context
             .create_primary_key(
                 ESYS_TR_RH_OWNER,
                 &decryption_key_pub(),
-                &key_auth,
-                &[],
-                &[],
+                Some(&key_auth),
+                None,
+                None,
                 &[],
             )
             .unwrap();
@@ -1223,9 +1136,9 @@ mod test_load {
             .create_key(
                 prim_key_handle,
                 &signing_key_pub(),
-                &key_auth,
-                &[],
-                &[],
+                Some(&key_auth),
+                None,
+                None,
                 &[],
             )
             .unwrap();
@@ -1240,15 +1153,16 @@ mod test_sign {
     #[test]
     fn test_sign() {
         let mut context = create_ctx_with_session();
-        let key_auth: Vec<u8> = context.get_random(16).unwrap();
+        let random_digest = context.get_random(16).unwrap();
+        let key_auth = Auth::try_from(random_digest.value().to_vec()).unwrap();
 
         let key_handle = context
             .create_primary_key(
                 ESYS_TR_RH_OWNER,
                 &signing_key_pub(),
-                &key_auth,
-                &[],
-                &[],
+                Some(&key_auth),
+                None,
+                None,
                 &[],
             )
             .unwrap();
@@ -1263,22 +1177,28 @@ mod test_sign {
             digest: Default::default(),
         };
         context
-            .sign(key_handle, &HASH[..32], scheme, &validation)
+            .sign(
+                key_handle,
+                &Digest::try_from(HASH[..32].to_vec()).unwrap(),
+                scheme,
+                &validation,
+            )
             .unwrap();
     }
 
     #[test]
     fn test_sign_empty_digest() {
         let mut context = create_ctx_with_session();
-        let key_auth: Vec<u8> = context.get_random(16).unwrap();
+        let random_digest = context.get_random(16).unwrap();
+        let key_auth = Auth::try_from(random_digest.value().to_vec()).unwrap();
 
         let key_handle = context
             .create_primary_key(
                 ESYS_TR_RH_OWNER,
                 &signing_key_pub(),
-                &key_auth,
-                &[],
-                &[],
+                Some(&key_auth),
+                None,
+                None,
                 &[],
             )
             .unwrap();
@@ -1293,22 +1213,28 @@ mod test_sign {
             digest: Default::default(),
         };
         context
-            .sign(key_handle, &[], scheme, &validation)
+            .sign(
+                key_handle,
+                &Digest::try_from(Vec::<u8>::new()).unwrap(),
+                scheme,
+                &validation,
+            )
             .unwrap_err();
     }
 
     #[test]
     fn test_sign_large_digest() {
         let mut context = create_ctx_with_session();
-        let key_auth: Vec<u8> = context.get_random(16).unwrap();
+        let random_digest = context.get_random(16).unwrap();
+        let key_auth = Auth::try_from(random_digest.value().to_vec()).unwrap();
 
         let key_handle = context
             .create_primary_key(
                 ESYS_TR_RH_OWNER,
                 &signing_key_pub(),
-                &key_auth,
-                &[],
-                &[],
+                Some(&key_auth),
+                None,
+                None,
                 &[],
             )
             .unwrap();
@@ -1323,7 +1249,12 @@ mod test_sign {
             digest: Default::default(),
         };
         context
-            .sign(key_handle, &[0xbb; 40], scheme, &validation)
+            .sign(
+                key_handle,
+                &Digest::try_from([0xbb; 40].to_vec()).unwrap(),
+                scheme,
+                &validation,
+            )
             .unwrap_err();
     }
 }
@@ -1334,15 +1265,16 @@ mod test_verify_sig {
     #[test]
     fn test_verify_sig() {
         let mut context = create_ctx_with_session();
-        let key_auth: Vec<u8> = context.get_random(16).unwrap();
+        let random_digest = context.get_random(16).unwrap();
+        let key_auth = Auth::try_from(random_digest.value().to_vec()).unwrap();
 
         let key_handle = context
             .create_primary_key(
                 ESYS_TR_RH_OWNER,
                 &signing_key_pub(),
-                &key_auth,
-                &[],
-                &[],
+                Some(&key_auth),
+                None,
+                None,
                 &[],
             )
             .unwrap();
@@ -1357,26 +1289,36 @@ mod test_verify_sig {
             digest: Default::default(),
         };
         let signature = context
-            .sign(key_handle, &HASH[..32], scheme, &validation)
+            .sign(
+                key_handle,
+                &Digest::try_from(HASH[..32].to_vec()).unwrap(),
+                scheme,
+                &validation,
+            )
             .unwrap();
 
         context
-            .verify_signature(key_handle, &HASH[..32], &signature.try_into().unwrap())
+            .verify_signature(
+                key_handle,
+                &Digest::try_from(HASH[..32].to_vec()).unwrap(),
+                &signature.try_into().unwrap(),
+            )
             .unwrap();
     }
 
     #[test]
     fn test_verify_wrong_sig() {
         let mut context = create_ctx_with_session();
-        let key_auth: Vec<u8> = context.get_random(16).unwrap();
+        let random_digest = context.get_random(16).unwrap();
+        let key_auth = Auth::try_from(random_digest.value().to_vec()).unwrap();
 
         let key_handle = context
             .create_primary_key(
                 ESYS_TR_RH_OWNER,
                 &signing_key_pub(),
-                &key_auth,
-                &[],
-                &[],
+                Some(&key_auth),
+                None,
+                None,
                 &[],
             )
             .unwrap();
@@ -1391,29 +1333,39 @@ mod test_verify_sig {
             digest: Default::default(),
         };
         let mut signature = context
-            .sign(key_handle, &HASH[..32], scheme, &validation)
+            .sign(
+                key_handle,
+                &Digest::try_from(HASH[..32].to_vec()).unwrap(),
+                scheme,
+                &validation,
+            )
             .unwrap();
 
         if let SignatureData::RsaSignature(signature) = &mut signature.signature {
             signature.reverse();
         }
         assert!(context
-            .verify_signature(key_handle, &HASH[..32], &signature.try_into().unwrap())
+            .verify_signature(
+                key_handle,
+                &Digest::try_from(HASH[..32].to_vec()).unwrap(),
+                &signature.try_into().unwrap()
+            )
             .is_err());
     }
 
     #[test]
     fn test_verify_wrong_sig_2() {
         let mut context = create_ctx_with_session();
-        let key_auth: Vec<u8> = context.get_random(16).unwrap();
+        let random_digest = context.get_random(16).unwrap();
+        let key_auth = Auth::try_from(random_digest.value().to_vec()).unwrap();
 
         let key_handle = context
             .create_primary_key(
                 ESYS_TR_RH_OWNER,
                 &signing_key_pub(),
-                &key_auth,
-                &[],
-                &[],
+                Some(&key_auth),
+                None,
+                None,
                 &[],
             )
             .unwrap();
@@ -1423,22 +1375,27 @@ mod test_verify_sig {
             signature: SignatureData::RsaSignature(vec![0xab; 500]),
         };
         assert!(context
-            .verify_signature(key_handle, &HASH[..32], &signature.try_into().unwrap())
+            .verify_signature(
+                key_handle,
+                &Digest::try_from(HASH[..32].to_vec()).unwrap(),
+                &signature.try_into().unwrap()
+            )
             .is_err());
     }
 
     #[test]
     fn test_verify_wrong_sig_3() {
         let mut context = create_ctx_with_session();
-        let key_auth: Vec<u8> = context.get_random(16).unwrap();
+        let random_digest = context.get_random(16).unwrap();
+        let key_auth = Auth::try_from(random_digest.value().to_vec()).unwrap();
 
         let key_handle = context
             .create_primary_key(
                 ESYS_TR_RH_OWNER,
                 &signing_key_pub(),
-                &key_auth,
-                &[],
-                &[],
+                Some(&key_auth),
+                None,
+                None,
                 &[],
             )
             .unwrap();
@@ -1448,7 +1405,11 @@ mod test_verify_sig {
             signature: SignatureData::RsaSignature(vec![0; 0]),
         };
         assert!(context
-            .verify_signature(key_handle, &HASH[..32], &signature.try_into().unwrap())
+            .verify_signature(
+                key_handle,
+                &Digest::try_from(HASH[..32].to_vec()).unwrap(),
+                &signature.try_into().unwrap()
+            )
             .is_err());
     }
 }
@@ -1500,15 +1461,16 @@ mod test_read_pub {
     #[test]
     fn test_read_pub() {
         let mut context = create_ctx_with_session();
-        let key_auth: Vec<u8> = context.get_random(16).unwrap();
+        let random_digest = context.get_random(16).unwrap();
+        let key_auth = Auth::try_from(random_digest.value().to_vec()).unwrap();
 
         let key_handle = context
             .create_primary_key(
                 ESYS_TR_RH_OWNER,
                 &signing_key_pub(),
-                &key_auth,
-                &[],
-                &[],
+                Some(&key_auth),
+                None,
+                None,
                 &[],
             )
             .unwrap();
@@ -1522,15 +1484,16 @@ mod test_flush_context {
     #[test]
     fn test_flush_ctx() {
         let mut context = create_ctx_with_session();
-        let key_auth: Vec<u8> = context.get_random(16).unwrap();
+        let random_digest = context.get_random(16).unwrap();
+        let key_auth = Auth::try_from(random_digest.value().to_vec()).unwrap();
 
         let key_handle = context
             .create_primary_key(
                 ESYS_TR_RH_OWNER,
                 &signing_key_pub(),
-                &key_auth,
-                &[],
-                &[],
+                Some(&key_auth),
+                None,
+                None,
                 &[],
             )
             .unwrap();
@@ -1541,15 +1504,16 @@ mod test_flush_context {
     #[test]
     fn test_flush_parent_ctx() {
         let mut context = create_ctx_with_session();
-        let key_auth: Vec<u8> = context.get_random(16).unwrap();
+        let random_digest = context.get_random(16).unwrap();
+        let key_auth = Auth::try_from(random_digest.value().to_vec()).unwrap();
 
         let prim_key_handle = context
             .create_primary_key(
                 ESYS_TR_RH_OWNER,
                 &decryption_key_pub(),
-                &key_auth,
-                &[],
-                &[],
+                Some(&key_auth),
+                None,
+                None,
                 &[],
             )
             .unwrap();
@@ -1558,9 +1522,9 @@ mod test_flush_context {
             .create_key(
                 prim_key_handle,
                 &signing_key_pub(),
-                &key_auth,
-                &[],
-                &[],
+                Some(&key_auth),
+                None,
+                None,
                 &[],
             )
             .unwrap();
@@ -1577,15 +1541,16 @@ mod test_ctx_save {
     #[test]
     fn test_ctx_save() {
         let mut context = create_ctx_with_session();
-        let key_auth: Vec<u8> = context.get_random(16).unwrap();
+        let random_digest = context.get_random(16).unwrap();
+        let key_auth = Auth::try_from(random_digest.value().to_vec()).unwrap();
 
         let key_handle = context
             .create_primary_key(
                 ESYS_TR_RH_OWNER,
                 &signing_key_pub(),
-                &key_auth,
-                &[],
-                &[],
+                Some(&key_auth),
+                None,
+                None,
                 &[],
             )
             .unwrap();
@@ -1595,15 +1560,16 @@ mod test_ctx_save {
     #[test]
     fn test_ctx_save_leaf() {
         let mut context = create_ctx_with_session();
-        let key_auth: Vec<u8> = context.get_random(16).unwrap();
+        let random_digest = context.get_random(16).unwrap();
+        let key_auth = Auth::try_from(random_digest.value().to_vec()).unwrap();
 
         let prim_key_handle = context
             .create_primary_key(
                 ESYS_TR_RH_OWNER,
                 &decryption_key_pub(),
-                &key_auth,
-                &[],
-                &[],
+                Some(&key_auth),
+                None,
+                None,
                 &[],
             )
             .unwrap();
@@ -1612,9 +1578,9 @@ mod test_ctx_save {
             .create_key(
                 prim_key_handle,
                 &signing_key_pub(),
-                &key_auth,
-                &[],
-                &[],
+                Some(&key_auth),
+                None,
+                None,
                 &[],
             )
             .unwrap();
@@ -1631,15 +1597,15 @@ mod test_ctx_load {
     #[test]
     fn test_ctx_load() {
         let mut context = create_ctx_with_session();
-        let key_auth: Vec<u8> = context.get_random(16).unwrap();
+        let key_auth = context.get_random(16).unwrap();
 
         let prim_key_handle = context
             .create_primary_key(
                 ESYS_TR_RH_OWNER,
                 &decryption_key_pub(),
-                &key_auth,
-                &[],
-                &[],
+                Some(Auth::try_from(key_auth.value().to_vec()).unwrap()).as_ref(),
+                None,
+                None,
                 &[],
             )
             .unwrap();
@@ -1648,9 +1614,9 @@ mod test_ctx_load {
             .create_key(
                 prim_key_handle,
                 &signing_key_pub(),
-                &key_auth,
-                &[],
-                &[],
+                Some(Auth::try_from(key_auth.value().to_vec()).unwrap()).as_ref(),
+                None,
+                None,
                 &[],
             )
             .unwrap();
@@ -1669,15 +1635,15 @@ mod test_handle_auth {
     #[test]
     fn test_set_handle_auth() {
         let mut context = create_ctx_with_session();
-        let key_auth: Vec<u8> = context.get_random(16).unwrap();
-
+        let random_digest = context.get_random(16).unwrap();
+        let key_auth = Auth::try_from(random_digest.value().to_vec()).unwrap();
         let prim_key_handle = context
             .create_primary_key(
                 ESYS_TR_RH_OWNER,
                 &signing_key_pub(),
-                &key_auth,
-                &[],
-                &[],
+                Some(&key_auth),
+                None,
+                None,
                 &[],
             )
             .unwrap();
@@ -1698,29 +1664,13 @@ mod test_handle_auth {
 
         context.tr_set_auth(new_key_handle, &key_auth).unwrap();
         let _ = context
-            .sign(new_key_handle, &HASH[..32], scheme, &validation)
-            .unwrap();
-    }
-
-    #[test]
-    fn test_set_large_handle() {
-        let mut context = create_ctx_with_session();
-        let key_auth: Vec<u8> = context.get_random(16).unwrap();
-
-        let prim_key_handle = context
-            .create_primary_key(
-                ESYS_TR_RH_OWNER,
-                &signing_key_pub(),
-                &key_auth,
-                &[],
-                &[],
-                &[],
+            .sign(
+                new_key_handle,
+                &Digest::try_from(HASH[..32].to_vec()).unwrap(),
+                scheme,
+                &validation,
             )
             .unwrap();
-
-        context
-            .tr_set_auth(prim_key_handle, &[0xff; 100])
-            .unwrap_err();
     }
 
     // Test is ignored as the current version of the TSS library segfaults on the `set auth` call
@@ -1730,7 +1680,9 @@ mod test_handle_auth {
     #[test]
     fn test_invalid_handle() {
         let mut context = create_ctx_with_session();
-        context.tr_set_auth(ESYS_TR_NONE, &[0x11; 10]).unwrap_err();
+        context
+            .tr_set_auth(ESYS_TR_NONE, &Auth::try_from([0x11; 10].to_vec()).unwrap())
+            .unwrap_err();
     }
 }
 
@@ -1744,7 +1696,7 @@ mod test_session_attr {
             .start_auth_session(
                 ESYS_TR_NONE,
                 ESYS_TR_NONE,
-                &[],
+                None,
                 TPM2_SE_HMAC,
                 utils::TpmtSymDefBuilder::aes_256_cfb(),
                 TPM2_ALG_SHA256,
@@ -1793,7 +1745,7 @@ mod test_hash {
         let expected_hierarchy = Hierarchy::Owner;
         let (actual_hashed_data, ticket) = context
             .hash(
-                data.as_bytes(),
+                &MaxBuffer::try_from(data.as_bytes().to_vec()).unwrap(),
                 HashingAlgorithm::Sha256,
                 expected_hierarchy,
             )
@@ -1814,7 +1766,7 @@ mod test_policy_get_digest {
             .start_auth_session(
                 ESYS_TR_NONE,
                 ESYS_TR_NONE,
-                &[],
+                None,
                 TPM2_SE_TRIAL,
                 utils::TpmtSymDefBuilder::aes_256_cfb(),
                 TPM2_ALG_SHA256,
@@ -1842,21 +1794,25 @@ mod test_policy_get_digest {
         // values from the command rather than the values from a digest of the TPM PCR."
         //
         // "TPM2_Quote() and TPM2_PolicyPCR() digest the concatenation of PCR."
-        let concatenated_pcr_values = [
-            pcr_data
-                .pcr_bank(HashingAlgorithm::Sha256)
-                .unwrap()
-                .pcr_value(PcrSlot::Slot0)
-                .unwrap()
-                .value(),
-            pcr_data
-                .pcr_bank(HashingAlgorithm::Sha256)
-                .unwrap()
-                .pcr_value(PcrSlot::Slot1)
-                .unwrap()
-                .value(),
-        ]
-        .concat();
+        let concatenated_pcr_values = MaxBuffer::try_from(
+            [
+                pcr_data
+                    .pcr_bank(HashingAlgorithm::Sha256)
+                    .unwrap()
+                    .pcr_value(PcrSlot::Slot0)
+                    .unwrap()
+                    .value(),
+                pcr_data
+                    .pcr_bank(HashingAlgorithm::Sha256)
+                    .unwrap()
+                    .pcr_value(PcrSlot::Slot1)
+                    .unwrap()
+                    .value(),
+            ]
+            .concat()
+            .to_vec(),
+        )
+        .unwrap();
 
         let (hashed_data, _ticket) = context
             .hash(

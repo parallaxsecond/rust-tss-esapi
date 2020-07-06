@@ -8,15 +8,15 @@
 //! guidelines to them. Structures that are meant to act as builders have `Builder` appended to
 //! type name. Unions are converted to Rust `enum`s by dropping the `TPMU` qualifier and appending
 //! `Union`.
-pub mod algorithm_specifiers;
 pub mod tags;
 pub mod tcti;
 pub mod tickets;
 
+use crate::algorithm::specifiers::{Cipher, EllipticCurve, HashingAlgorithm};
 use crate::constants::*;
 use crate::response_code::{Error, Result, WrapperErrorKind};
+use crate::structures::Digest;
 use crate::tss2_esys::*;
-use algorithm_specifiers::{Cipher, EllipticCurve, HashingAlgorithm};
 use bitfield::bitfield;
 use enumflags2::BitFlags;
 use log::error;
@@ -25,7 +25,6 @@ use num_traits::{FromPrimitive, ToPrimitive};
 use serde::{Deserialize, Serialize};
 use std::collections::{BTreeMap, HashMap};
 use std::convert::{TryFrom, TryInto};
-use std::ops::Deref;
 /// Helper for building `TPM2B_PUBLIC` values out of its subcomponents.
 ///
 /// Currently the implementation is incomplete, focusing on creating objects of RSA type.
@@ -920,54 +919,6 @@ impl AsymSchemeUnion {
     }
 }
 
-/// Rust native representation of sensitive data.
-///
-/// The structure contains the sensitive data as a byte vector.
-#[derive(Clone, Debug, Default)]
-pub struct SensitiveData {
-    value: Vec<u8>,
-}
-
-impl SensitiveData {
-    pub fn new() -> Self {
-        SensitiveData {
-            value: Vec::<u8>::new(),
-        }
-    }
-
-    pub fn value(&self) -> &[u8] {
-        &self.value
-    }
-}
-
-impl TryFrom<TPM2B_SENSITIVE_DATA> for SensitiveData {
-    type Error = Error;
-
-    fn try_from(tpm2b_sensitive_data: TPM2B_SENSITIVE_DATA) -> Result<Self> {
-        if tpm2b_sensitive_data.size > 255 {
-            return Err(Error::local_error(WrapperErrorKind::WrongParamSize));
-        }
-        Ok(SensitiveData {
-            value: tpm2b_sensitive_data.buffer[..tpm2b_sensitive_data.size as usize].to_vec(),
-        })
-    }
-}
-
-impl TryFrom<SensitiveData> for TPM2B_SENSITIVE_DATA {
-    type Error = Error;
-
-    fn try_from(sensitive_data: SensitiveData) -> Result<Self> {
-        let value = sensitive_data.value();
-        if value.len() > 255 {
-            return Err(Error::local_error(WrapperErrorKind::WrongParamSize));
-        }
-        let mut rv: TPM2B_SENSITIVE_DATA = Default::default();
-        rv.size = value.len() as u16;
-        rv.buffer[..rv.size as usize].copy_from_slice(value);
-        Ok(rv)
-    }
-}
-
 /// Rust native representation of an asymmetric signature.
 ///
 /// The structure contains the signature as a byte vector and the scheme with which the signature
@@ -1535,7 +1486,8 @@ impl PcrSelections {
     ///
     /// # Examples
     /// ```
-    /// use tss_esapi::utils::{PcrSelectionsBuilder, PcrSlot, algorithm_specifiers::HashingAlgorithm};
+    /// use tss_esapi::utils::{PcrSelectionsBuilder, PcrSlot};
+    /// use tss_esapi::algorithm::specifiers::HashingAlgorithm;
     /// // pcr selections
     /// let mut pcr_selections = PcrSelectionsBuilder::new()
     ///     .with_size_of_select(Default::default())
@@ -1737,68 +1689,6 @@ impl PcrSelectionsBuilder {
 pub enum PublicKey {
     Rsa(Vec<u8>),
     Ecc { x: Vec<u8>, y: Vec<u8> },
-}
-
-/// Struct holding a pcr value.
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct Digest {
-    value: Vec<u8>,
-}
-
-impl Deref for Digest {
-    type Target = Vec<u8>;
-
-    fn deref(&self) -> &Self::Target {
-        &self.value
-    }
-}
-
-impl Digest {
-    /// Function for retrieving the value.
-    pub fn value(&self) -> &[u8] {
-        &self.value
-    }
-}
-
-impl TryFrom<Vec<u8>> for Digest {
-    type Error = Error;
-    fn try_from(digest: Vec<u8>) -> Result<Self> {
-        if digest.len() > 64 {
-            return Err(Error::local_error(WrapperErrorKind::WrongParamSize));
-        }
-        Ok(Digest { value: digest })
-    }
-}
-
-impl TryFrom<TPM2B_DIGEST> for Digest {
-    type Error = Error;
-    fn try_from(tss_digest: TPM2B_DIGEST) -> Result<Self> {
-        let size = tss_digest.size as usize;
-        if size > 64 {
-            error!("Error: Invalid TPM2B_DIGEST size(> 64)");
-            return Err(Error::local_error(WrapperErrorKind::InvalidParam));
-        }
-        Ok(Digest {
-            value: tss_digest.buffer[..size].to_vec(),
-        })
-    }
-}
-
-impl TryFrom<Digest> for TPM2B_DIGEST {
-    type Error = Error;
-    fn try_from(digest: Digest) -> Result<Self> {
-        if digest.len() > 64 {
-            return Err(Error::local_error(WrapperErrorKind::WrongParamSize));
-        }
-        let mut buffer: [u8; 64] = [0; 64];
-        for (pos, val) in digest.iter().enumerate() {
-            buffer[pos] = *val;
-        }
-        Ok(TPM2B_DIGEST {
-            size: digest.len() as u16,
-            buffer,
-        })
-    }
 }
 
 type PcrValue = Digest;
