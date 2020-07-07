@@ -934,6 +934,192 @@ impl Context {
         }
     }
 
+    /// Cause conditional gating of a policy based on locality.
+    ///
+    /// The TPM will ensure that the current policy can only complete in the specified
+    /// locality (extended) or any of the specified localities (non-extended).
+    pub fn policy_locality(
+        &mut self,
+        policy_session: ESYS_TR,
+        locality: TPMA_LOCALITY,
+    ) -> Result<()> {
+        let ret = unsafe {
+            Esys_PolicyLocality(
+                self.mut_context(),
+                policy_session,
+                self.sessions.0,
+                self.sessions.1,
+                self.sessions.2,
+                locality,
+            )
+        };
+        let ret = Error::from_tss_rc(ret);
+        if ret.is_success() {
+            Ok(())
+        } else {
+            Err(ret)
+        }
+    }
+
+    /// Cause conditional gating of a policy based on command code of authorized command.
+    ///
+    /// The TPM will ensure that the current policy can only be used to complete the command
+    /// indicated by code.
+    pub fn policy_command_code(&mut self, policy_session: ESYS_TR, code: TPM2_CC) -> Result<()> {
+        let ret = unsafe {
+            Esys_PolicyCommandCode(
+                self.mut_context(),
+                policy_session,
+                self.sessions.0,
+                self.sessions.1,
+                self.sessions.2,
+                code,
+            )
+        };
+        let ret = Error::from_tss_rc(ret);
+        if ret.is_success() {
+            Ok(())
+        } else {
+            Err(ret)
+        }
+    }
+
+    /// Cause conditional gating of a policy based on physical presence.
+    ///
+    /// The TPM will ensure that the current policy can only complete when physical
+    /// presence is asserted. The way this is done is implementation-specific.
+    pub fn policy_physical_presence(&mut self, policy_session: ESYS_TR) -> Result<()> {
+        let ret = unsafe {
+            Esys_PolicyPhysicalPresence(
+                self.mut_context(),
+                policy_session,
+                self.sessions.0,
+                self.sessions.1,
+                self.sessions.2,
+            )
+        };
+        let ret = Error::from_tss_rc(ret);
+        if ret.is_success() {
+            Ok(())
+        } else {
+            Err(ret)
+        }
+    }
+
+    /// Cause conditional gating of a policy based on command parameters.
+    ///
+    /// The TPM will ensure that the current policy can only be used to authorize
+    /// a command where the parameters are hashed into cp_hash_a.
+    pub fn policy_cp_hash(&mut self, policy_session: ESYS_TR, cp_hash_a: Digest) -> Result<()> {
+        let cp_hash_a = TPM2B_DIGEST::try_from(cp_hash_a)?;
+        let ret = unsafe {
+            Esys_PolicyCpHash(
+                self.mut_context(),
+                policy_session,
+                self.sessions.0,
+                self.sessions.1,
+                self.sessions.2,
+                &cp_hash_a,
+            )
+        };
+        let ret = Error::from_tss_rc(ret);
+        if ret.is_success() {
+            Ok(())
+        } else {
+            Err(ret)
+        }
+    }
+
+    /// Cause conditional gating of a policy based on name hash.
+    ///
+    /// The TPM will ensure that the current policy can only be used to authorize
+    /// a command acting on an object whose name hashes to name_hash.
+    pub fn policy_name_hash(&mut self, policy_session: ESYS_TR, name_hash: Digest) -> Result<()> {
+        let name_hash = TPM2B_DIGEST::try_from(name_hash)?;
+        let ret = unsafe {
+            Esys_PolicyNameHash(
+                self.mut_context(),
+                policy_session,
+                self.sessions.0,
+                self.sessions.1,
+                self.sessions.2,
+                &name_hash,
+            )
+        };
+        let ret = Error::from_tss_rc(ret);
+        if ret.is_success() {
+            Ok(())
+        } else {
+            Err(ret)
+        }
+    }
+
+    /// Cause conditional gating of a policy based on authValue.
+    ///
+    /// The TPM will ensure that the current policy requires the user to know the authValue
+    /// used when creating the object.
+    pub fn policy_auth_value(&mut self, policy_session: ESYS_TR) -> Result<()> {
+        let ret = unsafe {
+            Esys_PolicyAuthValue(
+                self.mut_context(),
+                policy_session,
+                self.sessions.0,
+                self.sessions.1,
+                self.sessions.2,
+            )
+        };
+        let ret = Error::from_tss_rc(ret);
+        if ret.is_success() {
+            Ok(())
+        } else {
+            Err(ret)
+        }
+    }
+
+    /// Cause conditional gating of a policy based on password.
+    ///
+    /// The TPM will ensure that the current policy requires the user to know the password
+    /// used when creating the object.
+    pub fn policy_password(&mut self, policy_session: ESYS_TR) -> Result<()> {
+        let ret = unsafe {
+            Esys_PolicyPassword(
+                self.mut_context(),
+                policy_session,
+                self.sessions.0,
+                self.sessions.1,
+                self.sessions.2,
+            )
+        };
+        let ret = Error::from_tss_rc(ret);
+        if ret.is_success() {
+            Ok(())
+        } else {
+            Err(ret)
+        }
+    }
+
+    /// Cause conditional gating of a policy based on NV written state.
+    ///
+    /// The TPM will ensure that the NV index that is used has a specific written state.
+    pub fn policy_nv_written(&mut self, policy_session: ESYS_TR, written_set: bool) -> Result<()> {
+        let ret = unsafe {
+            Esys_PolicyNvWritten(
+                self.mut_context(),
+                policy_session,
+                self.sessions.0,
+                self.sessions.1,
+                self.sessions.2,
+                if written_set { 1 } else { 0 },
+            )
+        };
+        let ret = Error::from_tss_rc(ret);
+        if ret.is_success() {
+            Ok(())
+        } else {
+            Err(ret)
+        }
+    }
+
     /// Cause conditional gating of a policy based on an authorized policy
     ///
     /// The TPM will ensure that the current policy digest is correctly signed

@@ -551,7 +551,7 @@ fn get_pcr_policy_digest(context: &mut Context, mangle: bool, do_trial: bool) ->
     (digest, pcr_ses)
 }
 
-mod test_policy_authorize {
+mod test_policies {
     use super::*;
 
     #[test]
@@ -603,10 +603,6 @@ mod test_policy_authorize {
             .policy_authorize(policy_ses, policy_digest, policy_ref, key_name, tkt)
             .unwrap();
     }
-}
-
-mod test_policy_or {
-    use super::*;
 
     #[test]
     fn test_policy_or() {
@@ -639,6 +635,216 @@ mod test_policy_or {
 
         // There should be no errors setting an Or for a TRIAL session
         context.policy_or(trial_session, digest_list).unwrap();
+    }
+
+    #[test]
+    fn test_policy_locality() {
+        let mut context = create_ctx_without_session();
+        let trial_session = context
+            .start_auth_session(
+                ESYS_TR_NONE,
+                ESYS_TR_NONE,
+                &[],
+                TPM2_SE_TRIAL,
+                utils::TpmtSymDefBuilder::aes_256_cfb(),
+                TPM2_ALG_SHA256,
+            )
+            .unwrap();
+        let trial_session_attr = TpmaSessionBuilder::new()
+            .with_flag(TPMA_SESSION_DECRYPT)
+            .with_flag(TPMA_SESSION_ENCRYPT)
+            .build();
+        context
+            .tr_sess_set_attributes(trial_session, trial_session_attr)
+            .unwrap();
+
+        // There should be no errors setting an Or for a TRIAL session
+        context.policy_locality(trial_session, 3).unwrap();
+    }
+
+    #[test]
+    fn test_policy_command_code() {
+        let mut context = create_ctx_without_session();
+        let trial_session = context
+            .start_auth_session(
+                ESYS_TR_NONE,
+                ESYS_TR_NONE,
+                &[],
+                TPM2_SE_TRIAL,
+                utils::TpmtSymDefBuilder::aes_256_cfb(),
+                TPM2_ALG_SHA256,
+            )
+            .unwrap();
+        let trial_session_attr = TpmaSessionBuilder::new()
+            .with_flag(TPMA_SESSION_DECRYPT)
+            .with_flag(TPMA_SESSION_ENCRYPT)
+            .build();
+        context
+            .tr_sess_set_attributes(trial_session, trial_session_attr)
+            .unwrap();
+
+        // There should be no errors setting an Or for a TRIAL session
+        context
+            .policy_command_code(trial_session, TPM2_CC_Unseal)
+            .unwrap();
+    }
+
+    #[test]
+    fn test_policy_physical_presence() {
+        let mut context = create_ctx_without_session();
+        let trial_session = context
+            .start_auth_session(
+                ESYS_TR_NONE,
+                ESYS_TR_NONE,
+                &[],
+                TPM2_SE_TRIAL,
+                utils::TpmtSymDefBuilder::aes_256_cfb(),
+                TPM2_ALG_SHA256,
+            )
+            .unwrap();
+        let trial_session_attr = TpmaSessionBuilder::new()
+            .with_flag(TPMA_SESSION_DECRYPT)
+            .with_flag(TPMA_SESSION_ENCRYPT)
+            .build();
+        context
+            .tr_sess_set_attributes(trial_session, trial_session_attr)
+            .unwrap();
+
+        // There should be no errors setting an Or for a TRIAL session
+        context.policy_physical_presence(trial_session).unwrap();
+    }
+
+    #[test]
+    fn test_policy_cp_hash() {
+        let mut context = create_ctx_without_session();
+        let trial_session = context
+            .start_auth_session(
+                ESYS_TR_NONE,
+                ESYS_TR_NONE,
+                &[],
+                TPM2_SE_TRIAL,
+                utils::TpmtSymDefBuilder::aes_256_cfb(),
+                TPM2_ALG_SHA256,
+            )
+            .unwrap();
+        let trial_session_attr = TpmaSessionBuilder::new()
+            .with_flag(TPMA_SESSION_DECRYPT)
+            .with_flag(TPMA_SESSION_ENCRYPT)
+            .build();
+        context
+            .tr_sess_set_attributes(trial_session, trial_session_attr)
+            .unwrap();
+
+        let test_dig = Digest::try_from(vec![
+            252, 200, 17, 232, 137, 217, 130, 51, 54, 22, 184, 131, 2, 134, 99, 130, 175, 216, 159,
+            174, 203, 165, 35, 19, 187, 56, 167, 208, 3, 128, 11, 12,
+        ])
+        .unwrap();
+
+        // There should be no errors setting an Or for a TRIAL session
+        context.policy_cp_hash(trial_session, test_dig).unwrap();
+    }
+    #[test]
+    fn test_policy_name_hash() {
+        let mut context = create_ctx_without_session();
+        let trial_session = context
+            .start_auth_session(
+                ESYS_TR_NONE,
+                ESYS_TR_NONE,
+                &[],
+                TPM2_SE_TRIAL,
+                utils::TpmtSymDefBuilder::aes_256_cfb(),
+                TPM2_ALG_SHA256,
+            )
+            .unwrap();
+        let trial_session_attr = TpmaSessionBuilder::new()
+            .with_flag(TPMA_SESSION_DECRYPT)
+            .with_flag(TPMA_SESSION_ENCRYPT)
+            .build();
+        context
+            .tr_sess_set_attributes(trial_session, trial_session_attr)
+            .unwrap();
+
+        let test_dig = Digest::try_from(vec![
+            252, 200, 17, 232, 137, 217, 130, 51, 54, 22, 184, 131, 2, 134, 99, 130, 175, 216, 159,
+            174, 203, 165, 35, 19, 187, 56, 167, 208, 3, 128, 11, 12,
+        ])
+        .unwrap();
+
+        // There should be no errors setting an Or for a TRIAL session
+        context.policy_name_hash(trial_session, test_dig).unwrap();
+    }
+    #[test]
+    fn test_policy_auth_value() {
+        let mut context = create_ctx_without_session();
+        let trial_session = context
+            .start_auth_session(
+                ESYS_TR_NONE,
+                ESYS_TR_NONE,
+                &[],
+                TPM2_SE_TRIAL,
+                utils::TpmtSymDefBuilder::aes_256_cfb(),
+                TPM2_ALG_SHA256,
+            )
+            .unwrap();
+        let trial_session_attr = TpmaSessionBuilder::new()
+            .with_flag(TPMA_SESSION_DECRYPT)
+            .with_flag(TPMA_SESSION_ENCRYPT)
+            .build();
+        context
+            .tr_sess_set_attributes(trial_session, trial_session_attr)
+            .unwrap();
+
+        // There should be no errors setting an Or for a TRIAL session
+        context.policy_auth_value(trial_session).unwrap();
+    }
+    #[test]
+    fn test_policy_password() {
+        let mut context = create_ctx_without_session();
+        let trial_session = context
+            .start_auth_session(
+                ESYS_TR_NONE,
+                ESYS_TR_NONE,
+                &[],
+                TPM2_SE_TRIAL,
+                utils::TpmtSymDefBuilder::aes_256_cfb(),
+                TPM2_ALG_SHA256,
+            )
+            .unwrap();
+        let trial_session_attr = TpmaSessionBuilder::new()
+            .with_flag(TPMA_SESSION_DECRYPT)
+            .with_flag(TPMA_SESSION_ENCRYPT)
+            .build();
+        context
+            .tr_sess_set_attributes(trial_session, trial_session_attr)
+            .unwrap();
+
+        // There should be no errors setting an Or for a TRIAL session
+        context.policy_password(trial_session).unwrap();
+    }
+    #[test]
+    fn test_policy_nv_written() {
+        let mut context = create_ctx_without_session();
+        let trial_session = context
+            .start_auth_session(
+                ESYS_TR_NONE,
+                ESYS_TR_NONE,
+                &[],
+                TPM2_SE_TRIAL,
+                utils::TpmtSymDefBuilder::aes_256_cfb(),
+                TPM2_ALG_SHA256,
+            )
+            .unwrap();
+        let trial_session_attr = TpmaSessionBuilder::new()
+            .with_flag(TPMA_SESSION_DECRYPT)
+            .with_flag(TPMA_SESSION_ENCRYPT)
+            .build();
+        context
+            .tr_sess_set_attributes(trial_session, trial_session_attr)
+            .unwrap();
+
+        // There should be no errors setting an Or for a TRIAL session
+        context.policy_nv_written(trial_session, true).unwrap();
     }
 }
 
