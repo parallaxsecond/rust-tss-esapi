@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use std::convert::TryFrom;
+use tss_esapi::algorithm::specifiers::*;
 use tss_esapi::constants::*;
 use tss_esapi::tss2_esys::TPM2_ALG_ID;
-use tss_esapi::utils::algorithm_specifiers::*;
 
 mod test_object_type {
     use super::*;

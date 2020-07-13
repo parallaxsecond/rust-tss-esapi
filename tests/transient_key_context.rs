@@ -1,9 +1,11 @@
 // Copyright 2020 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
+use std::convert::TryFrom;
+use tss_esapi::algorithm::specifiers::{EllipticCurve, HashingAlgorithm};
 use tss_esapi::response_code::{
     Error, Error::Tss2Error, Tss2ResponseCodeKind, WrapperErrorKind as ErrorKind,
 };
-use tss_esapi::utils::algorithm_specifiers::{EllipticCurve, HashingAlgorithm};
+use tss_esapi::structures::{Auth, Digest};
 use tss_esapi::utils::tcti::Tcti;
 use tss_esapi::utils::{AsymSchemeUnion, PublicKey, Signature, SignatureData};
 use tss_esapi::{
@@ -108,11 +110,12 @@ fn verify() {
     ];
 
     // "Les carottes sont cuites." hashed with SHA256
-    let digest = vec![
+    let digest = Digest::try_from(vec![
         0x02, 0x2b, 0x26, 0xb1, 0xc3, 0x18, 0xdb, 0x73, 0x36, 0xef, 0x6f, 0x50, 0x9c, 0x35, 0xdd,
         0xaa, 0xe1, 0x3d, 0x21, 0xdf, 0x83, 0x68, 0x0f, 0x48, 0xae, 0x5d, 0x8a, 0x5d, 0x37, 0x3c,
         0xc1, 0x05,
-    ];
+    ])
+    .unwrap();
 
     let signature = Signature {
         scheme: AsymSchemeUnion::RSASSA(HashingAlgorithm::Sha256),
@@ -133,14 +136,14 @@ fn verify() {
     let mut ctx = create_ctx();
     let pub_key = ctx.load_external_rsa_public_key(&pub_key).unwrap();
     let _ = ctx
-        .verify_signature(pub_key, &digest, signature)
+        .verify_signature(pub_key, digest, signature)
         .expect("the signature should be valid");
 }
 
 #[test]
 fn sign_with_bad_auth() {
     let mut ctx = create_ctx();
-    let (key, mut auth) = ctx
+    let (key, key_auth) = ctx
         .create_signing_key(
             KeyParams::Rsa {
                 size: 2048,
@@ -150,11 +153,15 @@ fn sign_with_bad_auth() {
             16,
         )
         .unwrap();
-    auth[6] = 0xDE;
-    auth[7] = 0xAD;
-    auth[8] = 0xBE;
-    auth[9] = 0xEF;
-    ctx.sign(key, &auth, &HASH).unwrap_err();
+    let auth_value = key_auth.unwrap();
+    let mut bad_auth_values = auth_value.value().to_vec();
+    bad_auth_values[6..10].copy_from_slice(&[0xDE, 0xAD, 0xBE, 0xEF]);
+    ctx.sign(
+        key,
+        Some(Auth::try_from(bad_auth_values).unwrap()),
+        Digest::try_from(HASH.to_vec()).unwrap(),
+    )
+    .unwrap_err();
 }
 
 #[test]
@@ -170,7 +177,8 @@ fn sign_with_no_auth() {
             16,
         )
         .unwrap();
-    ctx.sign(key, &[], &HASH).unwrap_err();
+    ctx.sign(key, None, Digest::try_from(HASH.to_vec()).unwrap())
+        .unwrap_err();
 }
 
 #[test]
@@ -196,8 +204,12 @@ fn two_signatures_different_digest() {
             16,
         )
         .unwrap();
-    let signature1 = ctx.sign(key1, &auth1, &HASH).unwrap();
-    let signature2 = ctx.sign(key2, &auth2, &HASH).unwrap();
+    let signature1 = ctx
+        .sign(key1, auth1, Digest::try_from(HASH.to_vec()).unwrap())
+        .unwrap();
+    let signature2 = ctx
+        .sign(key2, auth2, Digest::try_from(HASH.to_vec()).unwrap())
+        .unwrap();
 
     assert!(signature1.signature != signature2.signature);
 }
@@ -227,7 +239,9 @@ fn verify_wrong_key() {
         .unwrap();
 
     // Sign with the first key
-    let signature = ctx.sign(key1, &auth1, &HASH).unwrap();
+    let signature = ctx
+        .sign(key1, auth1, Digest::try_from(HASH.to_vec()).unwrap())
+        .unwrap();
 
     // Import and verify with the second key
     let pub_key = ctx.read_public_key(key2).unwrap();
@@ -236,7 +250,10 @@ fn verify_wrong_key() {
         _ => panic!("Got wrong type of key!"),
     };
     let pub_key = ctx.load_external_rsa_public_key(&pub_key).unwrap();
-    if let Tss2Error(error) = ctx.verify_signature(pub_key, &HASH, signature).unwrap_err() {
+    if let Tss2Error(error) = ctx
+        .verify_signature(pub_key, Digest::try_from(HASH.to_vec()).unwrap(), signature)
+        .unwrap_err()
+    {
         assert_eq!(error.kind(), Some(Tss2ResponseCodeKind::Signature));
     } else {
         panic!("The signature verification should have failed with an invalid signature error.");
@@ -256,7 +273,9 @@ fn verify_wrong_digest() {
         )
         .unwrap();
 
-    let signature = ctx.sign(key.clone(), &auth, &HASH).unwrap();
+    let signature = ctx
+        .sign(key.clone(), auth, Digest::try_from(HASH.to_vec()).unwrap())
+        .unwrap();
     let pub_key = ctx.read_public_key(key).unwrap();
     let pub_key = match pub_key {
         PublicKey::Rsa(pub_key) => pub_key,
@@ -264,13 +283,10 @@ fn verify_wrong_digest() {
     };
     let pub_key = ctx.load_external_rsa_public_key(&pub_key).unwrap();
 
-    let mut digest_copy = HASH.to_vec();
-    digest_copy[0] = 0xDE;
-    digest_copy[1] = 0xAD;
-    digest_copy[2] = 0xBE;
-    digest_copy[3] = 0xEF;
+    let mut digest_values = HASH.to_vec();
+    digest_values[0..4].copy_from_slice(&[0xDE, 0xAD, 0xBE, 0xEF]);
     if let Tss2Error(error) = ctx
-        .verify_signature(pub_key, &digest_copy, signature)
+        .verify_signature(pub_key, Digest::try_from(digest_values).unwrap(), signature)
         .unwrap_err()
     {
         assert_eq!(error.kind(), Some(Tss2ResponseCodeKind::Signature));
@@ -293,14 +309,18 @@ fn full_test() {
                 16,
             )
             .unwrap();
-        let signature = ctx.sign(key.clone(), &auth, &HASH).unwrap();
+        let signature = ctx
+            .sign(key.clone(), auth, Digest::try_from(HASH.to_vec()).unwrap())
+            .unwrap();
         let pub_key = ctx.read_public_key(key).unwrap();
         let pub_key = match pub_key {
             PublicKey::Rsa(pub_key) => pub_key,
             _ => panic!("Got wrong type of key!"),
         };
         let pub_key = ctx.load_external_rsa_public_key(&pub_key).unwrap();
-        let _ = ctx.verify_signature(pub_key, &HASH, signature).unwrap();
+        let _ = ctx
+            .verify_signature(pub_key, Digest::try_from(HASH.to_vec()).unwrap(), signature)
+            .unwrap();
     }
 }
 
@@ -359,8 +379,12 @@ fn full_ecc_test() {
                 16,
             )
             .unwrap();
-        let signature = ctx.sign(key.clone(), &auth, &HASH).unwrap();
+        let signature = ctx
+            .sign(key.clone(), auth, Digest::try_from(HASH.to_vec()).unwrap())
+            .unwrap();
         let _pub_key = ctx.read_public_key(key.clone()).unwrap();
-        let _ = ctx.verify_signature(key, &HASH, signature).unwrap();
+        let _ = ctx
+            .verify_signature(key, Digest::try_from(HASH.to_vec()).unwrap(), signature)
+            .unwrap();
     }
 }

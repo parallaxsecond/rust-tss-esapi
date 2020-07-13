@@ -1,4 +1,4 @@
-use tss_esapi::utils::algorithm_specifiers::HashingAlgorithm;
+use tss_esapi::algorithm::specifiers::HashingAlgorithm;
 use tss_esapi::utils::{PcrSelectSize, PcrSelectionsBuilder, PcrSlot};
 
 mod test_pcr_selections {

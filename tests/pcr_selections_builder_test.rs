@@ -1,8 +1,8 @@
 use num_traits::ToPrimitive;
 use std::convert::TryFrom;
+use tss_esapi::algorithm::specifiers::HashingAlgorithm;
 use tss_esapi::constants::TPM2_ALG_LAST;
 use tss_esapi::tss2_esys::{TPM2_ALG_ID, TPML_PCR_SELECTION};
-use tss_esapi::utils::algorithm_specifiers::HashingAlgorithm;
 use tss_esapi::utils::{PcrSelectSize, PcrSelections, PcrSelectionsBuilder, PcrSlot};
 
 mod test_pcr_selections_builder {
