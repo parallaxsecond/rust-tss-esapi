@@ -38,12 +38,14 @@ use tss_esapi::algorithm::{
     structures::SensitiveData,
 };
 use tss_esapi::constants::*;
-use tss_esapi::structures::{Auth, Data, Digest, MaxBuffer, Nonce};
+use tss_esapi::structures::{
+    Auth, Data, Digest, DigestList, MaxBuffer, Nonce, PcrSelectionListBuilder, PcrSlot,
+};
 use tss_esapi::tss2_esys::*;
 use tss_esapi::utils::{
-    self, tcti::Tcti, tickets::Ticket, AsymSchemeUnion, DigestList, Hierarchy, ObjectAttributes,
-    PcrSelectionsBuilder, PcrSlot, PublicIdUnion, PublicParmsUnion, Signature, SignatureData,
-    Tpm2BPublicBuilder, TpmaSessionBuilder, TpmsRsaParmsBuilder,
+    self, tcti::Tcti, tickets::Ticket, AsymSchemeUnion, Hierarchy, ObjectAttributes, PublicIdUnion,
+    PublicParmsUnion, Signature, SignatureData, Tpm2BPublicBuilder, TpmaSessionBuilder,
+    TpmsRsaParmsBuilder,
 };
 use tss_esapi::*;
 
@@ -326,13 +328,13 @@ mod test_pcr_read {
     fn test_pcr_read_command() {
         let mut context = create_ctx_without_session();
         // Read PCR 0
-        let pcr_selections = PcrSelectionsBuilder::new()
+        let pcr_selection_list = PcrSelectionListBuilder::new()
             .with_selection(HashingAlgorithm::Sha256, &[PcrSlot::Slot0])
             .build();
-        let input: TPML_PCR_SELECTION = pcr_selections.clone().into();
+        let input: TPML_PCR_SELECTION = pcr_selection_list.clone().into();
         // Verify input
-        assert_eq!(pcr_selections.len(), 1);
-        assert_eq!(input.count as usize, pcr_selections.len());
+        assert_eq!(pcr_selection_list.len(), 1);
+        assert_eq!(input.count as usize, pcr_selection_list.len());
         assert_eq!(input.pcrSelections[0].sizeofSelect, 3);
         assert_eq!(
             input.pcrSelections[0].hash,
@@ -342,11 +344,12 @@ mod test_pcr_read {
         assert_eq!(input.pcrSelections[0].pcrSelect[1], 0b0000_0000);
         assert_eq!(input.pcrSelections[0].pcrSelect[2], 0b0000_0000);
         // Read the pcr slots.
-        let (update_counter, pcr_selections, pcr_data) = context.pcr_read(pcr_selections).unwrap();
+        let (update_counter, pcr_selection_list_out, pcr_data) =
+            context.pcr_read(&pcr_selection_list).unwrap();
 
         // Verify that the selected slots have been read.
         assert_ne!(update_counter, 0);
-        let output: TPML_PCR_SELECTION = pcr_selections.into();
+        let output: TPML_PCR_SELECTION = pcr_selection_list_out.into();
         assert_eq!(output.count, input.count);
         assert_eq!(
             output.pcrSelections[0].sizeofSelect,
@@ -382,7 +385,7 @@ mod test_pcr_read {
         // then not all can be read at once and the returned
         // pcr selections will differ from the original.
         let mut context = create_ctx_without_session();
-        let pcr_selections = PcrSelectionsBuilder::new()
+        let pcr_selection_list_in = PcrSelectionListBuilder::new()
             .with_selection(
                 HashingAlgorithm::Sha256,
                 &[
@@ -406,9 +409,9 @@ mod test_pcr_read {
                 ],
             )
             .build();
-        let (_update_counter, pcr_selections_read, _pcr_data) =
-            context.pcr_read(pcr_selections.clone()).unwrap();
-        assert_ne!(pcr_selections, pcr_selections_read);
+        let (_update_counter, pcr_selection_list_out, _pcr_data) =
+            context.pcr_read(&pcr_selection_list_in).unwrap();
+        assert_ne!(pcr_selection_list_in, pcr_selection_list_out);
     }
 }
 
@@ -469,7 +472,7 @@ mod test_quote {
     fn pcr_quote() {
         let mut context = create_ctx_with_session();
         // Quote PCR 0
-        let pcr_selections = PcrSelectionsBuilder::new()
+        let pcr_selection_list = PcrSelectionListBuilder::new()
             .with_selection(HashingAlgorithm::Sha256, &[PcrSlot::Slot0])
             .build();
         let scheme = TPMT_SIG_SCHEME {
@@ -488,7 +491,7 @@ mod test_quote {
                 key_handle,
                 &Data::try_from(qualifying_data).unwrap(),
                 scheme,
-                pcr_selections,
+                pcr_selection_list,
             )
             .expect("Failed to get a quote");
         assert!(res.0.size != 0);
@@ -500,12 +503,14 @@ fn get_pcr_policy_digest(context: &mut Context, mangle: bool, do_trial: bool) ->
     context.set_sessions((ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE));
 
     // Read the pcr values using pcr_read
-    let pcr_selections = PcrSelectionsBuilder::new()
+    let pcr_selection_list = PcrSelectionListBuilder::new()
         .with_selection(HashingAlgorithm::Sha256, &[PcrSlot::Slot0, PcrSlot::Slot1])
         .build();
 
-    let (_update_counter, pcr_selections, pcr_data) = context.pcr_read(pcr_selections).unwrap();
+    let (_update_counter, pcr_selection_list_out, pcr_data) =
+        context.pcr_read(&pcr_selection_list).unwrap();
 
+    assert_eq!(pcr_selection_list, pcr_selection_list_out);
     // Run pcr_policy command.
     //
     // "If this command is used for a trial policySession,
@@ -565,7 +570,7 @@ fn get_pcr_policy_digest(context: &mut Context, mangle: bool, do_trial: bool) ->
 
     // There should be no errors setting pcr policy for trial session.
     context
-        .policy_pcr(pcr_ses, &hashed_data, pcr_selections)
+        .policy_pcr(pcr_ses, &hashed_data, pcr_selection_list)
         .unwrap();
 
     // There is now a policy digest that can be retrived and used.
@@ -909,12 +914,14 @@ mod test_policy_pcr {
             .unwrap();
 
         // Read the pcr values using pcr_read
-        let pcr_selections = PcrSelectionsBuilder::new()
+        let pcr_selection_list = PcrSelectionListBuilder::new()
             .with_selection(HashingAlgorithm::Sha256, &[PcrSlot::Slot0, PcrSlot::Slot1])
             .build();
 
-        let (_update_counter, pcr_selections, pcr_data) = context.pcr_read(pcr_selections).unwrap();
+        let (_update_counter, pcr_selection_list_out, pcr_data) =
+            context.pcr_read(&pcr_selection_list).unwrap();
 
+        assert_eq!(pcr_selection_list, pcr_selection_list_out);
         // Run pcr_policy command.
         //
         // "If this command is used for a trial policySession,
@@ -951,7 +958,7 @@ mod test_policy_pcr {
             .unwrap();
         // There should be no errors setting pcr policy for trial session.
         context
-            .policy_pcr(trial_session, &hashed_data, pcr_selections)
+            .policy_pcr(trial_session, &hashed_data, pcr_selection_list)
             .unwrap();
     }
 }
@@ -1780,12 +1787,14 @@ mod test_policy_get_digest {
             .unwrap();
 
         // Read the pcr values using pcr_read
-        let pcr_selections = PcrSelectionsBuilder::new()
+        let pcr_selection_list = PcrSelectionListBuilder::new()
             .with_selection(HashingAlgorithm::Sha256, &[PcrSlot::Slot0, PcrSlot::Slot1])
             .build();
 
-        let (_update_counter, pcr_selections, pcr_data) = context.pcr_read(pcr_selections).unwrap();
+        let (_update_counter, pcr_selection_list_out, pcr_data) =
+            context.pcr_read(&pcr_selection_list).unwrap();
 
+        assert_eq!(pcr_selection_list, pcr_selection_list_out);
         // Run pcr_policy command.
         //
         // "If this command is used for a trial policySession,
@@ -1822,7 +1831,7 @@ mod test_policy_get_digest {
             .unwrap();
         // There should be no errors setting pcr policy for trial session.
         context
-            .policy_pcr(trial_session, &hashed_data, pcr_selections)
+            .policy_pcr(trial_session, &hashed_data, pcr_selection_list)
             .unwrap();
 
         // There is now a policy digest that can be retrived and used.

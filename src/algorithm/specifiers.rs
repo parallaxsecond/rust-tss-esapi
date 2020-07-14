@@ -1,4 +1,4 @@
-// Copyright 2019 Contributors to the Parsec project.
+// Copyright 2020 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
 
 use crate::constants::{
@@ -33,7 +33,7 @@ use std::convert::{From, TryFrom};
 /// used when setting the type parameter in
 /// TPMT_PUBLIC_PARMS.
 
-#[derive(Copy, Clone, Debug, PartialEq)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum ObjectType {
     Null,
     Rsa,
@@ -78,7 +78,7 @@ impl TryFrom<TPM2_ALG_ID> for ObjectType {
 ////////////////////////////////////////////////
 
 /// Enum containing asymmetric algorithms.
-#[derive(Copy, Clone, Debug, PartialEq)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum AsymmetricAlgorithm {
     Rsa,
     Ecc,
@@ -112,7 +112,7 @@ impl TryFrom<TPM2_ALG_ID> for AsymmetricAlgorithm {
 ////////////////////////////////////////////////
 
 /// Enum containing keyed hash
-#[derive(Copy, Clone, Debug, PartialEq)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum KeyedHash {
     Hmac,
     Xor,
@@ -157,7 +157,7 @@ impl TryFrom<TPM2_ALG_ID> for KeyedHash {
 ////////////////////////////////////////////////
 
 /// Enum containing symmetric algorithms.
-#[derive(Copy, Clone, Debug, PartialEq)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum SymmetricAlgorithm {
     Aes,
     Camellia,
@@ -252,7 +252,7 @@ impl TryFrom<TPM2_ALG_ID> for HashingAlgorithm {
 ////////////////////////////////////////////////
 
 /// Enum containing signature schemes
-#[derive(Copy, Clone, Debug, PartialEq)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum SignatureScheme {
     RsaSsa,
     RsaPss,
@@ -298,7 +298,7 @@ impl TryFrom<TPM2_ALG_ID> for SignatureScheme {
 ////////////////////////////////////////////////
 
 /// Enum containing RSA signature schemes
-#[derive(Copy, Clone, Debug, PartialEq)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum RsaSignatureScheme {
     RsaSsa,
     RsaPss,
@@ -332,7 +332,7 @@ impl TryFrom<TPM2_ALG_ID> for RsaSignatureScheme {
 ////////////////////////////////////////////////
 
 /// Enum containing ECC signature schemes
-#[derive(Copy, Clone, Debug, PartialEq)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum EccSignatureScheme {
     EcDsa,
     EcDaa,
@@ -372,7 +372,7 @@ impl TryFrom<TPM2_ALG_ID> for EccSignatureScheme {
 ////////////////////////////////////////////////
 
 // Enum containing asymmetric encryption schemes
-#[derive(Copy, Clone, Debug, PartialEq)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum AsymmetricEncryptionScheme {
     Oaep,
     RsaEs,
@@ -409,7 +409,7 @@ impl TryFrom<TPM2_ALG_ID> for AsymmetricEncryptionScheme {
 ////////////////////////////////////////////////
 
 // Enum containing encryption modes
-#[derive(Copy, Clone, Debug, PartialEq)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum EncryptionMode {
     Ctr,
     Ofb,
