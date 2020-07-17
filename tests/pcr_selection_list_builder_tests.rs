@@ -1,25 +1,27 @@
+// Copyright 2020 Contributors to the Parsec project.
+// SPDX-License-Identifier: Apache-2.0
 use num_traits::ToPrimitive;
 use std::convert::TryFrom;
 use tss_esapi::algorithm::specifiers::HashingAlgorithm;
 use tss_esapi::constants::TPM2_ALG_LAST;
+use tss_esapi::structures::{PcrSelectSize, PcrSelectionList, PcrSelectionListBuilder, PcrSlot};
 use tss_esapi::tss2_esys::{TPM2_ALG_ID, TPML_PCR_SELECTION};
-use tss_esapi::utils::{PcrSelectSize, PcrSelections, PcrSelectionsBuilder, PcrSlot};
 
-mod test_pcr_selections_builder {
+mod test_pcr_selection_list_builder {
     use super::*;
 
     #[test]
     fn test_one_selection() {
-        let pcr_selections = PcrSelectionsBuilder::new()
+        let pcr_selection_list = PcrSelectionListBuilder::new()
             .with_selection(
                 HashingAlgorithm::Sha256,
                 &[PcrSlot::Slot0, PcrSlot::Slot8, PcrSlot::Slot16],
             )
             .build();
 
-        let pcr_selections_size = pcr_selections.len();
-        let actual: TPML_PCR_SELECTION = pcr_selections.into();
-        assert_eq!(actual.count as usize, pcr_selections_size);
+        let pcr_selection_list_size = pcr_selection_list.len();
+        let actual: TPML_PCR_SELECTION = pcr_selection_list.into();
+        assert_eq!(actual.count as usize, pcr_selection_list_size);
         // No size has been chosen so the default will be set.
         assert_eq!(
             actual.pcrSelections[0].sizeofSelect,
@@ -36,7 +38,7 @@ mod test_pcr_selections_builder {
 
     #[test]
     fn test_multiple_selection() {
-        let pcr_selections = PcrSelectionsBuilder::new()
+        let pcr_selection_list = PcrSelectionListBuilder::new()
             .with_selection(
                 HashingAlgorithm::Sha256,
                 &[PcrSlot::Slot0, PcrSlot::Slot8, PcrSlot::Slot16],
@@ -53,15 +55,15 @@ mod test_pcr_selections_builder {
             )
             .build();
 
-        let pcr_selections_size = pcr_selections.len();
-        let actual: TPML_PCR_SELECTION = pcr_selections.into();
-        assert_eq!(actual.count as usize, pcr_selections_size);
-        for index in 0..1 {
-            let pcr_selection = &actual.pcrSelections[index as usize];
+        let pcr_selection_list_size = pcr_selection_list.len();
+        let actual: TPML_PCR_SELECTION = pcr_selection_list.into();
+        assert_eq!(actual.count as usize, pcr_selection_list_size);
+        for pcr_selection in actual.pcrSelections[..actual.count as usize].iter() {
             assert_eq!(
                 pcr_selection.sizeofSelect,
                 PcrSelectSize::default().to_u8().unwrap()
             );
+            // The order is not specified.
             match HashingAlgorithm::try_from(pcr_selection.hash).unwrap() {
                 HashingAlgorithm::Sha256 => {
                     assert_eq!(pcr_selection.pcrSelect[0], 0b0000_0001);
@@ -80,18 +82,18 @@ mod test_pcr_selections_builder {
 
     #[test]
     fn test_multiple_conversions() {
-        let pcr_selections = PcrSelectionsBuilder::new()
+        let pcr_selection_list = PcrSelectionListBuilder::new()
             .with_size_of_select(Default::default())
             .with_selection(
                 HashingAlgorithm::Sha256,
                 &[PcrSlot::Slot0, PcrSlot::Slot8, PcrSlot::Slot16],
             )
             .build();
-        let pcr_selections_size = pcr_selections.len();
-        let converted: TPML_PCR_SELECTION = pcr_selections.into();
-        assert_eq!(converted.count as usize, pcr_selections_size);
+        let pcr_selection_list_size = pcr_selection_list.len();
+        let converted: TPML_PCR_SELECTION = pcr_selection_list.into();
+        assert_eq!(converted.count as usize, pcr_selection_list_size);
 
-        let from_converted = PcrSelections::try_from(converted).unwrap();
+        let from_converted = PcrSelectionList::try_from(converted).unwrap();
         let re_converted: TPML_PCR_SELECTION = from_converted.into();
 
         assert_eq!(converted.count, re_converted.count);
@@ -119,7 +121,7 @@ mod test_pcr_selections_builder {
 
     #[test]
     fn test_conversion_of_data_with_invalid_pcr_select_bit_flags() {
-        let mut tpml_pcr_selection: TPML_PCR_SELECTION = PcrSelectionsBuilder::new()
+        let mut tpml_pcr_selection: TPML_PCR_SELECTION = PcrSelectionListBuilder::new()
             .with_selection(
                 HashingAlgorithm::Sha256,
                 &[PcrSlot::Slot0, PcrSlot::Slot8, PcrSlot::Slot16],
@@ -133,12 +135,12 @@ mod test_pcr_selections_builder {
         tpml_pcr_selection.pcrSelections[0].pcrSelect[3] = 1;
 
         // The try_from should then fail.
-        PcrSelections::try_from(tpml_pcr_selection).unwrap_err();
+        PcrSelectionList::try_from(tpml_pcr_selection).unwrap_err();
     }
 
     #[test]
     fn test_conversion_of_data_with_invalid_size_of_select() {
-        let mut tpml_pcr_selection: TPML_PCR_SELECTION = PcrSelectionsBuilder::new()
+        let mut tpml_pcr_selection: TPML_PCR_SELECTION = PcrSelectionListBuilder::new()
             .with_selection(
                 HashingAlgorithm::Sha256,
                 &[PcrSlot::Slot0, PcrSlot::Slot8, PcrSlot::Slot16],
@@ -150,12 +152,12 @@ mod test_pcr_selections_builder {
         tpml_pcr_selection.pcrSelections[0].sizeofSelect = 20;
 
         // The try_from should then fail.
-        PcrSelections::try_from(tpml_pcr_selection).unwrap_err();
+        PcrSelectionList::try_from(tpml_pcr_selection).unwrap_err();
     }
 
     #[test]
     fn test_conversion_of_data_with_invalid_hash_alg_id() {
-        let mut tpml_pcr_selection: TPML_PCR_SELECTION = PcrSelectionsBuilder::new()
+        let mut tpml_pcr_selection: TPML_PCR_SELECTION = PcrSelectionListBuilder::new()
             .with_selection(
                 HashingAlgorithm::Sha256,
                 &[PcrSlot::Slot0, PcrSlot::Slot8, PcrSlot::Slot16],
@@ -167,6 +169,6 @@ mod test_pcr_selections_builder {
         tpml_pcr_selection.pcrSelections[0].hash = TPM2_ALG_LAST + 1;
 
         // The try_from should then fail.
-        PcrSelections::try_from(tpml_pcr_selection).unwrap_err();
+        PcrSelectionList::try_from(tpml_pcr_selection).unwrap_err();
     }
 }

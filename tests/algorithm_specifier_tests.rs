@@ -1,6 +1,5 @@
 // Copyright 2020 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
-
 use std::convert::TryFrom;
 use tss_esapi::algorithm::specifiers::*;
 use tss_esapi::constants::*;

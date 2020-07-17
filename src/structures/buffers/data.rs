@@ -1,3 +1,5 @@
+// Copyright 2020 Contributors to the Parsec project.
+// SPDX-License-Identifier: Apache-2.0
 use crate::response_code::{Error, Result, WrapperErrorKind};
 use crate::tss2_esys::TPM2B_DATA;
 use log::error;

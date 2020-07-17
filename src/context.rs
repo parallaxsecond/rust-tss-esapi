@@ -2,12 +2,12 @@ use crate::algorithm::{specifiers::HashingAlgorithm, structures::SensitiveData};
 use crate::response_code::{
     Result, {Error, WrapperErrorKind as ErrorKind},
 };
-use crate::structures::{Auth, Data, Digest, MaxBuffer, Name, Nonce};
+use crate::structures::{Auth, Data, Digest, DigestList, MaxBuffer, Name, Nonce, PcrSelectionList};
 use crate::tss2_esys::*;
 use crate::utils::tcti::Tcti;
 use crate::utils::{
-    tickets::HashcheckTicket, DigestList, Hierarchy, PcrData, PcrSelections, PublicParmsUnion,
-    Signature, TpmaSession, TpmaSessionBuilder, TpmsContext,
+    tickets::HashcheckTicket, Hierarchy, PcrData, PublicParmsUnion, Signature, TpmaSession,
+    TpmaSessionBuilder, TpmsContext,
 };
 use log::{error, info};
 use mbox::MBox;
@@ -641,33 +641,33 @@ impl Context {
     ///   data fails.
     pub fn pcr_read(
         &mut self,
-        pcr_selections: PcrSelections,
-    ) -> Result<(u32, PcrSelections, PcrData)> {
+        pcr_selection_list: &PcrSelectionList,
+    ) -> Result<(u32, PcrSelectionList, PcrData)> {
         let mut pcr_update_counter: u32 = 0;
-        let mut tpml_pcr_selection_out_ptr = null_mut();
-        let mut tpml_digest_ptr = null_mut();
+        let mut tss_pcr_selection_list_out_ptr = null_mut();
+        let mut tss_digest_ptr = null_mut();
         let ret = unsafe {
             Esys_PCR_Read(
                 self.mut_context(),
                 self.sessions.0,
                 self.sessions.1,
                 self.sessions.2,
-                &pcr_selections.into(),
+                &pcr_selection_list.clone().into(),
                 &mut pcr_update_counter,
-                &mut tpml_pcr_selection_out_ptr,
-                &mut tpml_digest_ptr,
+                &mut tss_pcr_selection_list_out_ptr,
+                &mut tss_digest_ptr,
             )
         };
         let ret = Error::from_tss_rc(ret);
 
         if ret.is_success() {
-            let tpml_pcr_selection_out =
-                unsafe { MBox::<TPML_PCR_SELECTION>::from_raw(tpml_pcr_selection_out_ptr) };
-            let tpml_digest = unsafe { MBox::<TPML_DIGEST>::from_raw(tpml_digest_ptr) };
+            let tss_pcr_selection_list_out =
+                unsafe { MBox::<TPML_PCR_SELECTION>::from_raw(tss_pcr_selection_list_out_ptr) };
+            let tss_digest = unsafe { MBox::<TPML_DIGEST>::from_raw(tss_digest_ptr) };
             Ok((
                 pcr_update_counter,
-                PcrSelections::try_from(*tpml_pcr_selection_out)?,
-                PcrData::new(tpml_pcr_selection_out.as_ref(), tpml_digest.as_ref())?,
+                PcrSelectionList::try_from(*tss_pcr_selection_list_out)?,
+                PcrData::new(tss_pcr_selection_list_out.as_ref(), tss_digest.as_ref())?,
             ))
         } else {
             error!("Error in creating derived key: {}.", ret);
@@ -687,7 +687,7 @@ impl Context {
         signing_key_handle: ESYS_TR,
         qualifying_data: &Data,
         signing_scheme: TPMT_SIG_SCHEME,
-        pcr_selection: PcrSelections,
+        pcr_selection_list: PcrSelectionList,
     ) -> Result<(TPM2B_ATTEST, Signature)> {
         let mut quoted = null_mut();
         let mut signature = null_mut();
@@ -701,7 +701,7 @@ impl Context {
                 self.sessions.2,
                 &tss_qualifying_data,
                 &signing_scheme,
-                &pcr_selection.into(),
+                &pcr_selection_list.into(),
                 &mut quoted,
                 &mut signature,
             )
@@ -741,7 +741,7 @@ impl Context {
         &mut self,
         policy_session: ESYS_TR,
         pcr_policy_digest: &Digest,
-        pcr_selections: PcrSelections,
+        pcr_selection_list: PcrSelectionList,
     ) -> Result<()> {
         let pcr_digest = TPM2B_DIGEST::try_from(pcr_policy_digest.clone())?;
         let ret = unsafe {
@@ -752,7 +752,7 @@ impl Context {
                 self.sessions.1,
                 self.sessions.2,
                 &pcr_digest,
-                &pcr_selections.into(),
+                &pcr_selection_list.into(),
             )
         };
         let ret = Error::from_tss_rc(ret);
