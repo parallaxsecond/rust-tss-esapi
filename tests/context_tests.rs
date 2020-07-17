@@ -610,7 +610,6 @@ mod test_policies {
             )
             .unwrap()
             .0;
-        let ahash = Digest::try_from(ahash).unwrap();
 
         let scheme = TPMT_SIG_SCHEME {
             scheme: TPM2_ALG_NULL,
