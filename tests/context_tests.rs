@@ -57,7 +57,7 @@ fn create_ctx_with_session() -> Context {
             ESYS_TR_NONE,
             None,
             TPM2_SE_HMAC,
-            utils::TpmtSymDefBuilder::aes_256_cfb(),
+            Cipher::aes_256_cfb().into(),
             TPM2_ALG_SHA256,
         )
         .unwrap();
@@ -137,7 +137,7 @@ fn comprehensive_test() {
             prim_key_handle,
             None,
             TPM2_SE_HMAC,
-            utils::TpmtSymDefBuilder::aes_256_cfb(),
+            Cipher::aes_256_cfb().into(),
             TPM2_ALG_SHA256,
         )
         .unwrap();
@@ -203,7 +203,7 @@ mod test_start_sess {
                 ESYS_TR_NONE,
                 None,
                 TPM2_SE_HMAC,
-                utils::TpmtSymDefBuilder::aes_256_cfb(),
+                Cipher::aes_256_cfb().into(),
                 TPM2_ALG_SHA256,
             )
             .unwrap();
@@ -227,7 +227,7 @@ mod test_start_sess {
                 )
                 .as_ref(),
                 TPM2_SE_HMAC,
-                utils::TpmtSymDefBuilder::aes_256_cfb(),
+                Cipher::aes_256_cfb().into(),
                 TPM2_ALG_SHA256,
             )
             .unwrap();
@@ -253,7 +253,7 @@ mod test_start_sess {
                 prim_key_handle,
                 None,
                 TPM2_SE_HMAC,
-                utils::TpmtSymDefBuilder::aes_256_cfb(),
+                Cipher::aes_256_cfb().into(),
                 TPM2_ALG_SHA256,
             )
             .unwrap();
@@ -268,7 +268,7 @@ mod test_start_sess {
                 ESYS_TR_NONE,
                 None,
                 TPM2_SE_HMAC,
-                utils::TpmtSymDefBuilder::aes_256_cfb(),
+                Cipher::aes_256_cfb().into(),
                 TPM2_ALG_SHA256,
             )
             .unwrap();
@@ -287,7 +287,7 @@ mod test_start_sess {
                 ESYS_TR_NONE,
                 None,
                 TPM2_SE_HMAC,
-                utils::TpmtSymDefBuilder::aes_256_cfb(),
+                Cipher::aes_256_cfb().into(),
                 TPM2_ALG_SHA256,
             )
             .unwrap();
@@ -302,7 +302,7 @@ mod test_start_sess {
                 ESYS_TR_NONE,
                 None,
                 TPM2_SE_HMAC,
-                utils::TpmtSymDefBuilder::aes_256_cfb(),
+                Cipher::aes_256_cfb().into(),
                 TPM2_ALG_SHA256,
             )
             .unwrap();
@@ -314,7 +314,7 @@ mod test_start_sess {
                 ESYS_TR_NONE,
                 None,
                 TPM2_SE_HMAC,
-                utils::TpmtSymDefBuilder::aes_256_cfb(),
+                Cipher::aes_256_cfb().into(),
                 TPM2_ALG_SHA256,
             )
             .unwrap_err();
@@ -556,7 +556,7 @@ fn get_pcr_policy_digest(context: &mut Context, mangle: bool, do_trial: bool) ->
             } else {
                 TPM2_SE_POLICY
             },
-            utils::TpmtSymDefBuilder::aes_256_cfb(),
+            Cipher::aes_256_cfb().into(),
             TPM2_ALG_SHA256,
         )
         .unwrap();
@@ -654,7 +654,7 @@ mod test_policies {
                 ESYS_TR_NONE,
                 None,
                 TPM2_SE_TRIAL,
-                utils::TpmtSymDefBuilder::aes_256_cfb(),
+                Cipher::aes_256_cfb().into(),
                 TPM2_ALG_SHA256,
             )
             .unwrap();
@@ -687,7 +687,7 @@ mod test_policies {
                 ESYS_TR_NONE,
                 None,
                 TPM2_SE_TRIAL,
-                utils::TpmtSymDefBuilder::aes_256_cfb(),
+                Cipher::aes_256_cfb().into(),
                 TPM2_ALG_SHA256,
             )
             .unwrap();
@@ -712,7 +712,7 @@ mod test_policies {
                 ESYS_TR_NONE,
                 None,
                 TPM2_SE_TRIAL,
-                utils::TpmtSymDefBuilder::aes_256_cfb(),
+                Cipher::aes_256_cfb().into(),
                 TPM2_ALG_SHA256,
             )
             .unwrap();
@@ -739,7 +739,7 @@ mod test_policies {
                 ESYS_TR_NONE,
                 None,
                 TPM2_SE_TRIAL,
-                utils::TpmtSymDefBuilder::aes_256_cfb(),
+                Cipher::aes_256_cfb().into(),
                 TPM2_ALG_SHA256,
             )
             .unwrap();
@@ -764,7 +764,7 @@ mod test_policies {
                 ESYS_TR_NONE,
                 None,
                 TPM2_SE_TRIAL,
-                utils::TpmtSymDefBuilder::aes_256_cfb(),
+                Cipher::aes_256_cfb().into(),
                 TPM2_ALG_SHA256,
             )
             .unwrap();
@@ -794,7 +794,7 @@ mod test_policies {
                 ESYS_TR_NONE,
                 None,
                 TPM2_SE_TRIAL,
-                utils::TpmtSymDefBuilder::aes_256_cfb(),
+                Cipher::aes_256_cfb().into(),
                 TPM2_ALG_SHA256,
             )
             .unwrap();
@@ -824,7 +824,7 @@ mod test_policies {
                 ESYS_TR_NONE,
                 None,
                 TPM2_SE_TRIAL,
-                utils::TpmtSymDefBuilder::aes_256_cfb(),
+                Cipher::aes_256_cfb().into(),
                 TPM2_ALG_SHA256,
             )
             .unwrap();
@@ -848,7 +848,7 @@ mod test_policies {
                 ESYS_TR_NONE,
                 None,
                 TPM2_SE_TRIAL,
-                utils::TpmtSymDefBuilder::aes_256_cfb(),
+                Cipher::aes_256_cfb().into(),
                 TPM2_ALG_SHA256,
             )
             .unwrap();
@@ -872,7 +872,7 @@ mod test_policies {
                 ESYS_TR_NONE,
                 None,
                 TPM2_SE_TRIAL,
-                utils::TpmtSymDefBuilder::aes_256_cfb(),
+                Cipher::aes_256_cfb().into(),
                 TPM2_ALG_SHA256,
             )
             .unwrap();
@@ -901,7 +901,7 @@ mod test_policy_pcr {
                 ESYS_TR_NONE,
                 None,
                 TPM2_SE_TRIAL,
-                utils::TpmtSymDefBuilder::aes_256_cfb(),
+                Cipher::aes_256_cfb().into(),
                 TPM2_ALG_SHA256,
             )
             .unwrap();
@@ -975,7 +975,7 @@ mod test_get_random {
                 ESYS_TR_NONE,
                 None,
                 TPM2_SE_HMAC,
-                utils::TpmtSymDefBuilder::aes_256_cfb(),
+                Cipher::aes_256_cfb().into(),
                 TPM2_ALG_SHA256,
             )
             .unwrap();
@@ -1001,7 +1001,7 @@ mod test_get_random {
                 ESYS_TR_NONE,
                 None,
                 TPM2_SE_HMAC,
-                utils::TpmtSymDefBuilder::aes_256_cfb(),
+                Cipher::aes_256_cfb().into(),
                 TPM2_ALG_SHA256,
             )
             .unwrap();
@@ -1704,7 +1704,7 @@ mod test_session_attr {
                 ESYS_TR_NONE,
                 None,
                 TPM2_SE_HMAC,
-                utils::TpmtSymDefBuilder::aes_256_cfb(),
+                Cipher::aes_256_cfb().into(),
                 TPM2_ALG_SHA256,
             )
             .unwrap();
@@ -1774,7 +1774,7 @@ mod test_policy_get_digest {
                 ESYS_TR_NONE,
                 None,
                 TPM2_SE_TRIAL,
-                utils::TpmtSymDefBuilder::aes_256_cfb(),
+                Cipher::aes_256_cfb().into(),
                 TPM2_ALG_SHA256,
             )
             .unwrap();

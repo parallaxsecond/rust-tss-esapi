@@ -533,24 +533,6 @@ impl TpmtSymDefBuilder {
 
         Ok((key_bits, mode))
     }
-
-    /// Generate a `TPMT_SYM_DEF` object defining 256 bit AES in CFB mode.
-    pub fn aes_256_cfb() -> TPMT_SYM_DEF {
-        TPMT_SYM_DEF {
-            algorithm: TPM2_ALG_AES,
-            keyBits: TPMU_SYM_KEY_BITS { aes: 256 },
-            mode: TPMU_SYM_MODE { aes: TPM2_ALG_CFB },
-        }
-    }
-
-    /// Generate a `TPMT_SYM_DEF_OBJECT` object defining 256 bit AES in CFB mode.
-    pub fn aes_256_cfb_object() -> TPMT_SYM_DEF_OBJECT {
-        TPMT_SYM_DEF_OBJECT {
-            algorithm: TPM2_ALG_AES,
-            keyBits: TPMU_SYM_KEY_BITS { aes: 256 },
-            mode: TPMU_SYM_MODE { aes: TPM2_ALG_CFB },
-        }
-    }
 }
 
 impl Default for TpmtSymDefBuilder {
