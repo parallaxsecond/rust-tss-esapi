@@ -1220,7 +1220,7 @@ impl TryFrom<TPMS_CONTEXT> for TpmsContext {
                 .contextBlob
                 .size
                 .try_into()
-                .or_else(|_| Err(Error::local_error(WrapperErrorKind::WrongParamSize)))?,
+                .map_err(|_| Error::local_error(WrapperErrorKind::WrongParamSize))?,
         );
         Ok(context)
     }
@@ -1575,9 +1575,9 @@ impl TryFrom<TPML_PCR_SELECTION> for PcrSelections {
             let parsed_pcr_slots: BitFlags<PcrSlot> = BitFlags::<PcrSlot>::try_from(
                 u32::from_le_bytes(selection.pcrSelect),
             )
-            .or_else(|e| {
+            .map_err(|e| {
                 error!("Error parsing pcrSelect to a BitFlags<PcrSlot>: {}.", e);
-                Err(Error::local_error(WrapperErrorKind::UnsupportedParam))
+                Error::local_error(WrapperErrorKind::UnsupportedParam)
             })?;
             // Parse the sizeofSelect into a SelectSize.
             let parsed_size_of_select = match PcrSelectSize::from_u8(selection.sizeofSelect) {
@@ -1598,9 +1598,9 @@ impl TryFrom<TPML_PCR_SELECTION> for PcrSelections {
             size_of_select = Some(parsed_size_of_select);
             // Parse the hash
             let parsed_hash_algorithm =
-                HashingAlgorithm::try_from(selection.hash).or_else(|e| {
+                HashingAlgorithm::try_from(selection.hash).map_err(|e| {
                     error!("Error converting hash to a HashingAlgorithm: {}.", e);
-                    Err(Error::local_error(WrapperErrorKind::InvalidParam))
+                    Error::local_error(WrapperErrorKind::InvalidParam)
                 })?;
             // Insert the select into the storage. Or update
             // if the item already exists
@@ -1762,16 +1762,16 @@ impl PcrData {
         for &pcr_selection in pcr_selections {
             // Parse hash algorithm from selection
             let parsed_hash_algorithm =
-                HashingAlgorithm::try_from(pcr_selection.hash).or_else(|e| {
+                HashingAlgorithm::try_from(pcr_selection.hash).map_err(|e| {
                     error!("Error converting hash to a HashingAlgorithm: {}.", e);
-                    Err(Error::local_error(WrapperErrorKind::InvalidParam))
+                    Error::local_error(WrapperErrorKind::InvalidParam)
                 })?;
             // Parse pcr slots from selection
             let parsed_pcr_slots: BitFlags<PcrSlot> =
                 BitFlags::<PcrSlot>::try_from(u32::from_le_bytes(pcr_selection.pcrSelect))
-                    .or_else(|e| {
+                    .map_err(|e| {
                         error!("Error parsing pcrSelect to a BitFlags<PcrSlot>: {}.", e);
-                        Err(Error::local_error(WrapperErrorKind::UnsupportedParam))
+                        Error::local_error(WrapperErrorKind::UnsupportedParam)
                     })?;
             // Create PCR bank by mapping the pcr slots to the pcr values
             let mut parsed_pcr_bank = PcrBank {

@@ -1036,7 +1036,7 @@ impl Context {
                 self.sessions.2,
                 num_bytes
                     .try_into()
-                    .or_else(|_| Err(Error::local_error(ErrorKind::WrongParamSize)))?,
+                    .map_err(|_| Error::local_error(ErrorKind::WrongParamSize))?,
                 &mut buffer,
             )
         };
