@@ -1,6 +1,6 @@
 // Copyright 2020 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
-use crate::constants::{
+use crate::constants::tss::{
     TPM2_ST_ATTEST_CERTIFY, TPM2_ST_ATTEST_COMMAND_AUDIT, TPM2_ST_ATTEST_CREATION,
     TPM2_ST_ATTEST_NV, TPM2_ST_ATTEST_NV_DIGEST, TPM2_ST_ATTEST_QUOTE,
     TPM2_ST_ATTEST_SESSION_AUDIT, TPM2_ST_ATTEST_TIME, TPM2_ST_AUTH_SECRET, TPM2_ST_AUTH_SIGNED,
@@ -8,8 +8,8 @@ use crate::constants::{
     TPM2_ST_RESERVED1, TPM2_ST_RESERVED2, TPM2_ST_RESERVED3, TPM2_ST_RSP_COMMAND, TPM2_ST_SESSIONS,
     TPM2_ST_VERIFIED,
 };
-use crate::response_code::{Error, Result, WrapperErrorKind};
 use crate::tss2_esys::TPM2_ST;
+use crate::{Error, Result, WrapperErrorKind};
 use std::convert::{From, TryFrom};
 
 /// This enum represents the TPM_ST (Structure Tags)

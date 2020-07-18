@@ -33,20 +33,18 @@ const KEY: [u8; 512] = [
 ];
 
 use std::convert::{TryFrom, TryInto};
-use tss_esapi::algorithm::{
-    specifiers::{Cipher, HashingAlgorithm},
-    structures::SensitiveData,
-};
-use tss_esapi::constants::*;
+use tss_esapi::algorithm::structures::SensitiveData;
+use tss_esapi::constants::algorithm::{Cipher, HashingAlgorithm};
+use tss_esapi::constants::tss::*;
 use tss_esapi::structures::{
-    Auth, Data, Digest, DigestList, MaxBuffer, Nonce, PcrSelectionListBuilder, PcrSlot,
+    Auth, Data, Digest, DigestList, MaxBuffer, Nonce, PcrSelectionListBuilder, PcrSlot, Ticket,
 };
 use tss_esapi::tss2_esys::*;
 use tss_esapi::utils::{
-    self, tcti::Tcti, tickets::Ticket, AsymSchemeUnion, Hierarchy, ObjectAttributes, PublicIdUnion,
-    PublicParmsUnion, Signature, SignatureData, Tpm2BPublicBuilder, TpmaSessionBuilder,
-    TpmsRsaParmsBuilder,
+    self, AsymSchemeUnion, Hierarchy, ObjectAttributes, PublicIdUnion, PublicParmsUnion, Signature,
+    SignatureData, Tpm2BPublicBuilder, TpmaSessionBuilder, TpmsRsaParmsBuilder,
 };
+use tss_esapi::Tcti;
 use tss_esapi::*;
 
 fn create_ctx_with_session() -> Context {
@@ -80,13 +78,13 @@ fn create_public_sealed_object() -> tss_esapi::tss2_esys::TPM2B_PUBLIC {
     object_attributes.set_user_with_auth(true);
 
     let mut params: tss2_esys::TPMU_PUBLIC_PARMS = Default::default();
-    params.keyedHashDetail.scheme.scheme = tss_esapi::constants::TPM2_ALG_NULL;
+    params.keyedHashDetail.scheme.scheme = tss_esapi::constants::tss::TPM2_ALG_NULL;
 
     tss_esapi::tss2_esys::TPM2B_PUBLIC {
         size: std::mem::size_of::<tss_esapi::tss2_esys::TPMT_PUBLIC>() as u16,
         publicArea: tss_esapi::tss2_esys::TPMT_PUBLIC {
-            type_: tss_esapi::constants::TPM2_ALG_KEYEDHASH,
-            nameAlg: tss_esapi::constants::TPM2_ALG_SHA256,
+            type_: tss_esapi::constants::tss::TPM2_ALG_KEYEDHASH,
+            nameAlg: tss_esapi::constants::tss::TPM2_ALG_SHA256,
             objectAttributes: object_attributes.0,
             authPolicy: Default::default(),
             parameters: params,

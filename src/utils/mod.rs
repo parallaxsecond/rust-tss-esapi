@@ -8,15 +8,11 @@
 //! guidelines to them. Structures that are meant to act as builders have `Builder` appended to
 //! type name. Unions are converted to Rust `enum`s by dropping the `TPMU` qualifier and appending
 //! `Union`.
-pub mod tags;
-pub mod tcti;
-pub mod tickets;
-
-use crate::algorithm::specifiers::{Cipher, EllipticCurve, HashingAlgorithm};
-use crate::constants::*;
-use crate::response_code::{Error, Result, WrapperErrorKind};
+use crate::constants::algorithm::{Cipher, EllipticCurve, HashingAlgorithm};
+use crate::constants::tss::*;
 use crate::structures::{Digest, PcrSlot};
 use crate::tss2_esys::*;
+use crate::{Error, Result, WrapperErrorKind};
 use bitfield::bitfield;
 use enumflags2::BitFlags;
 use log::error;

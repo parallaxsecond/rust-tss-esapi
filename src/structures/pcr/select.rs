@@ -1,7 +1,7 @@
 // Copyright 2020 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
-use crate::response_code::{Error, Result, WrapperErrorKind};
 use crate::tss2_esys::TPMS_PCR_SELECT;
+use crate::{Error, Result, WrapperErrorKind};
 use enumflags2::BitFlags;
 use log::error;
 use num_derive::{FromPrimitive, ToPrimitive};

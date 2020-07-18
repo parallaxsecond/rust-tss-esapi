@@ -85,19 +85,23 @@
 //! during normal operation.
 //! * these rules can be broken in test-only code and in tests.
 
-#![allow(dead_code)]
+pub use abstraction::transient::TransientKeyContext;
+pub use context::Context;
+pub use error::{Error, Result, WrapperErrorKind};
+pub use tcti::Tcti;
 
 #[allow(
     non_snake_case,
     non_camel_case_types,
     non_upper_case_globals,
-    dead_code
+    clippy::unseparated_literal_suffix,
+    // There is an issue where long double become u128 in extern blocks. Check this issue:
+    // https://github.com/rust-lang/rust-bindgen/issues/1549
+    improper_ctypes,
+    missing_debug_implementations,
+    trivial_casts,
+    clippy::all,
 )]
-#[allow(clippy::all)]
-#[allow(clippy::unseparated_literal_suffix)]
-// There is an issue where long double become u128 in extern blocks. Check this issue:
-// https://github.com/rust-lang/rust-bindgen/issues/1549
-#[allow(improper_ctypes, missing_debug_implementations, trivial_casts)]
 pub mod tss2_esys {
     #[cfg(not(feature = "docs"))]
     include!(concat!(env!("OUT_DIR"), "/tss2_esys_bindings.rs"));
@@ -106,18 +110,10 @@ pub mod tss2_esys {
     include!(concat!(env!("CARGO_MANIFEST_DIR"), "/doc_bindings.rs"));
 }
 pub mod abstraction;
-#[allow(
-    non_snake_case,
-    non_camel_case_types,
-    non_upper_case_globals,
-    dead_code
-)]
-#[allow(clippy::all)]
-pub mod constants;
-pub mod response_code;
-pub mod utils;
-pub use context::Context;
 pub mod algorithm;
-pub mod context;
+pub mod constants;
+mod context;
+mod error;
 pub mod structures;
-pub use abstraction::transient::TransientKeyContext;
+mod tcti;
+pub mod utils;

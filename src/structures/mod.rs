@@ -76,3 +76,10 @@ pub use self::pcr_selection_list::PcrSelectionListBuilder;
 pub mod pcr_selection_list {
     pub use super::lists::pcr_selection::*;
 }
+/////////////////////////////////////////////////////////
+/// The tickets section
+/////////////////////////////////////////////////////////
+mod tickets;
+pub use tickets::HashcheckTicket;
+pub use tickets::Ticket;
+pub use tickets::VerifiedTicket;

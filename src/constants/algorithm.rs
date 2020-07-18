@@ -1,7 +1,7 @@
 // Copyright 2020 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::constants::{
+use crate::constants::tss::{
     TPM2_ALG_AES, TPM2_ALG_CAMELLIA, TPM2_ALG_CBC, TPM2_ALG_CFB, TPM2_ALG_CTR, TPM2_ALG_ECB,
     TPM2_ALG_ECC, TPM2_ALG_ECDAA, TPM2_ALG_ECDH, TPM2_ALG_ECDSA, TPM2_ALG_ECMQV,
     TPM2_ALG_ECSCHNORR, TPM2_ALG_ERROR, TPM2_ALG_HMAC, TPM2_ALG_KDF1_SP800_108,
@@ -14,11 +14,11 @@ use crate::constants::{
     TPM2_ECC_NIST_P521, TPM2_ECC_SM2_P256,
 };
 
-use crate::response_code::{Error, Result, WrapperErrorKind};
 use crate::tss2_esys::{
     TPM2_ALG_ID, TPMI_ECC_CURVE, TPMS_SYMCIPHER_PARMS, TPMT_SYM_DEF, TPMT_SYM_DEF_OBJECT,
 };
 use crate::utils::TpmtSymDefBuilder;
+use crate::{Error, Result, WrapperErrorKind};
 use std::convert::{From, TryFrom};
 
 ////////////////////////////////////////////////
