@@ -321,6 +321,21 @@ mod test_start_sess {
     }
 }
 
+mod test_get_capability {
+    use super::*;
+
+    #[test]
+    fn test_get_capability() {
+        let mut context = create_ctx_without_session();
+        let (res, more) = context
+            .get_capabilities(TPM2_CAP_TPM_PROPERTIES, TPM2_PT_VENDOR_STRING_1, 4)
+            .unwrap();
+        assert_eq!(res.capability, TPM2_CAP_TPM_PROPERTIES);
+        let tpmprops = unsafe { res.data.tpmProperties };
+        assert_ne!(tpmprops.count, 0);
+    }
+}
+
 mod test_pcr_read {
     use super::*;
 

@@ -162,6 +162,46 @@ impl Context {
         self.sessions
     }
 
+    /// Get current capability information about the TPM.
+    pub fn get_capabilities(
+        &mut self,
+        capability: TPM2_CAP,
+        property: u32,
+        property_count: u32,
+    ) -> Result<(TPMS_CAPABILITY_DATA, bool)> {
+        let mut outcapabilitydata = null_mut();
+        let mut outmoredata: u8 = 0;
+
+        let ret = unsafe {
+            Esys_GetCapability(
+                self.mut_context(),
+                self.sessions.0,
+                self.sessions.1,
+                self.sessions.2,
+                capability,
+                property,
+                property_count,
+                &mut outmoredata,
+                &mut outcapabilitydata,
+            )
+        };
+        let moredata = if outmoredata == 0 {
+            false
+        } else if outmoredata == 1 {
+            true
+        } else {
+            return Err(Error::WrapperError(ErrorKind::WrongValueFromTpm));
+        };
+        let capabilitydata = unsafe { MBox::from_raw(outcapabilitydata) };
+        let ret = Error::from_tss_rc(ret);
+
+        if ret.is_success() {
+            Ok((*capabilitydata, moredata))
+        } else {
+            Err(ret)
+        }
+    }
+
     /// Create a primary key and return the handle.
     ///
     /// The authentication value, initial data, outside info and creation PCRs are passed as slices
