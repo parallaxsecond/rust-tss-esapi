@@ -1,6 +1,6 @@
 // Copyright 2020 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
-use crate::response_code::{Error, WrapperErrorKind};
+use crate::{Error, WrapperErrorKind};
 use regex::Regex;
 use std::convert::TryFrom;
 use std::ffi::CString;

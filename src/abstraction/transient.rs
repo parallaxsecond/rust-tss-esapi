@@ -13,21 +13,20 @@
 //!
 //! Object contexts thus act as an opaque handle that can, however, be used by the client to seralize
 //! and persist the underlying data.
-use crate::algorithm::specifiers::{Cipher, EllipticCurve, HashingAlgorithm};
-use crate::constants::*;
-use crate::response_code::{Error, Result, WrapperErrorKind as ErrorKind};
-use crate::structures::{Auth, Digest};
+use crate::constants::algorithm::{Cipher, EllipticCurve, HashingAlgorithm};
+use crate::constants::tss::*;
+use crate::structures::{Auth, Digest, VerifiedTicket};
+use crate::tcti::Tcti;
 use crate::tss2_esys::*;
-use crate::utils::tickets::VerifiedTicket;
 use crate::utils::{
     self, create_restricted_decryption_rsa_public, create_unrestricted_signing_ecc_public,
     create_unrestricted_signing_rsa_public, AsymSchemeUnion, Hierarchy, PublicIdUnion, PublicKey,
     TpmaSessionBuilder, TpmsContext, RSA_KEY_SIZES,
 };
 use crate::Context;
+use crate::{Error, Result, WrapperErrorKind as ErrorKind};
 use log::error;
 use std::convert::{TryFrom, TryInto};
-use utils::tcti::Tcti;
 
 /// Structure offering an abstracted programming experience.
 ///

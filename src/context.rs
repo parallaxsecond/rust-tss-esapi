@@ -1,14 +1,16 @@
-use crate::algorithm::{specifiers::HashingAlgorithm, structures::SensitiveData};
-use crate::response_code::{
-    Result, {Error, WrapperErrorKind as ErrorKind},
+// Copyright 2020 Contributors to the Parsec project.
+// SPDX-License-Identifier: Apache-2.0
+use crate::algorithm::structures::SensitiveData;
+use crate::constants::algorithm::HashingAlgorithm;
+use crate::structures::{
+    Auth, Data, Digest, DigestList, HashcheckTicket, MaxBuffer, Name, Nonce, PcrSelectionList,
 };
-use crate::structures::{Auth, Data, Digest, DigestList, MaxBuffer, Name, Nonce, PcrSelectionList};
+use crate::tcti::Tcti;
 use crate::tss2_esys::*;
-use crate::utils::tcti::Tcti;
 use crate::utils::{
-    tickets::HashcheckTicket, Hierarchy, PcrData, PublicParmsUnion, Signature, TpmaSession,
-    TpmaSessionBuilder, TpmsContext,
+    Hierarchy, PcrData, PublicParmsUnion, Signature, TpmaSession, TpmaSessionBuilder, TpmsContext,
 };
+use crate::{Error, Result, WrapperErrorKind as ErrorKind};
 use log::{error, info};
 use mbox::MBox;
 use std::collections::HashSet;

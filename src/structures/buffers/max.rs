@@ -1,7 +1,7 @@
 // Copyright 2020 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
-use crate::response_code::{Error, Result, WrapperErrorKind};
 use crate::tss2_esys::{TPM2B_MAX_BUFFER, TPM2_MAX_DIGEST_BUFFER};
+use crate::{Error, Result, WrapperErrorKind};
 use log::error;
 use std::convert::TryFrom;
 /// Struct holding a max buffer value.

@@ -1,9 +1,9 @@
 // Copyright 2020 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
-use crate::response_code::{Error, Result, WrapperErrorKind};
+use crate::constants::tags::StructureTag;
 use crate::tss2_esys::{TPM2B_DIGEST, TPMT_TK_HASHCHECK, TPMT_TK_VERIFIED};
-use crate::utils::tags::StructureTag;
 use crate::utils::Hierarchy;
+use crate::{Error, Result, WrapperErrorKind};
 use log::error;
 use std::convert::{TryFrom, TryInto};
 

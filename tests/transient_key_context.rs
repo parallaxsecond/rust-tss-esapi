@@ -1,13 +1,15 @@
 // Copyright 2020 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
 use std::convert::TryFrom;
-use tss_esapi::algorithm::specifiers::{EllipticCurve, HashingAlgorithm};
-use tss_esapi::response_code::{
-    Error, Error::Tss2Error, Tss2ResponseCodeKind, WrapperErrorKind as ErrorKind,
+use tss_esapi::constants::{
+    algorithm::{EllipticCurve, HashingAlgorithm},
+    response_code::Tss2ResponseCodeKind,
 };
+use tss_esapi::{Error, WrapperErrorKind as ErrorKind};
+
 use tss_esapi::structures::{Auth, Digest};
-use tss_esapi::utils::tcti::Tcti;
 use tss_esapi::utils::{AsymSchemeUnion, PublicKey, Signature, SignatureData};
+use tss_esapi::Tcti;
 use tss_esapi::{
     abstraction::transient::{KeyParams, TransientKeyContextBuilder},
     TransientKeyContext,
@@ -250,7 +252,7 @@ fn verify_wrong_key() {
         _ => panic!("Got wrong type of key!"),
     };
     let pub_key = ctx.load_external_rsa_public_key(&pub_key).unwrap();
-    if let Tss2Error(error) = ctx
+    if let Error::Tss2Error(error) = ctx
         .verify_signature(pub_key, Digest::try_from(HASH.to_vec()).unwrap(), signature)
         .unwrap_err()
     {
@@ -285,7 +287,7 @@ fn verify_wrong_digest() {
 
     let mut digest_values = HASH.to_vec();
     digest_values[0..4].copy_from_slice(&[0xDE, 0xAD, 0xBE, 0xEF]);
-    if let Tss2Error(error) = ctx
+    if let Error::Tss2Error(error) = ctx
         .verify_signature(pub_key, Digest::try_from(digest_values).unwrap(), signature)
         .unwrap_err()
     {

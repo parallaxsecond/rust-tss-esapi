@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 use std::convert::TryFrom;
 use tss_esapi::{
-    algorithm::specifiers::HashingAlgorithm,
-    constants::{TPM2_ALG_SHA256, TPM2_ALG_SHA512},
+    constants::algorithm::HashingAlgorithm,
+    constants::tss::{TPM2_ALG_SHA256, TPM2_ALG_SHA512},
     structures::{PcrSelectSize, PcrSelection, PcrSlot},
     tss2_esys::TPMS_PCR_SELECTION,
 };
