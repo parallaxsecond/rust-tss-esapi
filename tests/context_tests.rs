@@ -33,20 +33,25 @@ const KEY: [u8; 512] = [
 ];
 
 use std::convert::{TryFrom, TryInto};
-use tss_esapi::algorithm::structures::SensitiveData;
-use tss_esapi::constants::algorithm::{Cipher, HashingAlgorithm};
-use tss_esapi::constants::tss::*;
-use tss_esapi::structures::{
-    Auth, Data, Digest, DigestList, MaxBuffer, Nonce, PcrSelectionListBuilder, PcrSlot,
-    PublicKeyRSA, Ticket,
+//use tss_esapi::*;
+use tss_esapi::{
+    algorithm::structures::SensitiveData,
+    constants::{
+        algorithm::{Cipher, HashingAlgorithm},
+        tss::*,
+    },
+    nv::storage::{NvAuthorization, NvIndex, NvIndexAttributes, NvPublicBuilder},
+    structures::{
+        Auth, Data, Digest, DigestList, MaxBuffer, MaxNvBuffer, Nonce, PcrSelectionListBuilder,
+        PcrSlot, PublicKeyRSA, Ticket,
+    },
+    tss2_esys::*,
+    utils::{
+        self, AsymSchemeUnion, Hierarchy, ObjectAttributes, PublicIdUnion, PublicParmsUnion,
+        Signature, SignatureData, Tpm2BPublicBuilder, TpmaSessionBuilder, TpmsRsaParmsBuilder,
+    },
+    Context, Tcti,
 };
-use tss_esapi::tss2_esys::*;
-use tss_esapi::utils::{
-    self, AsymSchemeUnion, Hierarchy, ObjectAttributes, PublicIdUnion, PublicParmsUnion, Signature,
-    SignatureData, Tpm2BPublicBuilder, TpmaSessionBuilder, TpmsRsaParmsBuilder,
-};
-use tss_esapi::Tcti;
-use tss_esapi::*;
 
 fn create_ctx_with_session() -> Context {
     let mut ctx = unsafe { Context::new(Tcti::Mssim(Default::default())).unwrap() };
@@ -78,7 +83,7 @@ fn create_public_sealed_object() -> tss_esapi::tss2_esys::TPM2B_PUBLIC {
     object_attributes.set_admin_with_policy(true);
     object_attributes.set_user_with_auth(true);
 
-    let mut params: tss2_esys::TPMU_PUBLIC_PARMS = Default::default();
+    let mut params: TPMU_PUBLIC_PARMS = Default::default();
     params.keyedHashDetail.scheme.scheme = tss_esapi::constants::tss::TPM2_ALG_NULL;
 
     tss_esapi::tss2_esys::TPM2B_PUBLIC {
@@ -330,7 +335,7 @@ mod test_get_capability {
     #[test]
     fn test_get_capability() {
         let mut context = create_ctx_without_session();
-        let (res, more) = context
+        let (res, _more) = context
             .get_capabilities(TPM2_CAP_TPM_PROPERTIES, TPM2_PT_VENDOR_STRING_1, 4)
             .unwrap();
         assert_eq!(res.capability, TPM2_CAP_TPM_PROPERTIES);
@@ -1897,5 +1902,280 @@ mod test_policy_get_digest {
 
         // The algorithm is SHA256 so the expected size of the digest should be 32.
         assert_eq!(retrieved_policy_digest.value().len(), 32);
+    }
+}
+
+mod test_nv_define_space {
+    use super::*;
+
+    #[test]
+    fn test_nv_define_space_failures() {
+        let mut context = create_ctx_with_session();
+
+        let nv_index = NvIndex::create_from_value(0x01500015).unwrap();
+
+        // Create owner nv public.
+        let mut owner_nv_index_attributes = NvIndexAttributes(0);
+        owner_nv_index_attributes.set_owner_write(true);
+        owner_nv_index_attributes.set_owner_read(true);
+
+        let owner_nv_public = NvPublicBuilder::new()
+            .with_nv_index(nv_index)
+            .with_index_name_algorithm(HashingAlgorithm::Sha256)
+            .with_index_attributes(owner_nv_index_attributes)
+            .with_data_area_size(32)
+            .build()
+            .unwrap();
+
+        // Create platform nv public.
+        let mut platform_nv_index_attributes = NvIndexAttributes(0);
+        platform_nv_index_attributes.set_pp_write(true);
+        platform_nv_index_attributes.set_pp_read(true);
+        platform_nv_index_attributes.set_platform_create(true);
+
+        let platform_nv_public = NvPublicBuilder::new()
+            .with_nv_index(nv_index)
+            .with_index_name_algorithm(HashingAlgorithm::Sha256)
+            .with_index_attributes(platform_nv_index_attributes)
+            .with_data_area_size(32)
+            .build()
+            .unwrap();
+
+        // Failes because attributes dont match hierarchy auth.
+        let _ = context
+            .nv_define_space(NvAuthorization::Platform, None, &owner_nv_public)
+            .unwrap_err();
+
+        let _ = context
+            .nv_define_space(NvAuthorization::Owner, None, &platform_nv_public)
+            .unwrap_err();
+    }
+
+    #[test]
+    fn test_nv_define_space() {
+        let mut context = create_ctx_with_session();
+
+        let nv_index = NvIndex::create_from_value(0x01500015).unwrap();
+
+        // Create owner nv public.
+        let mut owner_nv_index_attributes = NvIndexAttributes(0);
+        owner_nv_index_attributes.set_owner_write(true);
+        owner_nv_index_attributes.set_owner_read(true);
+
+        let owner_nv_public = NvPublicBuilder::new()
+            .with_nv_index(nv_index)
+            .with_index_name_algorithm(HashingAlgorithm::Sha256)
+            .with_index_attributes(owner_nv_index_attributes)
+            .with_data_area_size(32)
+            .build()
+            .unwrap();
+
+        // Create platform nv public.
+        let mut platform_nv_index_attributes = NvIndexAttributes(0);
+        platform_nv_index_attributes.set_pp_write(true);
+        platform_nv_index_attributes.set_pp_read(true);
+        platform_nv_index_attributes.set_platform_create(true);
+
+        let platform_nv_public = NvPublicBuilder::new()
+            .with_nv_index(nv_index)
+            .with_index_name_algorithm(HashingAlgorithm::Sha256)
+            .with_index_attributes(platform_nv_index_attributes)
+            .with_data_area_size(32)
+            .build()
+            .unwrap();
+
+        let owner_nv_index_handle = context
+            .nv_define_space(NvAuthorization::Owner, None, &owner_nv_public)
+            .unwrap();
+
+        let _ = context
+            .nv_undefine_space(NvAuthorization::Owner, owner_nv_index_handle)
+            .unwrap();
+
+        let platform_nv_index_handle = context
+            .nv_define_space(NvAuthorization::Platform, None, &platform_nv_public)
+            .unwrap();
+
+        let _ = context
+            .nv_undefine_space(NvAuthorization::Platform, platform_nv_index_handle)
+            .unwrap();
+    }
+}
+
+mod test_nv_undefine_space {
+    use super::*;
+
+    #[test]
+    fn test_nv_undefine_space() {
+        let mut context = create_ctx_with_session();
+
+        let nv_index = NvIndex::create_from_value(0x01500015).unwrap();
+
+        // Create owner nv public.
+        let mut owner_nv_index_attributes = NvIndexAttributes(0);
+        owner_nv_index_attributes.set_owner_write(true);
+        owner_nv_index_attributes.set_owner_read(true);
+
+        let owner_nv_public = NvPublicBuilder::new()
+            .with_nv_index(nv_index)
+            .with_index_name_algorithm(HashingAlgorithm::Sha256)
+            .with_index_attributes(owner_nv_index_attributes)
+            .with_data_area_size(32)
+            .build()
+            .unwrap();
+
+        let owner_nv_index_handle = context
+            .nv_define_space(NvAuthorization::Owner, None, &owner_nv_public)
+            .unwrap();
+
+        // Succedes
+        let _ = context
+            .nv_undefine_space(NvAuthorization::Owner, owner_nv_index_handle)
+            .unwrap();
+    }
+}
+
+mod test_nv_write {
+    use super::*;
+
+    #[test]
+    fn test_nv_write() {
+        let mut context = create_ctx_with_session();
+
+        let nv_index = NvIndex::create_from_value(0x01500015).unwrap();
+
+        // Create owner nv public.
+        let mut owner_nv_index_attributes = NvIndexAttributes(0);
+        owner_nv_index_attributes.set_owner_write(true);
+        owner_nv_index_attributes.set_owner_read(true);
+
+        let owner_nv_public = NvPublicBuilder::new()
+            .with_nv_index(nv_index)
+            .with_index_name_algorithm(HashingAlgorithm::Sha256)
+            .with_index_attributes(owner_nv_index_attributes)
+            .with_data_area_size(32)
+            .build()
+            .unwrap();
+
+        let owner_nv_index_handle = context
+            .nv_define_space(NvAuthorization::Owner, None, &owner_nv_public)
+            .unwrap();
+
+        let write_result = context.nv_write(
+            NvAuthorization::Owner,
+            owner_nv_index_handle,
+            &MaxNvBuffer::try_from([1, 2, 3, 4, 5, 6, 7].to_vec()).unwrap(),
+            0,
+        );
+
+        let _ = context
+            .nv_undefine_space(NvAuthorization::Owner, owner_nv_index_handle)
+            .unwrap();
+
+        if let Err(e) = write_result {
+            assert!(false, "Failed to perform nv write: {}", e);
+        }
+    }
+}
+
+mod test_nv_read_public {
+    use super::*;
+
+    #[test]
+    fn test_nv_read_public() {
+        let mut context = create_ctx_with_session();
+
+        let nv_index = NvIndex::create_from_value(0x01500015).unwrap();
+
+        let mut nv_index_attributes = NvIndexAttributes(0);
+        nv_index_attributes.set_owner_write(true);
+        nv_index_attributes.set_owner_read(true);
+
+        let expected_nv_public = NvPublicBuilder::new()
+            .with_nv_index(nv_index)
+            .with_index_name_algorithm(HashingAlgorithm::Sha256)
+            .with_index_attributes(nv_index_attributes)
+            .with_data_area_size(32)
+            .build()
+            .unwrap();
+
+        let nv_index_handle = context
+            .nv_define_space(NvAuthorization::Owner, None, &expected_nv_public)
+            .unwrap();
+
+        let read_public_result = context.nv_read_public(nv_index_handle);
+
+        let _ = context
+            .nv_undefine_space(NvAuthorization::Owner, nv_index_handle)
+            .unwrap();
+
+        // Report error
+        if let Err(e) = read_public_result {
+            assert!(false, "Failed to read public of nv index: {}", e);
+        }
+
+        // Check result.
+        let (actual_nv_public, _name) = read_public_result.unwrap();
+        assert_eq!(expected_nv_public, actual_nv_public);
+    }
+}
+
+mod test_nv_read {
+    use super::*;
+
+    #[test]
+    fn test_nv_read() {
+        let mut context = create_ctx_with_session();
+
+        let nv_index = NvIndex::create_from_value(0x01500015).unwrap();
+
+        // Create owner nv public.
+        let mut owner_nv_index_attributes = NvIndexAttributes(0);
+        owner_nv_index_attributes.set_owner_write(true);
+        owner_nv_index_attributes.set_owner_read(true);
+
+        let owner_nv_public = NvPublicBuilder::new()
+            .with_nv_index(nv_index)
+            .with_index_name_algorithm(HashingAlgorithm::Sha256)
+            .with_index_attributes(owner_nv_index_attributes)
+            .with_data_area_size(32)
+            .build()
+            .unwrap();
+
+        let owner_nv_index_handle = context
+            .nv_define_space(NvAuthorization::Owner, None, &owner_nv_public)
+            .unwrap();
+
+        let value = [1, 2, 3, 4, 5, 6, 7];
+        let expected_data = MaxNvBuffer::try_from(value.to_vec()).unwrap();
+
+        // Write the data.
+        let write_result = context.nv_write(
+            NvAuthorization::Owner,
+            owner_nv_index_handle,
+            &expected_data,
+            0,
+        );
+        let read_result = context.nv_read(
+            NvAuthorization::Owner,
+            owner_nv_index_handle,
+            value.len() as u16,
+            0,
+        );
+        let _ = context
+            .nv_undefine_space(NvAuthorization::Owner, owner_nv_index_handle)
+            .unwrap();
+
+        // Report error
+        if let Err(e) = write_result {
+            assert!(false, "Failed to perform nv write: {}", e);
+        }
+        if let Err(e) = read_result {
+            assert!(false, "Failed to read public of nv index: {}", e);
+        }
+
+        // Check result.
+        let actual_data = read_result.unwrap();
+        assert_eq!(expected_data, actual_data);
     }
 }
