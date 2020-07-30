@@ -758,6 +758,14 @@ impl AsymSchemeUnion {
         TPMT_RSA_SCHEME { scheme, details }
     }
 
+    /// Convert scheme object to `TPMT_RSA_DECRYPT`.
+    pub fn get_rsa_decrypt_struct(self) -> TPMT_RSA_DECRYPT {
+        let scheme = self.scheme_id();
+        let details = self.get_details();
+
+        TPMT_RSA_DECRYPT { scheme, details }
+    }
+
     /// Convert scheme object to `TPMT_ECC_SCHEME`.
     fn get_ecc_scheme_struct(self) -> TPMT_ECC_SCHEME {
         let scheme = self.scheme_id();
