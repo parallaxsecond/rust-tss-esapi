@@ -1250,6 +1250,43 @@ pub fn create_restricted_decryption_rsa_public(
         .build()
 }
 
+/// Create the TPM2B_PUBLIC structure for an unrestricted encryption/decryption key.
+///
+/// * `symmetric` - Cipher to be used for decrypting children of the key
+/// * `key_bits` - Size in bits of the decryption key
+/// * `pub_exponent` - Public exponent of the RSA key. A value of 0 defaults to 2^16 + 1
+pub fn create_unrestricted_encryption_decryption_rsa_public(
+    key_bits: u16,
+    pub_exponent: u32,
+) -> Result<TPM2B_PUBLIC> {
+    let rsa_parms = TpmsRsaParmsBuilder {
+        symmetric: None,
+        scheme: Some(AsymSchemeUnion::AnySig(None)),
+        key_bits,
+        exponent: pub_exponent,
+        for_signing: true,
+        for_decryption: true,
+        restricted: false,
+    }
+    .build()
+    .unwrap();
+    let mut object_attributes = ObjectAttributes(0);
+    object_attributes.set_fixed_tpm(true);
+    object_attributes.set_fixed_parent(true);
+    object_attributes.set_sensitive_data_origin(true);
+    object_attributes.set_user_with_auth(true);
+    object_attributes.set_decrypt(true);
+    object_attributes.set_sign_encrypt(true);
+    object_attributes.set_restricted(false);
+
+    Tpm2BPublicBuilder::new()
+        .with_type(TPM2_ALG_RSA)
+        .with_name_alg(TPM2_ALG_SHA256)
+        .with_object_attributes(object_attributes)
+        .with_parms(PublicParmsUnion::RsaDetail(rsa_parms))
+        .build()
+}
+
 /// Create the TPM2B_PUBLIC structure for an RSA unrestricted signing key.
 ///
 /// * `scheme` - Asymmetric scheme to be used for signing

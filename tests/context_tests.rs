@@ -37,7 +37,8 @@ use tss_esapi::algorithm::structures::SensitiveData;
 use tss_esapi::constants::algorithm::{Cipher, HashingAlgorithm};
 use tss_esapi::constants::tss::*;
 use tss_esapi::structures::{
-    Auth, Data, Digest, DigestList, MaxBuffer, Nonce, PcrSelectionListBuilder, PcrSlot, Ticket,
+    Auth, Data, Digest, DigestList, MaxBuffer, Nonce, PcrSelectionListBuilder, PcrSlot,
+    PublicKeyRSA, Ticket,
 };
 use tss_esapi::tss2_esys::*;
 use tss_esapi::utils::{
@@ -108,6 +109,10 @@ fn signing_key_pub() -> TPM2B_PUBLIC {
 
 fn decryption_key_pub() -> TPM2B_PUBLIC {
     utils::create_restricted_decryption_rsa_public(Cipher::aes_256_cfb(), 2048, 0).unwrap()
+}
+
+fn encryption_decryption_key_pub() -> TPM2B_PUBLIC {
+    utils::create_unrestricted_encryption_decryption_rsa_public(2048, 0).unwrap()
 }
 
 #[test]
@@ -1275,6 +1280,46 @@ mod test_sign {
                 &validation,
             )
             .unwrap_err();
+    }
+}
+
+mod test_rsa_encrypt_decrypt {
+    use super::*;
+
+    #[test]
+    fn test_encrypt_decrypt() {
+        let mut context = create_ctx_with_session();
+        let random_digest = context.get_random(16).unwrap();
+        let key_auth = Auth::try_from(random_digest.value().to_vec()).unwrap();
+
+        let key_handle = context
+            .create_primary_key(
+                ESYS_TR_RH_OWNER,
+                &encryption_decryption_key_pub(),
+                Some(&key_auth),
+                None,
+                None,
+                &[],
+            )
+            .unwrap();
+
+        let scheme = AsymSchemeUnion::RSAOAEP(HashingAlgorithm::Sha256).get_rsa_decrypt_struct();
+
+        let plaintext_bytes: Vec<u8> = vec![0x01, 0x02, 0x03];
+
+        let plaintext = PublicKeyRSA::try_from(plaintext_bytes.clone()).unwrap();
+
+        let ciphertext = context
+            .rsa_encrypt(key_handle, plaintext, &scheme, Data::default())
+            .unwrap();
+
+        assert_ne!(plaintext_bytes, ciphertext.value());
+
+        let decrypted = context
+            .rsa_decrypt(key_handle, ciphertext, &scheme, Data::default())
+            .unwrap();
+
+        assert_eq!(plaintext_bytes, decrypted.value());
     }
 }
 

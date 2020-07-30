@@ -4,6 +4,7 @@ use crate::algorithm::structures::SensitiveData;
 use crate::constants::algorithm::HashingAlgorithm;
 use crate::structures::{
     Auth, Data, Digest, DigestList, HashcheckTicket, MaxBuffer, Name, Nonce, PcrSelectionList,
+    PublicKeyRSA,
 };
 use crate::tcti::Tcti;
 use crate::tss2_esys::*;
@@ -513,6 +514,74 @@ impl Context {
             Ok(*validation)
         } else {
             error!("Error in loading: {}.", ret);
+            Err(ret)
+        }
+    }
+
+    /// Perform an asymmetric RSA encryption.
+    pub fn rsa_encrypt(
+        &mut self,
+        key_handle: ESYS_TR,
+        message: PublicKeyRSA,
+        in_scheme: &TPMT_RSA_DECRYPT,
+        label: Data,
+    ) -> Result<PublicKeyRSA> {
+        let tss_message = TPM2B_PUBLIC_KEY_RSA::try_from(message)?;
+        let tss_label = TPM2B_DATA::try_from(label)?;
+        let mut out_data = null_mut();
+        let ret = unsafe {
+            Esys_RSA_Encrypt(
+                self.mut_context(),
+                key_handle,
+                self.sessions.0,
+                self.sessions.1,
+                self.sessions.2,
+                &tss_message,
+                in_scheme,
+                &tss_label,
+                &mut out_data,
+            )
+        };
+        let ret = Error::from_tss_rc(ret);
+
+        if ret.is_success() {
+            let data = unsafe { PublicKeyRSA::try_from(*out_data)? };
+            Ok(data)
+        } else {
+            Err(ret)
+        }
+    }
+
+    /// Perform an asymmetric RSA decryption.
+    pub fn rsa_decrypt(
+        &mut self,
+        key_handle: ESYS_TR,
+        cipher_text: PublicKeyRSA,
+        in_scheme: &TPMT_RSA_DECRYPT,
+        label: Data,
+    ) -> Result<PublicKeyRSA> {
+        let tss_cipher_text = TPM2B_PUBLIC_KEY_RSA::try_from(cipher_text)?;
+        let tss_label = TPM2B_DATA::try_from(label)?;
+        let mut message = null_mut();
+        let ret = unsafe {
+            Esys_RSA_Decrypt(
+                self.mut_context(),
+                key_handle,
+                self.sessions.0,
+                self.sessions.1,
+                self.sessions.2,
+                &tss_cipher_text,
+                in_scheme,
+                &tss_label,
+                &mut message,
+            )
+        };
+        let ret = Error::from_tss_rc(ret);
+
+        if ret.is_success() {
+            let data = unsafe { PublicKeyRSA::try_from(*message)? };
+            Ok(data)
+        } else {
             Err(ret)
         }
     }
