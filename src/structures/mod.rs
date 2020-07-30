@@ -43,6 +43,11 @@ pub mod data_buffer {
     pub use super::buffers::data::*;
 }
 
+pub use self::publickeyrsa_buffer::PublicKeyRSA;
+pub mod publickeyrsa_buffer {
+    pub use super::buffers::publickeyrsa::*;
+}
+
 pub use self::nonce_buffer::Nonce;
 pub mod nonce_buffer {
     pub use super::buffers::nonce::*;
