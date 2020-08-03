@@ -15,11 +15,12 @@
 //! and persist the underlying data.
 use crate::constants::algorithm::{Cipher, EllipticCurve, HashingAlgorithm};
 use crate::constants::tss::*;
-use crate::structures::{Auth, Digest, VerifiedTicket};
+use crate::structures::{Auth, Data, Digest, PublicKeyRSA, VerifiedTicket};
 use crate::tcti::Tcti;
 use crate::tss2_esys::*;
 use crate::utils::{
-    self, create_restricted_decryption_rsa_public, create_unrestricted_signing_ecc_public,
+    self, create_restricted_decryption_rsa_public,
+    create_unrestricted_encryption_decryption_rsa_public, create_unrestricted_signing_ecc_public,
     create_unrestricted_signing_rsa_public, AsymSchemeUnion, Hierarchy, PublicIdUnion, PublicKey,
     TpmaSessionBuilder, TpmsContext, RSA_KEY_SIZES,
 };
@@ -33,9 +34,11 @@ use std::convert::{TryFrom, TryInto};
 /// The `TransientKeyContext` makes use of a root key from which the other, client-controlled
 /// keyes are derived.
 ///
-/// Currently, only functionality necessary for RSA key creation and usage (for signing and
-/// verifying signatures) is implemented. More precisely, the RSA SSA asymmetric scheme with
-/// SHA256 is used for all created and imported keys.
+/// Currently, only functionality necessary for RSA key creation and usage (for signing,
+/// verifying signatures, encryption and decryption) is implemented. The RSA SSA
+/// asymmetric scheme with SHA256 is used for all created and imported signing keys.
+/// The RSA OAEP asymmetric scheme with SHA256 is used for all created and imported
+/// signing/encryption/decryption keys.
 #[allow(clippy::module_name_repetitions)]
 #[derive(Debug)]
 pub struct TransientKeyContext {
@@ -44,7 +47,7 @@ pub struct TransientKeyContext {
 }
 
 impl TransientKeyContext {
-    /// Create a new signing key.
+    /// Create a new key.
     ///
     /// A key is created as a descendant of the context root key, with the given parameters.
     ///
@@ -58,11 +61,12 @@ impl TransientKeyContext {
     /// * if the authentication size is larger than 32 a `WrongParamSize` wrapper error is returned
     /// * for RSA keys, if the specified key size is not one of 1024, 2048, 3072 or 4096, `WrongParamSize`
     /// is returned
-    /// * if the asymmetric scheme is not a signing scheme, `InconsistentParams` is returned
+    /// * if the key_params is not for an RSA key, `InvalidParam` is returned
+    /// * if the key_params does not have an `AnySig` scheme, `InvalidParam` is returned
     /// * errors are returned if any method calls return an error: `Context::get_random`,
     /// `TransientKeyContext::set_session_attrs`, `Context::create_key`, `Context::load`,
     /// `Context::context_save`, `Context::context_flush`
-    pub fn create_signing_key(
+    pub fn create_key(
         &mut self,
         key_params: KeyParams,
         auth_size: usize,
@@ -101,7 +105,7 @@ impl TransientKeyContext {
 
     fn get_public_from_params(&self, params: KeyParams) -> Result<TPM2B_PUBLIC> {
         match params {
-            KeyParams::Rsa {
+            KeyParams::RsaSign {
                 size,
                 scheme,
                 pub_exponent,
@@ -115,6 +119,12 @@ impl TransientKeyContext {
                     size,
                     pub_exponent,
                 )?)
+            }
+            KeyParams::RsaEncrypt { size, pub_exponent } => {
+                if RSA_KEY_SIZES.iter().find(|sz| **sz == size).is_none() {
+                    return Err(Error::local_error(ErrorKind::WrongParamSize));
+                }
+                create_unrestricted_encryption_decryption_rsa_public(size, pub_exponent)
             }
             KeyParams::Ecc { curve, scheme } => {
                 Ok(create_unrestricted_signing_ecc_public(scheme, curve)?)
@@ -205,6 +215,88 @@ impl TransientKeyContext {
         self.context.flush_context(key_handle)?;
 
         Ok(key)
+    }
+
+    /// Encrypt a message with an existing key.
+    ///
+    /// Takes the key as a parameter, encrypts the message and returns the ciphertext
+    ///
+    /// # Errors
+    /// * errors are returned if any method calls return an error: `Context::context_load`,
+    /// `Context::rsa_encrypt`, `Context::flush_context`, `TransientKeyContext::set_session_attrs`
+    /// `Context::set_handle_auth`
+    pub fn rsa_encrypt(
+        &mut self,
+        key_context: TpmsContext,
+        key_auth: Option<Auth>,
+        message: PublicKeyRSA,
+        scheme: AsymSchemeUnion,
+    ) -> Result<PublicKeyRSA> {
+        self.set_session_attrs()?;
+        let key_handle = self.context.context_load(key_context)?;
+        if let Some(key_auth_value) = key_auth {
+            self.context
+                .tr_set_auth(key_handle, &key_auth_value)
+                .or_else(|e| {
+                    self.context.flush_context(key_handle)?;
+                    Err(e)
+                })?;
+        }
+        let scheme = scheme.get_rsa_decrypt_struct();
+        self.set_session_attrs()?;
+
+        let ciphertext = self
+            .context
+            .rsa_encrypt(key_handle, message, &scheme, Data::default())
+            .or_else(|e| {
+                self.context.flush_context(key_handle)?;
+                Err(e)
+            })?;
+
+        self.context.flush_context(key_handle)?;
+
+        Ok(ciphertext)
+    }
+
+    /// Decrypt ciphertext with an existing key.
+    ///
+    /// Takes the key as a parameter, decrypts the ciphertext and returns the plaintext
+    ///
+    /// # Errors
+    /// * errors are returned if any method calls return an error: `Context::context_load`,
+    /// `Context::rsa_decrypt`, `Context::flush_context`, `TransientKeyContext::set_session_attrs`
+    /// `Context::set_handle_auth`
+    pub fn rsa_decrypt(
+        &mut self,
+        key_context: TpmsContext,
+        key_auth: Option<Auth>,
+        ciphertext: PublicKeyRSA,
+        scheme: AsymSchemeUnion,
+    ) -> Result<PublicKeyRSA> {
+        self.set_session_attrs()?;
+        let key_handle = self.context.context_load(key_context)?;
+        if let Some(key_auth_value) = key_auth {
+            self.context
+                .tr_set_auth(key_handle, &key_auth_value)
+                .or_else(|e| {
+                    self.context.flush_context(key_handle)?;
+                    Err(e)
+                })?;
+        }
+        let scheme = scheme.get_rsa_decrypt_struct();
+        self.set_session_attrs()?;
+
+        let plaintext = self
+            .context
+            .rsa_decrypt(key_handle, ciphertext, &scheme, Data::default())
+            .or_else(|e| {
+                self.context.flush_context(key_handle)?;
+                Err(e)
+            })?;
+
+        self.context.flush_context(key_handle)?;
+
+        Ok(plaintext)
     }
 
     /// Sign a digest with an existing key.
@@ -486,7 +578,7 @@ impl Default for TransientKeyContextBuilder {
 /// Parameters for the kinds of keys supported by the context
 #[derive(Debug, Clone, Copy)]
 pub enum KeyParams {
-    Rsa {
+    RsaSign {
         /// Size of key in bits
         ///
         /// Can only be one of: 1024, 2048, 3072 or 4096
@@ -495,6 +587,16 @@ pub enum KeyParams {
         ///
         /// *Must* be an RSA-specific scheme
         scheme: AsymSchemeUnion,
+        /// Public exponent of the key
+        ///
+        /// If set to 0, it will default to 2^16 - 1
+        pub_exponent: u32,
+    },
+    RsaEncrypt {
+        /// Size of key in bits
+        ///
+        /// Can only be one of: 1024, 2048, 3072 or 4096
+        size: u16,
         /// Public exponent of the key
         ///
         /// If set to 0, it will default to 2^16 - 1

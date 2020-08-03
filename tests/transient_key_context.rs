@@ -7,7 +7,7 @@ use tss_esapi::constants::{
 };
 use tss_esapi::{Error, WrapperErrorKind as ErrorKind};
 
-use tss_esapi::structures::{Auth, Digest};
+use tss_esapi::structures::{Auth, Digest, PublicKeyRSA};
 use tss_esapi::utils::{AsymSchemeUnion, PublicKey, Signature, SignatureData};
 use tss_esapi::Tcti;
 use tss_esapi::{
@@ -146,8 +146,8 @@ fn verify() {
 fn sign_with_bad_auth() {
     let mut ctx = create_ctx();
     let (key, key_auth) = ctx
-        .create_signing_key(
-            KeyParams::Rsa {
+        .create_key(
+            KeyParams::RsaSign {
                 size: 2048,
                 scheme: AsymSchemeUnion::RSASSA(HashingAlgorithm::Sha256),
                 pub_exponent: 0,
@@ -170,8 +170,8 @@ fn sign_with_bad_auth() {
 fn sign_with_no_auth() {
     let mut ctx = create_ctx();
     let (key, _) = ctx
-        .create_signing_key(
-            KeyParams::Rsa {
+        .create_key(
+            KeyParams::RsaSign {
                 size: 2048,
                 scheme: AsymSchemeUnion::RSASSA(HashingAlgorithm::Sha256),
                 pub_exponent: 0,
@@ -184,11 +184,47 @@ fn sign_with_no_auth() {
 }
 
 #[test]
+fn encrypt_decrypt() {
+    let mut ctx = create_ctx();
+    let (key, auth) = ctx
+        .create_key(
+            KeyParams::RsaEncrypt {
+                size: 2048,
+                pub_exponent: 0,
+            },
+            16,
+        )
+        .unwrap();
+    let dec_key = key.clone();
+    let message = vec![0x1, 0x2, 0x3];
+
+    let ciphertext = ctx
+        .rsa_encrypt(
+            key,
+            None,
+            PublicKeyRSA::try_from(message.clone()).unwrap(),
+            AsymSchemeUnion::RSAOAEP(HashingAlgorithm::Sha256),
+        )
+        .unwrap();
+    assert_ne!(message, ciphertext.value());
+
+    let plaintext = ctx
+        .rsa_decrypt(
+            dec_key,
+            auth,
+            ciphertext,
+            AsymSchemeUnion::RSAOAEP(HashingAlgorithm::Sha256),
+        )
+        .unwrap();
+    assert_eq!(message, plaintext.value());
+}
+
+#[test]
 fn two_signatures_different_digest() {
     let mut ctx = create_ctx();
     let (key1, auth1) = ctx
-        .create_signing_key(
-            KeyParams::Rsa {
+        .create_key(
+            KeyParams::RsaSign {
                 size: 2048,
                 scheme: AsymSchemeUnion::RSASSA(HashingAlgorithm::Sha256),
                 pub_exponent: 0,
@@ -197,8 +233,8 @@ fn two_signatures_different_digest() {
         )
         .unwrap();
     let (key2, auth2) = ctx
-        .create_signing_key(
-            KeyParams::Rsa {
+        .create_key(
+            KeyParams::RsaSign {
                 size: 2048,
                 scheme: AsymSchemeUnion::RSASSA(HashingAlgorithm::Sha256),
                 pub_exponent: 0,
@@ -220,8 +256,8 @@ fn two_signatures_different_digest() {
 fn verify_wrong_key() {
     let mut ctx = create_ctx();
     let (key1, auth1) = ctx
-        .create_signing_key(
-            KeyParams::Rsa {
+        .create_key(
+            KeyParams::RsaSign {
                 size: 2048,
                 scheme: AsymSchemeUnion::RSASSA(HashingAlgorithm::Sha256),
                 pub_exponent: 0,
@@ -230,8 +266,8 @@ fn verify_wrong_key() {
         )
         .unwrap();
     let (key2, _) = ctx
-        .create_signing_key(
-            KeyParams::Rsa {
+        .create_key(
+            KeyParams::RsaSign {
                 size: 2048,
                 scheme: AsymSchemeUnion::RSASSA(HashingAlgorithm::Sha256),
                 pub_exponent: 0,
@@ -265,8 +301,8 @@ fn verify_wrong_key() {
 fn verify_wrong_digest() {
     let mut ctx = create_ctx();
     let (key, auth) = ctx
-        .create_signing_key(
-            KeyParams::Rsa {
+        .create_key(
+            KeyParams::RsaSign {
                 size: 2048,
                 scheme: AsymSchemeUnion::RSASSA(HashingAlgorithm::Sha256),
                 pub_exponent: 0,
@@ -302,8 +338,8 @@ fn full_test() {
     let mut ctx = create_ctx();
     for _ in 0..4 {
         let (key, auth) = ctx
-            .create_signing_key(
-                KeyParams::Rsa {
+            .create_key(
+                KeyParams::RsaSign {
                     size: 2048,
                     scheme: AsymSchemeUnion::RSASSA(HashingAlgorithm::Sha256),
                     pub_exponent: 0,
@@ -330,7 +366,7 @@ fn full_test() {
 fn create_ecc_key() {
     let mut ctx = create_ctx();
     let _ = ctx
-        .create_signing_key(
+        .create_key(
             KeyParams::Ecc {
                 curve: EllipticCurve::NistP256,
                 scheme: AsymSchemeUnion::ECDSA(HashingAlgorithm::Sha256),
@@ -344,7 +380,7 @@ fn create_ecc_key() {
 fn create_ecc_key_rsa_scheme() {
     let mut ctx = create_ctx();
     let _ = ctx
-        .create_signing_key(
+        .create_key(
             KeyParams::Ecc {
                 curve: EllipticCurve::NistP256,
                 scheme: AsymSchemeUnion::RSASSA(HashingAlgorithm::Sha256),
@@ -358,7 +394,7 @@ fn create_ecc_key_rsa_scheme() {
 fn create_ecc_key_decryption_scheme() {
     let mut ctx = create_ctx();
     let _ = ctx
-        .create_signing_key(
+        .create_key(
             KeyParams::Ecc {
                 curve: EllipticCurve::NistP256,
                 scheme: AsymSchemeUnion::ECDH(HashingAlgorithm::Sha256),
@@ -373,7 +409,7 @@ fn full_ecc_test() {
     let mut ctx = create_ctx();
     for _ in 0..4 {
         let (key, auth) = ctx
-            .create_signing_key(
+            .create_key(
                 KeyParams::Ecc {
                     curve: EllipticCurve::NistP256,
                     scheme: AsymSchemeUnion::ECDSA(HashingAlgorithm::Sha256),
