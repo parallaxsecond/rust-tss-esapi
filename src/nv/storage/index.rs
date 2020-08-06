@@ -2,103 +2,16 @@
 // SPDX-License-Identifier: Apache-2.0
 use crate::{
     constants::tss::{
-        TPM2_HT_NV_INDEX, TPM2_NT_BITS, TPM2_NT_COUNTER, TPM2_NT_EXTEND, TPM2_NT_ORDINARY,
-        TPM2_NT_PIN_FAIL, TPM2_NT_PIN_PASS,
+        TPM2_NT_BITS, TPM2_NT_COUNTER, TPM2_NT_EXTEND, TPM2_NT_ORDINARY, TPM2_NT_PIN_FAIL,
+        TPM2_NT_PIN_PASS,
     },
-    tss2_esys::{ESYS_TR, TPM2_NT, TPMA_NV, TPMI_RH_NV_INDEX},
+    tss2_esys::{TPM2_NT, TPMA_NV},
     Error, Result, WrapperErrorKind,
 };
 
 use bitfield::bitfield;
 use log::error;
 use std::convert::{From, TryFrom};
-
-///
-/// Struct representing the NvIndex.
-///
-/// The NvIndex is a TPM handle and it must
-/// have a most significant octet that is
-/// equal to TPM_HT_NV_INDEX.
-#[derive(Debug, Copy, Clone, PartialEq, Eq)]
-pub struct NvIndex {
-    value: u32,
-}
-
-impl NvIndex {
-    /// Creates index using the specified value.
-    ///
-    /// # Errors
-    /// * If `value` does not have a most significant octet
-    ///   that is equal to TPM_HT_NV_INDEX an `InvalidParam`
-    ///   error is returned.
-    pub fn create_from_value(value: u32) -> Result<Self> {
-        let most_significant_octet = value.to_be_bytes()[0];
-        if most_significant_octet != TPM2_HT_NV_INDEX {
-            error!(
-                "Error: Value has invalid most significant octet(={})",
-                most_significant_octet
-            );
-            return Err(Error::local_error(WrapperErrorKind::InvalidParam));
-        }
-        Ok(NvIndex { value })
-    }
-
-    /// Creates an index from an offset of the
-    /// TPM_HT_NV_INDEX.
-    ///
-    /// # Errors
-    /// * If the offset is greater 16 777 215 (i.e. most
-    ///   significant octet is not 0) an `InvalidParam`
-    ///   error is returned.
-    pub fn create_from_offset(offset: u32) -> Result<Self> {
-        let mut nv_index_be_bytes = offset.to_be_bytes();
-        // Check that ha value is not to big.
-        let most_significant_octet = nv_index_be_bytes[0];
-        if most_significant_octet != 0 {
-            error!("Error: Offset is to big (> 16777215)");
-            return Err(Error::local_error(WrapperErrorKind::InvalidParam));
-        }
-        // Add the correct most significant octet for Nv Index.
-        nv_index_be_bytes[0] = TPM2_HT_NV_INDEX;
-        Ok(NvIndex {
-            value: u32::from_be_bytes(nv_index_be_bytes),
-        })
-    }
-}
-
-impl TryFrom<TPMI_RH_NV_INDEX> for NvIndex {
-    type Error = Error;
-    fn try_from(tss_nv_index: TPMI_RH_NV_INDEX) -> Result<NvIndex> {
-        NvIndex::create_from_value(tss_nv_index)
-    }
-}
-
-impl From<NvIndex> for TPMI_RH_NV_INDEX {
-    fn from(nv_index: NvIndex) -> TPMI_RH_NV_INDEX {
-        nv_index.value
-    }
-}
-
-/// Represents the esys handled used for referencing
-/// the nv index.
-#[derive(Debug, Copy, Clone, PartialEq, Eq)]
-pub struct NvIndexHandle {
-    value: u32,
-}
-
-impl From<ESYS_TR> for NvIndexHandle {
-    fn from(esys_resource_handle: ESYS_TR) -> NvIndexHandle {
-        NvIndexHandle {
-            value: esys_resource_handle,
-        }
-    }
-}
-
-impl From<NvIndexHandle> for ESYS_TR {
-    fn from(nv_index_handle: NvIndexHandle) -> ESYS_TR {
-        nv_index_handle.value
-    }
-}
 
 /// Enum with values representing the NV index type.
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]

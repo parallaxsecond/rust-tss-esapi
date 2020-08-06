@@ -3,7 +3,8 @@
 
 use crate::{
     constants::algorithm::HashingAlgorithm,
-    nv::storage::{NvIndex, NvIndexAttributes},
+    handles::tpm::NvIndexTpmHandle,
+    nv::storage::NvIndexAttributes,
     structures::Digest,
     tss2_esys::{TPM2B_NV_PUBLIC, TPMS_NV_PUBLIC},
     Error, Result, WrapperErrorKind,
@@ -13,7 +14,7 @@ use std::convert::{TryFrom, TryInto};
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct NvPublic {
-    nv_index: NvIndex,
+    nv_index: NvIndexTpmHandle,
     name_algorithm: HashingAlgorithm,
     attributes: NvIndexAttributes,
     authorization_policy: Digest,
@@ -23,7 +24,7 @@ pub struct NvPublic {
 impl NvPublic {
     const MAX_SIZE: usize = std::mem::size_of::<TPMS_NV_PUBLIC>();
 
-    pub fn nv_index(&self) -> NvIndex {
+    pub fn nv_index(&self) -> NvIndexTpmHandle {
         self.nv_index
     }
 
@@ -86,7 +87,7 @@ impl TryFrom<NvPublic> for TPM2B_NV_PUBLIC {
 ///
 #[derive(Debug, Default)]
 pub struct NvPublicBuilder {
-    nv_index: Option<NvIndex>,
+    nv_index: Option<NvIndexTpmHandle>,
     name_algorithm: Option<HashingAlgorithm>,
     attributes: Option<NvIndexAttributes>,
     authorization_policy: Option<Digest>,
@@ -104,7 +105,7 @@ impl NvPublicBuilder {
         }
     }
 
-    pub fn with_nv_index(mut self, nv_index: NvIndex) -> Self {
+    pub fn with_nv_index(mut self, nv_index: NvIndexTpmHandle) -> Self {
         self.nv_index = Some(nv_index);
         self
     }

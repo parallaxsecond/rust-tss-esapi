@@ -5,7 +5,7 @@
 /// in the TPM.
 ///
 pub use authorization::NvAuthorization;
-pub use index::{NvIndex, NvIndexAttributes, NvIndexHandle, NvIndexType};
+pub use index::{NvIndexAttributes, NvIndexType};
 pub use public::{NvPublic, NvPublicBuilder};
 
 mod authorization;

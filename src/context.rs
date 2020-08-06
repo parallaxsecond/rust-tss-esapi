@@ -2,7 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 use crate::algorithm::structures::SensitiveData;
 use crate::constants::algorithm::HashingAlgorithm;
-use crate::nv::storage::{NvAuthorization, NvIndexHandle, NvPublic};
+use crate::handles::esys::NvIndexHandle;
+use crate::nv::storage::{NvAuthorization, NvPublic};
 use crate::structures::{
     Auth, Data, Digest, DigestList, HashcheckTicket, MaxBuffer, MaxNvBuffer, Name, Nonce,
     PcrSelectionList, PublicKeyRSA,

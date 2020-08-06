@@ -491,6 +491,7 @@ pub const TPM2_HT_SAVED_SESSION: TPM2_HT = 0x03; /* Saved Authorization Session 
 pub const TPM2_HT_PERMANENT: TPM2_HT = 0x40; /* Permanent Values  assigned by this specification in */
 pub const TPM2_HT_TRANSIENT: TPM2_HT = 0x80; /* Transient Objects  assigned by the TPM when an object is loaded into transient object memory or when a persistent object is converted to a transient object */
 pub const TPM2_HT_PERSISTENT: TPM2_HT = 0x81; /* Persistent Objects  assigned by the TPM when a loaded transient object is made persistent */
+pub const TPM2_HT_AC: TPM2_HT = 0x90; /* Attached Component – handle for an Attached Component. */
 
 pub const TPM2_RH_FIRST: TPM2_RH = 0x40000000; /* R */
 pub const TPM2_RH_SRK: TPM2_RH = 0x40000000; /* R */
