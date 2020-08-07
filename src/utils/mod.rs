@@ -1496,3 +1496,20 @@ impl<'a> IntoIterator for &'a PcrData {
         self.data.iter()
     }
 }
+
+impl From<PcrData> for TPML_DIGEST {
+    fn from(pcr_data: PcrData) -> Self {
+        let mut tpml_digest: TPML_DIGEST = Default::default();
+
+        for (_hash_algo, pcr_bank) in pcr_data.into_iter() {
+            for (_pcr_slot, pcr_value) in pcr_bank.into_iter() {
+                let i = tpml_digest.count as usize;
+                let size = pcr_value.value().len() as u16;
+                tpml_digest.digests[i].size = size;
+                tpml_digest.digests[i].buffer[..size as usize].copy_from_slice(pcr_value.value());
+                tpml_digest.count += 1;
+            }
+        }
+        tpml_digest
+    }
+}
