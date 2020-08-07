@@ -40,7 +40,8 @@ use tss_esapi::{
         algorithm::{Cipher, HashingAlgorithm},
         tss::*,
     },
-    nv::storage::{NvAuthorization, NvIndex, NvIndexAttributes, NvPublicBuilder},
+    handles::tpm::NvIndexTpmHandle,
+    nv::storage::{NvAuthorization, NvIndexAttributes, NvPublicBuilder},
     structures::{
         Auth, Data, Digest, DigestList, MaxBuffer, MaxNvBuffer, Nonce, PcrSelectionListBuilder,
         PcrSlot, PublicKeyRSA, Ticket,
@@ -1912,7 +1913,7 @@ mod test_nv_define_space {
     fn test_nv_define_space_failures() {
         let mut context = create_ctx_with_session();
 
-        let nv_index = NvIndex::create_from_value(0x01500015).unwrap();
+        let nv_index = NvIndexTpmHandle::new(0x01500015).unwrap();
 
         // Create owner nv public.
         let mut owner_nv_index_attributes = NvIndexAttributes(0);
@@ -1955,7 +1956,7 @@ mod test_nv_define_space {
     fn test_nv_define_space() {
         let mut context = create_ctx_with_session();
 
-        let nv_index = NvIndex::create_from_value(0x01500015).unwrap();
+        let nv_index = NvIndexTpmHandle::new(0x01500015).unwrap();
 
         // Create owner nv public.
         let mut owner_nv_index_attributes = NvIndexAttributes(0);
@@ -2009,7 +2010,7 @@ mod test_nv_undefine_space {
     fn test_nv_undefine_space() {
         let mut context = create_ctx_with_session();
 
-        let nv_index = NvIndex::create_from_value(0x01500015).unwrap();
+        let nv_index = NvIndexTpmHandle::new(0x01500015).unwrap();
 
         // Create owner nv public.
         let mut owner_nv_index_attributes = NvIndexAttributes(0);
@@ -2042,7 +2043,7 @@ mod test_nv_write {
     fn test_nv_write() {
         let mut context = create_ctx_with_session();
 
-        let nv_index = NvIndex::create_from_value(0x01500015).unwrap();
+        let nv_index = NvIndexTpmHandle::new(0x01500015).unwrap();
 
         // Create owner nv public.
         let mut owner_nv_index_attributes = NvIndexAttributes(0);
@@ -2085,7 +2086,7 @@ mod test_nv_read_public {
     fn test_nv_read_public() {
         let mut context = create_ctx_with_session();
 
-        let nv_index = NvIndex::create_from_value(0x01500015).unwrap();
+        let nv_index = NvIndexTpmHandle::new(0x01500015).unwrap();
 
         let mut nv_index_attributes = NvIndexAttributes(0);
         nv_index_attributes.set_owner_write(true);
@@ -2127,7 +2128,7 @@ mod test_nv_read {
     fn test_nv_read() {
         let mut context = create_ctx_with_session();
 
-        let nv_index = NvIndex::create_from_value(0x01500015).unwrap();
+        let nv_index = NvIndexTpmHandle::new(0x01500015).unwrap();
 
         // Create owner nv public.
         let mut owner_nv_index_attributes = NvIndexAttributes(0);
