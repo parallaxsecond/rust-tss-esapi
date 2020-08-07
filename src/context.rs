@@ -2,9 +2,10 @@
 // SPDX-License-Identifier: Apache-2.0
 use crate::algorithm::structures::SensitiveData;
 use crate::constants::algorithm::HashingAlgorithm;
+use crate::nv::storage::{NvAuthorization, NvIndexHandle, NvPublic};
 use crate::structures::{
-    Auth, Data, Digest, DigestList, HashcheckTicket, MaxBuffer, Name, Nonce, PcrSelectionList,
-    PublicKeyRSA,
+    Auth, Data, Digest, DigestList, HashcheckTicket, MaxBuffer, MaxNvBuffer, Name, Nonce,
+    PcrSelectionList, PublicKeyRSA,
 };
 use crate::tcti::Tcti;
 use crate::tss2_esys::*;
@@ -1328,6 +1329,165 @@ impl Context {
         }
     }
 
+    ///////////////////////////////////////////////////////////////////////////
+    /// TPM Non Volatile Section
+    ///////////////////////////////////////////////////////////////////////////
+
+    /// NV Define Space
+    ///
+    /// Allocates an index in the non volatile
+    /// storage.
+    pub fn nv_define_space(
+        &mut self,
+        nv_authorization: NvAuthorization,
+        auth: Option<&Auth>,
+        public_info: &NvPublic,
+    ) -> Result<NvIndexHandle> {
+        let tss_auth = TPM2B_AUTH::try_from(auth.cloned().unwrap_or_default())?;
+        let tss_nv_public = TPM2B_NV_PUBLIC::try_from(public_info.clone())?;
+        let mut object_identifier: ESYS_TR = ESYS_TR_NONE;
+        let ret = unsafe {
+            Esys_NV_DefineSpace(
+                self.mut_context(),
+                nv_authorization.into(),
+                self.sessions.0,
+                self.sessions.1,
+                self.sessions.2,
+                &tss_auth,
+                &tss_nv_public,
+                &mut object_identifier,
+            )
+        };
+        let ret = Error::from_tss_rc(ret);
+        if ret.is_success() {
+            Ok(NvIndexHandle::from(object_identifier))
+        } else {
+            Err(ret)
+        }
+    }
+
+    /// NV Undefine Space
+    ///
+    /// Deletes an index in the non volatile
+    /// storage.
+    pub fn nv_undefine_space(
+        &mut self,
+        nv_authorization: NvAuthorization,
+        nv_index_handle: NvIndexHandle,
+    ) -> Result<()> {
+        let ret = unsafe {
+            Esys_NV_UndefineSpace(
+                self.mut_context(),
+                nv_authorization.into(),
+                nv_index_handle.into(),
+                self.sessions.0,
+                self.sessions.1,
+                self.sessions.2,
+            )
+        };
+
+        let ret = Error::from_tss_rc(ret);
+        if ret.is_success() {
+            Ok(())
+        } else {
+            Err(ret)
+        }
+    }
+
+    /// NV Read Public
+    ///
+    /// Reads the public part of an nv index.
+    ///
+    pub fn nv_read_public(&mut self, nv_index_handle: NvIndexHandle) -> Result<(NvPublic, Name)> {
+        let mut tss_nv_public_ptr = null_mut();
+        let mut tss_nv_name_ptr = null_mut();
+        let ret = unsafe {
+            Esys_NV_ReadPublic(
+                self.mut_context(),
+                nv_index_handle.into(),
+                self.sessions.0,
+                self.sessions.1,
+                self.sessions.2,
+                &mut tss_nv_public_ptr,
+                &mut tss_nv_name_ptr,
+            )
+        };
+        let ret = Error::from_tss_rc(ret);
+        if ret.is_success() {
+            let tss_nv_public = unsafe { MBox::<TPM2B_NV_PUBLIC>::from_raw(tss_nv_public_ptr) };
+            let tss_nv_name = unsafe { MBox::<TPM2B_NAME>::from_raw(tss_nv_name_ptr) };
+            Ok((
+                NvPublic::try_from(*tss_nv_public)?,
+                Name::try_from(*tss_nv_name)?,
+            ))
+        } else {
+            Err(ret)
+        }
+    }
+
+    /// NV Read
+    ///
+    /// Reads data from the nv index.
+    pub fn nv_read(
+        &mut self,
+        nv_authorization: NvAuthorization,
+        nv_index_handle: NvIndexHandle,
+        size: u16,
+        offset: u16,
+    ) -> Result<MaxNvBuffer> {
+        let mut tss_max_nv_buffer_ptr = null_mut();
+        let ret = unsafe {
+            Esys_NV_Read(
+                self.mut_context(),
+                nv_authorization.into(),
+                nv_index_handle.into(),
+                self.sessions.0,
+                self.sessions.1,
+                self.sessions.2,
+                size,
+                offset,
+                &mut tss_max_nv_buffer_ptr,
+            )
+        };
+        let ret = Error::from_tss_rc(ret);
+        if ret.is_success() {
+            let tss_max_nv_buffer =
+                unsafe { MBox::<TPM2B_MAX_NV_BUFFER>::from_raw(tss_max_nv_buffer_ptr) };
+            Ok(MaxNvBuffer::try_from(*tss_max_nv_buffer)?)
+        } else {
+            Err(ret)
+        }
+    }
+
+    /// NV Write
+    ///
+    /// Writes data to an nv index.
+    pub fn nv_write(
+        &mut self,
+        nv_authorization: NvAuthorization,
+        nv_index_handle: NvIndexHandle,
+        data: &MaxNvBuffer,
+        offset: u16,
+    ) -> Result<()> {
+        let ret = unsafe {
+            Esys_NV_Write(
+                self.mut_context(),
+                nv_authorization.into(),
+                nv_index_handle.into(),
+                self.sessions.0,
+                self.sessions.1,
+                self.sessions.2,
+                &data.clone().try_into()?,
+                offset,
+            )
+        };
+        let ret = Error::from_tss_rc(ret);
+        if ret.is_success() {
+            Ok(())
+        } else {
+            Err(ret)
+        }
+    }
     ///////////////////////////////////////////////////////////////////////////
     /// Private Methods Section
     ///////////////////////////////////////////////////////////////////////////

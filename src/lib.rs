@@ -114,6 +114,7 @@ pub mod algorithm;
 pub mod constants;
 mod context;
 mod error;
+pub mod nv;
 pub mod structures;
 mod tcti;
 pub mod utils;

@@ -38,6 +38,11 @@ pub mod max_buffer {
     pub use super::buffers::max::*;
 }
 
+pub use self::max_nv_buffer::MaxNvBuffer;
+pub mod max_nv_buffer {
+    pub use super::buffers::max_nv::*;
+}
+
 pub use self::data_buffer::Data;
 pub mod data_buffer {
     pub use super::buffers::data::*;

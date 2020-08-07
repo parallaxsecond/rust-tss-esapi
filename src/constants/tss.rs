@@ -368,6 +368,13 @@ pub const TPM2_CAP_ECC_CURVES: TPM2_CAP = 0x00000008; /* TPM2_ECC_CURVE1 */
 pub const TPM2_CAP_LAST: TPM2_CAP = 0x00000008;
 pub const TPM2_CAP_VENDOR_PROPERTY: TPM2_CAP = 0x00000100; /* manufacturer specific */
 
+pub const TPM2_NT_ORDINARY: TPM2_NT = 0x0; /* Ordinary – contains data that is opaque to the TPM that can only be modified using TPM2_NV_Write(). */
+pub const TPM2_NT_COUNTER: TPM2_NT = 0x1; /* Counter – contains an 8-octet value that is to be used as a counter and can only be modified with TPM2_NV_Increment() */
+pub const TPM2_NT_BITS: TPM2_NT = 0x2; /* Bit Field – contains an 8-octet value to be used as a bit field and can only be modified with TPM2_NV_SetBits(). */
+pub const TPM2_NT_EXTEND: TPM2_NT = 0x4; /* Extend – contains a digest-sized value used like a PCR. The Index can only be modified using TPM2_NV_Extend(). The extend will use the nameAlg of the Index. */
+pub const TPM2_NT_PIN_FAIL: TPM2_NT = 0x8; /* PIN Fail - contains pinCount that increments on a PIN authorization failure and a pinLimit. */
+pub const TPM2_NT_PIN_PASS: TPM2_NT = 0x9; /* PIN Pass - contains pinCount that increments on a PIN authorization success and a pinLimit. */
+
 pub const TPM2_PT_NONE: TPM2_PT = 0x00000000; /* indicates no property type */
 pub const TPM2_PT_GROUP: TPM2_PT = 0x00000100; /* The number of properties in each group. NOTE The first group with any properties is group 1 TPM2_PT_GROUP * 1. Group 0 is reserved. */
 pub const TPM2_PT_FIXED: TPM2_PT = TPM2_PT_GROUP * 1; /* the group of fixed properties returned as TPMS_TAGGED_PROPERTY. The values in this group are only changed due to a firmware change in the TPM. */
