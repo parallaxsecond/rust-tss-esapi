@@ -33,14 +33,16 @@ const KEY: [u8; 512] = [
 ];
 
 use std::convert::{TryFrom, TryInto};
-//use tss_esapi::*;
 use tss_esapi::{
     algorithm::structures::SensitiveData,
     constants::{
         algorithm::{Cipher, HashingAlgorithm},
         tss::*,
     },
-    handles::tpm::NvIndexTpmHandle,
+    handles::{
+        esys::{NvIndexHandle, ObjectHandle},
+        tpm::NvIndexTpmHandle,
+    },
     nv::storage::{NvAuthorization, NvIndexAttributes, NvPublicBuilder},
     structures::{
         Auth, Data, Digest, DigestList, MaxBuffer, MaxNvBuffer, Nonce, PcrSelectionListBuilder,
@@ -173,7 +175,7 @@ fn comprehensive_test() {
 
     let key_context = context.context_save(key_handle).unwrap();
     let key_handle = context.context_load(key_context).unwrap();
-    context.tr_set_auth(key_handle, &key_auth).unwrap();
+    context.tr_set_auth(key_handle.into(), &key_auth).unwrap();
     let scheme = TPMT_SIG_SCHEME {
         scheme: TPM2_ALG_NULL,
         details: Default::default(),
@@ -625,7 +627,7 @@ mod test_policies {
                 &[],
             )
             .unwrap();
-        let key_name = context.tr_get_name(key_handle).unwrap();
+        let key_name = context.tr_get_name(key_handle.into()).unwrap();
 
         let policy_ref: TPM2B_NONCE = Default::default();
         let (policy_digest, policy_ses) = get_pcr_policy_digest(&mut context, false, false);
@@ -1732,7 +1734,9 @@ mod test_handle_auth {
             digest: Default::default(),
         };
 
-        context.tr_set_auth(new_key_handle, &key_auth).unwrap();
+        context
+            .tr_set_auth(new_key_handle.into(), &key_auth)
+            .unwrap();
         let _ = context
             .sign(
                 new_key_handle,
@@ -1751,7 +1755,10 @@ mod test_handle_auth {
     fn test_invalid_handle() {
         let mut context = create_ctx_with_session();
         context
-            .tr_set_auth(ESYS_TR_NONE, &Auth::try_from([0x11; 10].to_vec()).unwrap())
+            .tr_set_auth(
+                ESYS_TR_NONE.into(),
+                &Auth::try_from([0x11; 10].to_vec()).unwrap(),
+            )
             .unwrap_err();
     }
 }
@@ -2178,5 +2185,183 @@ mod test_nv_read {
         // Check result.
         let actual_data = read_result.unwrap();
         assert_eq!(expected_data, actual_data);
+    }
+}
+
+mod test_tr_from_tpm_public {
+    use super::*;
+
+    // Need to set the shEnable in the TPMA_STARTUP in order for this to work.
+    #[ignore]
+    #[test]
+    fn test_tr_from_tpm_public_owner_auth() {
+        let mut context = create_ctx_without_session();
+
+        let nv_index_tpm_handle = NvIndexTpmHandle::new(0x01500015).unwrap();
+
+        // closure for cleaning up if a call fails.
+        let cleanup = |context: &mut Context,
+                       e: tss_esapi::Error,
+                       handle: NvIndexHandle,
+                       fn_name: &str|
+         -> tss_esapi::Error {
+            // Set password authorization
+            let _ = context
+                .nv_undefine_space(NvAuthorization::Owner, handle)
+                .unwrap();
+            panic!("{} failed: {}", fn_name, e);
+        };
+
+        // Create nv public.
+        let mut nv_index_attributes = NvIndexAttributes(0);
+        nv_index_attributes.set_owner_write(true);
+        nv_index_attributes.set_owner_read(true);
+
+        let nv_public = NvPublicBuilder::new()
+            .with_nv_index(nv_index_tpm_handle)
+            .with_index_name_algorithm(HashingAlgorithm::Sha256)
+            .with_index_attributes(nv_index_attributes)
+            .with_data_area_size(32)
+            .build()
+            .unwrap();
+
+        let initial_nv_index_handle = context
+            .nv_define_space(NvAuthorization::Owner, None, &nv_public)
+            .unwrap();
+        ///////////////////////////////////////////
+        // Read the name from the tpm
+        let (_expected_nv_public, expected_name) = context
+            .nv_read_public(initial_nv_index_handle)
+            .map_err(|e| cleanup(&mut context, e, initial_nv_index_handle, "nv_read_public"))
+            .unwrap();
+        ////////////////////////////////////////////////
+        // Close the handle
+        let mut handle_to_be_closed: ObjectHandle = initial_nv_index_handle.into();
+        context
+            .tr_close(&mut handle_to_be_closed)
+            .map_err(|e| cleanup(&mut context, e, initial_nv_index_handle, "tr_close"))
+            .unwrap();
+        assert_eq!(handle_to_be_closed, ObjectHandle::from(ESYS_TR_NONE));
+        ////////////////////////////////////////////////
+        // Make Esys create a new ObjectHandle from the
+        // data in the TPM.
+        let new_nv_index_handle = context
+            .tr_from_tpm_public(nv_index_tpm_handle.into())
+            .map_err(|e| -> tss_esapi::Result<ObjectHandle> {
+                panic!("tr_from_tpm_public failed: {}", e);
+            })
+            .unwrap();
+        ///////////////////////////////////////////////
+        // Get name of the object using the new handle
+        let actual_name = context
+            .tr_get_name(new_nv_index_handle)
+            .map_err(|e| cleanup(&mut context, e, new_nv_index_handle.into(), "tr_get_name"))
+            .unwrap();
+        //////////////////////////////////////////////
+        // Remove undefine the space
+        let _ = context
+            .nv_undefine_space(NvAuthorization::Owner, new_nv_index_handle.into())
+            .unwrap();
+
+        assert_eq!(expected_name, actual_name);
+    }
+
+    #[test]
+    fn test_tr_from_tpm_public_password_auth() {
+        let mut context = create_ctx_without_session();
+
+        let nv_index_tpm_handle = NvIndexTpmHandle::new(0x01500016).unwrap();
+
+        let auth = Auth::try_from(vec![
+            10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29,
+        ])
+        .unwrap();
+
+        // closure for cleaning up if a call fails.
+        let cleanup = |context: &mut Context,
+                       e: tss_esapi::Error,
+                       handle: NvIndexHandle,
+                       fn_name: &str|
+         -> tss_esapi::Error {
+            // Set password authorization
+            context.set_sessions((ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE));
+            let _ = context
+                .nv_undefine_space(NvAuthorization::Owner, handle)
+                .unwrap();
+            panic!("{} failed: {}", fn_name, e);
+        };
+
+        // Create nv public.
+        let mut nv_index_attributes = NvIndexAttributes(0);
+        nv_index_attributes.set_auth_write(true);
+        nv_index_attributes.set_auth_read(true);
+
+        let nv_public = NvPublicBuilder::new()
+            .with_nv_index(nv_index_tpm_handle)
+            .with_index_name_algorithm(HashingAlgorithm::Sha256)
+            .with_index_attributes(nv_index_attributes)
+            .with_data_area_size(32)
+            .build()
+            .unwrap();
+        ///////////////////////////////////////////////////////////////
+        // Define space
+        //
+        // Set password authorization when creating the space.
+        context.set_sessions((ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE));
+        let initial_nv_index_handle = context
+            .nv_define_space(NvAuthorization::Owner, Some(&auth), &nv_public)
+            .unwrap();
+        ///////////////////////////////////////////////////////////////
+        // Read the name from the tpm
+        //
+        // No password authorization.
+        context.set_sessions((ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE));
+        let (_expected_nv_public, expected_name) = context
+            .nv_read_public(initial_nv_index_handle)
+            .map_err(|e| cleanup(&mut context, e, initial_nv_index_handle, "nv_read_public"))
+            .unwrap();
+        ///////////////////////////////////////////////////////////////
+        // Close the esys handle (remove all meta data).
+        //
+        let mut handle_to_be_closed: ObjectHandle = initial_nv_index_handle.into();
+        context
+            .tr_close(&mut handle_to_be_closed)
+            .map_err(|e| cleanup(&mut context, e, initial_nv_index_handle, "tr_close"))
+            .unwrap();
+        assert_eq!(handle_to_be_closed, ObjectHandle::from(ESYS_TR_NONE));
+        // The value of the handle_to_be_closed will be set to a 'None' handle
+        // if the operations was successful.
+
+        ///////////////////////////////////////////////////////////////
+        // Make Esys create a new ObjectHandle from the
+        // data in the TPM.
+        //
+        // The handle is gone so if this fails it is not
+        // possible to remove the defined space.
+        let new_nv_index_handle = context
+            .tr_from_tpm_public(nv_index_tpm_handle.into())
+            .map_err(|e| -> tss_esapi::Result<ObjectHandle> {
+                panic!("tr_from_tpm_public failed: {}", e);
+            })
+            .unwrap();
+        ///////////////////////////////////////////////////////////////
+        // Get name of the object using the new handle
+        //
+        let actual_name = context
+            .tr_get_name(new_nv_index_handle)
+            .map_err(|e| cleanup(&mut context, e, new_nv_index_handle.into(), "tr_get_name"))
+            .unwrap();
+        ///////////////////////////////////////////////////////////////
+        // Remove undefine the space
+        //
+        // Set password authorization
+        context.set_sessions((ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE));
+        let _ = context
+            .nv_undefine_space(NvAuthorization::Owner, new_nv_index_handle.into())
+            .unwrap();
+        ///////////////////////////////////////////////////////////////
+        // Check that we got the correct name
+        //
+        assert_eq!(expected_name, actual_name);
     }
 }
