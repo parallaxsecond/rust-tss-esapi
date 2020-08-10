@@ -23,40 +23,19 @@ pub use names::name::Name;
 /// The sized buffers section
 /////////////////////////////////////////////////////////
 mod buffers;
-pub use self::auth_buffer::Auth;
-pub mod auth_buffer {
-    pub use super::buffers::auth::*;
-}
+pub use self::buffers::auth::Auth;
 
-pub use self::digest_buffer::Digest;
-pub mod digest_buffer {
-    pub use super::buffers::digest::*;
-}
+pub use self::buffers::digest::Digest;
 
-pub use self::max_buffer::MaxBuffer;
-pub mod max_buffer {
-    pub use super::buffers::max::*;
-}
+pub use self::buffers::max_buffer::MaxBuffer;
 
-pub use self::max_nv_buffer::MaxNvBuffer;
-pub mod max_nv_buffer {
-    pub use super::buffers::max_nv::*;
-}
+pub use self::buffers::max_nv_buffer::MaxNvBuffer;
 
-pub use self::data_buffer::Data;
-pub mod data_buffer {
-    pub use super::buffers::data::*;
-}
+pub use self::buffers::data::Data;
 
-pub use self::publickeyrsa_buffer::PublicKeyRSA;
-pub mod publickeyrsa_buffer {
-    pub use super::buffers::publickeyrsa::*;
-}
+pub use self::buffers::public_key_rsa::PublicKeyRSA;
 
-pub use self::nonce_buffer::Nonce;
-pub mod nonce_buffer {
-    pub use super::buffers::nonce::*;
-}
+pub use self::buffers::nonce::Nonce;
 /////////////////////////////////////////////////////////
 /// The pcr section
 /////////////////////////////////////////////////////////
