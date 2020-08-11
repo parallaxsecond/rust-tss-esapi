@@ -236,7 +236,7 @@ impl TransientKeyContext {
         let key_handle = self.context.context_load(key_context)?;
         if let Some(key_auth_value) = key_auth {
             self.context
-                .tr_set_auth(key_handle, &key_auth_value)
+                .tr_set_auth(key_handle.into(), &key_auth_value)
                 .or_else(|e| {
                     self.context.flush_context(key_handle)?;
                     Err(e)
@@ -277,7 +277,7 @@ impl TransientKeyContext {
         let key_handle = self.context.context_load(key_context)?;
         if let Some(key_auth_value) = key_auth {
             self.context
-                .tr_set_auth(key_handle, &key_auth_value)
+                .tr_set_auth(key_handle.into(), &key_auth_value)
                 .or_else(|e| {
                     self.context.flush_context(key_handle)?;
                     Err(e)
@@ -317,7 +317,7 @@ impl TransientKeyContext {
         let key_handle = self.context.context_load(key_context)?;
         if let Some(key_auth_value) = key_auth {
             self.context
-                .tr_set_auth(key_handle, &key_auth_value)
+                .tr_set_auth(key_handle.into(), &key_auth_value)
                 .or_else(|e| {
                     self.context.flush_context(key_handle)?;
                     Err(e)
@@ -535,7 +535,7 @@ impl TransientKeyContextBuilder {
 
         if !self.hierarchy_auth.is_empty() {
             let auth_hierarchy = Auth::try_from(self.hierarchy_auth)?;
-            context.tr_set_auth(self.hierarchy.esys_rh(), &auth_hierarchy)?;
+            context.tr_set_auth(self.hierarchy.esys_rh().into(), &auth_hierarchy)?;
         }
 
         let root_key_handle = context.create_primary_key(

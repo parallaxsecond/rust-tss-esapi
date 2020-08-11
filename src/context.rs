@@ -2,7 +2,10 @@
 // SPDX-License-Identifier: Apache-2.0
 use crate::algorithm::structures::SensitiveData;
 use crate::constants::algorithm::HashingAlgorithm;
-use crate::handles::esys::NvIndexHandle;
+use crate::handles::{
+    esys::{NvIndexHandle, ObjectHandle},
+    tpm::TpmHandle,
+};
 use crate::nv::storage::{NvAuthorization, NvPublic};
 use crate::structures::{
     Auth, Data, Digest, DigestList, HashcheckTicket, MaxBuffer, MaxNvBuffer, Name, Nonce,
@@ -1271,9 +1274,9 @@ impl Context {
     ///
     /// # Errors
     /// * if `auth_value` is larger than the limit, a `WrongParamSize` wrapper error is returned
-    pub fn tr_set_auth(&mut self, handle: ESYS_TR, auth: &Auth) -> Result<()> {
+    pub fn tr_set_auth(&mut self, object_handle: ObjectHandle, auth: &Auth) -> Result<()> {
         let tss_auth = TPM2B_AUTH::try_from(auth.clone())?;
-        let ret = unsafe { Esys_TR_SetAuth(self.mut_context(), handle, &tss_auth) };
+        let ret = unsafe { Esys_TR_SetAuth(self.mut_context(), object_handle.into(), &tss_auth) };
         let ret = Error::from_tss_rc(ret);
         if ret.is_success() {
             Ok(())
@@ -1283,9 +1286,9 @@ impl Context {
     }
 
     /// Retrieve the name of an object from the object handle
-    pub fn tr_get_name(&mut self, handle: ESYS_TR) -> Result<Name> {
+    pub fn tr_get_name(&mut self, object_handle: ObjectHandle) -> Result<Name> {
         let mut name = null_mut();
-        let ret = unsafe { Esys_TR_GetName(self.mut_context(), handle, &mut name) };
+        let ret = unsafe { Esys_TR_GetName(self.mut_context(), object_handle.into(), &mut name) };
         let ret = Error::from_tss_rc(ret);
         if ret.is_success() {
             let tss_name = unsafe { MBox::<TPM2B_NAME>::from_raw(name) };
@@ -1319,9 +1322,11 @@ impl Context {
     }
 
     /// Get session attribute flags.
-    pub fn tr_sess_get_attributes(&mut self, handle: ESYS_TR) -> Result<TpmaSession> {
+    pub fn tr_sess_get_attributes(&mut self, object_handle: ObjectHandle) -> Result<TpmaSession> {
         let mut flags: TPMA_SESSION = 0;
-        let ret = unsafe { Esys_TRSess_GetAttributes(self.mut_context(), handle, &mut flags) };
+        let ret = unsafe {
+            Esys_TRSess_GetAttributes(self.mut_context(), object_handle.into(), &mut flags)
+        };
         let ret = Error::from_tss_rc(ret);
         if ret.is_success() {
             Ok(TpmaSessionBuilder::new().with_flag(flags).build())
@@ -1330,6 +1335,38 @@ impl Context {
         }
     }
 
+    /// Used to construct an esys object from the resources inside the TPM.
+    pub fn tr_from_tpm_public(&mut self, tpm_handle: TpmHandle) -> Result<ObjectHandle> {
+        let mut tss_esys_object_handle: ESYS_TR = ESYS_TR_NONE;
+        let ret = unsafe {
+            Esys_TR_FromTPMPublic(
+                self.mut_context(),
+                tpm_handle.into(),
+                self.sessions.0,
+                self.sessions.1,
+                self.sessions.2,
+                &mut tss_esys_object_handle,
+            )
+        };
+        let ret = Error::from_tss_rc(ret);
+        if ret.is_success() {
+            Ok(ObjectHandle::from(tss_esys_object_handle))
+        } else {
+            Err(ret)
+        }
+    }
+
+    pub fn tr_close(&mut self, object_handle: &mut ObjectHandle) -> Result<()> {
+        let mut tss_esys_object_handle: ESYS_TR = (*object_handle).into();
+        let ret = unsafe { Esys_TR_Close(self.mut_context(), &mut tss_esys_object_handle) };
+        let ret = Error::from_tss_rc(ret);
+        if ret.is_success() {
+            *object_handle = ObjectHandle::from(tss_esys_object_handle);
+            Ok(())
+        } else {
+            Err(ret)
+        }
+    }
     ///////////////////////////////////////////////////////////////////////////
     /// TPM Non Volatile Section
     ///////////////////////////////////////////////////////////////////////////
