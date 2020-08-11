@@ -3,7 +3,7 @@
 
 use crate::{
     constants::algorithm::HashingAlgorithm,
-    handles::tpm::NvIndexTpmHandle,
+    handles::NvIndexTpmHandle,
     nv::storage::NvIndexAttributes,
     structures::Digest,
     tss2_esys::{TPM2B_NV_PUBLIC, TPMS_NV_PUBLIC},

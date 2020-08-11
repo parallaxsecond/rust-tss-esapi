@@ -1,6 +1,7 @@
 // Copyright 2020 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
 use crate::{
+    handles::AuthHandle,
     tss2_esys::{ESYS_TR, ESYS_TR_RH_OWNER, ESYS_TR_RH_PLATFORM},
     utils::Hierarchy,
     Error, Result, WrapperErrorKind,
@@ -35,6 +36,29 @@ impl TryFrom<Hierarchy> for NvAuthorization {
                 error!("Error: Found invalid value when trying to convert Hierarchy to NV Authroization.");
                 Err(Error::local_error(WrapperErrorKind::InvalidParam))
             }
+        }
+    }
+}
+
+impl TryFrom<AuthHandle> for NvAuthorization {
+    type Error = Error;
+    fn try_from(auth_handle: AuthHandle) -> Result<NvAuthorization> {
+        match auth_handle.value() {
+            ESYS_TR_RH_OWNER => Ok(NvAuthorization::Owner),
+            ESYS_TR_RH_PLATFORM => Ok(NvAuthorization::Platform),
+            _ => {
+                error!("Error: Found invalid value when trying convert from auth handle");
+                Err(Error::local_error(WrapperErrorKind::InvalidParam))
+            }
+        }
+    }
+}
+
+impl From<NvAuthorization> for AuthHandle {
+    fn from(nv_auhtorization: NvAuthorization) -> AuthHandle {
+        match nv_auhtorization {
+            NvAuthorization::Owner => AuthHandle::from(ESYS_TR_RH_OWNER),
+            NvAuthorization::Platform => AuthHandle::from(ESYS_TR_RH_PLATFORM),
         }
     }
 }
