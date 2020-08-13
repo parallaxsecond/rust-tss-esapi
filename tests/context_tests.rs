@@ -39,10 +39,7 @@ use tss_esapi::{
         algorithm::{Cipher, HashingAlgorithm},
         tss::*,
     },
-    handles::{
-        esys::{NvIndexHandle, ObjectHandle},
-        tpm::NvIndexTpmHandle,
-    },
+    handles::{NvIndexHandle, NvIndexTpmHandle, ObjectHandle},
     nv::storage::{NvAuthorization, NvIndexAttributes, NvPublicBuilder},
     structures::{
         Auth, Data, Digest, DigestList, MaxBuffer, MaxNvBuffer, Nonce, PcrSelectionListBuilder,
@@ -2069,8 +2066,9 @@ mod test_nv_write {
             .nv_define_space(NvAuthorization::Owner, None, &owner_nv_public)
             .unwrap();
 
+        // Use owner authorization
         let write_result = context.nv_write(
-            NvAuthorization::Owner,
+            NvAuthorization::Owner.into(),
             owner_nv_index_handle,
             &MaxNvBuffer::try_from([1, 2, 3, 4, 5, 6, 7].to_vec()).unwrap(),
             0,
@@ -2157,15 +2155,16 @@ mod test_nv_read {
         let value = [1, 2, 3, 4, 5, 6, 7];
         let expected_data = MaxNvBuffer::try_from(value.to_vec()).unwrap();
 
-        // Write the data.
+        // Write the data using Owner authorization
         let write_result = context.nv_write(
-            NvAuthorization::Owner,
+            NvAuthorization::Owner.into(),
             owner_nv_index_handle,
             &expected_data,
             0,
         );
+        // read data using owner authorization
         let read_result = context.nv_read(
-            NvAuthorization::Owner,
+            NvAuthorization::Owner.into(),
             owner_nv_index_handle,
             value.len() as u16,
             0,
@@ -2363,5 +2362,155 @@ mod test_tr_from_tpm_public {
         // Check that we got the correct name
         //
         assert_eq!(expected_name, actual_name);
+    }
+
+    #[test]
+    fn read_from_retrieved_handle_using_password_authroization() {
+        let mut context = create_ctx_without_session();
+
+        let nv_index_tpm_handle = NvIndexTpmHandle::new(0x01500016).unwrap();
+
+        let auth = Auth::try_from(vec![
+            10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29,
+        ])
+        .unwrap();
+
+        // closure for cleaning up if a call fails.
+        let cleanup = |context: &mut Context,
+                       e: tss_esapi::Error,
+                       handle: NvIndexHandle,
+                       fn_name: &str|
+         -> tss_esapi::Error {
+            // Set password authorization
+            context.set_sessions((ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE));
+            let _ = context
+                .nv_undefine_space(NvAuthorization::Owner, handle)
+                .unwrap();
+            panic!("{} failed: {}", fn_name, e);
+        };
+
+        // Create nv public. Only use auth for write.
+        let mut nv_index_attributes = NvIndexAttributes(0);
+        nv_index_attributes.set_auth_write(true);
+        nv_index_attributes.set_auth_read(true);
+
+        let nv_public = NvPublicBuilder::new()
+            .with_nv_index(nv_index_tpm_handle)
+            .with_index_name_algorithm(HashingAlgorithm::Sha256)
+            .with_index_attributes(nv_index_attributes)
+            .with_data_area_size(32)
+            .build()
+            .unwrap();
+        ///////////////////////////////////////////////////////////////
+        // Define space
+        //
+        // Set password authorization when creating the space.
+        context.set_sessions((ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE));
+        let initial_nv_index_handle = context
+            .nv_define_space(NvAuthorization::Owner, Some(&auth), &nv_public)
+            .unwrap();
+        ///////////////////////////////////////////////////////////////
+        // Read the name from the tpm
+        //
+        // No password authorization.
+        context.set_sessions((ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE));
+        let (_expected_nv_public, initial_name) = context
+            .nv_read_public(initial_nv_index_handle)
+            .map_err(|e| cleanup(&mut context, e, initial_nv_index_handle, "nv_read_public"))
+            .unwrap();
+        ///////////////////////////////////////////////////////////////
+        // Write data to created index.
+        //
+        // When the write succedes the attributes will change
+        // and there for the name will change.
+        let expected_data = MaxNvBuffer::try_from(vec![
+            0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23,
+            24, 25, 26, 27, 28, 29, 30, 31,
+        ])
+        .unwrap();
+        context.set_sessions((ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE));
+        context
+            .nv_write(
+                initial_nv_index_handle.into(),
+                initial_nv_index_handle,
+                &expected_data,
+                0,
+            )
+            .map_err(|e| cleanup(&mut context, e, initial_nv_index_handle, "nv_write"))
+            .unwrap();
+        ///////////////////////////////////////////////////////////////
+        // Read the new name that have been calculated after the write.
+        //
+        // No password authorization.
+        context.set_sessions((ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE));
+        let (_expected_nv_public, expected_name) = context
+            .nv_read_public(initial_nv_index_handle)
+            .map_err(|e| cleanup(&mut context, e, initial_nv_index_handle, "nv_read_public"))
+            .unwrap();
+        assert_ne!(initial_name, expected_name);
+        ///////////////////////////////////////////////////////////////
+        // Close the esys handle (remove all meta data).
+        //
+        let mut handle_to_be_closed: ObjectHandle = initial_nv_index_handle.into();
+        context
+            .tr_close(&mut handle_to_be_closed)
+            .map_err(|e| cleanup(&mut context, e, initial_nv_index_handle, "tr_close"))
+            .unwrap();
+        assert_eq!(handle_to_be_closed, ObjectHandle::NoneHandle);
+        // The value of the handle_to_be_closed will be set to a 'None' handle
+        // if the operations was successful.
+
+        ///////////////////////////////////////////////////////////////
+        // Make Esys create a new ObjectHandle from the
+        // data in the TPM.
+        //
+        // The handle is gone so if this fails it is not
+        // possible to remove the defined space.
+        let new_nv_index_handle = context
+            .tr_from_tpm_public(nv_index_tpm_handle.into())
+            .map_err(|e| -> tss_esapi::Result<ObjectHandle> {
+                panic!("tr_from_tpm_public failed: {}", e);
+            })
+            .unwrap();
+        ///////////////////////////////////////////////////////////////
+        // Get name of the object using the new handle
+        //
+        let actual_name = context
+            .tr_get_name(new_nv_index_handle)
+            .map_err(|e| cleanup(&mut context, e, new_nv_index_handle.into(), "tr_get_name"))
+            .unwrap();
+        ///////////////////////////////////////////////////////////////
+        // Call nv_read to get data from nv_index.
+        //
+
+        // Set authorization for the retrieved handle
+        context
+            .tr_set_auth(new_nv_index_handle, &auth)
+            .map_err(|e| cleanup(&mut context, e, new_nv_index_handle.into(), "tr_set_auth"))
+            .unwrap();
+        // read the data
+        context.set_sessions((ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE));
+        let actual_data = context
+            .nv_read(
+                new_nv_index_handle.into(),
+                new_nv_index_handle.into(),
+                32,
+                0,
+            )
+            .map_err(|e| cleanup(&mut context, e, new_nv_index_handle.into(), "nv_read"))
+            .unwrap();
+        ///////////////////////////////////////////////////////////////
+        // Remove undefine the space
+        //
+        // Set password authorization
+        context.set_sessions((ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE));
+        let _ = context
+            .nv_undefine_space(NvAuthorization::Owner, new_nv_index_handle.into())
+            .unwrap();
+        ///////////////////////////////////////////////////////////////
+        // The name will have changed
+        //
+        assert_eq!(expected_name, actual_name);
+        assert_eq!(expected_data, actual_data);
     }
 }

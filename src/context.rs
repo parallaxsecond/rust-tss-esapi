@@ -2,10 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 use crate::algorithm::structures::SensitiveData;
 use crate::constants::algorithm::HashingAlgorithm;
-use crate::handles::{
-    esys::{NvIndexHandle, ObjectHandle},
-    tpm::TpmHandle,
-};
+use crate::handles::{AuthHandle, NvIndexHandle, ObjectHandle, TpmHandle};
 use crate::nv::storage::{NvAuthorization, NvPublic};
 use crate::structures::{
     Auth, Data, Digest, DigestList, HashcheckTicket, MaxBuffer, MaxNvBuffer, Name, Nonce,
@@ -1468,7 +1465,7 @@ impl Context {
     /// Reads data from the nv index.
     pub fn nv_read(
         &mut self,
-        nv_authorization: NvAuthorization,
+        auth_handle: AuthHandle,
         nv_index_handle: NvIndexHandle,
         size: u16,
         offset: u16,
@@ -1477,7 +1474,7 @@ impl Context {
         let ret = unsafe {
             Esys_NV_Read(
                 self.mut_context(),
-                nv_authorization.into(),
+                auth_handle.into(),
                 nv_index_handle.into(),
                 self.sessions.0,
                 self.sessions.1,
@@ -1502,7 +1499,7 @@ impl Context {
     /// Writes data to an nv index.
     pub fn nv_write(
         &mut self,
-        nv_authorization: NvAuthorization,
+        auth_handle: AuthHandle,
         nv_index_handle: NvIndexHandle,
         data: &MaxNvBuffer,
         offset: u16,
@@ -1510,7 +1507,7 @@ impl Context {
         let ret = unsafe {
             Esys_NV_Write(
                 self.mut_context(),
-                nv_authorization.into(),
+                auth_handle.into(),
                 nv_index_handle.into(),
                 self.sessions.0,
                 self.sessions.1,

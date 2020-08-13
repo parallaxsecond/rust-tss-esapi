@@ -7,7 +7,7 @@ use tss_esapi::{
         TPM2_HT_PERMANENT, TPM2_HT_PERSISTENT, TPM2_HT_POLICY_SESSION, TPM2_HT_SAVED_SESSION,
         TPM2_HT_TRANSIENT,
     },
-    handles::tpm::{
+    handles::{
         AcTpmHandle, HmacSessionTpmHandle, LoadedSessionTpmHandle, NvIndexTpmHandle, PcrTpmHandle,
         PermanentTpmHandle, PersistentTpmHandle, PolicySessionTpmHandle, SavedSessionTpmHandle,
         TpmHandle, TransientTpmHandle,
