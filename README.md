@@ -61,3 +61,4 @@ This project uses the following third party crates:
 * num-traits (MIT and Apache-2.0)
 * hostname-validator (MIT)
 * regex (MIT and Apache-2.0)
+* zeroize (MIT and Apache-2.0)

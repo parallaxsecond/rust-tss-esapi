@@ -8,9 +8,17 @@ macro_rules! buffer_type {
         use log::error;
         use std::convert::TryFrom;
         use std::ops::Deref;
+        use zeroize::Zeroizing;
 
-        #[derive(Debug, Clone, PartialEq, Eq, Default)]
-        pub struct $native_type(Vec<u8>);
+        #[derive(Debug, Clone, PartialEq, Eq)]
+        pub struct $native_type(Zeroizing<Vec<u8>>);
+
+        impl Default for $native_type {
+            fn default() -> Self {
+                $native_type(Vec::new().into())
+            }
+        }
+
         impl $native_type {
             pub const MAX_SIZE: usize = $MAX;
 
@@ -34,7 +42,7 @@ macro_rules! buffer_type {
                     error!("Error: Invalid Vec<u8> size(> {})", Self::MAX_SIZE);
                     return Err(Error::local_error(WrapperErrorKind::WrongParamSize));
                 }
-                Ok($native_type(bytes))
+                Ok($native_type(bytes.into()))
             }
         }
 
@@ -46,7 +54,7 @@ macro_rules! buffer_type {
                     error!("Error: Invalid Vec<u8> size(> {})", Self::MAX_SIZE);
                     return Err(Error::local_error(WrapperErrorKind::WrongParamSize));
                 }
-                Ok($native_type(bytes.to_vec()))
+                Ok($native_type(bytes.to_vec().into()))
             }
         }
 
@@ -59,7 +67,7 @@ macro_rules! buffer_type {
                     error!("Error: Invalid buffer size(> {})", Self::MAX_SIZE);
                     return Err(Error::local_error(WrapperErrorKind::WrongParamSize));
                 }
-                Ok($native_type(tss.buffer[..size].to_vec()))
+                Ok($native_type(tss.buffer[..size].to_vec().into()))
             }
         }
 
