@@ -204,6 +204,7 @@ fn encrypt_decrypt() {
             None,
             PublicKeyRSA::try_from(message.clone()).unwrap(),
             AsymSchemeUnion::RSAOAEP(HashingAlgorithm::Sha256),
+            None,
         )
         .unwrap();
     assert_ne!(message, ciphertext.value());
@@ -214,6 +215,7 @@ fn encrypt_decrypt() {
             auth,
             ciphertext,
             AsymSchemeUnion::RSAOAEP(HashingAlgorithm::Sha256),
+            None,
         )
         .unwrap();
     assert_eq!(message, plaintext.value());

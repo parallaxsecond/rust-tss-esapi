@@ -219,7 +219,8 @@ impl TransientKeyContext {
 
     /// Encrypt a message with an existing key.
     ///
-    /// Takes the key as a parameter, encrypts the message and returns the ciphertext
+    /// Takes the key as a parameter, encrypts the message and returns the ciphertext. A label (i.e.
+    /// nonce) can also be provided.
     ///
     /// # Errors
     /// * errors are returned if any method calls return an error: `Context::context_load`,
@@ -231,6 +232,7 @@ impl TransientKeyContext {
         key_auth: Option<Auth>,
         message: PublicKeyRSA,
         scheme: AsymSchemeUnion,
+        label: Option<Data>,
     ) -> Result<PublicKeyRSA> {
         self.set_session_attrs()?;
         let key_handle = self.context.context_load(key_context)?;
@@ -247,7 +249,7 @@ impl TransientKeyContext {
 
         let ciphertext = self
             .context
-            .rsa_encrypt(key_handle, message, &scheme, Data::default())
+            .rsa_encrypt(key_handle, message, &scheme, label.unwrap_or_default())
             .or_else(|e| {
                 self.context.flush_context(key_handle)?;
                 Err(e)
@@ -260,7 +262,8 @@ impl TransientKeyContext {
 
     /// Decrypt ciphertext with an existing key.
     ///
-    /// Takes the key as a parameter, decrypts the ciphertext and returns the plaintext
+    /// Takes the key as a parameter, decrypts the ciphertext and returns the plaintext. A label (i.e.
+    /// nonce) can also be provided.
     ///
     /// # Errors
     /// * errors are returned if any method calls return an error: `Context::context_load`,
@@ -272,6 +275,7 @@ impl TransientKeyContext {
         key_auth: Option<Auth>,
         ciphertext: PublicKeyRSA,
         scheme: AsymSchemeUnion,
+        label: Option<Data>,
     ) -> Result<PublicKeyRSA> {
         self.set_session_attrs()?;
         let key_handle = self.context.context_load(key_context)?;
@@ -288,7 +292,7 @@ impl TransientKeyContext {
 
         let plaintext = self
             .context
-            .rsa_decrypt(key_handle, ciphertext, &scheme, Data::default())
+            .rsa_decrypt(key_handle, ciphertext, &scheme, label.unwrap_or_default())
             .or_else(|e| {
                 self.context.flush_context(key_handle)?;
                 Err(e)

@@ -16,6 +16,7 @@ use crate::{Error, Result, WrapperErrorKind};
 use bitfield::bitfield;
 use enumflags2::BitFlags;
 use log::error;
+use zeroize::Zeroize;
 
 use serde::{Deserialize, Serialize};
 use std::collections::{BTreeMap, HashMap};
@@ -849,7 +850,8 @@ pub struct Signature {
     pub signature: SignatureData,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Zeroize)]
+#[zeroize(drop)]
 pub enum SignatureData {
     RsaSignature(Vec<u8>),
     EcdsaSignature { r: Vec<u8>, s: Vec<u8> },
@@ -1116,7 +1118,8 @@ impl TpmaSessionBuilder {
 /// saving the context of an object is to be able to re-use it later, on demand, a serializable
 /// structure is most commonly needed. `TpmsContext` implements the `Serialize` and `Deserialize`
 /// defined by `serde`.
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone, Zeroize)]
+#[zeroize(drop)]
 pub struct TpmsContext {
     sequence: u64,
     saved_handle: TPMI_DH_CONTEXT,
@@ -1156,8 +1159,8 @@ impl TryFrom<TpmsContext> for TPMS_CONTEXT {
             return Err(Error::local_error(WrapperErrorKind::WrongParamSize));
         }
         let mut buffer = [0_u8; 5188];
-        for (i, val) in context.context_blob.into_iter().enumerate() {
-            buffer[i] = val;
+        for (i, val) in context.context_blob.iter().enumerate() {
+            buffer[i] = *val;
         }
         Ok(TPMS_CONTEXT {
             sequence: context.sequence,
