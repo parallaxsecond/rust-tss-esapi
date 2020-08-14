@@ -15,6 +15,8 @@
 //! and persist the underlying data.
 use crate::constants::algorithm::{Cipher, EllipticCurve, HashingAlgorithm};
 use crate::constants::tss::*;
+use crate::constants::types::session::SessionType;
+use crate::handles::SessionHandle;
 use crate::structures::{Auth, Data, Digest, PublicKeyRSA, VerifiedTicket};
 use crate::tcti::Tcti;
 use crate::tss2_esys::*;
@@ -393,7 +395,8 @@ impl TransientKeyContext {
             .with_flag(TPMA_SESSION_DECRYPT)
             .with_flag(TPMA_SESSION_ENCRYPT)
             .build();
-        self.context.tr_sess_set_attributes(session, session_attr)?;
+        self.context
+            .tr_sess_set_attributes(SessionHandle::from(session), session_attr)?;
         Ok(())
     }
 }
@@ -416,7 +419,7 @@ pub struct TransientKeyContextBuilder {
     root_key_auth_size: usize,
     hierarchy_auth: Vec<u8>,
     default_context_cipher: Cipher,
-    session_hash_alg: TPM2_ALG_ID, // TODO: Create Rust-native version
+    session_hash_alg: HashingAlgorithm,
 }
 
 impl TransientKeyContextBuilder {
@@ -429,7 +432,7 @@ impl TransientKeyContextBuilder {
             root_key_auth_size: 32,
             hierarchy_auth: Vec::new(),
             default_context_cipher: Cipher::aes_256_cfb(),
-            session_hash_alg: TPM2_ALG_SHA256,
+            session_hash_alg: HashingAlgorithm::Sha256,
         }
     }
 
@@ -474,7 +477,7 @@ impl TransientKeyContextBuilder {
     }
 
     /// Define the cipher to be used by sessions for hashing commands.
-    pub fn with_session_hash_alg(mut self, session_hash_alg: TPM2_ALG_ID) -> Self {
+    pub fn with_session_hash_alg(mut self, session_hash_alg: HashingAlgorithm) -> Self {
         self.session_hash_alg = session_hash_alg;
         self
     }
@@ -519,17 +522,17 @@ impl TransientKeyContextBuilder {
             ESYS_TR_NONE,
             ESYS_TR_NONE,
             None,
-            TPM2_SE_HMAC,
-            self.default_context_cipher.into(),
+            SessionType::Hmac,
+            self.default_context_cipher,
             self.session_hash_alg,
         )?;
         let session_attr = TpmaSessionBuilder::new()
             .with_flag(TPMA_SESSION_DECRYPT)
             .with_flag(TPMA_SESSION_ENCRYPT)
             .build();
-        context.tr_sess_set_attributes(session, session_attr)?;
+        context.tr_sess_set_attributes(session.handle(), session_attr)?;
 
-        context.set_sessions((session, ESYS_TR_NONE, ESYS_TR_NONE));
+        context.set_sessions((session.handle().into(), ESYS_TR_NONE, ESYS_TR_NONE));
         let root_key_auth = if self.root_key_auth_size > 0 {
             let random = context.get_random(self.root_key_auth_size)?;
             Some(Auth::try_from(random.value().to_vec())?)
@@ -559,12 +562,12 @@ impl TransientKeyContextBuilder {
             root_key_handle,
             ESYS_TR_NONE,
             None,
-            TPM2_SE_HMAC,
-            self.default_context_cipher.into(),
+            SessionType::Hmac,
+            self.default_context_cipher,
             self.session_hash_alg,
         )?;
         let (old_session, _, _) = context.sessions();
-        context.set_sessions((new_session, ESYS_TR_NONE, ESYS_TR_NONE));
+        context.set_sessions((new_session.handle().into(), ESYS_TR_NONE, ESYS_TR_NONE));
         context.flush_context(old_session)?;
         Ok(TransientKeyContext {
             context,

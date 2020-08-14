@@ -38,9 +38,11 @@ use tss_esapi::{
     constants::{
         algorithm::{Cipher, HashingAlgorithm},
         tss::*,
+        types::session::SessionType,
     },
     handles::{NvIndexHandle, NvIndexTpmHandle, ObjectHandle},
     nv::storage::{NvAuthorization, NvIndexAttributes, NvPublicBuilder},
+    session::Session,
     structures::{
         Auth, Data, Digest, DigestList, MaxBuffer, MaxNvBuffer, Nonce, PcrSelectionListBuilder,
         PcrSlot, PublicKeyRSA, Ticket,
@@ -60,17 +62,18 @@ fn create_ctx_with_session() -> Context {
             ESYS_TR_NONE,
             ESYS_TR_NONE,
             None,
-            TPM2_SE_HMAC,
-            Cipher::aes_256_cfb().into(),
-            TPM2_ALG_SHA256,
+            SessionType::Hmac,
+            Cipher::aes_256_cfb(),
+            HashingAlgorithm::Sha256,
         )
         .unwrap();
     let session_attr = TpmaSessionBuilder::new()
         .with_flag(TPMA_SESSION_DECRYPT)
         .with_flag(TPMA_SESSION_ENCRYPT)
         .build();
-    ctx.tr_sess_set_attributes(session, session_attr).unwrap();
-    ctx.set_sessions((session, ESYS_TR_NONE, ESYS_TR_NONE));
+    ctx.tr_sess_set_attributes(session.handle(), session_attr)
+        .unwrap();
+    ctx.set_sessions((session.handle().into(), ESYS_TR_NONE, ESYS_TR_NONE));
 
     ctx
 }
@@ -144,9 +147,9 @@ fn comprehensive_test() {
             ESYS_TR_NONE,
             prim_key_handle,
             None,
-            TPM2_SE_HMAC,
-            Cipher::aes_256_cfb().into(),
-            TPM2_ALG_SHA256,
+            SessionType::Hmac,
+            Cipher::aes_256_cfb(),
+            HashingAlgorithm::Sha256,
         )
         .unwrap();
     let session_attr = TpmaSessionBuilder::new()
@@ -154,9 +157,9 @@ fn comprehensive_test() {
         .with_flag(TPMA_SESSION_ENCRYPT)
         .build();
     context
-        .tr_sess_set_attributes(new_session, session_attr)
+        .tr_sess_set_attributes(new_session.handle(), session_attr)
         .unwrap();
-    context.set_sessions((new_session, ESYS_TR_NONE, ESYS_TR_NONE));
+    context.set_sessions((new_session.handle().into(), ESYS_TR_NONE, ESYS_TR_NONE));
 
     let (key_priv, key_pub) = context
         .create_key(
@@ -210,9 +213,9 @@ mod test_start_sess {
                 ESYS_TR_NONE,
                 ESYS_TR_NONE,
                 None,
-                TPM2_SE_HMAC,
-                Cipher::aes_256_cfb().into(),
-                TPM2_ALG_SHA256,
+                SessionType::Hmac,
+                Cipher::aes_256_cfb(),
+                HashingAlgorithm::Sha256,
             )
             .unwrap();
     }
@@ -234,9 +237,9 @@ mod test_start_sess {
                     .unwrap(),
                 )
                 .as_ref(),
-                TPM2_SE_HMAC,
-                Cipher::aes_256_cfb().into(),
-                TPM2_ALG_SHA256,
+                SessionType::Hmac,
+                Cipher::aes_256_cfb(),
+                HashingAlgorithm::Sha256,
             )
             .unwrap();
     }
@@ -260,9 +263,9 @@ mod test_start_sess {
                 prim_key_handle,
                 prim_key_handle,
                 None,
-                TPM2_SE_HMAC,
-                Cipher::aes_256_cfb().into(),
-                TPM2_ALG_SHA256,
+                SessionType::Hmac,
+                Cipher::aes_256_cfb(),
+                HashingAlgorithm::Sha256,
             )
             .unwrap();
     }
@@ -275,9 +278,9 @@ mod test_start_sess {
                 ESYS_TR_NONE,
                 ESYS_TR_NONE,
                 None,
-                TPM2_SE_HMAC,
-                Cipher::aes_256_cfb().into(),
-                TPM2_ALG_SHA256,
+                SessionType::Hmac,
+                Cipher::aes_256_cfb(),
+                HashingAlgorithm::Sha256,
             )
             .unwrap();
         let session_attr = utils::TpmaSessionBuilder::new()
@@ -286,7 +289,7 @@ mod test_start_sess {
             .with_flag(TPMA_SESSION_AUDIT)
             .build();
         context
-            .tr_sess_set_attributes(encrypted_sess, session_attr)
+            .tr_sess_set_attributes(encrypted_sess.handle(), session_attr)
             .unwrap();
 
         let _ = context
@@ -294,9 +297,9 @@ mod test_start_sess {
                 ESYS_TR_NONE,
                 ESYS_TR_NONE,
                 None,
-                TPM2_SE_HMAC,
-                Cipher::aes_256_cfb().into(),
-                TPM2_ALG_SHA256,
+                SessionType::Hmac,
+                Cipher::aes_256_cfb(),
+                HashingAlgorithm::Sha256,
             )
             .unwrap();
     }
@@ -309,21 +312,21 @@ mod test_start_sess {
                 ESYS_TR_NONE,
                 ESYS_TR_NONE,
                 None,
-                TPM2_SE_HMAC,
-                Cipher::aes_256_cfb().into(),
-                TPM2_ALG_SHA256,
+                SessionType::Hmac,
+                Cipher::aes_256_cfb(),
+                HashingAlgorithm::Sha256,
             )
             .unwrap();
-        context.set_sessions((auth_sess, ESYS_TR_NONE, ESYS_TR_NONE));
+        context.set_sessions((auth_sess.handle().into(), ESYS_TR_NONE, ESYS_TR_NONE));
 
         context
             .start_auth_session(
                 ESYS_TR_NONE,
                 ESYS_TR_NONE,
                 None,
-                TPM2_SE_HMAC,
-                Cipher::aes_256_cfb().into(),
-                TPM2_ALG_SHA256,
+                SessionType::Hmac,
+                Cipher::aes_256_cfb(),
+                HashingAlgorithm::Sha256,
             )
             .unwrap_err();
     }
@@ -521,7 +524,7 @@ mod test_quote {
     }
 }
 
-fn get_pcr_policy_digest(context: &mut Context, mangle: bool, do_trial: bool) -> (Digest, ESYS_TR) {
+fn get_pcr_policy_digest(context: &mut Context, mangle: bool, do_trial: bool) -> (Digest, Session) {
     let old_ses = context.sessions();
     context.set_sessions((ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE));
 
@@ -569,40 +572,71 @@ fn get_pcr_policy_digest(context: &mut Context, mangle: bool, do_trial: bool) ->
         )
         .unwrap();
 
-    let pcr_ses = context
-        .start_auth_session(
-            ESYS_TR_NONE,
-            ESYS_TR_NONE,
-            None,
-            if do_trial {
-                TPM2_SE_TRIAL
-            } else {
-                TPM2_SE_POLICY
-            },
-            Cipher::aes_256_cfb().into(),
-            TPM2_ALG_SHA256,
-        )
-        .unwrap();
-    let pcr_ses_attr = TpmaSessionBuilder::new()
-        .with_flag(TPMA_SESSION_DECRYPT)
-        .with_flag(TPMA_SESSION_ENCRYPT)
-        .build();
-    context
-        .tr_sess_set_attributes(pcr_ses, pcr_ses_attr)
-        .unwrap();
+    if do_trial {
+        let pcr_ses = context
+            .start_auth_session(
+                ESYS_TR_NONE,
+                ESYS_TR_NONE,
+                None,
+                SessionType::Trial,
+                Cipher::aes_256_cfb(),
+                HashingAlgorithm::Sha256,
+            )
+            .unwrap();
 
-    // There should be no errors setting pcr policy for trial session.
-    context
-        .policy_pcr(pcr_ses, &hashed_data, pcr_selection_list)
-        .unwrap();
+        let pcr_ses_attr = TpmaSessionBuilder::new()
+            .with_flag(TPMA_SESSION_DECRYPT)
+            .with_flag(TPMA_SESSION_ENCRYPT)
+            .build();
+        context
+            .tr_sess_set_attributes(pcr_ses.handle(), pcr_ses_attr)
+            .unwrap();
 
-    // There is now a policy digest that can be retrived and used.
-    let digest = context.policy_get_digest(pcr_ses).unwrap();
+        // There should be no errors setting pcr policy for trial session.
+        context
+            .policy_pcr(pcr_ses, &hashed_data, pcr_selection_list)
+            .unwrap();
 
-    // Restore old sessions
-    context.set_sessions(old_ses);
+        // There is now a policy digest that can be retrived and used.
+        let digest = context.policy_get_digest(pcr_ses.handle()).unwrap();
 
-    (digest, pcr_ses)
+        // Restore old sessions
+        context.set_sessions(old_ses);
+
+        (digest, pcr_ses)
+    } else {
+        let pcr_ses = context
+            .start_auth_session(
+                ESYS_TR_NONE,
+                ESYS_TR_NONE,
+                None,
+                SessionType::Policy,
+                Cipher::aes_256_cfb(),
+                HashingAlgorithm::Sha256,
+            )
+            .unwrap();
+
+        let pcr_ses_attr = TpmaSessionBuilder::new()
+            .with_flag(TPMA_SESSION_DECRYPT)
+            .with_flag(TPMA_SESSION_ENCRYPT)
+            .build();
+        context
+            .tr_sess_set_attributes(pcr_ses.handle(), pcr_ses_attr)
+            .unwrap();
+
+        // There should be no errors setting pcr policy for trial session.
+        context
+            .policy_pcr(pcr_ses, &hashed_data, pcr_selection_list)
+            .unwrap();
+
+        // There is now a policy digest that can be retrived and used.
+        let digest = context.policy_get_digest(pcr_ses.handle()).unwrap();
+
+        // Restore old sessions
+        context.set_sessions(old_ses);
+
+        (digest, pcr_ses)
+    }
 }
 
 mod test_policies {
@@ -676,9 +710,9 @@ mod test_policies {
                 ESYS_TR_NONE,
                 ESYS_TR_NONE,
                 None,
-                TPM2_SE_TRIAL,
-                Cipher::aes_256_cfb().into(),
-                TPM2_ALG_SHA256,
+                SessionType::Trial,
+                Cipher::aes_256_cfb(),
+                HashingAlgorithm::Sha256,
             )
             .unwrap();
         let trial_session_attr = TpmaSessionBuilder::new()
@@ -686,7 +720,7 @@ mod test_policies {
             .with_flag(TPMA_SESSION_ENCRYPT)
             .build();
         context
-            .tr_sess_set_attributes(trial_session, trial_session_attr)
+            .tr_sess_set_attributes(trial_session.handle(), trial_session_attr)
             .unwrap();
 
         let mut digest_list = DigestList::new();
@@ -709,9 +743,9 @@ mod test_policies {
                 ESYS_TR_NONE,
                 ESYS_TR_NONE,
                 None,
-                TPM2_SE_TRIAL,
-                Cipher::aes_256_cfb().into(),
-                TPM2_ALG_SHA256,
+                SessionType::Trial,
+                Cipher::aes_256_cfb(),
+                HashingAlgorithm::Sha256,
             )
             .unwrap();
         let trial_session_attr = TpmaSessionBuilder::new()
@@ -719,7 +753,7 @@ mod test_policies {
             .with_flag(TPMA_SESSION_ENCRYPT)
             .build();
         context
-            .tr_sess_set_attributes(trial_session, trial_session_attr)
+            .tr_sess_set_attributes(trial_session.handle(), trial_session_attr)
             .unwrap();
 
         // There should be no errors setting an Or for a TRIAL session
@@ -734,9 +768,9 @@ mod test_policies {
                 ESYS_TR_NONE,
                 ESYS_TR_NONE,
                 None,
-                TPM2_SE_TRIAL,
-                Cipher::aes_256_cfb().into(),
-                TPM2_ALG_SHA256,
+                SessionType::Trial,
+                Cipher::aes_256_cfb(),
+                HashingAlgorithm::Sha256,
             )
             .unwrap();
         let trial_session_attr = TpmaSessionBuilder::new()
@@ -744,7 +778,7 @@ mod test_policies {
             .with_flag(TPMA_SESSION_ENCRYPT)
             .build();
         context
-            .tr_sess_set_attributes(trial_session, trial_session_attr)
+            .tr_sess_set_attributes(trial_session.handle(), trial_session_attr)
             .unwrap();
 
         // There should be no errors setting an Or for a TRIAL session
@@ -761,9 +795,9 @@ mod test_policies {
                 ESYS_TR_NONE,
                 ESYS_TR_NONE,
                 None,
-                TPM2_SE_TRIAL,
-                Cipher::aes_256_cfb().into(),
-                TPM2_ALG_SHA256,
+                SessionType::Trial,
+                Cipher::aes_256_cfb(),
+                HashingAlgorithm::Sha256,
             )
             .unwrap();
         let trial_session_attr = TpmaSessionBuilder::new()
@@ -771,7 +805,7 @@ mod test_policies {
             .with_flag(TPMA_SESSION_ENCRYPT)
             .build();
         context
-            .tr_sess_set_attributes(trial_session, trial_session_attr)
+            .tr_sess_set_attributes(trial_session.handle(), trial_session_attr)
             .unwrap();
 
         // There should be no errors setting an Or for a TRIAL session
@@ -786,9 +820,9 @@ mod test_policies {
                 ESYS_TR_NONE,
                 ESYS_TR_NONE,
                 None,
-                TPM2_SE_TRIAL,
-                Cipher::aes_256_cfb().into(),
-                TPM2_ALG_SHA256,
+                SessionType::Trial,
+                Cipher::aes_256_cfb(),
+                HashingAlgorithm::Sha256,
             )
             .unwrap();
         let trial_session_attr = TpmaSessionBuilder::new()
@@ -796,7 +830,7 @@ mod test_policies {
             .with_flag(TPMA_SESSION_ENCRYPT)
             .build();
         context
-            .tr_sess_set_attributes(trial_session, trial_session_attr)
+            .tr_sess_set_attributes(trial_session.handle(), trial_session_attr)
             .unwrap();
 
         let test_dig = Digest::try_from(vec![
@@ -816,9 +850,9 @@ mod test_policies {
                 ESYS_TR_NONE,
                 ESYS_TR_NONE,
                 None,
-                TPM2_SE_TRIAL,
-                Cipher::aes_256_cfb().into(),
-                TPM2_ALG_SHA256,
+                SessionType::Trial,
+                Cipher::aes_256_cfb(),
+                HashingAlgorithm::Sha256,
             )
             .unwrap();
         let trial_session_attr = TpmaSessionBuilder::new()
@@ -826,7 +860,7 @@ mod test_policies {
             .with_flag(TPMA_SESSION_ENCRYPT)
             .build();
         context
-            .tr_sess_set_attributes(trial_session, trial_session_attr)
+            .tr_sess_set_attributes(trial_session.handle(), trial_session_attr)
             .unwrap();
 
         let test_dig = Digest::try_from(vec![
@@ -846,9 +880,9 @@ mod test_policies {
                 ESYS_TR_NONE,
                 ESYS_TR_NONE,
                 None,
-                TPM2_SE_TRIAL,
-                Cipher::aes_256_cfb().into(),
-                TPM2_ALG_SHA256,
+                SessionType::Trial,
+                Cipher::aes_256_cfb(),
+                HashingAlgorithm::Sha256,
             )
             .unwrap();
         let trial_session_attr = TpmaSessionBuilder::new()
@@ -856,7 +890,7 @@ mod test_policies {
             .with_flag(TPMA_SESSION_ENCRYPT)
             .build();
         context
-            .tr_sess_set_attributes(trial_session, trial_session_attr)
+            .tr_sess_set_attributes(trial_session.handle(), trial_session_attr)
             .unwrap();
 
         // There should be no errors setting an Or for a TRIAL session
@@ -870,9 +904,9 @@ mod test_policies {
                 ESYS_TR_NONE,
                 ESYS_TR_NONE,
                 None,
-                TPM2_SE_TRIAL,
-                Cipher::aes_256_cfb().into(),
-                TPM2_ALG_SHA256,
+                SessionType::Trial,
+                Cipher::aes_256_cfb(),
+                HashingAlgorithm::Sha256,
             )
             .unwrap();
         let trial_session_attr = TpmaSessionBuilder::new()
@@ -880,7 +914,7 @@ mod test_policies {
             .with_flag(TPMA_SESSION_ENCRYPT)
             .build();
         context
-            .tr_sess_set_attributes(trial_session, trial_session_attr)
+            .tr_sess_set_attributes(trial_session.handle(), trial_session_attr)
             .unwrap();
 
         // There should be no errors setting an Or for a TRIAL session
@@ -894,9 +928,9 @@ mod test_policies {
                 ESYS_TR_NONE,
                 ESYS_TR_NONE,
                 None,
-                TPM2_SE_TRIAL,
-                Cipher::aes_256_cfb().into(),
-                TPM2_ALG_SHA256,
+                SessionType::Trial,
+                Cipher::aes_256_cfb(),
+                HashingAlgorithm::Sha256,
             )
             .unwrap();
         let trial_session_attr = TpmaSessionBuilder::new()
@@ -904,7 +938,7 @@ mod test_policies {
             .with_flag(TPMA_SESSION_ENCRYPT)
             .build();
         context
-            .tr_sess_set_attributes(trial_session, trial_session_attr)
+            .tr_sess_set_attributes(trial_session.handle(), trial_session_attr)
             .unwrap();
 
         // There should be no errors setting an Or for a TRIAL session
@@ -923,9 +957,9 @@ mod test_policy_pcr {
                 ESYS_TR_NONE,
                 ESYS_TR_NONE,
                 None,
-                TPM2_SE_TRIAL,
-                Cipher::aes_256_cfb().into(),
-                TPM2_ALG_SHA256,
+                SessionType::Trial,
+                Cipher::aes_256_cfb(),
+                HashingAlgorithm::Sha256,
             )
             .unwrap();
         let trial_session_attr = TpmaSessionBuilder::new()
@@ -933,7 +967,7 @@ mod test_policy_pcr {
             .with_flag(TPMA_SESSION_ENCRYPT)
             .build();
         context
-            .tr_sess_set_attributes(trial_session, trial_session_attr)
+            .tr_sess_set_attributes(trial_session.handle(), trial_session_attr)
             .unwrap();
 
         // Read the pcr values using pcr_read
@@ -997,9 +1031,9 @@ mod test_get_random {
                 ESYS_TR_NONE,
                 ESYS_TR_NONE,
                 None,
-                TPM2_SE_HMAC,
-                Cipher::aes_256_cfb().into(),
-                TPM2_ALG_SHA256,
+                SessionType::Hmac,
+                Cipher::aes_256_cfb(),
+                HashingAlgorithm::Sha256,
             )
             .unwrap();
         let session_attr = utils::TpmaSessionBuilder::new()
@@ -1008,10 +1042,10 @@ mod test_get_random {
             .with_flag(TPMA_SESSION_AUDIT)
             .build();
         context
-            .tr_sess_set_attributes(encrypted_sess, session_attr)
+            .tr_sess_set_attributes(encrypted_sess.handle(), session_attr)
             .unwrap();
 
-        context.set_sessions((encrypted_sess, ESYS_TR_NONE, ESYS_TR_NONE));
+        context.set_sessions((encrypted_sess.handle().into(), ESYS_TR_NONE, ESYS_TR_NONE));
         let _ = context.get_random(10).unwrap();
     }
 
@@ -1023,13 +1057,13 @@ mod test_get_random {
                 ESYS_TR_NONE,
                 ESYS_TR_NONE,
                 None,
-                TPM2_SE_HMAC,
-                Cipher::aes_256_cfb().into(),
-                TPM2_ALG_SHA256,
+                SessionType::Hmac,
+                Cipher::aes_256_cfb(),
+                HashingAlgorithm::Sha256,
             )
             .unwrap();
 
-        context.set_sessions((auth_sess, ESYS_TR_NONE, ESYS_TR_NONE));
+        context.set_sessions((auth_sess.handle().into(), ESYS_TR_NONE, ESYS_TR_NONE));
         let _ = context.get_random(10).unwrap_err();
     }
 
@@ -1771,9 +1805,9 @@ mod test_session_attr {
                 ESYS_TR_NONE,
                 ESYS_TR_NONE,
                 None,
-                TPM2_SE_HMAC,
-                Cipher::aes_256_cfb().into(),
-                TPM2_ALG_SHA256,
+                SessionType::Hmac,
+                Cipher::aes_256_cfb(),
+                HashingAlgorithm::Sha256,
             )
             .unwrap();
 
@@ -1783,9 +1817,9 @@ mod test_session_attr {
             .with_flag(TPMA_SESSION_AUDIT)
             .build();
         context
-            .tr_sess_set_attributes(sess_handle, sess_attr)
+            .tr_sess_set_attributes(sess_handle.handle(), sess_attr)
             .unwrap();
-        context.set_sessions((sess_handle, ESYS_TR_NONE, ESYS_TR_NONE));
+        context.set_sessions((sess_handle.handle().into(), ESYS_TR_NONE, ESYS_TR_NONE));
 
         let _ = context.get_random(10).unwrap();
     }
@@ -1841,9 +1875,9 @@ mod test_policy_get_digest {
                 ESYS_TR_NONE,
                 ESYS_TR_NONE,
                 None,
-                TPM2_SE_TRIAL,
-                Cipher::aes_256_cfb().into(),
-                TPM2_ALG_SHA256,
+                SessionType::Trial,
+                Cipher::aes_256_cfb(),
+                HashingAlgorithm::Sha256,
             )
             .unwrap();
         let trial_session_attr = TpmaSessionBuilder::new()
@@ -1851,7 +1885,7 @@ mod test_policy_get_digest {
             .with_flag(TPMA_SESSION_ENCRYPT)
             .build();
         context
-            .tr_sess_set_attributes(trial_session, trial_session_attr)
+            .tr_sess_set_attributes(trial_session.handle(), trial_session_attr)
             .unwrap();
 
         // Read the pcr values using pcr_read
@@ -1903,7 +1937,7 @@ mod test_policy_get_digest {
             .unwrap();
 
         // There is now a policy digest that can be retrived and used.
-        let retrieved_policy_digest = context.policy_get_digest(trial_session).unwrap();
+        let retrieved_policy_digest = context.policy_get_digest(trial_session.handle()).unwrap();
 
         // The algorithm is SHA256 so the expected size of the digest should be 32.
         assert_eq!(retrieved_policy_digest.value().len(), 32);

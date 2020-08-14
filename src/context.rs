@@ -1,19 +1,26 @@
 // Copyright 2020 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
-use crate::algorithm::structures::SensitiveData;
-use crate::constants::algorithm::HashingAlgorithm;
-use crate::handles::{AuthHandle, NvIndexHandle, ObjectHandle, TpmHandle};
-use crate::nv::storage::{NvAuthorization, NvPublic};
-use crate::structures::{
-    Auth, Data, Digest, DigestList, HashcheckTicket, MaxBuffer, MaxNvBuffer, Name, Nonce,
-    PcrSelectionList, PublicKeyRSA,
+use crate::{
+    algorithm::structures::SensitiveData,
+    constants::{
+        algorithm::{Cipher, HashingAlgorithm},
+        types::session::SessionType,
+    },
+    handles::{AuthHandle, NvIndexHandle, ObjectHandle, SessionHandle, TpmHandle},
+    nv::storage::{NvAuthorization, NvPublic},
+    session::{HmacSession, PolicySession, Session, TrialSession},
+    structures::{
+        Auth, Data, Digest, DigestList, HashcheckTicket, MaxBuffer, MaxNvBuffer, Name, Nonce,
+        PcrSelectionList, PublicKeyRSA,
+    },
+    tcti::Tcti,
+    tss2_esys::*,
+    utils::{
+        Hierarchy, PcrData, PublicParmsUnion, Signature, TpmaSession, TpmaSessionBuilder,
+        TpmsContext,
+    },
+    Error, Result, WrapperErrorKind as ErrorKind,
 };
-use crate::tcti::Tcti;
-use crate::tss2_esys::*;
-use crate::utils::{
-    Hierarchy, PcrData, PublicParmsUnion, Signature, TpmaSession, TpmaSessionBuilder, TpmsContext,
-};
-use crate::{Error, Result, WrapperErrorKind as ErrorKind};
 use log::{error, info};
 use mbox::MBox;
 use std::collections::HashSet;
@@ -122,16 +129,16 @@ impl Context {
         tpm_key: ESYS_TR,
         bind: ESYS_TR,
         nonce: Option<&Nonce>,
-        session_type: TPM2_SE,
-        symmetric: TPMT_SYM_DEF,
-        auth_hash: TPMI_ALG_HASH,
-    ) -> Result<ESYS_TR> {
+        session_type: SessionType,
+        symmetric: Cipher,
+        auth_hash: HashingAlgorithm,
+    ) -> Result<Session> {
         let nonce_ptr: *const TPM2B_NONCE = match nonce {
             Some(val) => &TPM2B_NONCE::try_from(val.clone())?,
             None => null(),
         };
 
-        let mut sess = ESYS_TR_NONE;
+        let mut session_handle = ESYS_TR_NONE;
 
         let ret = unsafe {
             Esys_StartAuthSession(
@@ -142,17 +149,30 @@ impl Context {
                 self.sessions.1,
                 self.sessions.2,
                 nonce_ptr,
-                session_type,
-                &symmetric,
-                auth_hash,
-                &mut sess,
+                session_type.into(),
+                &symmetric.into(),
+                auth_hash.into(),
+                &mut session_handle,
             )
         };
 
         let ret = Error::from_tss_rc(ret);
         if ret.is_success() {
-            let _ = self.open_handles.insert(sess);
-            Ok(sess)
+            let _ = self.open_handles.insert(session_handle);
+            match session_type {
+                SessionType::Hmac => Ok(Session::Hmac(HmacSession::new(
+                    SessionHandle::from(session_handle),
+                    auth_hash,
+                ))),
+                SessionType::Policy => Ok(Session::Policy(PolicySession::new(
+                    SessionHandle::from(session_handle),
+                    auth_hash,
+                ))),
+                SessionType::Trial => Ok(Session::Trial(TrialSession::new(
+                    SessionHandle::from(session_handle),
+                    auth_hash,
+                ))),
+            }
         } else {
             error!("Error when creating a session: {}.", ret);
             Err(ret)
@@ -852,7 +872,7 @@ impl Context {
     /// Section: 23.7 TPM2_PolicyPCR
     pub fn policy_pcr(
         &mut self,
-        policy_session: ESYS_TR,
+        policy_session: Session,
         pcr_policy_digest: &Digest,
         pcr_selection_list: PcrSelectionList,
     ) -> Result<()> {
@@ -860,7 +880,7 @@ impl Context {
         let ret = unsafe {
             Esys_PolicyPCR(
                 self.mut_context(),
-                policy_session,
+                policy_session.handle().into(),
                 self.sessions.0,
                 self.sessions.1,
                 self.sessions.2,
@@ -888,13 +908,13 @@ impl Context {
     ///
     /// # Errors
     /// * if the hash list provided is too short or too long, a `WrongParamSize` wrapper error will be returned
-    pub fn policy_or(&mut self, policy_session: ESYS_TR, digest_list: DigestList) -> Result<()> {
+    pub fn policy_or(&mut self, policy_session: Session, digest_list: DigestList) -> Result<()> {
         let digest_list = TPML_DIGEST::try_from(digest_list)?;
 
         let ret = unsafe {
             Esys_PolicyOR(
                 self.mut_context(),
-                policy_session,
+                policy_session.handle().into(),
                 self.sessions.0,
                 self.sessions.1,
                 self.sessions.2,
@@ -915,13 +935,13 @@ impl Context {
     /// locality (extended) or any of the specified localities (non-extended).
     pub fn policy_locality(
         &mut self,
-        policy_session: ESYS_TR,
+        policy_session: Session,
         locality: TPMA_LOCALITY,
     ) -> Result<()> {
         let ret = unsafe {
             Esys_PolicyLocality(
                 self.mut_context(),
-                policy_session,
+                policy_session.handle().into(),
                 self.sessions.0,
                 self.sessions.1,
                 self.sessions.2,
@@ -940,11 +960,11 @@ impl Context {
     ///
     /// The TPM will ensure that the current policy can only be used to complete the command
     /// indicated by code.
-    pub fn policy_command_code(&mut self, policy_session: ESYS_TR, code: TPM2_CC) -> Result<()> {
+    pub fn policy_command_code(&mut self, policy_session: Session, code: TPM2_CC) -> Result<()> {
         let ret = unsafe {
             Esys_PolicyCommandCode(
                 self.mut_context(),
-                policy_session,
+                policy_session.handle().into(),
                 self.sessions.0,
                 self.sessions.1,
                 self.sessions.2,
@@ -963,11 +983,11 @@ impl Context {
     ///
     /// The TPM will ensure that the current policy can only complete when physical
     /// presence is asserted. The way this is done is implementation-specific.
-    pub fn policy_physical_presence(&mut self, policy_session: ESYS_TR) -> Result<()> {
+    pub fn policy_physical_presence(&mut self, policy_session: Session) -> Result<()> {
         let ret = unsafe {
             Esys_PolicyPhysicalPresence(
                 self.mut_context(),
-                policy_session,
+                policy_session.handle().into(),
                 self.sessions.0,
                 self.sessions.1,
                 self.sessions.2,
@@ -985,12 +1005,12 @@ impl Context {
     ///
     /// The TPM will ensure that the current policy can only be used to authorize
     /// a command where the parameters are hashed into cp_hash_a.
-    pub fn policy_cp_hash(&mut self, policy_session: ESYS_TR, cp_hash_a: &Digest) -> Result<()> {
+    pub fn policy_cp_hash(&mut self, policy_session: Session, cp_hash_a: &Digest) -> Result<()> {
         let cp_hash_a = TPM2B_DIGEST::try_from(cp_hash_a.clone())?;
         let ret = unsafe {
             Esys_PolicyCpHash(
                 self.mut_context(),
-                policy_session,
+                policy_session.handle().into(),
                 self.sessions.0,
                 self.sessions.1,
                 self.sessions.2,
@@ -1009,12 +1029,12 @@ impl Context {
     ///
     /// The TPM will ensure that the current policy can only be used to authorize
     /// a command acting on an object whose name hashes to name_hash.
-    pub fn policy_name_hash(&mut self, policy_session: ESYS_TR, name_hash: &Digest) -> Result<()> {
+    pub fn policy_name_hash(&mut self, policy_session: Session, name_hash: &Digest) -> Result<()> {
         let name_hash = TPM2B_DIGEST::try_from(name_hash.clone())?;
         let ret = unsafe {
             Esys_PolicyNameHash(
                 self.mut_context(),
-                policy_session,
+                policy_session.handle().into(),
                 self.sessions.0,
                 self.sessions.1,
                 self.sessions.2,
@@ -1033,11 +1053,11 @@ impl Context {
     ///
     /// The TPM will ensure that the current policy requires the user to know the authValue
     /// used when creating the object.
-    pub fn policy_auth_value(&mut self, policy_session: ESYS_TR) -> Result<()> {
+    pub fn policy_auth_value(&mut self, policy_session: Session) -> Result<()> {
         let ret = unsafe {
             Esys_PolicyAuthValue(
                 self.mut_context(),
-                policy_session,
+                policy_session.handle().into(),
                 self.sessions.0,
                 self.sessions.1,
                 self.sessions.2,
@@ -1055,11 +1075,11 @@ impl Context {
     ///
     /// The TPM will ensure that the current policy requires the user to know the password
     /// used when creating the object.
-    pub fn policy_password(&mut self, policy_session: ESYS_TR) -> Result<()> {
+    pub fn policy_password(&mut self, policy_session: Session) -> Result<()> {
         let ret = unsafe {
             Esys_PolicyPassword(
                 self.mut_context(),
-                policy_session,
+                policy_session.handle().into(),
                 self.sessions.0,
                 self.sessions.1,
                 self.sessions.2,
@@ -1076,11 +1096,11 @@ impl Context {
     /// Cause conditional gating of a policy based on NV written state.
     ///
     /// The TPM will ensure that the NV index that is used has a specific written state.
-    pub fn policy_nv_written(&mut self, policy_session: ESYS_TR, written_set: bool) -> Result<()> {
+    pub fn policy_nv_written(&mut self, policy_session: Session, written_set: bool) -> Result<()> {
         let ret = unsafe {
             Esys_PolicyNvWritten(
                 self.mut_context(),
-                policy_session,
+                policy_session.handle().into(),
                 self.sessions.0,
                 self.sessions.1,
                 self.sessions.2,
@@ -1104,7 +1124,7 @@ impl Context {
     /// by the value of the key_sign and policy_ref values.
     pub fn policy_authorize(
         &mut self,
-        policy_session: ESYS_TR,
+        policy_session: Session,
         approved_policy: &Digest,
         policy_ref: &Nonce,
         key_sign: &Name,
@@ -1116,7 +1136,7 @@ impl Context {
         let ret = unsafe {
             Esys_PolicyAuthorize(
                 self.mut_context(),
-                policy_session,
+                policy_session.handle().into(),
                 self.sessions.0,
                 self.sessions.1,
                 self.sessions.2,
@@ -1235,12 +1255,12 @@ impl Context {
 
     /// Function for retriving the current policy digest for
     /// the session.
-    pub fn policy_get_digest(&mut self, policy_session: ESYS_TR) -> Result<Digest> {
+    pub fn policy_get_digest(&mut self, policy_session_handle: SessionHandle) -> Result<Digest> {
         let mut policy_digest_ptr = null_mut();
         let ret = unsafe {
             Esys_PolicyGetDigest(
                 self.mut_context(),
-                policy_session,
+                policy_session_handle.into(),
                 self.sessions.0,
                 self.sessions.1,
                 self.sessions.2,
@@ -1299,13 +1319,13 @@ impl Context {
     /// Set the given attributes on a given session.
     pub fn tr_sess_set_attributes(
         &mut self,
-        handle: ESYS_TR,
+        handle: SessionHandle,
         attributes: TpmaSession,
     ) -> Result<()> {
         let ret = unsafe {
             Esys_TRSess_SetAttributes(
                 self.mut_context(),
-                handle,
+                handle.into(),
                 attributes.flags(),
                 attributes.mask(),
             )
