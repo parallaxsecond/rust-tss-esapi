@@ -604,7 +604,7 @@ impl Context {
                 self.sessions.2,
                 private,
                 public,
-                hierarchy.rh(),
+                hierarchy.esys_rh(),
                 &mut key_handle,
             )
         };
@@ -635,7 +635,7 @@ impl Context {
                 self.sessions.2,
                 null(),
                 public,
-                hierarchy.rh(),
+                hierarchy.esys_rh(),
                 &mut key_handle,
             )
         };
@@ -1214,7 +1214,7 @@ impl Context {
                 self.sessions.2,
                 &in_data,
                 hashing_algorithm.into(),
-                hierarchy.rh(),
+                hierarchy.esys_rh(),
                 &mut out_hash_ptr,
                 &mut validation_ptr,
             )

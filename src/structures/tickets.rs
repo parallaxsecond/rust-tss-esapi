@@ -24,7 +24,7 @@ macro_rules! impl_ticket_try_froms {
                 buffer[..digest.len()].clone_from_slice(&digest[..digest.len()]);
                 Ok($tss_ticket_type {
                     tag: <$ticket_type>::TAG.into(),
-                    hierarchy: ticket.hierarchy.rh(),
+                    hierarchy: ticket.hierarchy.esys_rh(),
                     digest: TPM2B_DIGEST {
                         size: digest.len().try_into().unwrap(), // should not fail based on the checks done above
                         buffer,
