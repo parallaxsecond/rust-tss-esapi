@@ -21,13 +21,37 @@ use crate::tss2_esys::*;
 use crate::utils::{
     self, create_restricted_decryption_rsa_public,
     create_unrestricted_encryption_decryption_rsa_public, create_unrestricted_signing_ecc_public,
-    create_unrestricted_signing_rsa_public, AsymSchemeUnion, Hierarchy, PublicIdUnion, PublicKey,
-    TpmaSessionBuilder, TpmsContext, RSA_KEY_SIZES,
+    create_unrestricted_signing_rsa_public, AsymSchemeUnion, Hierarchy, ObjectAttributes,
+    PublicIdUnion, PublicKey, PublicParmsUnion, Tpm2BPublicBuilder, TpmaSessionBuilder,
+    TpmsContext, TpmsRsaParmsBuilder, RSA_KEY_SIZES,
 };
 use crate::Context;
 use crate::{Error, Result, WrapperErrorKind as ErrorKind};
 use log::error;
 use std::convert::{TryFrom, TryInto};
+
+#[derive(Copy, Clone, Debug)]
+pub struct RsaExponent {
+    value: u32,
+}
+
+impl Default for RsaExponent {
+    fn default() -> RsaExponent {
+        RsaExponent {
+            value: (1 << 16) + 1,
+        }
+    }
+}
+
+impl RsaExponent {
+    pub fn new(value: u32) -> RsaExponent {
+        RsaExponent { value }
+    }
+
+    pub fn value(&self) -> u32 {
+        self.value
+    }
+}
 
 /// Structure offering an abstracted programming experience.
 ///
@@ -170,6 +194,107 @@ impl TransientKeyContext {
         let key_handle = self
             .context
             .load_external_public(&public, Hierarchy::Owner)?;
+        self.set_session_attrs()?;
+        let key_context = self.context.context_save(key_handle).or_else(|e| {
+            self.context.flush_context(key_handle)?;
+            Err(e)
+        })?;
+        self.context.flush_context(key_handle)?;
+        Ok(key_context)
+    }
+
+    /// Load a previously generated RSA keypair. Currently only supports signing keys for RSA PKCS 1v5 with SHA256.
+    ///
+    /// Returns the key context.
+    ///
+    /// # Constraints
+    /// * `public_modulus` must be 128, 256, 384 or 512 bytes (i.e. slice elements) long, corresponding to
+    ///   1024, 2048, 3072 or 4096 bits
+    /// * `key_prime`'s length must coincide with that of the public key. Namely, `key_prime` should
+    ///   be 64, 128, 192, or 256 bytes (i.e. slice elements) long for public keys of length 128, 256,
+    ///   384 or 512 respectively (which in turn correspond to 512/1024/1536/2048 bits for
+    ///   `key_prime`).
+    ///
+    /// # Errors
+    /// * errors are returned if any method calls return an error.
+    /// `TransientKeyContext::`set_session_attrs`, `Context::load_external`,
+    /// `Context::context_save`, `Context::flush_context`
+    pub fn load_external_rsa(
+        &mut self,
+        key_prime: &[u8],
+        public_modulus: &[u8],
+        public_exponent: RsaExponent,
+    ) -> Result<TpmsContext> {
+        if RSA_KEY_SIZES
+            .iter()
+            .find(|sz| usize::from(**sz) == public_modulus.len() * 8)
+            .is_none()
+        {
+            return Err(Error::local_error(ErrorKind::WrongParamSize));
+        }
+
+        // Check if there is a mismatch between private key and public key sizes.
+        if key_prime.len() * 2 != public_modulus.len() {
+            return Err(Error::local_error(ErrorKind::WrongParamSize));
+        }
+
+        // Handle public key...
+        let mut public_modulus_buffer = [0_u8; 512];
+        public_modulus_buffer[..public_modulus.len()]
+            .clone_from_slice(&public_modulus[..public_modulus.len()]);
+
+        let pub_buffer = TPM2B_PUBLIC_KEY_RSA {
+            size: public_modulus.len().try_into().unwrap(),
+            buffer: public_modulus_buffer,
+        };
+        let pub_id_union = PublicIdUnion::Rsa(Box::from(pub_buffer));
+
+        let mut object_attributes = ObjectAttributes(0);
+        object_attributes.set_user_with_auth(true);
+        object_attributes.set_decrypt(false);
+        object_attributes.set_sign_encrypt(true);
+        object_attributes.set_restricted(false);
+
+        let rsa_parms = TpmsRsaParmsBuilder::new_unrestricted_signing_key(
+            AsymSchemeUnion::RSASSA(HashingAlgorithm::Sha256),
+            u16::try_from(public_modulus.len()).unwrap() * 8_u16,
+            public_exponent.value(),
+        )
+        .build()
+        .unwrap();
+
+        let public = Tpm2BPublicBuilder::new()
+            .with_type(TPM2_ALG_RSA)
+            .with_name_alg(TPM2_ALG_SHA256)
+            .with_object_attributes(object_attributes)
+            .with_parms(PublicParmsUnion::RsaDetail(rsa_parms))
+            .with_unique(pub_id_union)
+            .build()
+            .unwrap();
+
+        // Handle private key...
+        let mut key_prime_buffer = [0_u8; 256];
+        key_prime_buffer[..key_prime.len()].clone_from_slice(&key_prime[..key_prime.len()]);
+
+        let key_prime_len = key_prime.len().try_into().unwrap(); // should not fail on valid targets, given the checks above
+        let private = TPM2B_SENSITIVE {
+            size: key_prime_len,
+            sensitiveArea: TPMT_SENSITIVE {
+                sensitiveType: TPM2_ALG_RSA,
+                authValue: Default::default(),
+                seedValue: Default::default(),
+                sensitive: TPMU_SENSITIVE_COMPOSITE {
+                    rsa: TPM2B_PRIVATE_KEY_RSA {
+                        size: key_prime_len,
+                        buffer: key_prime_buffer,
+                    },
+                },
+            },
+        };
+        self.set_session_attrs()?;
+        let key_handle = self
+            .context
+            .load_external(&private, &public, Hierarchy::Null)?;
         self.set_session_attrs()?;
         let key_context = self.context.context_save(key_handle).or_else(|e| {
             self.context.flush_context(key_handle)?;
