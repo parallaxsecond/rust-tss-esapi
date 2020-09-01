@@ -1523,6 +1523,74 @@ impl Context {
             Err(ret)
         }
     }
+
+    /// Make transient objects persistent or remove persistent objects
+    pub fn evict_control(
+        &mut self,
+        auth: ESYS_TR,
+        handle: ESYS_TR,
+        persistent_handle: TPMI_DH_PERSISTENT,
+    ) -> Result<ESYS_TR> {
+        let mut out_handle: ESYS_TR = Default::default();
+        let ret = unsafe {
+            Esys_EvictControl(
+                self.mut_context(),
+                auth,
+                handle,
+                self.sessions.0,
+                self.sessions.1,
+                self.sessions.2,
+                persistent_handle,
+                &mut out_handle,
+            )
+        };
+        let ret = Error::from_tss_rc(ret);
+        if ret.is_success() {
+            Ok(out_handle)
+        } else {
+            Err(ret)
+        }
+    }
+
+    /// Reset the TPM
+    pub fn clear(&mut self, auth_handle: ESYS_TR) -> Result<()> {
+        let ret = unsafe {
+            Esys_Clear(
+                self.mut_context(),
+                auth_handle,
+                self.sessions.0,
+                self.sessions.1,
+                self.sessions.2,
+            )
+        };
+        let ret = Error::from_tss_rc(ret);
+        if ret.is_success() {
+            Ok(())
+        } else {
+            Err(ret)
+        }
+    }
+
+    /// Create ESYS_TR from tpm metadata
+    pub fn from_tpm_public(&mut self, handle: ESYS_TR) -> Result<ESYS_TR> {
+        let mut out_handle: ESYS_TR = Default::default();
+        let ret = unsafe {
+            Esys_TR_FromTPMPublic(
+                self.mut_context(),
+                handle,
+                self.sessions.0,
+                self.sessions.1,
+                self.sessions.2,
+                &mut out_handle,
+            )
+        };
+        let ret = Error::from_tss_rc(ret);
+        if ret.is_success() {
+            Ok(out_handle)
+        } else {
+            Err(ret)
+        }
+    }
     ///////////////////////////////////////////////////////////////////////////
     /// Private Methods Section
     ///////////////////////////////////////////////////////////////////////////
