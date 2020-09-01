@@ -1214,7 +1214,7 @@ impl Context {
                 self.sessions.2,
                 &in_data,
                 hashing_algorithm.into(),
-                hierarchy.rh(),
+                hierarchy.esys_rh(),
                 &mut out_hash_ptr,
                 &mut validation_ptr,
             )
