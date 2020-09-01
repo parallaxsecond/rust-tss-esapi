@@ -116,6 +116,7 @@ mod context;
 mod error;
 pub mod handles;
 pub mod nv;
+pub mod session;
 pub mod structures;
 mod tcti;
 pub mod utils;

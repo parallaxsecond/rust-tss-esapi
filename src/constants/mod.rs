@@ -24,3 +24,7 @@ pub mod tags;
 
 /// Representation of the return code TSS2_RC (TPM_RC)
 pub mod response_code;
+
+/// Representation of the different type constants
+/// Constants -> TPM_SU, TPM_SE
+pub mod types;
