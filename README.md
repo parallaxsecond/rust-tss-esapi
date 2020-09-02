@@ -47,18 +47,3 @@ to know more about the contribution process.
 ## License
 
 The software is provided under Apache-2.0. Contributions to this project are accepted under the same license.
-
-This project uses the following third party crates:
-* serde (MIT and Apache-2.0)
-* bindgen (BSD-3-Clause)
-* log (MIT and Apache-2.0)
-* env\_logger (MIT and Apache-2.0)
-* mbox (MIT)
-* bitfield (MIT and Apache-2.0)
-* pkg-config (MIT and Apache-2.0)
-* enumflags2 (MIT and Apache-2.0)
-* num-derive (MIT and Apache-2.0)
-* num-traits (MIT and Apache-2.0)
-* hostname-validator (MIT)
-* regex (MIT and Apache-2.0)
-* zeroize (MIT and Apache-2.0)
