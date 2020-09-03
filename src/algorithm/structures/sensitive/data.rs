@@ -4,10 +4,12 @@ use crate::tss2_esys::TPM2B_SENSITIVE_DATA;
 use crate::{Error, Result, WrapperErrorKind};
 use log::error;
 use std::convert::TryFrom;
+use zeroize::Zeroize;
 /// Rust native representation of sensitive data.
 ///
 /// The structure contains the sensitive data as a byte vector.
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[derive(Clone, Debug, Eq, PartialEq, Zeroize)]
+#[zeroize(drop)]
 pub struct SensitiveData {
     value: Vec<u8>,
 }
