@@ -23,7 +23,7 @@ use std::stringify;
 ///
 /// * OBS
 /// Do not confuse the TpmHandles with the
-/// ESYS [ObjectHandle](crate::handles::esys::ObjectHandle).
+/// ESYS [ObjectHandle](crate::handles::ObjectHandle).
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub enum TpmHandle {
     Pcr(PcrTpmHandle),
