@@ -27,6 +27,7 @@ use std::collections::HashSet;
 use std::convert::{TryFrom, TryInto};
 use std::ffi::CString;
 use std::ptr::{null, null_mut};
+use zeroize::Zeroize;
 /// Safe abstraction over an ESYS_CONTEXT.
 ///
 /// Serves as a low-level abstraction interface to the TPM, providing a thin wrapper around the
@@ -1292,8 +1293,9 @@ impl Context {
     /// # Errors
     /// * if `auth_value` is larger than the limit, a `WrongParamSize` wrapper error is returned
     pub fn tr_set_auth(&mut self, object_handle: ObjectHandle, auth: &Auth) -> Result<()> {
-        let tss_auth = TPM2B_AUTH::try_from(auth.clone())?;
+        let mut tss_auth = TPM2B_AUTH::try_from(auth.clone())?;
         let ret = unsafe { Esys_TR_SetAuth(self.mut_context(), object_handle.into(), &tss_auth) };
+        tss_auth.buffer.zeroize();
         let ret = Error::from_tss_rc(ret);
         if ret.is_success() {
             Ok(())
