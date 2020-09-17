@@ -40,7 +40,7 @@ use tss_esapi::{
         tss::*,
         types::session::SessionType,
     },
-    handles::{NvIndexHandle, NvIndexTpmHandle, ObjectHandle},
+    handles::{KeyHandle, NvIndexHandle, NvIndexTpmHandle, ObjectHandle},
     nv::storage::{NvAuthorization, NvIndexAttributes, NvPublicBuilder},
     session::Session,
     structures::{
@@ -59,8 +59,8 @@ fn create_ctx_with_session() -> Context {
     let mut ctx = unsafe { Context::new(Tcti::Mssim(Default::default())).unwrap() };
     let session = ctx
         .start_auth_session(
-            ESYS_TR_NONE,
-            ESYS_TR_NONE,
+            None,
+            None,
             None,
             SessionType::Hmac,
             Cipher::aes_256_cfb(),
@@ -71,9 +71,9 @@ fn create_ctx_with_session() -> Context {
         .with_flag(TPMA_SESSION_DECRYPT)
         .with_flag(TPMA_SESSION_ENCRYPT)
         .build();
-    ctx.tr_sess_set_attributes(session.handle(), session_attr)
+    ctx.tr_sess_set_attributes(session.unwrap(), session_attr)
         .unwrap();
-    ctx.set_sessions((session.handle().into(), ESYS_TR_NONE, ESYS_TR_NONE));
+    ctx.set_sessions((session, None, None));
 
     ctx
 }
@@ -144,8 +144,8 @@ fn comprehensive_test() {
 
     let new_session = context
         .start_auth_session(
-            ESYS_TR_NONE,
-            prim_key_handle,
+            None,
+            Some(prim_key_handle.into()),
             None,
             SessionType::Hmac,
             Cipher::aes_256_cfb(),
@@ -157,9 +157,9 @@ fn comprehensive_test() {
         .with_flag(TPMA_SESSION_ENCRYPT)
         .build();
     context
-        .tr_sess_set_attributes(new_session.handle(), session_attr)
+        .tr_sess_set_attributes(new_session.unwrap(), session_attr)
         .unwrap();
-    context.set_sessions((new_session.handle().into(), ESYS_TR_NONE, ESYS_TR_NONE));
+    context.set_sessions((new_session, None, None));
 
     let (key_priv, key_pub) = context
         .create_key(
@@ -173,8 +173,11 @@ fn comprehensive_test() {
         .unwrap();
     let key_handle = context.load(prim_key_handle, key_priv, key_pub).unwrap();
 
-    let key_context = context.context_save(key_handle).unwrap();
-    let key_handle = context.context_load(key_context).unwrap();
+    let key_context = context.context_save(key_handle.into()).unwrap();
+    let key_handle = context
+        .context_load(key_context)
+        .map(KeyHandle::from)
+        .unwrap();
     context.tr_set_auth(key_handle.into(), &key_auth).unwrap();
     let scheme = TPMT_SIG_SCHEME {
         scheme: TPM2_ALG_NULL,
@@ -210,8 +213,8 @@ mod test_start_sess {
         let mut context = create_ctx_without_session();
         context
             .start_auth_session(
-                ESYS_TR_NONE,
-                ESYS_TR_NONE,
+                None,
+                None,
                 None,
                 SessionType::Hmac,
                 Cipher::aes_256_cfb(),
@@ -225,8 +228,8 @@ mod test_start_sess {
         let mut context = create_ctx_without_session();
         context
             .start_auth_session(
-                ESYS_TR_NONE,
-                ESYS_TR_NONE,
+                None,
+                None,
                 Some(
                     Nonce::try_from(
                         [
@@ -260,8 +263,8 @@ mod test_start_sess {
 
         context
             .start_auth_session(
-                prim_key_handle,
-                prim_key_handle,
+                Some(prim_key_handle),
+                Some(prim_key_handle.into()),
                 None,
                 SessionType::Hmac,
                 Cipher::aes_256_cfb(),
@@ -275,8 +278,8 @@ mod test_start_sess {
         let mut context = create_ctx_without_session();
         let encrypted_sess = context
             .start_auth_session(
-                ESYS_TR_NONE,
-                ESYS_TR_NONE,
+                None,
+                None,
                 None,
                 SessionType::Hmac,
                 Cipher::aes_256_cfb(),
@@ -289,13 +292,13 @@ mod test_start_sess {
             .with_flag(TPMA_SESSION_AUDIT)
             .build();
         context
-            .tr_sess_set_attributes(encrypted_sess.handle(), session_attr)
+            .tr_sess_set_attributes(encrypted_sess.unwrap(), session_attr)
             .unwrap();
 
         let _ = context
             .start_auth_session(
-                ESYS_TR_NONE,
-                ESYS_TR_NONE,
+                None,
+                None,
                 None,
                 SessionType::Hmac,
                 Cipher::aes_256_cfb(),
@@ -309,20 +312,20 @@ mod test_start_sess {
         let mut context = create_ctx_without_session();
         let auth_sess = context
             .start_auth_session(
-                ESYS_TR_NONE,
-                ESYS_TR_NONE,
+                None,
+                None,
                 None,
                 SessionType::Hmac,
                 Cipher::aes_256_cfb(),
                 HashingAlgorithm::Sha256,
             )
             .unwrap();
-        context.set_sessions((auth_sess.handle().into(), ESYS_TR_NONE, ESYS_TR_NONE));
+        context.set_sessions((auth_sess, None, None));
 
         context
             .start_auth_session(
-                ESYS_TR_NONE,
-                ESYS_TR_NONE,
+                None,
+                None,
                 None,
                 SessionType::Hmac,
                 Cipher::aes_256_cfb(),
@@ -485,7 +488,7 @@ mod test_unseal {
         let loaded_key = context
             .load(key_handle_unseal, sealed_priv, sealed_pub)
             .unwrap();
-        let unsealed = context.unseal(loaded_key).unwrap();
+        let unsealed = context.unseal(loaded_key.into()).unwrap();
         let unsealed = unsealed.value();
         assert!(unsealed == testbytes);
     }
@@ -526,7 +529,7 @@ mod test_quote {
 
 fn get_pcr_policy_digest(context: &mut Context, mangle: bool, do_trial: bool) -> (Digest, Session) {
     let old_ses = context.sessions();
-    context.set_sessions((ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE));
+    context.clear_sessions();
 
     // Read the pcr values using pcr_read
     let pcr_selection_list = PcrSelectionListBuilder::new()
@@ -575,21 +578,22 @@ fn get_pcr_policy_digest(context: &mut Context, mangle: bool, do_trial: bool) ->
     if do_trial {
         let pcr_ses = context
             .start_auth_session(
-                ESYS_TR_NONE,
-                ESYS_TR_NONE,
+                None,
+                None,
                 None,
                 SessionType::Trial,
                 Cipher::aes_256_cfb(),
                 HashingAlgorithm::Sha256,
             )
-            .unwrap();
+            .expect("Start auth session failed")
+            .expect("Start auth session returned a NONE handle");
 
         let pcr_ses_attr = TpmaSessionBuilder::new()
             .with_flag(TPMA_SESSION_DECRYPT)
             .with_flag(TPMA_SESSION_ENCRYPT)
             .build();
         context
-            .tr_sess_set_attributes(pcr_ses.handle(), pcr_ses_attr)
+            .tr_sess_set_attributes(pcr_ses, pcr_ses_attr)
             .unwrap();
 
         // There should be no errors setting pcr policy for trial session.
@@ -598,7 +602,7 @@ fn get_pcr_policy_digest(context: &mut Context, mangle: bool, do_trial: bool) ->
             .unwrap();
 
         // There is now a policy digest that can be retrived and used.
-        let digest = context.policy_get_digest(pcr_ses.handle()).unwrap();
+        let digest = context.policy_get_digest(pcr_ses).unwrap();
 
         // Restore old sessions
         context.set_sessions(old_ses);
@@ -607,21 +611,22 @@ fn get_pcr_policy_digest(context: &mut Context, mangle: bool, do_trial: bool) ->
     } else {
         let pcr_ses = context
             .start_auth_session(
-                ESYS_TR_NONE,
-                ESYS_TR_NONE,
+                None,
+                None,
                 None,
                 SessionType::Policy,
                 Cipher::aes_256_cfb(),
                 HashingAlgorithm::Sha256,
             )
-            .unwrap();
+            .expect("Start auth session failed")
+            .expect("Start auth session returned a NONE handle");
 
         let pcr_ses_attr = TpmaSessionBuilder::new()
             .with_flag(TPMA_SESSION_DECRYPT)
             .with_flag(TPMA_SESSION_ENCRYPT)
             .build();
         context
-            .tr_sess_set_attributes(pcr_ses.handle(), pcr_ses_attr)
+            .tr_sess_set_attributes(pcr_ses, pcr_ses_attr)
             .unwrap();
 
         // There should be no errors setting pcr policy for trial session.
@@ -630,7 +635,7 @@ fn get_pcr_policy_digest(context: &mut Context, mangle: bool, do_trial: bool) ->
             .unwrap();
 
         // There is now a policy digest that can be retrived and used.
-        let digest = context.policy_get_digest(pcr_ses.handle()).unwrap();
+        let digest = context.policy_get_digest(pcr_ses).unwrap();
 
         // Restore old sessions
         context.set_sessions(old_ses);
@@ -707,20 +712,21 @@ mod test_policies {
         let mut context = create_ctx_without_session();
         let trial_session = context
             .start_auth_session(
-                ESYS_TR_NONE,
-                ESYS_TR_NONE,
+                None,
+                None,
                 None,
                 SessionType::Trial,
                 Cipher::aes_256_cfb(),
                 HashingAlgorithm::Sha256,
             )
-            .unwrap();
+            .expect("Start auth session failed")
+            .expect("Start auth session returned a NONE handle");
         let trial_session_attr = TpmaSessionBuilder::new()
             .with_flag(TPMA_SESSION_DECRYPT)
             .with_flag(TPMA_SESSION_ENCRYPT)
             .build();
         context
-            .tr_sess_set_attributes(trial_session.handle(), trial_session_attr)
+            .tr_sess_set_attributes(trial_session, trial_session_attr)
             .unwrap();
 
         let mut digest_list = DigestList::new();
@@ -740,20 +746,21 @@ mod test_policies {
         let mut context = create_ctx_without_session();
         let trial_session = context
             .start_auth_session(
-                ESYS_TR_NONE,
-                ESYS_TR_NONE,
+                None,
+                None,
                 None,
                 SessionType::Trial,
                 Cipher::aes_256_cfb(),
                 HashingAlgorithm::Sha256,
             )
-            .unwrap();
+            .expect("Start auth session failed")
+            .expect("Start auth session returned a NONE handle");
         let trial_session_attr = TpmaSessionBuilder::new()
             .with_flag(TPMA_SESSION_DECRYPT)
             .with_flag(TPMA_SESSION_ENCRYPT)
             .build();
         context
-            .tr_sess_set_attributes(trial_session.handle(), trial_session_attr)
+            .tr_sess_set_attributes(trial_session, trial_session_attr)
             .unwrap();
 
         // There should be no errors setting an Or for a TRIAL session
@@ -765,20 +772,21 @@ mod test_policies {
         let mut context = create_ctx_without_session();
         let trial_session = context
             .start_auth_session(
-                ESYS_TR_NONE,
-                ESYS_TR_NONE,
+                None,
+                None,
                 None,
                 SessionType::Trial,
                 Cipher::aes_256_cfb(),
                 HashingAlgorithm::Sha256,
             )
-            .unwrap();
+            .expect("Start auth session failed")
+            .expect("Start auth session returned a NONE handle");
         let trial_session_attr = TpmaSessionBuilder::new()
             .with_flag(TPMA_SESSION_DECRYPT)
             .with_flag(TPMA_SESSION_ENCRYPT)
             .build();
         context
-            .tr_sess_set_attributes(trial_session.handle(), trial_session_attr)
+            .tr_sess_set_attributes(trial_session, trial_session_attr)
             .unwrap();
 
         // There should be no errors setting an Or for a TRIAL session
@@ -792,20 +800,21 @@ mod test_policies {
         let mut context = create_ctx_without_session();
         let trial_session = context
             .start_auth_session(
-                ESYS_TR_NONE,
-                ESYS_TR_NONE,
+                None,
+                None,
                 None,
                 SessionType::Trial,
                 Cipher::aes_256_cfb(),
                 HashingAlgorithm::Sha256,
             )
-            .unwrap();
+            .expect("Start auth session failed")
+            .expect("Start auth session returned a NONE handle");
         let trial_session_attr = TpmaSessionBuilder::new()
             .with_flag(TPMA_SESSION_DECRYPT)
             .with_flag(TPMA_SESSION_ENCRYPT)
             .build();
         context
-            .tr_sess_set_attributes(trial_session.handle(), trial_session_attr)
+            .tr_sess_set_attributes(trial_session, trial_session_attr)
             .unwrap();
 
         // There should be no errors setting an Or for a TRIAL session
@@ -817,20 +826,21 @@ mod test_policies {
         let mut context = create_ctx_without_session();
         let trial_session = context
             .start_auth_session(
-                ESYS_TR_NONE,
-                ESYS_TR_NONE,
+                None,
+                None,
                 None,
                 SessionType::Trial,
                 Cipher::aes_256_cfb(),
                 HashingAlgorithm::Sha256,
             )
-            .unwrap();
+            .expect("Start auth session failed")
+            .expect("Start auth session returned a NONE handle");
         let trial_session_attr = TpmaSessionBuilder::new()
             .with_flag(TPMA_SESSION_DECRYPT)
             .with_flag(TPMA_SESSION_ENCRYPT)
             .build();
         context
-            .tr_sess_set_attributes(trial_session.handle(), trial_session_attr)
+            .tr_sess_set_attributes(trial_session, trial_session_attr)
             .unwrap();
 
         let test_dig = Digest::try_from(vec![
@@ -847,20 +857,21 @@ mod test_policies {
         let mut context = create_ctx_without_session();
         let trial_session = context
             .start_auth_session(
-                ESYS_TR_NONE,
-                ESYS_TR_NONE,
+                None,
+                None,
                 None,
                 SessionType::Trial,
                 Cipher::aes_256_cfb(),
                 HashingAlgorithm::Sha256,
             )
-            .unwrap();
+            .expect("Start auth session failed")
+            .expect("Start auth session returned a NONE handle");
         let trial_session_attr = TpmaSessionBuilder::new()
             .with_flag(TPMA_SESSION_DECRYPT)
             .with_flag(TPMA_SESSION_ENCRYPT)
             .build();
         context
-            .tr_sess_set_attributes(trial_session.handle(), trial_session_attr)
+            .tr_sess_set_attributes(trial_session, trial_session_attr)
             .unwrap();
 
         let test_dig = Digest::try_from(vec![
@@ -877,20 +888,21 @@ mod test_policies {
         let mut context = create_ctx_without_session();
         let trial_session = context
             .start_auth_session(
-                ESYS_TR_NONE,
-                ESYS_TR_NONE,
+                None,
+                None,
                 None,
                 SessionType::Trial,
                 Cipher::aes_256_cfb(),
                 HashingAlgorithm::Sha256,
             )
-            .unwrap();
+            .expect("Start auth session failed")
+            .expect("Start auth session returned a NONE handle");
         let trial_session_attr = TpmaSessionBuilder::new()
             .with_flag(TPMA_SESSION_DECRYPT)
             .with_flag(TPMA_SESSION_ENCRYPT)
             .build();
         context
-            .tr_sess_set_attributes(trial_session.handle(), trial_session_attr)
+            .tr_sess_set_attributes(trial_session, trial_session_attr)
             .unwrap();
 
         // There should be no errors setting an Or for a TRIAL session
@@ -901,20 +913,21 @@ mod test_policies {
         let mut context = create_ctx_without_session();
         let trial_session = context
             .start_auth_session(
-                ESYS_TR_NONE,
-                ESYS_TR_NONE,
+                None,
+                None,
                 None,
                 SessionType::Trial,
                 Cipher::aes_256_cfb(),
                 HashingAlgorithm::Sha256,
             )
-            .unwrap();
+            .expect("Start auth session failed")
+            .expect("Start auth session returned a NONE handle");
         let trial_session_attr = TpmaSessionBuilder::new()
             .with_flag(TPMA_SESSION_DECRYPT)
             .with_flag(TPMA_SESSION_ENCRYPT)
             .build();
         context
-            .tr_sess_set_attributes(trial_session.handle(), trial_session_attr)
+            .tr_sess_set_attributes(trial_session, trial_session_attr)
             .unwrap();
 
         // There should be no errors setting an Or for a TRIAL session
@@ -925,20 +938,21 @@ mod test_policies {
         let mut context = create_ctx_without_session();
         let trial_session = context
             .start_auth_session(
-                ESYS_TR_NONE,
-                ESYS_TR_NONE,
+                None,
+                None,
                 None,
                 SessionType::Trial,
                 Cipher::aes_256_cfb(),
                 HashingAlgorithm::Sha256,
             )
-            .unwrap();
+            .expect("Start auth session failed")
+            .expect("Start auth session returned a NONE handle");
         let trial_session_attr = TpmaSessionBuilder::new()
             .with_flag(TPMA_SESSION_DECRYPT)
             .with_flag(TPMA_SESSION_ENCRYPT)
             .build();
         context
-            .tr_sess_set_attributes(trial_session.handle(), trial_session_attr)
+            .tr_sess_set_attributes(trial_session, trial_session_attr)
             .unwrap();
 
         // There should be no errors setting an Or for a TRIAL session
@@ -954,20 +968,21 @@ mod test_policy_pcr {
         let mut context = create_ctx_without_session();
         let trial_session = context
             .start_auth_session(
-                ESYS_TR_NONE,
-                ESYS_TR_NONE,
+                None,
+                None,
                 None,
                 SessionType::Trial,
                 Cipher::aes_256_cfb(),
                 HashingAlgorithm::Sha256,
             )
-            .unwrap();
+            .expect("Start auth session failed")
+            .expect("Start auth session returned a NONE handle");
         let trial_session_attr = TpmaSessionBuilder::new()
             .with_flag(TPMA_SESSION_DECRYPT)
             .with_flag(TPMA_SESSION_ENCRYPT)
             .build();
         context
-            .tr_sess_set_attributes(trial_session.handle(), trial_session_attr)
+            .tr_sess_set_attributes(trial_session, trial_session_attr)
             .unwrap();
 
         // Read the pcr values using pcr_read
@@ -1028,24 +1043,25 @@ mod test_get_random {
         let mut context = create_ctx_with_session();
         let encrypted_sess = context
             .start_auth_session(
-                ESYS_TR_NONE,
-                ESYS_TR_NONE,
+                None,
+                None,
                 None,
                 SessionType::Hmac,
                 Cipher::aes_256_cfb(),
                 HashingAlgorithm::Sha256,
             )
-            .unwrap();
+            .expect("Start auth session failed")
+            .expect("Start auth session returned a NONE handle");
         let session_attr = utils::TpmaSessionBuilder::new()
             .with_flag(TPMA_SESSION_DECRYPT)
             .with_flag(TPMA_SESSION_ENCRYPT)
             .with_flag(TPMA_SESSION_AUDIT)
             .build();
         context
-            .tr_sess_set_attributes(encrypted_sess.handle(), session_attr)
+            .tr_sess_set_attributes(encrypted_sess, session_attr)
             .unwrap();
 
-        context.set_sessions((encrypted_sess.handle().into(), ESYS_TR_NONE, ESYS_TR_NONE));
+        context.set_sessions((Some(encrypted_sess), None, None));
         let _ = context.get_random(10).unwrap();
     }
 
@@ -1054,16 +1070,17 @@ mod test_get_random {
         let mut context = create_ctx_with_session();
         let auth_sess = context
             .start_auth_session(
-                ESYS_TR_NONE,
-                ESYS_TR_NONE,
+                None,
+                None,
                 None,
                 SessionType::Hmac,
                 Cipher::aes_256_cfb(),
                 HashingAlgorithm::Sha256,
             )
-            .unwrap();
+            .expect("Start auth session failed")
+            .expect("Start auth session returned a NONE handle");
 
-        context.set_sessions((auth_sess.handle().into(), ESYS_TR_NONE, ESYS_TR_NONE));
+        context.set_sessions((Some(auth_sess), None, None));
         let _ = context.get_random(10).unwrap_err();
     }
 
@@ -1093,7 +1110,7 @@ mod test_create_primary {
                 &[],
             )
             .unwrap();
-        assert!(key_handle != ESYS_TR_NONE);
+        assert!(ESYS_TR::from(key_handle) != ESYS_TR_NONE);
     }
 
     #[test]
@@ -1600,7 +1617,7 @@ mod test_flush_context {
                 &[],
             )
             .unwrap();
-        context.flush_context(key_handle).unwrap();
+        context.flush_context(key_handle.into()).unwrap();
         assert!(context.read_public(key_handle).is_err());
     }
 
@@ -1633,7 +1650,7 @@ mod test_flush_context {
             .unwrap();
 
         let key_handle = context.load(prim_key_handle, private, public).unwrap();
-        context.flush_context(prim_key_handle).unwrap();
+        context.flush_context(prim_key_handle.into()).unwrap();
         let _ = context.read_public(key_handle).unwrap();
     }
 }
@@ -1657,7 +1674,7 @@ mod test_ctx_save {
                 &[],
             )
             .unwrap();
-        let _ = context.context_save(key_handle).unwrap();
+        let _ = context.context_save(key_handle.into()).unwrap();
     }
 
     #[test]
@@ -1689,8 +1706,8 @@ mod test_ctx_save {
             .unwrap();
 
         let key_handle = context.load(prim_key_handle, private, public).unwrap();
-        context.flush_context(prim_key_handle).unwrap();
-        let _ = context.context_save(key_handle).unwrap();
+        context.flush_context(prim_key_handle.into()).unwrap();
+        let _ = context.context_save(key_handle.into()).unwrap();
     }
 }
 
@@ -1725,9 +1742,9 @@ mod test_ctx_load {
             .unwrap();
 
         let key_handle = context.load(prim_key_handle, private, public).unwrap();
-        context.flush_context(prim_key_handle).unwrap();
-        let key_ctx = context.context_save(key_handle).unwrap();
-        let key_handle = context.context_load(key_ctx).unwrap();
+        context.flush_context(prim_key_handle.into()).unwrap();
+        let key_ctx = context.context_save(key_handle.into()).unwrap();
+        let key_handle = context.context_load(key_ctx).map(KeyHandle::from).unwrap();
         let _ = context.read_public(key_handle).unwrap();
     }
 }
@@ -1751,9 +1768,9 @@ mod test_handle_auth {
             )
             .unwrap();
 
-        let key_ctx = context.context_save(prim_key_handle).unwrap();
-        context.flush_context(prim_key_handle).unwrap();
-        let new_key_handle = context.context_load(key_ctx).unwrap();
+        let key_ctx = context.context_save(prim_key_handle.into()).unwrap();
+        context.flush_context(prim_key_handle.into()).unwrap();
+        let new_key_handle = context.context_load(key_ctx).map(KeyHandle::from).unwrap();
 
         let scheme = TPMT_SIG_SCHEME {
             scheme: TPM2_ALG_NULL,
@@ -1802,14 +1819,15 @@ mod test_session_attr {
         let mut context = create_ctx_with_session();
         let sess_handle = context
             .start_auth_session(
-                ESYS_TR_NONE,
-                ESYS_TR_NONE,
+                None,
+                None,
                 None,
                 SessionType::Hmac,
                 Cipher::aes_256_cfb(),
                 HashingAlgorithm::Sha256,
             )
-            .unwrap();
+            .expect("Start auth session failed")
+            .expect("Start auth session returned a NONE handle");
 
         let sess_attr = TpmaSessionBuilder::new()
             .with_flag(TPMA_SESSION_DECRYPT)
@@ -1817,9 +1835,9 @@ mod test_session_attr {
             .with_flag(TPMA_SESSION_AUDIT)
             .build();
         context
-            .tr_sess_set_attributes(sess_handle.handle(), sess_attr)
+            .tr_sess_set_attributes(sess_handle, sess_attr)
             .unwrap();
-        context.set_sessions((sess_handle.handle().into(), ESYS_TR_NONE, ESYS_TR_NONE));
+        context.set_sessions((Some(sess_handle), None, None));
 
         let _ = context.get_random(10).unwrap();
     }
@@ -1872,20 +1890,21 @@ mod test_policy_get_digest {
         let mut context = create_ctx_without_session();
         let trial_session = context
             .start_auth_session(
-                ESYS_TR_NONE,
-                ESYS_TR_NONE,
+                None,
+                None,
                 None,
                 SessionType::Trial,
                 Cipher::aes_256_cfb(),
                 HashingAlgorithm::Sha256,
             )
-            .unwrap();
+            .expect("Start auth session failed")
+            .expect("Start auth session returned a NONE handle");
         let trial_session_attr = TpmaSessionBuilder::new()
             .with_flag(TPMA_SESSION_DECRYPT)
             .with_flag(TPMA_SESSION_ENCRYPT)
             .build();
         context
-            .tr_sess_set_attributes(trial_session.handle(), trial_session_attr)
+            .tr_sess_set_attributes(trial_session, trial_session_attr)
             .unwrap();
 
         // Read the pcr values using pcr_read
@@ -1937,7 +1956,7 @@ mod test_policy_get_digest {
             .unwrap();
 
         // There is now a policy digest that can be retrived and used.
-        let retrieved_policy_digest = context.policy_get_digest(trial_session.handle()).unwrap();
+        let retrieved_policy_digest = context.policy_get_digest(trial_session).unwrap();
 
         // The algorithm is SHA256 so the expected size of the digest should be 32.
         assert_eq!(retrieved_policy_digest.value().len(), 32);
@@ -2317,7 +2336,7 @@ mod test_tr_from_tpm_public {
                        fn_name: &str|
          -> tss_esapi::Error {
             // Set password authorization
-            context.set_sessions((ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE));
+            context.set_sessions((Some(Session::Password), None, None));
             let _ = context
                 .nv_undefine_space(NvAuthorization::Owner, handle)
                 .unwrap();
@@ -2340,7 +2359,7 @@ mod test_tr_from_tpm_public {
         // Define space
         //
         // Set password authorization when creating the space.
-        context.set_sessions((ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE));
+        context.set_sessions((Some(Session::Password), None, None));
         let initial_nv_index_handle = context
             .nv_define_space(NvAuthorization::Owner, Some(&auth), &nv_public)
             .unwrap();
@@ -2348,7 +2367,7 @@ mod test_tr_from_tpm_public {
         // Read the name from the tpm
         //
         // No password authorization.
-        context.set_sessions((ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE));
+        context.clear_sessions();
         let (_expected_nv_public, expected_name) = context
             .nv_read_public(initial_nv_index_handle)
             .map_err(|e| cleanup(&mut context, e, initial_nv_index_handle, "nv_read_public"))
@@ -2388,7 +2407,7 @@ mod test_tr_from_tpm_public {
         // Remove undefine the space
         //
         // Set password authorization
-        context.set_sessions((ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE));
+        context.set_sessions((Some(Session::Password), None, None));
         let _ = context
             .nv_undefine_space(NvAuthorization::Owner, new_nv_index_handle.into())
             .unwrap();
@@ -2416,7 +2435,7 @@ mod test_tr_from_tpm_public {
                        fn_name: &str|
          -> tss_esapi::Error {
             // Set password authorization
-            context.set_sessions((ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE));
+            context.set_sessions((Some(Session::Password), None, None));
             let _ = context
                 .nv_undefine_space(NvAuthorization::Owner, handle)
                 .unwrap();
@@ -2439,7 +2458,7 @@ mod test_tr_from_tpm_public {
         // Define space
         //
         // Set password authorization when creating the space.
-        context.set_sessions((ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE));
+        context.set_sessions((Some(Session::Password), None, None));
         let initial_nv_index_handle = context
             .nv_define_space(NvAuthorization::Owner, Some(&auth), &nv_public)
             .unwrap();
@@ -2447,7 +2466,7 @@ mod test_tr_from_tpm_public {
         // Read the name from the tpm
         //
         // No password authorization.
-        context.set_sessions((ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE));
+        context.clear_sessions();
         let (_expected_nv_public, initial_name) = context
             .nv_read_public(initial_nv_index_handle)
             .map_err(|e| cleanup(&mut context, e, initial_nv_index_handle, "nv_read_public"))
@@ -2462,7 +2481,7 @@ mod test_tr_from_tpm_public {
             24, 25, 26, 27, 28, 29, 30, 31,
         ])
         .unwrap();
-        context.set_sessions((ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE));
+        context.set_sessions((Some(Session::Password), None, None));
         context
             .nv_write(
                 initial_nv_index_handle.into(),
@@ -2476,7 +2495,7 @@ mod test_tr_from_tpm_public {
         // Read the new name that have been calculated after the write.
         //
         // No password authorization.
-        context.set_sessions((ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE));
+        context.clear_sessions();
         let (_expected_nv_public, expected_name) = context
             .nv_read_public(initial_nv_index_handle)
             .map_err(|e| cleanup(&mut context, e, initial_nv_index_handle, "nv_read_public"))
@@ -2523,7 +2542,7 @@ mod test_tr_from_tpm_public {
             .map_err(|e| cleanup(&mut context, e, new_nv_index_handle.into(), "tr_set_auth"))
             .unwrap();
         // read the data
-        context.set_sessions((ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE));
+        context.set_sessions((Some(Session::Password), None, None));
         let actual_data = context
             .nv_read(
                 new_nv_index_handle.into(),
@@ -2537,7 +2556,7 @@ mod test_tr_from_tpm_public {
         // Remove undefine the space
         //
         // Set password authorization
-        context.set_sessions((ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE));
+        context.set_sessions((Some(Session::Password), None, None));
         let _ = context
             .nv_undefine_space(NvAuthorization::Owner, new_nv_index_handle.into())
             .unwrap();

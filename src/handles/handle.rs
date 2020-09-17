@@ -13,7 +13,7 @@ macro_rules! impl_basic_handle {
         use std::convert::From;
 
         $(#[$outer])*
-        #[derive(Debug, Copy, Clone, PartialEq, Eq)]
+        #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
         pub struct $handle_type {
             value: u32,
         }
@@ -301,7 +301,7 @@ pub mod key {
 pub mod session {
     use super::auth::AuthHandle;
     use super::object::ObjectHandle;
-    use crate::tss2_esys::ESYS_TR_PASSWORD;
+    use crate::tss2_esys::{ESYS_TR_NONE, ESYS_TR_PASSWORD};
     impl_basic_handle!(
         /// Session Handle
         ///
@@ -312,4 +312,5 @@ pub mod session {
     impl_handle_conversion!(SessionHandle, ObjectHandle);
     impl_handle_conversion!(SessionHandle, AuthHandle);
     add_constant_handle!(SessionHandle, PasswordHandle, ESYS_TR_PASSWORD);
+    add_constant_handle!(SessionHandle, NoneHandle, ESYS_TR_NONE);
 }
