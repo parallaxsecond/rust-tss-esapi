@@ -6,12 +6,14 @@ use crate::{
         algorithm::{Cipher, HashingAlgorithm},
         types::session::SessionType,
     },
-    handles::{AuthHandle, KeyHandle, NvIndexHandle, ObjectHandle, SessionHandle, TpmHandle},
+    handles::{
+        AuthHandle, KeyHandle, NvIndexHandle, ObjectHandle, PcrHandle, SessionHandle, TpmHandle,
+    },
     nv::storage::{NvAuthorization, NvPublic},
     session::Session,
     structures::{
-        Auth, Data, Digest, DigestList, HashcheckTicket, MaxBuffer, MaxNvBuffer, Name, Nonce,
-        PcrSelectionList, PublicKeyRSA,
+        Auth, Data, Digest, DigestList, DigestValues, HashcheckTicket, MaxBuffer, MaxNvBuffer,
+        Name, Nonce, PcrSelectionList, PublicKeyRSA,
     },
     tcti::Tcti,
     tss2_esys::*,
@@ -765,6 +767,45 @@ impl Context {
             Ok(object_handle)
         } else {
             error!("Error in loading context: {}.", ret);
+            Err(ret)
+        }
+    }
+
+    pub fn pcr_extend(&mut self, pcr_handle: PcrHandle, digests: DigestValues) -> Result<()> {
+        let ret = unsafe {
+            Esys_PCR_Extend(
+                self.mut_context(),
+                pcr_handle.into(),
+                self.optional_session_1(),
+                self.optional_session_2(),
+                self.optional_session_3(),
+                &digests.try_into()?,
+            )
+        };
+        let ret = Error::from_tss_rc(ret);
+
+        if ret.is_success() {
+            Ok(())
+        } else {
+            Err(ret)
+        }
+    }
+
+    pub fn pcr_reset(&mut self, pcr_handle: PcrHandle) -> Result<()> {
+        let ret = unsafe {
+            Esys_PCR_Reset(
+                self.mut_context(),
+                pcr_handle.into(),
+                self.optional_session_1(),
+                self.optional_session_2(),
+                self.optional_session_3(),
+            )
+        };
+        let ret = Error::from_tss_rc(ret);
+
+        if ret.is_success() {
+            Ok(())
+        } else {
             Err(ret)
         }
     }
