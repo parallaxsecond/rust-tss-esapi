@@ -6,9 +6,9 @@ use crate::{
         algorithm::{Cipher, HashingAlgorithm},
         types::session::SessionType,
     },
-    handles::{AuthHandle, NvIndexHandle, ObjectHandle, SessionHandle, TpmHandle},
+    handles::{AuthHandle, KeyHandle, NvIndexHandle, ObjectHandle, SessionHandle, TpmHandle},
     nv::storage::{NvAuthorization, NvPublic},
-    session::{HmacSession, PolicySession, Session, TrialSession},
+    session::Session,
     structures::{
         Auth, Data, Digest, DigestList, HashcheckTicket, MaxBuffer, MaxNvBuffer, Name, Nonce,
         PcrSelectionList, PublicKeyRSA,
@@ -59,12 +59,12 @@ pub struct Context {
     /// Handle for the ESYS context object owned through an Mbox.
     /// Wrapping the handle in an optional Mbox is done to allow the `Context` to be closed properly when the `Context` structure is dropped.
     esys_context: Option<MBox<ESYS_CONTEXT>>,
-    sessions: (ESYS_TR, ESYS_TR, ESYS_TR),
+    sessions: (Option<Session>, Option<Session>, Option<Session>),
     /// TCTI context handle associated with the ESYS context.
     /// As with the ESYS context, an optional Mbox wrapper allows the context to be deallocated.
     tcti_context: Option<MBox<TSS2_TCTI_CONTEXT>>,
     /// A set of currently open object handles that should be flushed before closing the context.
-    open_handles: HashSet<ESYS_TR>,
+    open_handles: HashSet<ObjectHandle>,
 }
 
 impl Context {
@@ -102,7 +102,7 @@ impl Context {
             let esys_context = Some(MBox::from_raw(esys_context));
             let context = Context {
                 esys_context,
-                sessions: (ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE),
+                sessions: (None, None, None),
                 tcti_context,
                 open_handles: HashSet::new(),
             };
@@ -113,7 +113,11 @@ impl Context {
         }
     }
 
-    /// Start new authentication session and return the handle.
+    /// Start new authentication session and return the Session object
+    /// associated with the session.
+    ///
+    /// If the returned session handle from ESYS api is ESYS_TR_NONE then
+    /// the value of the option in the result will be None.
     ///
     /// The caller nonce is passed as a slice and converted by the method in a TSS digest
     /// structure.
@@ -127,64 +131,64 @@ impl Context {
     #[allow(clippy::too_many_arguments)]
     pub fn start_auth_session(
         &mut self,
-        tpm_key: ESYS_TR,
-        bind: ESYS_TR,
+        tpm_key: Option<KeyHandle>,
+        bind: Option<ObjectHandle>,
         nonce: Option<&Nonce>,
         session_type: SessionType,
         symmetric: Cipher,
         auth_hash: HashingAlgorithm,
-    ) -> Result<Session> {
+    ) -> Result<Option<Session>> {
         let nonce_ptr: *const TPM2B_NONCE = match nonce {
             Some(val) => &TPM2B_NONCE::try_from(val.clone())?,
             None => null(),
         };
 
-        let mut session_handle = ESYS_TR_NONE;
+        let mut esys_session_handle = ESYS_TR_NONE;
 
         let ret = unsafe {
             Esys_StartAuthSession(
                 self.mut_context(),
-                tpm_key,
-                bind,
-                self.sessions.0,
-                self.sessions.1,
-                self.sessions.2,
+                tpm_key.map(|v| v.into()).unwrap_or(ESYS_TR_NONE),
+                bind.map(|v| v.into()).unwrap_or(ESYS_TR_NONE),
+                self.optional_session_1(),
+                self.optional_session_2(),
+                self.optional_session_3(),
                 nonce_ptr,
                 session_type.into(),
                 &symmetric.into(),
                 auth_hash.into(),
-                &mut session_handle,
+                &mut esys_session_handle,
             )
         };
 
         let ret = Error::from_tss_rc(ret);
         if ret.is_success() {
-            let _ = self.open_handles.insert(session_handle);
-            match session_type {
-                SessionType::Hmac => Ok(Session::Hmac(HmacSession::new(
-                    SessionHandle::from(session_handle),
-                    auth_hash,
-                ))),
-                SessionType::Policy => Ok(Session::Policy(PolicySession::new(
-                    SessionHandle::from(session_handle),
-                    auth_hash,
-                ))),
-                SessionType::Trial => Ok(Session::Trial(TrialSession::new(
-                    SessionHandle::from(session_handle),
-                    auth_hash,
-                ))),
-            }
+            let _ = self
+                .open_handles
+                .insert(ObjectHandle::from(esys_session_handle));
+            Ok(Session::create(
+                session_type,
+                SessionHandle::from(esys_session_handle),
+                auth_hash,
+            ))
         } else {
             error!("Error when creating a session: {}.", ret);
             Err(ret)
         }
     }
 
-    pub fn set_sessions(&mut self, session_handles: (ESYS_TR, ESYS_TR, ESYS_TR)) {
+    pub fn set_sessions(
+        &mut self,
+        session_handles: (Option<Session>, Option<Session>, Option<Session>),
+    ) {
         self.sessions = session_handles;
     }
 
-    pub fn sessions(&self) -> (ESYS_TR, ESYS_TR, ESYS_TR) {
+    pub fn clear_sessions(&mut self) {
+        self.sessions = (None, None, None)
+    }
+
+    pub fn sessions(&self) -> (Option<Session>, Option<Session>, Option<Session>) {
         self.sessions
     }
 
@@ -201,9 +205,9 @@ impl Context {
         let ret = unsafe {
             Esys_GetCapability(
                 self.mut_context(),
-                self.sessions.0,
-                self.sessions.1,
-                self.sessions.2,
+                self.optional_session_1(),
+                self.optional_session_2(),
+                self.optional_session_3(),
                 capability,
                 property,
                 property_count,
@@ -252,7 +256,7 @@ impl Context {
         initial_data: Option<&SensitiveData>,
         outside_info: Option<&Data>,
         creation_pcrs: &[TPMS_PCR_SELECTION],
-    ) -> Result<ESYS_TR> {
+    ) -> Result<KeyHandle> {
         let sensitive_create = TPM2B_SENSITIVE_CREATE {
             size: std::mem::size_of::<TPMS_SENSITIVE_CREATE>()
                 .try_into()
@@ -279,20 +283,20 @@ impl Context {
         let mut creation_data = null_mut();
         let mut creation_hash = null_mut();
         let mut creation_ticket = null_mut();
-        let mut prim_key_handle = ESYS_TR_NONE;
+        let mut esys_prim_key_handle = ESYS_TR_NONE;
 
         let ret = unsafe {
             Esys_CreatePrimary(
                 self.mut_context(),
                 primary_handle,
-                self.sessions.0,
-                self.sessions.1,
-                self.sessions.2,
+                self.optional_session_1(),
+                self.optional_session_2(),
+                self.optional_session_3(),
                 &sensitive_create,
                 public,
                 &TPM2B_DATA::try_from(outside_info.cloned().unwrap_or_default())?,
                 &creation_pcrs,
-                &mut prim_key_handle,
+                &mut esys_prim_key_handle,
                 &mut outpublic,
                 &mut creation_data,
                 &mut creation_hash,
@@ -308,8 +312,9 @@ impl Context {
                 let _ = MBox::from_raw(creation_hash);
                 let _ = MBox::from_raw(creation_ticket);
             }
-            let _ = self.open_handles.insert(prim_key_handle);
-            Ok(prim_key_handle)
+            let primary_key_handle = KeyHandle::from(esys_prim_key_handle);
+            let _ = self.open_handles.insert(primary_key_handle.into());
+            Ok(primary_key_handle)
         } else {
             error!("Error in creating primary key: {}.", ret);
             Err(ret)
@@ -334,7 +339,7 @@ impl Context {
     #[allow(clippy::too_many_arguments)]
     pub fn create_key(
         &mut self,
-        parent_handle: ESYS_TR,
+        parent_handle: KeyHandle,
         public: &TPM2B_PUBLIC,
         auth_value: Option<&Auth>,
         initial_data: Option<&SensitiveData>,
@@ -371,10 +376,10 @@ impl Context {
         let ret = unsafe {
             Esys_Create(
                 self.mut_context(),
-                parent_handle,
-                self.sessions.0,
-                self.sessions.1,
-                self.sessions.2,
+                parent_handle.into(),
+                self.optional_session_1(),
+                self.optional_session_2(),
+                self.optional_session_3(),
                 &sensitive_create,
                 public,
                 &TPM2B_DATA::try_from(outside_info.cloned().unwrap_or_default())?,
@@ -411,9 +416,9 @@ impl Context {
             Esys_Unseal(
                 self.mut_context(),
                 item_handle,
-                self.sessions.0,
-                self.sessions.1,
-                self.sessions.2,
+                self.optional_session_1(),
+                self.optional_session_2(),
+                self.optional_session_3(),
                 &mut out_data,
             )
         };
@@ -431,28 +436,28 @@ impl Context {
     /// Load a previously generated key back into the TPM and return its new handle.
     pub fn load(
         &mut self,
-        parent_handle: ESYS_TR,
+        parent_handle: KeyHandle,
         private: TPM2B_PRIVATE,
         public: TPM2B_PUBLIC,
-    ) -> Result<ESYS_TR> {
-        let mut handle = ESYS_TR_NONE;
+    ) -> Result<KeyHandle> {
+        let mut esys_key_handle = ESYS_TR_NONE;
         let ret = unsafe {
             Esys_Load(
                 self.mut_context(),
-                parent_handle,
-                self.sessions.0,
-                self.sessions.1,
-                self.sessions.2,
+                parent_handle.into(),
+                self.optional_session_1(),
+                self.optional_session_2(),
+                self.optional_session_3(),
                 &private,
                 &public,
-                &mut handle,
+                &mut esys_key_handle,
             )
         };
         let ret = Error::from_tss_rc(ret);
-
         if ret.is_success() {
-            let _ = self.open_handles.insert(handle);
-            Ok(handle)
+            let key_handle = KeyHandle::from(esys_key_handle);
+            let _ = self.open_handles.insert(key_handle.into());
+            Ok(key_handle)
         } else {
             error!("Error in loading: {}.", ret);
             Err(ret)
@@ -470,7 +475,7 @@ impl Context {
     /// * if the digest provided is too long, a `WrongParamSize` wrapper error will be returned
     pub fn sign(
         &mut self,
-        key_handle: ESYS_TR,
+        key_handle: KeyHandle,
         digest: &Digest,
         scheme: TPMT_SIG_SCHEME,
         validation: &TPMT_TK_HASHCHECK,
@@ -480,10 +485,10 @@ impl Context {
         let ret = unsafe {
             Esys_Sign(
                 self.mut_context(),
-                key_handle,
-                self.sessions.0,
-                self.sessions.1,
-                self.sessions.2,
+                key_handle.into(),
+                self.optional_session_1(),
+                self.optional_session_2(),
+                self.optional_session_3(),
                 &tss_digest,
                 &scheme,
                 validation,
@@ -512,7 +517,7 @@ impl Context {
     /// * if the digest provided is too long, a `WrongParamSize` wrapper error will be returned
     pub fn verify_signature(
         &mut self,
-        key_handle: ESYS_TR,
+        key_handle: KeyHandle,
         digest: &Digest,
         signature: &TPMT_SIGNATURE,
     ) -> Result<TPMT_TK_VERIFIED> {
@@ -521,10 +526,10 @@ impl Context {
         let ret = unsafe {
             Esys_VerifySignature(
                 self.mut_context(),
-                key_handle,
-                self.sessions.0,
-                self.sessions.1,
-                self.sessions.2,
+                key_handle.into(),
+                self.optional_session_1(),
+                self.optional_session_2(),
+                self.optional_session_3(),
                 &tss_digest,
                 signature,
                 &mut validation,
@@ -544,7 +549,7 @@ impl Context {
     /// Perform an asymmetric RSA encryption.
     pub fn rsa_encrypt(
         &mut self,
-        key_handle: ESYS_TR,
+        key_handle: KeyHandle,
         message: PublicKeyRSA,
         in_scheme: &TPMT_RSA_DECRYPT,
         label: Data,
@@ -555,10 +560,10 @@ impl Context {
         let ret = unsafe {
             Esys_RSA_Encrypt(
                 self.mut_context(),
-                key_handle,
-                self.sessions.0,
-                self.sessions.1,
-                self.sessions.2,
+                key_handle.into(),
+                self.optional_session_1(),
+                self.optional_session_2(),
+                self.optional_session_3(),
                 &tss_message,
                 in_scheme,
                 &tss_label,
@@ -578,7 +583,7 @@ impl Context {
     /// Perform an asymmetric RSA decryption.
     pub fn rsa_decrypt(
         &mut self,
-        key_handle: ESYS_TR,
+        key_handle: KeyHandle,
         cipher_text: PublicKeyRSA,
         in_scheme: &TPMT_RSA_DECRYPT,
         label: Data,
@@ -589,10 +594,10 @@ impl Context {
         let ret = unsafe {
             Esys_RSA_Decrypt(
                 self.mut_context(),
-                key_handle,
-                self.sessions.0,
-                self.sessions.1,
-                self.sessions.2,
+                key_handle.into(),
+                self.optional_session_1(),
+                self.optional_session_2(),
+                self.optional_session_3(),
                 &tss_cipher_text,
                 in_scheme,
                 &tss_label,
@@ -615,25 +620,26 @@ impl Context {
         private: &TPM2B_SENSITIVE,
         public: &TPM2B_PUBLIC,
         hierarchy: Hierarchy,
-    ) -> Result<ESYS_TR> {
-        let mut key_handle = ESYS_TR_NONE;
+    ) -> Result<KeyHandle> {
+        let mut esys_key_handle = ESYS_TR_NONE;
         let ret = unsafe {
             Esys_LoadExternal(
                 self.mut_context(),
-                self.sessions.0,
-                self.sessions.1,
-                self.sessions.2,
+                self.optional_session_1(),
+                self.optional_session_2(),
+                self.optional_session_3(),
                 private,
                 public,
                 hierarchy.rh(),
-                &mut key_handle,
+                &mut esys_key_handle,
             )
         };
 
         let ret = Error::from_tss_rc(ret);
 
         if ret.is_success() {
-            let _ = self.open_handles.insert(key_handle);
+            let key_handle = KeyHandle::from(esys_key_handle);
+            let _ = self.open_handles.insert(key_handle.into());
             Ok(key_handle)
         } else {
             error!("Error in loading: {}.", ret);
@@ -646,25 +652,26 @@ impl Context {
         &mut self,
         public: &TPM2B_PUBLIC,
         hierarchy: Hierarchy,
-    ) -> Result<ESYS_TR> {
-        let mut key_handle = ESYS_TR_NONE;
+    ) -> Result<KeyHandle> {
+        let mut esys_key_handle = ESYS_TR_NONE;
         let ret = unsafe {
             Esys_LoadExternal(
                 self.mut_context(),
-                self.sessions.0,
-                self.sessions.1,
-                self.sessions.2,
+                self.optional_session_1(),
+                self.optional_session_2(),
+                self.optional_session_3(),
                 null(),
                 public,
                 hierarchy.rh(),
-                &mut key_handle,
+                &mut esys_key_handle,
             )
         };
 
         let ret = Error::from_tss_rc(ret);
 
         if ret.is_success() {
-            let _ = self.open_handles.insert(key_handle);
+            let key_handle = KeyHandle::from(esys_key_handle);
+            let _ = self.open_handles.insert(key_handle.into());
             Ok(key_handle)
         } else {
             error!("Error in loading: {}.", ret);
@@ -673,17 +680,17 @@ impl Context {
     }
 
     /// Read the public part of a key currently in the TPM and return it.
-    pub fn read_public(&mut self, key_handle: ESYS_TR) -> Result<TPM2B_PUBLIC> {
+    pub fn read_public(&mut self, key_handle: KeyHandle) -> Result<TPM2B_PUBLIC> {
         let mut public = null_mut();
         let mut name = null_mut();
         let mut qualified_name = null_mut();
         let ret = unsafe {
             Esys_ReadPublic(
                 self.mut_context(),
-                key_handle,
-                self.sessions.0,
-                self.sessions.1,
-                self.sessions.2,
+                key_handle.into(),
+                self.optional_session_1(),
+                self.optional_session_2(),
+                self.optional_session_3(),
                 &mut public,
                 &mut name,
                 &mut qualified_name,
@@ -705,8 +712,8 @@ impl Context {
     }
 
     /// Flush the context of an object from the TPM.
-    pub fn flush_context(&mut self, handle: ESYS_TR) -> Result<()> {
-        let ret = unsafe { Esys_FlushContext(self.mut_context(), handle) };
+    pub fn flush_context(&mut self, handle: ObjectHandle) -> Result<()> {
+        let ret = unsafe { Esys_FlushContext(self.mut_context(), handle.into()) };
         let ret = Error::from_tss_rc(ret);
         if ret.is_success() {
             let _ = self.open_handles.remove(&handle);
@@ -722,9 +729,9 @@ impl Context {
     /// # Errors
     /// * if conversion from `TPMS_CONTEXT` to `TpmsContext` fails, a `WrongParamSize` error will
     /// be returned
-    pub fn context_save(&mut self, handle: ESYS_TR) -> Result<TpmsContext> {
+    pub fn context_save(&mut self, handle: ObjectHandle) -> Result<TpmsContext> {
         let mut context = null_mut();
-        let ret = unsafe { Esys_ContextSave(self.mut_context(), handle, &mut context) };
+        let ret = unsafe { Esys_ContextSave(self.mut_context(), handle.into(), &mut context) };
 
         let ret = Error::from_tss_rc(ret);
         if ret.is_success() {
@@ -741,20 +748,21 @@ impl Context {
     /// # Errors
     /// * if conversion from `TpmsContext` to the native `TPMS_CONTEXT` fails, a `WrongParamSize`
     /// error will be returned
-    pub fn context_load(&mut self, context: TpmsContext) -> Result<ESYS_TR> {
-        let mut handle = ESYS_TR_NONE;
+    pub fn context_load(&mut self, context: TpmsContext) -> Result<ObjectHandle> {
+        let mut esys_handle = ESYS_TR_NONE;
         let ret = unsafe {
             Esys_ContextLoad(
                 self.mut_context(),
                 &TPMS_CONTEXT::try_from(context)?,
-                &mut handle,
+                &mut esys_handle,
             )
         };
 
         let ret = Error::from_tss_rc(ret);
         if ret.is_success() {
-            let _ = self.open_handles.insert(handle);
-            Ok(handle)
+            let object_handle = ObjectHandle::from(esys_handle);
+            let _ = self.open_handles.insert(object_handle);
+            Ok(object_handle)
         } else {
             error!("Error in loading context: {}.", ret);
             Err(ret)
@@ -783,9 +791,9 @@ impl Context {
         let ret = unsafe {
             Esys_PCR_Read(
                 self.mut_context(),
-                self.sessions.0,
-                self.sessions.1,
-                self.sessions.2,
+                self.optional_session_1(),
+                self.optional_session_2(),
+                self.optional_session_3(),
                 &pcr_selection_list.clone().into(),
                 &mut pcr_update_counter,
                 &mut tss_pcr_selection_list_out_ptr,
@@ -818,7 +826,7 @@ impl Context {
     /// * if the qualifying data provided is too long, a `WrongParamSize` wrapper error will be returned
     pub fn quote(
         &mut self,
-        signing_key_handle: ESYS_TR,
+        signing_key_handle: KeyHandle,
         qualifying_data: &Data,
         signing_scheme: TPMT_SIG_SCHEME,
         pcr_selection_list: PcrSelectionList,
@@ -829,10 +837,10 @@ impl Context {
         let ret = unsafe {
             Esys_Quote(
                 self.mut_context(),
-                signing_key_handle,
-                self.sessions.0,
-                self.sessions.1,
-                self.sessions.2,
+                signing_key_handle.into(),
+                self.optional_session_1(),
+                self.optional_session_2(),
+                self.optional_session_3(),
                 &tss_qualifying_data,
                 &signing_scheme,
                 &pcr_selection_list.into(),
@@ -882,9 +890,9 @@ impl Context {
             Esys_PolicyPCR(
                 self.mut_context(),
                 policy_session.handle().into(),
-                self.sessions.0,
-                self.sessions.1,
-                self.sessions.2,
+                self.optional_session_1(),
+                self.optional_session_2(),
+                self.optional_session_3(),
                 &pcr_digest,
                 &pcr_selection_list.into(),
             )
@@ -916,9 +924,9 @@ impl Context {
             Esys_PolicyOR(
                 self.mut_context(),
                 policy_session.handle().into(),
-                self.sessions.0,
-                self.sessions.1,
-                self.sessions.2,
+                self.optional_session_1(),
+                self.optional_session_2(),
+                self.optional_session_3(),
                 &digest_list,
             )
         };
@@ -943,9 +951,9 @@ impl Context {
             Esys_PolicyLocality(
                 self.mut_context(),
                 policy_session.handle().into(),
-                self.sessions.0,
-                self.sessions.1,
-                self.sessions.2,
+                self.optional_session_1(),
+                self.optional_session_2(),
+                self.optional_session_3(),
                 locality,
             )
         };
@@ -966,9 +974,9 @@ impl Context {
             Esys_PolicyCommandCode(
                 self.mut_context(),
                 policy_session.handle().into(),
-                self.sessions.0,
-                self.sessions.1,
-                self.sessions.2,
+                self.optional_session_1(),
+                self.optional_session_2(),
+                self.optional_session_3(),
                 code,
             )
         };
@@ -989,9 +997,9 @@ impl Context {
             Esys_PolicyPhysicalPresence(
                 self.mut_context(),
                 policy_session.handle().into(),
-                self.sessions.0,
-                self.sessions.1,
-                self.sessions.2,
+                self.optional_session_1(),
+                self.optional_session_2(),
+                self.optional_session_3(),
             )
         };
         let ret = Error::from_tss_rc(ret);
@@ -1012,9 +1020,9 @@ impl Context {
             Esys_PolicyCpHash(
                 self.mut_context(),
                 policy_session.handle().into(),
-                self.sessions.0,
-                self.sessions.1,
-                self.sessions.2,
+                self.optional_session_1(),
+                self.optional_session_2(),
+                self.optional_session_3(),
                 &cp_hash_a,
             )
         };
@@ -1036,9 +1044,9 @@ impl Context {
             Esys_PolicyNameHash(
                 self.mut_context(),
                 policy_session.handle().into(),
-                self.sessions.0,
-                self.sessions.1,
-                self.sessions.2,
+                self.optional_session_1(),
+                self.optional_session_2(),
+                self.optional_session_3(),
                 &name_hash,
             )
         };
@@ -1059,9 +1067,9 @@ impl Context {
             Esys_PolicyAuthValue(
                 self.mut_context(),
                 policy_session.handle().into(),
-                self.sessions.0,
-                self.sessions.1,
-                self.sessions.2,
+                self.optional_session_1(),
+                self.optional_session_2(),
+                self.optional_session_3(),
             )
         };
         let ret = Error::from_tss_rc(ret);
@@ -1081,9 +1089,9 @@ impl Context {
             Esys_PolicyPassword(
                 self.mut_context(),
                 policy_session.handle().into(),
-                self.sessions.0,
-                self.sessions.1,
-                self.sessions.2,
+                self.optional_session_1(),
+                self.optional_session_2(),
+                self.optional_session_3(),
             )
         };
         let ret = Error::from_tss_rc(ret);
@@ -1102,9 +1110,9 @@ impl Context {
             Esys_PolicyNvWritten(
                 self.mut_context(),
                 policy_session.handle().into(),
-                self.sessions.0,
-                self.sessions.1,
-                self.sessions.2,
+                self.optional_session_1(),
+                self.optional_session_2(),
+                self.optional_session_3(),
                 if written_set { 1 } else { 0 },
             )
         };
@@ -1138,9 +1146,9 @@ impl Context {
             Esys_PolicyAuthorize(
                 self.mut_context(),
                 policy_session.handle().into(),
-                self.sessions.0,
-                self.sessions.1,
-                self.sessions.2,
+                self.optional_session_1(),
+                self.optional_session_2(),
+                self.optional_session_3(),
                 &tss_approved_policy,
                 &tss_policy_ref,
                 &tss_key_sign,
@@ -1165,9 +1173,9 @@ impl Context {
         let ret = unsafe {
             Esys_GetRandom(
                 self.mut_context(),
-                self.sessions.0,
-                self.sessions.1,
-                self.sessions.2,
+                self.optional_session_1(),
+                self.optional_session_2(),
+                self.optional_session_3(),
                 num_bytes
                     .try_into()
                     .map_err(|_| Error::local_error(ErrorKind::WrongParamSize))?,
@@ -1200,9 +1208,9 @@ impl Context {
         let ret = unsafe {
             Esys_TestParms(
                 self.mut_context(),
-                self.sessions.0,
-                self.sessions.1,
-                self.sessions.2,
+                self.optional_session_1(),
+                self.optional_session_2(),
+                self.optional_session_3(),
                 &public_parms,
             )
         };
@@ -1230,9 +1238,9 @@ impl Context {
         let ret = unsafe {
             Esys_Hash(
                 self.mut_context(),
-                self.sessions.0,
-                self.sessions.1,
-                self.sessions.2,
+                self.optional_session_1(),
+                self.optional_session_2(),
+                self.optional_session_3(),
                 &in_data,
                 hashing_algorithm.into(),
                 hierarchy.rh(),
@@ -1256,15 +1264,15 @@ impl Context {
 
     /// Function for retriving the current policy digest for
     /// the session.
-    pub fn policy_get_digest(&mut self, policy_session_handle: SessionHandle) -> Result<Digest> {
+    pub fn policy_get_digest(&mut self, policy_session: Session) -> Result<Digest> {
         let mut policy_digest_ptr = null_mut();
         let ret = unsafe {
             Esys_PolicyGetDigest(
                 self.mut_context(),
-                policy_session_handle.into(),
-                self.sessions.0,
-                self.sessions.1,
-                self.sessions.2,
+                policy_session.handle().into(),
+                self.optional_session_1(),
+                self.optional_session_2(),
+                self.optional_session_3(),
                 &mut policy_digest_ptr,
             )
         };
@@ -1321,13 +1329,13 @@ impl Context {
     /// Set the given attributes on a given session.
     pub fn tr_sess_set_attributes(
         &mut self,
-        handle: SessionHandle,
+        session: Session,
         attributes: TpmaSession,
     ) -> Result<()> {
         let ret = unsafe {
             Esys_TRSess_SetAttributes(
                 self.mut_context(),
-                handle.into(),
+                session.handle().into(),
                 attributes.flags(),
                 attributes.mask(),
             )
@@ -1341,10 +1349,10 @@ impl Context {
     }
 
     /// Get session attribute flags.
-    pub fn tr_sess_get_attributes(&mut self, object_handle: ObjectHandle) -> Result<TpmaSession> {
+    pub fn tr_sess_get_attributes(&mut self, session: Session) -> Result<TpmaSession> {
         let mut flags: TPMA_SESSION = 0;
         let ret = unsafe {
-            Esys_TRSess_GetAttributes(self.mut_context(), object_handle.into(), &mut flags)
+            Esys_TRSess_GetAttributes(self.mut_context(), session.handle().into(), &mut flags)
         };
         let ret = Error::from_tss_rc(ret);
         if ret.is_success() {
@@ -1356,20 +1364,22 @@ impl Context {
 
     /// Used to construct an esys object from the resources inside the TPM.
     pub fn tr_from_tpm_public(&mut self, tpm_handle: TpmHandle) -> Result<ObjectHandle> {
-        let mut tss_esys_object_handle: ESYS_TR = ESYS_TR_NONE;
+        let mut esys_object_handle: ESYS_TR = ESYS_TR_NONE;
         let ret = unsafe {
             Esys_TR_FromTPMPublic(
                 self.mut_context(),
                 tpm_handle.into(),
-                self.sessions.0,
-                self.sessions.1,
-                self.sessions.2,
-                &mut tss_esys_object_handle,
+                self.optional_session_1(),
+                self.optional_session_2(),
+                self.optional_session_3(),
+                &mut esys_object_handle,
             )
         };
         let ret = Error::from_tss_rc(ret);
         if ret.is_success() {
-            Ok(ObjectHandle::from(tss_esys_object_handle))
+            let object_handle = ObjectHandle::from(esys_object_handle);
+            let _ = self.open_handles.insert(object_handle);
+            Ok(object_handle)
         } else {
             Err(ret)
         }
@@ -1407,9 +1417,9 @@ impl Context {
             Esys_NV_DefineSpace(
                 self.mut_context(),
                 nv_authorization.into(),
-                self.sessions.0,
-                self.sessions.1,
-                self.sessions.2,
+                self.optional_session_1(),
+                self.optional_session_2(),
+                self.optional_session_3(),
                 &tss_auth,
                 &tss_nv_public,
                 &mut object_identifier,
@@ -1437,9 +1447,9 @@ impl Context {
                 self.mut_context(),
                 nv_authorization.into(),
                 nv_index_handle.into(),
-                self.sessions.0,
-                self.sessions.1,
-                self.sessions.2,
+                self.optional_session_1(),
+                self.optional_session_2(),
+                self.optional_session_3(),
             )
         };
 
@@ -1462,9 +1472,9 @@ impl Context {
             Esys_NV_ReadPublic(
                 self.mut_context(),
                 nv_index_handle.into(),
-                self.sessions.0,
-                self.sessions.1,
-                self.sessions.2,
+                self.optional_session_1(),
+                self.optional_session_2(),
+                self.optional_session_3(),
                 &mut tss_nv_public_ptr,
                 &mut tss_nv_name_ptr,
             )
@@ -1498,9 +1508,9 @@ impl Context {
                 self.mut_context(),
                 auth_handle.into(),
                 nv_index_handle.into(),
-                self.sessions.0,
-                self.sessions.1,
-                self.sessions.2,
+                self.optional_session_1(),
+                self.optional_session_2(),
+                self.optional_session_3(),
                 size,
                 offset,
                 &mut tss_max_nv_buffer_ptr,
@@ -1531,9 +1541,9 @@ impl Context {
                 self.mut_context(),
                 auth_handle.into(),
                 nv_index_handle.into(),
-                self.sessions.0,
-                self.sessions.1,
-                self.sessions.2,
+                self.optional_session_1(),
+                self.optional_session_2(),
+                self.optional_session_3(),
                 &data.clone().try_into()?,
                 offset,
             )
@@ -1553,6 +1563,27 @@ impl Context {
     fn mut_context(&mut self) -> *mut ESYS_CONTEXT {
         self.esys_context.as_mut().unwrap().as_mut_ptr() // will only fail if called from Drop after .take()
     }
+    ///
+    /// Internal function for retrieving the ESYS session handle for
+    /// the optional session 1.
+    ///
+    fn optional_session_1(&self) -> ESYS_TR {
+        Session::handle_from_option(self.sessions.0).into()
+    }
+    ///
+    /// Internal function for retrieving the ESYS session handle for
+    /// the optional session 2.
+    ///
+    fn optional_session_2(&self) -> ESYS_TR {
+        Session::handle_from_option(self.sessions.1).into()
+    }
+    ///
+    /// Internal function for retrieving the ESYS session handle for
+    /// the optional session 3.
+    ///
+    fn optional_session_3(&self) -> ESYS_TR {
+        Session::handle_from_option(self.sessions.2).into()
+    }
 }
 
 impl Drop for Context {
@@ -1561,7 +1592,7 @@ impl Drop for Context {
 
         // Flush the open handles.
         self.open_handles.clone().iter().for_each(|handle| {
-            info!("Flushing handle {}", *handle);
+            info!("Flushing handle {}", ESYS_TR::from(*handle));
             if let Err(e) = self.flush_context(*handle) {
                 error!("Error when dropping the context: {}.", e);
             }

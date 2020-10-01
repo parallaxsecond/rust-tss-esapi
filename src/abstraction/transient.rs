@@ -16,7 +16,7 @@
 use crate::constants::algorithm::{Cipher, EllipticCurve, HashingAlgorithm};
 use crate::constants::tss::*;
 use crate::constants::types::session::SessionType;
-use crate::handles::SessionHandle;
+use crate::handles::KeyHandle;
 use crate::structures::{Auth, Data, Digest, PublicKeyRSA, VerifiedTicket};
 use crate::tcti::Tcti;
 use crate::tss2_esys::*;
@@ -69,7 +69,7 @@ impl RsaExponent {
 #[derive(Debug)]
 pub struct TransientKeyContext {
     context: Context,
-    root_key_handle: ESYS_TR,
+    root_key_handle: KeyHandle,
 }
 
 impl TransientKeyContext {
@@ -121,11 +121,11 @@ impl TransientKeyContext {
         let key_handle = self.context.load(self.root_key_handle, key_priv, key_pub)?;
 
         self.set_session_attrs()?;
-        let key_context = self.context.context_save(key_handle).or_else(|e| {
-            self.context.flush_context(key_handle)?;
+        let key_context = self.context.context_save(key_handle.into()).or_else(|e| {
+            self.context.flush_context(key_handle.into())?;
             Err(e)
         })?;
-        self.context.flush_context(key_handle)?;
+        self.context.flush_context(key_handle.into())?;
         Ok((key_context, key_auth))
     }
 
@@ -197,11 +197,11 @@ impl TransientKeyContext {
             .context
             .load_external_public(&public, Hierarchy::Owner)?;
         self.set_session_attrs()?;
-        let key_context = self.context.context_save(key_handle).or_else(|e| {
-            self.context.flush_context(key_handle)?;
+        let key_context = self.context.context_save(key_handle.into()).or_else(|e| {
+            self.context.flush_context(key_handle.into())?;
             Err(e)
         })?;
-        self.context.flush_context(key_handle)?;
+        self.context.flush_context(key_handle.into())?;
         Ok(key_context)
     }
 
@@ -298,11 +298,11 @@ impl TransientKeyContext {
             .context
             .load_external(&private, &public, Hierarchy::Null)?;
         self.set_session_attrs()?;
-        let key_context = self.context.context_save(key_handle).or_else(|e| {
-            self.context.flush_context(key_handle)?;
+        let key_context = self.context.context_save(key_handle.into()).or_else(|e| {
+            self.context.flush_context(key_handle.into())?;
             Err(e)
         })?;
-        self.context.flush_context(key_handle)?;
+        self.context.flush_context(key_handle.into())?;
         Ok(key_context)
     }
 
@@ -319,7 +319,7 @@ impl TransientKeyContext {
         let key_handle = self.context.context_load(key_context)?;
 
         self.set_session_attrs()?;
-        let key_pub_id = self.context.read_public(key_handle).or_else(|e| {
+        let key_pub_id = self.context.read_public(key_handle.into()).or_else(|e| {
             self.context.flush_context(key_handle)?;
             Err(e)
         })?;
@@ -362,12 +362,15 @@ impl TransientKeyContext {
         label: Option<Data>,
     ) -> Result<PublicKeyRSA> {
         self.set_session_attrs()?;
-        let key_handle = self.context.context_load(key_context)?;
+        let key_handle = self
+            .context
+            .context_load(key_context)
+            .map(KeyHandle::from)?;
         if let Some(key_auth_value) = key_auth {
             self.context
                 .tr_set_auth(key_handle.into(), &key_auth_value)
                 .or_else(|e| {
-                    self.context.flush_context(key_handle)?;
+                    self.context.flush_context(key_handle.into())?;
                     Err(e)
                 })?;
         }
@@ -378,11 +381,11 @@ impl TransientKeyContext {
             .context
             .rsa_encrypt(key_handle, message, &scheme, label.unwrap_or_default())
             .or_else(|e| {
-                self.context.flush_context(key_handle)?;
+                self.context.flush_context(key_handle.into())?;
                 Err(e)
             })?;
 
-        self.context.flush_context(key_handle)?;
+        self.context.flush_context(key_handle.into())?;
 
         Ok(ciphertext)
     }
@@ -405,12 +408,15 @@ impl TransientKeyContext {
         label: Option<Data>,
     ) -> Result<PublicKeyRSA> {
         self.set_session_attrs()?;
-        let key_handle = self.context.context_load(key_context)?;
+        let key_handle = self
+            .context
+            .context_load(key_context)
+            .map(KeyHandle::from)?;
         if let Some(key_auth_value) = key_auth {
             self.context
                 .tr_set_auth(key_handle.into(), &key_auth_value)
                 .or_else(|e| {
-                    self.context.flush_context(key_handle)?;
+                    self.context.flush_context(key_handle.into())?;
                     Err(e)
                 })?;
         }
@@ -421,11 +427,11 @@ impl TransientKeyContext {
             .context
             .rsa_decrypt(key_handle, ciphertext, &scheme, label.unwrap_or_default())
             .or_else(|e| {
-                self.context.flush_context(key_handle)?;
+                self.context.flush_context(key_handle.into())?;
                 Err(e)
             })?;
 
-        self.context.flush_context(key_handle)?;
+        self.context.flush_context(key_handle.into())?;
 
         Ok(plaintext)
     }
@@ -445,12 +451,15 @@ impl TransientKeyContext {
         digest: Digest,
     ) -> Result<utils::Signature> {
         self.set_session_attrs()?;
-        let key_handle = self.context.context_load(key_context)?;
+        let key_handle = self
+            .context
+            .context_load(key_context)
+            .map(KeyHandle::from)?;
         if let Some(key_auth_value) = key_auth {
             self.context
                 .tr_set_auth(key_handle.into(), &key_auth_value)
                 .or_else(|e| {
-                    self.context.flush_context(key_handle)?;
+                    self.context.flush_context(key_handle.into())?;
                     Err(e)
                 })?;
         }
@@ -468,10 +477,10 @@ impl TransientKeyContext {
             .context
             .sign(key_handle, &digest, scheme, &validation)
             .or_else(|e| {
-                self.context.flush_context(key_handle)?;
+                self.context.flush_context(key_handle.into())?;
                 Err(e)
             })?;
-        self.context.flush_context(key_handle)?;
+        self.context.flush_context(key_handle.into())?;
         Ok(signature)
     }
 
@@ -492,10 +501,13 @@ impl TransientKeyContext {
         signature: utils::Signature,
     ) -> Result<VerifiedTicket> {
         self.set_session_attrs()?;
-        let key_handle = self.context.context_load(key_context)?;
+        let key_handle = self
+            .context
+            .context_load(key_context)
+            .map(KeyHandle::from)?;
 
         let signature: TPMT_SIGNATURE = signature.try_into().or_else(|e| {
-            self.context.flush_context(key_handle)?;
+            self.context.flush_context(key_handle.into())?;
             Err(e)
         })?;
         self.set_session_attrs()?;
@@ -503,10 +515,10 @@ impl TransientKeyContext {
             .context
             .verify_signature(key_handle, &digest, &signature)
             .or_else(|e| {
-                self.context.flush_context(key_handle)?;
+                self.context.flush_context(key_handle.into())?;
                 Err(e)
             })?;
-        self.context.flush_context(key_handle)?;
+        self.context.flush_context(key_handle.into())?;
         Ok(verified.try_into()?)
     }
 
@@ -515,13 +527,13 @@ impl TransientKeyContext {
     /// # Errors
     /// * if `Context::set_session_attr` returns an error, that error is propagated through
     fn set_session_attrs(&mut self) -> Result<()> {
-        let (session, _, _) = self.context.sessions();
-        let session_attr = utils::TpmaSessionBuilder::new()
-            .with_flag(TPMA_SESSION_DECRYPT)
-            .with_flag(TPMA_SESSION_ENCRYPT)
-            .build();
-        self.context
-            .tr_sess_set_attributes(SessionHandle::from(session), session_attr)?;
+        if let (Some(session), _, _) = self.context.sessions() {
+            let session_attr = utils::TpmaSessionBuilder::new()
+                .with_flag(TPMA_SESSION_DECRYPT)
+                .with_flag(TPMA_SESSION_ENCRYPT)
+                .build();
+            self.context.tr_sess_set_attributes(session, session_attr)?;
+        }
         Ok(())
     }
 }
@@ -643,21 +655,29 @@ impl TransientKeyContextBuilder {
         }
         let mut context = Context::new(self.tcti)?;
 
-        let session = context.start_auth_session(
-            ESYS_TR_NONE,
-            ESYS_TR_NONE,
-            None,
-            SessionType::Hmac,
-            self.default_context_cipher,
-            self.session_hash_alg,
-        )?;
+        let session = context
+            .start_auth_session(
+                None,
+                None,
+                None,
+                SessionType::Hmac,
+                self.default_context_cipher,
+                self.session_hash_alg,
+            )
+            .and_then(|session| {
+                session.ok_or_else(|| {
+                    error!("Received unexpected NONE handle from the TPM");
+                    Error::local_error(ErrorKind::WrongValueFromTpm)
+                })
+            })?;
+
         let session_attr = TpmaSessionBuilder::new()
             .with_flag(TPMA_SESSION_DECRYPT)
             .with_flag(TPMA_SESSION_ENCRYPT)
             .build();
-        context.tr_sess_set_attributes(session.handle(), session_attr)?;
+        context.tr_sess_set_attributes(session, session_attr)?;
 
-        context.set_sessions((session.handle().into(), ESYS_TR_NONE, ESYS_TR_NONE));
+        context.set_sessions((Some(session), None, None));
         let root_key_auth = if self.root_key_auth_size > 0 {
             let random = context.get_random(self.root_key_auth_size)?;
             Some(Auth::try_from(random.value().to_vec())?)
@@ -683,17 +703,25 @@ impl TransientKeyContextBuilder {
             &[],
         )?;
 
-        let new_session = context.start_auth_session(
-            root_key_handle,
-            ESYS_TR_NONE,
-            None,
-            SessionType::Hmac,
-            self.default_context_cipher,
-            self.session_hash_alg,
-        )?;
-        let (old_session, _, _) = context.sessions();
-        context.set_sessions((new_session.handle().into(), ESYS_TR_NONE, ESYS_TR_NONE));
-        context.flush_context(old_session)?;
+        let new_session = context
+            .start_auth_session(
+                Some(root_key_handle),
+                None,
+                None,
+                SessionType::Hmac,
+                self.default_context_cipher,
+                self.session_hash_alg,
+            )
+            .and_then(|session| {
+                session.ok_or_else(|| {
+                    error!("Received unexpected NONE handle from the TPM");
+                    Error::local_error(ErrorKind::WrongValueFromTpm)
+                })
+            })?;
+        if let (Some(old_session), _, _) = context.sessions() {
+            context.set_sessions((Some(new_session), None, None));
+            context.flush_context(old_session.handle().into())?;
+        }
         Ok(TransientKeyContext {
             context,
             root_key_handle,
