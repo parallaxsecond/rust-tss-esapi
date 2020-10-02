@@ -33,6 +33,8 @@ const KEY: [u8; 512] = [
 ];
 
 use std::convert::{TryFrom, TryInto};
+use std::env;
+use std::str::FromStr;
 use tss_esapi::{
     algorithm::structures::SensitiveData,
     constants::{
@@ -56,7 +58,7 @@ use tss_esapi::{
 };
 
 fn create_ctx_with_session() -> Context {
-    let mut ctx = unsafe { Context::new(Tcti::Mssim(Default::default())).unwrap() };
+    let mut ctx = create_ctx_without_session();
     let session = ctx
         .start_auth_session(
             None,
@@ -103,7 +105,11 @@ fn create_public_sealed_object() -> tss_esapi::tss2_esys::TPM2B_PUBLIC {
 }
 
 fn create_ctx_without_session() -> Context {
-    unsafe { Context::new(Tcti::Mssim(Default::default())).unwrap() }
+    let tcti = match env::var("TEST_TCTI") {
+        Err(_) => Tcti::Mssim(Default::default()),
+        Ok(tctistr) => Tcti::from_str(&tctistr).expect("Error parsing TEST_TCTI"),
+    };
+    unsafe { Context::new(tcti).unwrap() }
 }
 
 fn signing_key_pub() -> TPM2B_PUBLIC {
