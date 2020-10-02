@@ -65,6 +65,11 @@ pub mod digest_list {
     pub use super::lists::digest::*;
 }
 
+pub use self::digest_values::DigestValues;
+pub mod digest_values {
+    pub use super::lists::digest_values::*;
+}
+
 pub use self::pcr_selection_list::PcrSelectionList;
 pub use self::pcr_selection_list::PcrSelectionListBuilder;
 pub mod pcr_selection_list {
