@@ -39,7 +39,7 @@ use tss_esapi::{
         algorithm::{Cipher, HashingAlgorithm},
         tags::PropertyTag,
         tss::*,
-        types::{capability::CapabilityType, session::SessionType},
+        types::{capability::CapabilityType, session::SessionType, startup::StartupType},
     },
     handles::{
         AuthHandle, KeyHandle, NvIndexHandle, NvIndexTpmHandle, ObjectHandle, PcrHandle,
@@ -472,6 +472,16 @@ mod test_clear {
         context.clear(AuthHandle::Platform).unwrap_err();
         context.clear_control(AuthHandle::Platform, false).unwrap();
         context.clear(AuthHandle::Platform).unwrap();
+    }
+}
+
+mod test_startup {
+    use super::*;
+
+    #[test]
+    fn test_startup() {
+        let mut context = create_ctx_without_session();
+        context.startup(StartupType::Clear).unwrap();
     }
 }
 
