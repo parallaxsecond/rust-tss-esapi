@@ -42,12 +42,12 @@ use tss_esapi::{
         tss::*,
         types::session::SessionType,
     },
-    handles::{KeyHandle, NvIndexHandle, NvIndexTpmHandle, ObjectHandle},
+    handles::{KeyHandle, NvIndexHandle, NvIndexTpmHandle, ObjectHandle, PcrHandle},
     nv::storage::{NvAuthorization, NvIndexAttributes, NvPublicBuilder},
     session::Session,
     structures::{
-        Auth, Data, Digest, DigestList, MaxBuffer, MaxNvBuffer, Nonce, PcrSelectionListBuilder,
-        PcrSlot, PublicKeyRSA, Ticket,
+        Auth, Data, Digest, DigestList, DigestValues, MaxBuffer, MaxNvBuffer, Nonce,
+        PcrSelectionListBuilder, PcrSlot, PublicKeyRSA, Ticket,
     },
     tss2_esys::*,
     utils::{
@@ -353,6 +353,119 @@ mod test_get_capability {
         assert_eq!(res.capability, TPM2_CAP_TPM_PROPERTIES);
         let tpmprops = unsafe { res.data.tpmProperties };
         assert_ne!(tpmprops.count, 0);
+    }
+}
+
+mod test_pcr_extend_reset {
+    use super::*;
+
+    #[test]
+    fn test_pcr_extend_reset_commands() {
+        // In this test, we use PCR16. This was chosen because it's the only one that is
+        // resettable and extendable from the locality in which we are running, and does not
+        // get reset by any D-RTPM events.
+        // PCR (TCG PC Client Platform TPM Profile (PTP) for TPM 2.0 Version 1.05 Rev 14)
+        let mut context = create_ctx_with_session();
+        let pcr_ses = context.sessions();
+
+        // We start by resetting. We do not place any expectations on the prior contents
+        context.pcr_reset(PcrHandle::Pcr16).unwrap();
+
+        // pcr_read is NO_SESSIONS
+        context.clear_sessions();
+        // Read PCR contents
+        let pcr_selection_list = PcrSelectionListBuilder::new()
+            .with_selection(HashingAlgorithm::Sha1, &[PcrSlot::Slot16])
+            .with_selection(HashingAlgorithm::Sha256, &[PcrSlot::Slot16])
+            .build();
+        let (_, _, pcr_data) = context.pcr_read(&pcr_selection_list).unwrap();
+        let pcr_sha1_bank = pcr_data.pcr_bank(HashingAlgorithm::Sha1).unwrap();
+        let pcr_sha256_bank = pcr_data.pcr_bank(HashingAlgorithm::Sha256).unwrap();
+        let pcr_sha1_value = pcr_sha1_bank.pcr_value(PcrSlot::Slot16).unwrap();
+        let pcr_sha256_value = pcr_sha256_bank.pcr_value(PcrSlot::Slot16).unwrap();
+        // Needs to have the length of associated with the hashing algorithm
+        assert_eq!(pcr_sha1_value.value(), [0; 20]);
+        assert_eq!(pcr_sha256_value.value(), [0; 32]);
+        // The extend and reset functions are all SESSIONS
+        context.set_sessions(pcr_ses);
+
+        // Extend both sha256 and sha1
+        let mut vals = DigestValues::new();
+        vals.set(
+            HashingAlgorithm::Sha1,
+            Digest::try_from(vec![
+                1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
+            ])
+            .unwrap(),
+        );
+        vals.set(
+            HashingAlgorithm::Sha256,
+            Digest::try_from(vec![
+                1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23,
+                24, 25, 26, 27, 28, 29, 30, 31, 32,
+            ])
+            .unwrap(),
+        );
+        context.pcr_extend(PcrHandle::Pcr16, vals).unwrap();
+
+        // pcr_read is NO_SESSIONS
+        context.clear_sessions();
+        // Read PCR contents
+        let (_, _, pcr_data) = context.pcr_read(&pcr_selection_list).unwrap();
+        let pcr_sha1_bank = pcr_data.pcr_bank(HashingAlgorithm::Sha1).unwrap();
+        let pcr_sha256_bank = pcr_data.pcr_bank(HashingAlgorithm::Sha256).unwrap();
+        let pcr_sha1_value = pcr_sha1_bank.pcr_value(PcrSlot::Slot16).unwrap();
+        let pcr_sha256_value = pcr_sha256_bank.pcr_value(PcrSlot::Slot16).unwrap();
+        // Needs to have the length of associated with the hashing algorithm
+        /*
+          Right Hand Side determined by:
+          python3
+          >>> from hashlib import sha1
+          >>> m = sha1()
+          >>> m.update(b"\0" * 20)
+          >>> m.update(bytes(range(1,21)))
+          >>> it = iter(m.hexdigest())
+          >>> res = ["0x"+a+b for a,b in zip(it, it)]
+          >>> ", ".join(res)
+        */
+        assert_eq!(
+            pcr_sha1_value.value(),
+            [
+                0x5f, 0x42, 0x0e, 0x04, 0x95, 0x8b, 0x2e, 0x3f, 0x18, 0x07, 0x39, 0x1e, 0x99, 0xd9,
+                0x49, 0x2c, 0x67, 0xaa, 0xef, 0xfd
+            ]
+        );
+        assert_eq!(
+            pcr_sha256_value.value(),
+            [
+                0x0b, 0x8f, 0x4c, 0x5b, 0x6a, 0xdc, 0x4c, 0x08, 0x7a, 0xb9, 0xf4, 0x3a, 0xae, 0xb6,
+                0x00, 0x70, 0x84, 0xc2, 0x64, 0xad, 0xca, 0xa3, 0xcb, 0x07, 0x17, 0x6b, 0x79, 0x23,
+                0x42, 0x85, 0x04, 0x12
+            ]
+        );
+        // The extend and reset functions are all SESSIONS
+        context.set_sessions(pcr_ses);
+
+        // Now reset it again to test it's again zeroes
+        context.pcr_reset(PcrHandle::Pcr16).unwrap();
+
+        // pcr_read is NO_SESSIONS
+        context.clear_sessions();
+        // Read PCR contents
+        let pcr_selection_list = PcrSelectionListBuilder::new()
+            .with_selection(HashingAlgorithm::Sha1, &[PcrSlot::Slot16])
+            .with_selection(HashingAlgorithm::Sha256, &[PcrSlot::Slot16])
+            .build();
+        let (_, _, pcr_data) = context.pcr_read(&pcr_selection_list).unwrap();
+        let pcr_sha1_bank = pcr_data.pcr_bank(HashingAlgorithm::Sha1).unwrap();
+        let pcr_sha256_bank = pcr_data.pcr_bank(HashingAlgorithm::Sha256).unwrap();
+        let pcr_sha1_value = pcr_sha1_bank.pcr_value(PcrSlot::Slot16).unwrap();
+        let pcr_sha256_value = pcr_sha256_bank.pcr_value(PcrSlot::Slot16).unwrap();
+        // Needs to have the length of associated with the hashing algorithm
+        assert_eq!(pcr_sha1_value.value(), [0; 20]);
+        assert_eq!(pcr_sha256_value.value(), [0; 32]);
+        // The extend and reset functions are all SESSIONS
+        context.set_sessions(pcr_ses);
     }
 }
 

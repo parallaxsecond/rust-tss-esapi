@@ -37,6 +37,11 @@ pub use self::buffers::public_key_rsa::PublicKeyRSA;
 
 pub use self::buffers::nonce::Nonce;
 /////////////////////////////////////////////////////////
+/// The hash section
+/////////////////////////////////////////////////////////
+mod hash;
+pub use self::hash::agile;
+/////////////////////////////////////////////////////////
 /// The pcr section
 /////////////////////////////////////////////////////////
 mod pcr;
@@ -58,6 +63,11 @@ mod lists;
 pub use self::digest_list::DigestList;
 pub mod digest_list {
     pub use super::lists::digest::*;
+}
+
+pub use self::digest_values::DigestValues;
+pub mod digest_values {
+    pub use super::lists::digest_values::*;
 }
 
 pub use self::pcr_selection_list::PcrSelectionList;
