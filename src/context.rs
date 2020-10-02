@@ -6,7 +6,7 @@ use crate::{
         algorithm::{Cipher, HashingAlgorithm},
         tags::PropertyTag,
         tss::{TPMA_SESSION_DECRYPT, TPMA_SESSION_ENCRYPT},
-        types::{capability::CapabilityType, session::SessionType},
+        types::{capability::CapabilityType, session::SessionType, startup::StartupType},
     },
     handles::{
         handle_conversion::TryIntoNotNone, AuthHandle, KeyHandle, NvIndexHandle, ObjectHandle,
@@ -126,6 +126,18 @@ impl Context {
             Ok(context)
         } else {
             error!("Error when creating a new context: {}", ret);
+            Err(ret)
+        }
+    }
+
+    /// Send a TPM2_STARTUP command to the TPM
+    pub fn startup(&mut self, startup_type: StartupType) -> Result<()> {
+        let ret = unsafe { Esys_Startup(self.mut_context(), startup_type.into()) };
+        let ret = Error::from_tss_rc(ret);
+        if ret.is_success() {
+            Ok(())
+        } else {
+            error!("Error while starting up TPM: {}", ret);
             Err(ret)
         }
     }
