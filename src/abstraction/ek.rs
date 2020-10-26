@@ -5,11 +5,11 @@ use crate::{
     abstraction::nv,
     constants::{algorithm::AsymmetricAlgorithm, tss::*},
     handles::{AuthHandle, KeyHandle, NvIndexTpmHandle, TpmHandle},
+    interface_types::resource_handles::Hierarchy,
     tss2_esys::{
-        ESYS_TR_RH_ENDORSEMENT, TPM2B_ECC_PARAMETER, TPM2B_PUBLIC, TPM2B_PUBLIC_KEY_RSA,
-        TPMS_ECC_PARMS, TPMS_ECC_POINT, TPMS_RSA_PARMS, TPMS_SCHEME_HASH, TPMT_ECC_SCHEME,
-        TPMT_KDF_SCHEME, TPMT_RSA_SCHEME, TPMT_SYM_DEF_OBJECT, TPMU_ASYM_SCHEME, TPMU_SYM_KEY_BITS,
-        TPMU_SYM_MODE,
+        TPM2B_ECC_PARAMETER, TPM2B_PUBLIC, TPM2B_PUBLIC_KEY_RSA, TPMS_ECC_PARMS, TPMS_ECC_POINT,
+        TPMS_RSA_PARMS, TPMS_SCHEME_HASH, TPMT_ECC_SCHEME, TPMT_KDF_SCHEME, TPMT_RSA_SCHEME,
+        TPMT_SYM_DEF_OBJECT, TPMU_ASYM_SCHEME, TPMU_SYM_KEY_BITS, TPMU_SYM_MODE,
     },
     utils::{ObjectAttributes, PublicIdUnion, PublicParmsUnion, Tpm2BPublicBuilder},
     Context, Result,
@@ -114,7 +114,7 @@ pub fn create_ek_object(context: &mut Context, alg: AsymmetricAlgorithm) -> Resu
     let ek_public = create_ek_public_from_default_template(alg)?;
 
     context.execute_with_nullauth_session(|ctx| {
-        ctx.create_primary_key(ESYS_TR_RH_ENDORSEMENT, &ek_public, None, None, None, &[])
+        ctx.create_primary_key(Hierarchy::Endorsement, &ek_public, None, None, None, &[])
     })
 }
 

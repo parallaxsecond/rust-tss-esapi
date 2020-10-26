@@ -41,8 +41,9 @@ use tss_esapi::{
         tss::*,
         types::{capability::CapabilityType, session::SessionType},
     },
-    handles::{KeyHandle, NvIndexHandle, NvIndexTpmHandle, ObjectHandle, PcrHandle},
-    nv::storage::{NvAuthorization, NvIndexAttributes, NvPublicBuilder},
+    handles::{AuthHandle, KeyHandle, NvIndexHandle, NvIndexTpmHandle, ObjectHandle, PcrHandle},
+    interface_types::resource_handles::{Hierarchy, NvAuth},
+    nv::storage::{NvIndexAttributes, NvPublicBuilder},
     session::Session,
     structures::{
         Auth, CapabilityData, Data, Digest, DigestList, DigestValues, MaxBuffer, MaxNvBuffer,
@@ -50,8 +51,8 @@ use tss_esapi::{
     },
     tss2_esys::*,
     utils::{
-        self, AsymSchemeUnion, Hierarchy, ObjectAttributes, PublicIdUnion, PublicParmsUnion,
-        Signature, SignatureData, Tpm2BPublicBuilder, TpmaSessionBuilder, TpmsRsaParmsBuilder,
+        self, AsymSchemeUnion, ObjectAttributes, PublicIdUnion, PublicParmsUnion, Signature,
+        SignatureData, Tpm2BPublicBuilder, TpmaSessionBuilder, TpmsRsaParmsBuilder,
     },
     Context,
 };
@@ -108,7 +109,7 @@ fn comprehensive_test() {
 
     let prim_key_handle = context
         .create_primary_key(
-            ESYS_TR_RH_OWNER,
+            Hierarchy::Owner,
             &decryption_key_pub(),
             Some(&key_auth),
             None,
@@ -227,7 +228,7 @@ mod test_start_sess {
         let mut context = create_ctx_with_session();
         let prim_key_handle = context
             .create_primary_key(
-                ESYS_TR_RH_OWNER,
+                Hierarchy::Owner,
                 &decryption_key_pub(),
                 None,
                 None,
@@ -558,7 +559,7 @@ mod test_unseal {
 
         let key_handle_seal = context
             .create_primary_key(
-                ESYS_TR_RH_OWNER,
+                Hierarchy::Owner,
                 &decryption_key_pub(),
                 None,
                 None,
@@ -568,7 +569,7 @@ mod test_unseal {
             .unwrap();
         let key_handle_unseal = context
             .create_primary_key(
-                ESYS_TR_RH_OWNER,
+                Hierarchy::Owner,
                 &decryption_key_pub(),
                 None,
                 None,
@@ -615,7 +616,7 @@ mod test_quote {
         let qualifying_data = vec![0xff; 16];
 
         let key_handle = context
-            .create_primary_key(ESYS_TR_RH_OWNER, &signing_key_pub(), None, None, None, &[])
+            .create_primary_key(Hierarchy::Owner, &signing_key_pub(), None, None, None, &[])
             .unwrap();
 
         let res = context
@@ -758,7 +759,7 @@ mod test_policies {
 
         let key_handle = context
             .create_primary_key(
-                ESYS_TR_RH_OWNER,
+                Hierarchy::Owner,
                 &signing_key_pub(),
                 Some(&key_auth),
                 None,
@@ -1205,7 +1206,7 @@ mod test_create_primary {
 
         let key_handle = context
             .create_primary_key(
-                ESYS_TR_RH_OWNER,
+                Hierarchy::Owner,
                 &decryption_key_pub(),
                 Some(&key_auth),
                 None,
@@ -1222,7 +1223,7 @@ mod test_create_primary {
 
         let _ = context
             .create_primary_key(
-                ESYS_TR_RH_OWNER,
+                Hierarchy::Owner,
                 &decryption_key_pub(),
                 None,
                 None,
@@ -1244,7 +1245,7 @@ mod test_create {
 
         let prim_key_handle = context
             .create_primary_key(
-                ESYS_TR_RH_OWNER,
+                Hierarchy::Owner,
                 &decryption_key_pub(),
                 Some(&key_auth),
                 None,
@@ -1273,7 +1274,7 @@ mod test_create {
 
         let prim_key_handle = context
             .create_primary_key(
-                ESYS_TR_RH_OWNER,
+                Hierarchy::Owner,
                 &decryption_key_pub(),
                 Some(&key_auth),
                 None,
@@ -1306,7 +1307,7 @@ mod test_load {
 
         let prim_key_handle = context
             .create_primary_key(
-                ESYS_TR_RH_OWNER,
+                Hierarchy::Owner,
                 &decryption_key_pub(),
                 Some(&key_auth),
                 None,
@@ -1341,7 +1342,7 @@ mod test_sign {
 
         let key_handle = context
             .create_primary_key(
-                ESYS_TR_RH_OWNER,
+                Hierarchy::Owner,
                 &signing_key_pub(),
                 Some(&key_auth),
                 None,
@@ -1377,7 +1378,7 @@ mod test_sign {
 
         let key_handle = context
             .create_primary_key(
-                ESYS_TR_RH_OWNER,
+                Hierarchy::Owner,
                 &signing_key_pub(),
                 Some(&key_auth),
                 None,
@@ -1413,7 +1414,7 @@ mod test_sign {
 
         let key_handle = context
             .create_primary_key(
-                ESYS_TR_RH_OWNER,
+                Hierarchy::Owner,
                 &signing_key_pub(),
                 Some(&key_auth),
                 None,
@@ -1453,7 +1454,7 @@ mod test_rsa_encrypt_decrypt {
 
         let key_handle = context
             .create_primary_key(
-                ESYS_TR_RH_OWNER,
+                Hierarchy::Owner,
                 &encryption_decryption_key_pub(),
                 Some(&key_auth),
                 None,
@@ -1493,7 +1494,7 @@ mod test_verify_sig {
 
         let key_handle = context
             .create_primary_key(
-                ESYS_TR_RH_OWNER,
+                Hierarchy::Owner,
                 &signing_key_pub(),
                 Some(&key_auth),
                 None,
@@ -1537,7 +1538,7 @@ mod test_verify_sig {
 
         let key_handle = context
             .create_primary_key(
-                ESYS_TR_RH_OWNER,
+                Hierarchy::Owner,
                 &signing_key_pub(),
                 Some(&key_auth),
                 None,
@@ -1584,7 +1585,7 @@ mod test_verify_sig {
 
         let key_handle = context
             .create_primary_key(
-                ESYS_TR_RH_OWNER,
+                Hierarchy::Owner,
                 &signing_key_pub(),
                 Some(&key_auth),
                 None,
@@ -1614,7 +1615,7 @@ mod test_verify_sig {
 
         let key_handle = context
             .create_primary_key(
-                ESYS_TR_RH_OWNER,
+                Hierarchy::Owner,
                 &signing_key_pub(),
                 Some(&key_auth),
                 None,
@@ -1689,7 +1690,7 @@ mod test_read_pub {
 
         let key_handle = context
             .create_primary_key(
-                ESYS_TR_RH_OWNER,
+                Hierarchy::Owner,
                 &signing_key_pub(),
                 Some(&key_auth),
                 None,
@@ -1712,7 +1713,7 @@ mod test_flush_context {
 
         let key_handle = context
             .create_primary_key(
-                ESYS_TR_RH_OWNER,
+                Hierarchy::Owner,
                 &signing_key_pub(),
                 Some(&key_auth),
                 None,
@@ -1732,7 +1733,7 @@ mod test_flush_context {
 
         let prim_key_handle = context
             .create_primary_key(
-                ESYS_TR_RH_OWNER,
+                Hierarchy::Owner,
                 &decryption_key_pub(),
                 Some(&key_auth),
                 None,
@@ -1769,7 +1770,7 @@ mod test_ctx_save {
 
         let key_handle = context
             .create_primary_key(
-                ESYS_TR_RH_OWNER,
+                Hierarchy::Owner,
                 &signing_key_pub(),
                 Some(&key_auth),
                 None,
@@ -1788,7 +1789,7 @@ mod test_ctx_save {
 
         let prim_key_handle = context
             .create_primary_key(
-                ESYS_TR_RH_OWNER,
+                Hierarchy::Owner,
                 &decryption_key_pub(),
                 Some(&key_auth),
                 None,
@@ -1824,7 +1825,7 @@ mod test_ctx_load {
 
         let prim_key_handle = context
             .create_primary_key(
-                ESYS_TR_RH_OWNER,
+                Hierarchy::Owner,
                 &decryption_key_pub(),
                 Some(Auth::try_from(key_auth.value().to_vec()).unwrap()).as_ref(),
                 None,
@@ -1862,7 +1863,7 @@ mod test_handle_auth {
         let key_auth = Auth::try_from(random_digest.value().to_vec()).unwrap();
         let prim_key_handle = context
             .create_primary_key(
-                ESYS_TR_RH_OWNER,
+                Hierarchy::Owner,
                 &signing_key_pub(),
                 Some(&key_auth),
                 None,
@@ -2104,11 +2105,11 @@ mod test_nv_define_space {
 
         // Failes because attributes dont match hierarchy auth.
         let _ = context
-            .nv_define_space(NvAuthorization::Platform, None, &owner_nv_public)
+            .nv_define_space(NvAuth::Platform, None, &owner_nv_public)
             .unwrap_err();
 
         let _ = context
-            .nv_define_space(NvAuthorization::Owner, None, &platform_nv_public)
+            .nv_define_space(NvAuth::Owner, None, &platform_nv_public)
             .unwrap_err();
     }
 
@@ -2146,19 +2147,19 @@ mod test_nv_define_space {
             .unwrap();
 
         let owner_nv_index_handle = context
-            .nv_define_space(NvAuthorization::Owner, None, &owner_nv_public)
+            .nv_define_space(NvAuth::Owner, None, &owner_nv_public)
             .unwrap();
 
         let _ = context
-            .nv_undefine_space(NvAuthorization::Owner, owner_nv_index_handle)
+            .nv_undefine_space(NvAuth::Owner, owner_nv_index_handle)
             .unwrap();
 
         let platform_nv_index_handle = context
-            .nv_define_space(NvAuthorization::Platform, None, &platform_nv_public)
+            .nv_define_space(NvAuth::Platform, None, &platform_nv_public)
             .unwrap();
 
         let _ = context
-            .nv_undefine_space(NvAuthorization::Platform, platform_nv_index_handle)
+            .nv_undefine_space(NvAuth::Platform, platform_nv_index_handle)
             .unwrap();
     }
 }
@@ -2186,12 +2187,12 @@ mod test_nv_undefine_space {
             .unwrap();
 
         let owner_nv_index_handle = context
-            .nv_define_space(NvAuthorization::Owner, None, &owner_nv_public)
+            .nv_define_space(NvAuth::Owner, None, &owner_nv_public)
             .unwrap();
 
         // Succedes
         let _ = context
-            .nv_undefine_space(NvAuthorization::Owner, owner_nv_index_handle)
+            .nv_undefine_space(NvAuth::Owner, owner_nv_index_handle)
             .unwrap();
     }
 }
@@ -2219,19 +2220,19 @@ mod test_nv_write {
             .unwrap();
 
         let owner_nv_index_handle = context
-            .nv_define_space(NvAuthorization::Owner, None, &owner_nv_public)
+            .nv_define_space(NvAuth::Owner, None, &owner_nv_public)
             .unwrap();
 
         // Use owner authorization
         let write_result = context.nv_write(
-            NvAuthorization::Owner.into(),
+            NvAuth::Owner.into(),
             owner_nv_index_handle,
             &MaxNvBuffer::try_from([1, 2, 3, 4, 5, 6, 7].to_vec()).unwrap(),
             0,
         );
 
         let _ = context
-            .nv_undefine_space(NvAuthorization::Owner, owner_nv_index_handle)
+            .nv_undefine_space(NvAuth::Owner, owner_nv_index_handle)
             .unwrap();
 
         if let Err(e) = write_result {
@@ -2262,13 +2263,13 @@ mod test_nv_read_public {
             .unwrap();
 
         let nv_index_handle = context
-            .nv_define_space(NvAuthorization::Owner, None, &expected_nv_public)
+            .nv_define_space(NvAuth::Owner, None, &expected_nv_public)
             .unwrap();
 
         let read_public_result = context.nv_read_public(nv_index_handle);
 
         let _ = context
-            .nv_undefine_space(NvAuthorization::Owner, nv_index_handle)
+            .nv_undefine_space(NvAuth::Owner, nv_index_handle)
             .unwrap();
 
         // Report error
@@ -2305,7 +2306,7 @@ mod test_nv_read {
             .unwrap();
 
         let owner_nv_index_handle = context
-            .nv_define_space(NvAuthorization::Owner, None, &owner_nv_public)
+            .nv_define_space(NvAuth::Owner, None, &owner_nv_public)
             .unwrap();
 
         let value = [1, 2, 3, 4, 5, 6, 7];
@@ -2313,20 +2314,20 @@ mod test_nv_read {
 
         // Write the data using Owner authorization
         let write_result = context.nv_write(
-            NvAuthorization::Owner.into(),
+            AuthHandle::OwnerHandle,
             owner_nv_index_handle,
             &expected_data,
             0,
         );
         // read data using owner authorization
         let read_result = context.nv_read(
-            NvAuthorization::Owner.into(),
+            AuthHandle::OwnerHandle,
             owner_nv_index_handle,
             value.len() as u16,
             0,
         );
         let _ = context
-            .nv_undefine_space(NvAuthorization::Owner, owner_nv_index_handle)
+            .nv_undefine_space(NvAuth::Owner, owner_nv_index_handle)
             .unwrap();
 
         // Report error
@@ -2361,9 +2362,7 @@ mod test_tr_from_tpm_public {
                        fn_name: &str|
          -> tss_esapi::Error {
             // Set password authorization
-            let _ = context
-                .nv_undefine_space(NvAuthorization::Owner, handle)
-                .unwrap();
+            let _ = context.nv_undefine_space(NvAuth::Owner, handle).unwrap();
             panic!("{} failed: {}", fn_name, e);
         };
 
@@ -2381,7 +2380,7 @@ mod test_tr_from_tpm_public {
             .unwrap();
 
         let initial_nv_index_handle = context
-            .nv_define_space(NvAuthorization::Owner, None, &nv_public)
+            .nv_define_space(NvAuth::Owner, None, &nv_public)
             .unwrap();
         ///////////////////////////////////////////
         // Read the name from the tpm
@@ -2415,7 +2414,7 @@ mod test_tr_from_tpm_public {
         //////////////////////////////////////////////
         // Remove undefine the space
         let _ = context
-            .nv_undefine_space(NvAuthorization::Owner, new_nv_index_handle.into())
+            .nv_undefine_space(NvAuth::Owner, new_nv_index_handle.into())
             .unwrap();
 
         assert_eq!(expected_name, actual_name);
@@ -2440,9 +2439,7 @@ mod test_tr_from_tpm_public {
          -> tss_esapi::Error {
             // Set password authorization
             context.set_sessions((Some(Session::Password), None, None));
-            let _ = context
-                .nv_undefine_space(NvAuthorization::Owner, handle)
-                .unwrap();
+            let _ = context.nv_undefine_space(NvAuth::Owner, handle).unwrap();
             panic!("{} failed: {}", fn_name, e);
         };
 
@@ -2464,7 +2461,7 @@ mod test_tr_from_tpm_public {
         // Set password authorization when creating the space.
         context.set_sessions((Some(Session::Password), None, None));
         let initial_nv_index_handle = context
-            .nv_define_space(NvAuthorization::Owner, Some(&auth), &nv_public)
+            .nv_define_space(NvAuth::Owner, Some(&auth), &nv_public)
             .unwrap();
         ///////////////////////////////////////////////////////////////
         // Read the name from the tpm
@@ -2512,7 +2509,7 @@ mod test_tr_from_tpm_public {
         // Set password authorization
         context.set_sessions((Some(Session::Password), None, None));
         let _ = context
-            .nv_undefine_space(NvAuthorization::Owner, new_nv_index_handle.into())
+            .nv_undefine_space(NvAuth::Owner, new_nv_index_handle.into())
             .unwrap();
         ///////////////////////////////////////////////////////////////
         // Check that we got the correct name
@@ -2539,9 +2536,7 @@ mod test_tr_from_tpm_public {
          -> tss_esapi::Error {
             // Set password authorization
             context.set_sessions((Some(Session::Password), None, None));
-            let _ = context
-                .nv_undefine_space(NvAuthorization::Owner, handle)
-                .unwrap();
+            let _ = context.nv_undefine_space(NvAuth::Owner, handle).unwrap();
             panic!("{} failed: {}", fn_name, e);
         };
 
@@ -2563,7 +2558,7 @@ mod test_tr_from_tpm_public {
         // Set password authorization when creating the space.
         context.set_sessions((Some(Session::Password), None, None));
         let initial_nv_index_handle = context
-            .nv_define_space(NvAuthorization::Owner, Some(&auth), &nv_public)
+            .nv_define_space(NvAuth::Owner, Some(&auth), &nv_public)
             .unwrap();
         ///////////////////////////////////////////////////////////////
         // Read the name from the tpm
@@ -2661,7 +2656,7 @@ mod test_tr_from_tpm_public {
         // Set password authorization
         context.set_sessions((Some(Session::Password), None, None));
         let _ = context
-            .nv_undefine_space(NvAuthorization::Owner, new_nv_index_handle.into())
+            .nv_undefine_space(NvAuth::Owner, new_nv_index_handle.into())
             .unwrap();
         ///////////////////////////////////////////////////////////////
         // The name will have changed

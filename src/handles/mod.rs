@@ -19,7 +19,7 @@ mod handle;
 /////////////////////////////////////////////////////////
 /// TPM Handles
 /////////////////////////////////////////////////////////
-pub use tpm::AcTpmHandle;
+pub use tpm::AttachedComponentTpmHandle;
 pub use tpm::HmacSessionTpmHandle;
 pub use tpm::LoadedSessionTpmHandle;
 pub use tpm::NvIndexTpmHandle;

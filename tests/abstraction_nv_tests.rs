@@ -6,7 +6,8 @@ use tss_esapi::abstraction::nv;
 use tss_esapi::{
     constants::algorithm::HashingAlgorithm,
     handles::NvIndexTpmHandle,
-    nv::storage::{NvAuthorization, NvIndexAttributes, NvPublicBuilder},
+    interface_types::resource_handles::NvAuth,
+    nv::storage::{NvIndexAttributes, NvPublicBuilder},
     structures::MaxNvBuffer,
 };
 
@@ -35,7 +36,7 @@ fn read_full() {
         .unwrap();
 
     let owner_nv_index_handle = context
-        .nv_define_space(NvAuthorization::Owner, None, &owner_nv_public)
+        .nv_define_space(NvAuth::Owner, None, &owner_nv_public)
         .unwrap();
 
     let value = [1, 2, 3, 4, 5, 6, 7];
@@ -44,7 +45,7 @@ fn read_full() {
     // Write the data using Owner authorization
     context
         .nv_write(
-            NvAuthorization::Owner.into(),
+            NvAuth::Owner.into(),
             owner_nv_index_handle,
             &expected_data,
             0,
@@ -52,7 +53,7 @@ fn read_full() {
         .unwrap();
     context
         .nv_write(
-            NvAuthorization::Owner.into(),
+            NvAuth::Owner.into(),
             owner_nv_index_handle,
             &expected_data,
             1024,
@@ -60,10 +61,10 @@ fn read_full() {
         .unwrap();
 
     // Now read it back
-    let read_result = nv::read_full(&mut context, NvAuthorization::Owner.into(), nv_index);
+    let read_result = nv::read_full(&mut context, NvAuth::Owner.into(), nv_index);
 
     let _ = context
-        .nv_undefine_space(NvAuthorization::Owner, owner_nv_index_handle)
+        .nv_undefine_space(NvAuth::Owner, owner_nv_index_handle)
         .unwrap();
 
     let read_result = read_result.unwrap();

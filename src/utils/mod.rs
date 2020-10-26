@@ -1176,51 +1176,6 @@ impl TryFrom<TpmsContext> for TPMS_CONTEXT {
     }
 }
 
-/// Enum describing the object hierarchies in a TPM 2.0.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum Hierarchy {
-    Null,
-    Owner,
-    Platform,
-    Endorsement,
-}
-
-impl Hierarchy {
-    /// Get the ESYS resource handle for the hierarchy.
-    pub fn esys_rh(self) -> TPMI_RH_HIERARCHY {
-        match self {
-            Hierarchy::Null => ESYS_TR_RH_NULL,
-            Hierarchy::Owner => ESYS_TR_RH_OWNER,
-            Hierarchy::Platform => ESYS_TR_RH_PLATFORM,
-            Hierarchy::Endorsement => ESYS_TR_RH_ENDORSEMENT,
-        }
-    }
-
-    /// Get the TPM resource handle for the hierarchy.
-    pub fn rh(self) -> TPM2_RH {
-        match self {
-            Hierarchy::Null => TPM2_RH_NULL,
-            Hierarchy::Owner => TPM2_RH_OWNER,
-            Hierarchy::Platform => TPM2_RH_PLATFORM,
-            Hierarchy::Endorsement => TPM2_RH_ENDORSEMENT,
-        }
-    }
-}
-
-impl TryFrom<TPM2_HANDLE> for Hierarchy {
-    type Error = Error;
-
-    fn try_from(handle: TPM2_HANDLE) -> Result<Self> {
-        match handle {
-            TPM2_RH_NULL | ESYS_TR_RH_NULL => Ok(Hierarchy::Null),
-            TPM2_RH_OWNER | ESYS_TR_RH_OWNER => Ok(Hierarchy::Owner),
-            TPM2_RH_PLATFORM | ESYS_TR_RH_PLATFORM => Ok(Hierarchy::Platform),
-            TPM2_RH_ENDORSEMENT | ESYS_TR_RH_ENDORSEMENT => Ok(Hierarchy::Endorsement),
-            _ => Err(Error::local_error(WrapperErrorKind::InconsistentParams)),
-        }
-    }
-}
-
 /// Create the TPM2B_PUBLIC structure for a restricted decryption key.
 ///
 /// * `symmetric` - Cipher to be used for decrypting children of the key
