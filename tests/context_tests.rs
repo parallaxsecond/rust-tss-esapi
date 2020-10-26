@@ -326,10 +326,9 @@ mod test_start_sess {
                 HashingAlgorithm::Sha256,
             )
             .unwrap();
-        context.set_sessions((auth_sess, None, None));
 
-        context
-            .start_auth_session(
+        context.execute_with_session(auth_sess, |ctx| {
+            ctx.start_auth_session(
                 None,
                 None,
                 None,
@@ -338,6 +337,7 @@ mod test_start_sess {
                 HashingAlgorithm::Sha256,
             )
             .unwrap_err();
+        });
     }
 }
 
@@ -366,19 +366,19 @@ mod test_pcr_extend_reset {
         // get reset by any D-RTPM events.
         // PCR (TCG PC Client Platform TPM Profile (PTP) for TPM 2.0 Version 1.05 Rev 14)
         let mut context = create_ctx_with_session();
-        let pcr_ses = context.sessions();
+        let pcr_ses = context.sessions().0;
 
         // We start by resetting. We do not place any expectations on the prior contents
-        context.pcr_reset(PcrHandle::Pcr16).unwrap();
+        context.execute_with_session(pcr_ses, |ctx| ctx.pcr_reset(PcrHandle::Pcr16).unwrap());
 
-        // pcr_read is NO_SESSIONS
-        context.clear_sessions();
         // Read PCR contents
         let pcr_selection_list = PcrSelectionListBuilder::new()
             .with_selection(HashingAlgorithm::Sha1, &[PcrSlot::Slot16])
             .with_selection(HashingAlgorithm::Sha256, &[PcrSlot::Slot16])
             .build();
-        let (_, _, pcr_data) = context.pcr_read(&pcr_selection_list).unwrap();
+        // pcr_read is NO_SESSIONS
+        let (_, _, pcr_data) =
+            context.execute_without_session(|ctx| ctx.pcr_read(&pcr_selection_list).unwrap());
         let pcr_sha1_bank = pcr_data.pcr_bank(HashingAlgorithm::Sha1).unwrap();
         let pcr_sha256_bank = pcr_data.pcr_bank(HashingAlgorithm::Sha256).unwrap();
         let pcr_sha1_value = pcr_sha1_bank.pcr_value(PcrSlot::Slot16).unwrap();
@@ -386,8 +386,6 @@ mod test_pcr_extend_reset {
         // Needs to have the length of associated with the hashing algorithm
         assert_eq!(pcr_sha1_value.value(), [0; 20]);
         assert_eq!(pcr_sha256_value.value(), [0; 32]);
-        // The extend and reset functions are all SESSIONS
-        context.set_sessions(pcr_ses);
 
         // Extend both sha256 and sha1
         let mut vals = DigestValues::new();
@@ -406,12 +404,14 @@ mod test_pcr_extend_reset {
             ])
             .unwrap(),
         );
-        context.pcr_extend(PcrHandle::Pcr16, vals).unwrap();
+        // The extend and reset functions are all SESSIONS
+        context.execute_with_session(pcr_ses, |ctx| {
+            ctx.pcr_extend(PcrHandle::Pcr16, vals).unwrap()
+        });
 
-        // pcr_read is NO_SESSIONS
-        context.clear_sessions();
         // Read PCR contents
-        let (_, _, pcr_data) = context.pcr_read(&pcr_selection_list).unwrap();
+        let (_, _, pcr_data) =
+            context.execute_without_session(|ctx| ctx.pcr_read(&pcr_selection_list).unwrap());
         let pcr_sha1_bank = pcr_data.pcr_bank(HashingAlgorithm::Sha1).unwrap();
         let pcr_sha256_bank = pcr_data.pcr_bank(HashingAlgorithm::Sha256).unwrap();
         let pcr_sha1_value = pcr_sha1_bank.pcr_value(PcrSlot::Slot16).unwrap();
@@ -443,20 +443,17 @@ mod test_pcr_extend_reset {
                 0x42, 0x85, 0x04, 0x12
             ]
         );
-        // The extend and reset functions are all SESSIONS
-        context.set_sessions(pcr_ses);
 
         // Now reset it again to test it's again zeroes
-        context.pcr_reset(PcrHandle::Pcr16).unwrap();
+        context.execute_with_session(pcr_ses, |ctx| ctx.pcr_reset(PcrHandle::Pcr16).unwrap());
 
-        // pcr_read is NO_SESSIONS
-        context.clear_sessions();
         // Read PCR contents
         let pcr_selection_list = PcrSelectionListBuilder::new()
             .with_selection(HashingAlgorithm::Sha1, &[PcrSlot::Slot16])
             .with_selection(HashingAlgorithm::Sha256, &[PcrSlot::Slot16])
             .build();
-        let (_, _, pcr_data) = context.pcr_read(&pcr_selection_list).unwrap();
+        let (_, _, pcr_data) =
+            context.execute_without_session(|ctx| ctx.pcr_read(&pcr_selection_list).unwrap());
         let pcr_sha1_bank = pcr_data.pcr_bank(HashingAlgorithm::Sha1).unwrap();
         let pcr_sha256_bank = pcr_data.pcr_bank(HashingAlgorithm::Sha256).unwrap();
         let pcr_sha1_value = pcr_sha1_bank.pcr_value(PcrSlot::Slot16).unwrap();
@@ -464,8 +461,6 @@ mod test_pcr_extend_reset {
         // Needs to have the length of associated with the hashing algorithm
         assert_eq!(pcr_sha1_value.value(), [0; 20]);
         assert_eq!(pcr_sha256_value.value(), [0; 32]);
-        // The extend and reset functions are all SESSIONS
-        context.set_sessions(pcr_ses);
     }
 }
 

@@ -194,6 +194,45 @@ impl Context {
         self.sessions
     }
 
+    /// Execute the closure in f with the specified set of sessions, and sets the original sessions back afterwards
+    /// This is a convenience function
+    pub fn execute_with_sessions<F, T>(
+        &mut self,
+        session_handles: (Option<Session>, Option<Session>, Option<Session>),
+        f: F,
+    ) -> T
+    where
+        // We only need to call f once, so it can be FnOnce
+        F: FnOnce(&mut Context) -> T,
+    {
+        let oldses = self.sessions();
+        self.set_sessions(session_handles);
+
+        let res = f(self);
+
+        self.set_sessions(oldses);
+
+        res
+    }
+
+    /// A special case of execute_with_sessions. Executes the closure with a single session set, and the others set to None
+    pub fn execute_with_session<F, T>(&mut self, session_handle: Option<Session>, f: F) -> T
+    where
+        // We only need to call f once, so it can be FnOnce
+        F: FnOnce(&mut Context) -> T,
+    {
+        self.execute_with_sessions((session_handle, None, None), f)
+    }
+
+    /// A special case of execute_with_sessions. Executes the closure without any sessions
+    pub fn execute_without_session<F, T>(&mut self, f: F) -> T
+    where
+        // We only need to call f once, so it can be FnOnce
+        F: FnOnce(&mut Context) -> T,
+    {
+        self.execute_with_sessions((None, None, None), f)
+    }
+
     /// Get current capability information about the TPM.
     pub fn get_capabilities(
         &mut self,
