@@ -249,7 +249,7 @@ impl Context {
             None,
             None,
             SessionType::Hmac,
-            Cipher::aes_256_cfb(),
+            Cipher::aes_128_cfb(),
             HashingAlgorithm::Sha256,
         )? {
             Some(ses) => ses,
