@@ -4,7 +4,7 @@ use crate::{
     algorithm::structures::SensitiveData,
     constants::{
         algorithm::{Cipher, HashingAlgorithm},
-        types::session::SessionType,
+        types::{capability::CapabilityType, session::SessionType},
     },
     handles::{
         AuthHandle, KeyHandle, NvIndexHandle, ObjectHandle, PcrHandle, SessionHandle, TpmHandle,
@@ -12,8 +12,8 @@ use crate::{
     nv::storage::{NvAuthorization, NvPublic},
     session::Session,
     structures::{
-        Auth, Data, Digest, DigestList, DigestValues, HashcheckTicket, MaxBuffer, MaxNvBuffer,
-        Name, Nonce, PcrSelectionList, PublicKeyRSA,
+        Auth, CapabilityData, Data, Digest, DigestList, DigestValues, HashcheckTicket, MaxBuffer,
+        MaxNvBuffer, Name, Nonce, PcrSelectionList, PublicKeyRSA,
     },
     tcti::Tcti,
     tss2_esys::*,
@@ -236,10 +236,10 @@ impl Context {
     /// Get current capability information about the TPM.
     pub fn get_capabilities(
         &mut self,
-        capability: TPM2_CAP,
+        capability: CapabilityType,
         property: u32,
         property_count: u32,
-    ) -> Result<(TPMS_CAPABILITY_DATA, bool)> {
+    ) -> Result<(CapabilityData, bool)> {
         let mut outcapabilitydata = null_mut();
         let mut outmoredata: u8 = 0;
 
@@ -249,7 +249,7 @@ impl Context {
                 self.optional_session_1(),
                 self.optional_session_2(),
                 self.optional_session_3(),
-                capability,
+                capability.into(),
                 property,
                 property_count,
                 &mut outmoredata,
@@ -263,11 +263,12 @@ impl Context {
         } else {
             return Err(Error::WrapperError(ErrorKind::WrongValueFromTpm));
         };
-        let capabilitydata = unsafe { MBox::from_raw(outcapabilitydata) };
         let ret = Error::from_tss_rc(ret);
 
         if ret.is_success() {
-            Ok((*capabilitydata, moredata))
+            let capabilitydata = unsafe { MBox::from_raw(outcapabilitydata) };
+            let capabilities = CapabilityData::try_from(*capabilitydata)?;
+            Ok((capabilities, moredata))
         } else {
             Err(ret)
         }

@@ -40,14 +40,14 @@ use tss_esapi::{
     constants::{
         algorithm::{Cipher, HashingAlgorithm},
         tss::*,
-        types::session::SessionType,
+        types::{capability::CapabilityType, session::SessionType},
     },
     handles::{KeyHandle, NvIndexHandle, NvIndexTpmHandle, ObjectHandle, PcrHandle},
     nv::storage::{NvAuthorization, NvIndexAttributes, NvPublicBuilder},
     session::Session,
     structures::{
-        Auth, Data, Digest, DigestList, DigestValues, MaxBuffer, MaxNvBuffer, Nonce,
-        PcrSelectionListBuilder, PcrSlot, PublicKeyRSA, Ticket,
+        Auth, CapabilityData, Data, Digest, DigestList, DigestValues, MaxBuffer, MaxNvBuffer,
+        Nonce, PcrSelectionListBuilder, PcrSlot, PublicKeyRSA, Ticket,
     },
     tss2_esys::*,
     utils::{
@@ -348,11 +348,14 @@ mod test_get_capability {
     fn test_get_capability() {
         let mut context = create_ctx_without_session();
         let (res, _more) = context
-            .get_capabilities(TPM2_CAP_TPM_PROPERTIES, TPM2_PT_VENDOR_STRING_1, 4)
+            .get_capabilities(CapabilityType::TPMProperties, TPM2_PT_VENDOR_STRING_1, 4)
             .unwrap();
-        assert_eq!(res.capability, TPM2_CAP_TPM_PROPERTIES);
-        let tpmprops = unsafe { res.data.tpmProperties };
-        assert_ne!(tpmprops.count, 0);
+        match res {
+            CapabilityData::TPMProperties(props) => {
+                assert_ne!(props.len(), 0);
+            }
+            _ => panic!("Invalid properties returned"),
+        };
     }
 }
 
