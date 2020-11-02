@@ -4,6 +4,7 @@ use crate::{
     algorithm::structures::SensitiveData,
     constants::{
         algorithm::{Cipher, HashingAlgorithm},
+        tags::PropertyTag,
         types::{capability::CapabilityType, session::SessionType},
     },
     handles::{
@@ -25,7 +26,7 @@ use crate::{
 };
 use log::{error, info};
 use mbox::MBox;
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 use std::convert::{TryFrom, TryInto};
 use std::ffi::CString;
 use std::ptr::{null, null_mut};
@@ -67,6 +68,8 @@ pub struct Context {
     tcti_context: Option<MBox<TSS2_TCTI_CONTEXT>>,
     /// A set of currently open object handles that should be flushed before closing the context.
     open_handles: HashSet<ObjectHandle>,
+    /// A cache of determined TPM limits
+    cached_tpm_properties: HashMap<PropertyTag, u32>,
 }
 
 impl Context {
@@ -107,6 +110,7 @@ impl Context {
                 sessions: (None, None, None),
                 tcti_context,
                 open_handles: HashSet::new(),
+                cached_tpm_properties: HashMap::new(),
             };
             Ok(context)
         } else {
@@ -272,6 +276,32 @@ impl Context {
         } else {
             Err(ret)
         }
+    }
+
+    /// Determine a TPM property, which is automatically cached if available
+    pub fn get_tpm_property(&mut self, property: PropertyTag) -> Result<Option<u32>> {
+        if let Some(val) = self.cached_tpm_properties.get(&property) {
+            return Ok(Some(*val));
+        }
+
+        let (capabs, _) = self.execute_without_session(|ctx| {
+            ctx.get_capabilities(CapabilityType::TPMProperties, property.into(), 4)
+        })?;
+        let props = match capabs {
+            CapabilityData::TPMProperties(props) => props,
+            _ => return Err(Error::WrapperError(ErrorKind::WrongValueFromTpm)),
+        };
+        for (key, val) in props.iter() {
+            if let Ok(key) = PropertyTag::try_from(*key) {
+                // If we are returned a property we don't know, just ignore it
+                let _ = self.cached_tpm_properties.insert(key, *val);
+            }
+        }
+
+        if let Some(val) = self.cached_tpm_properties.get(&property) {
+            return Ok(Some(*val));
+        }
+        Ok(None)
     }
 
     /// Create a primary key and return the handle.

@@ -39,6 +39,7 @@ use tss_esapi::{
     algorithm::structures::SensitiveData,
     constants::{
         algorithm::{Cipher, HashingAlgorithm},
+        tags::PropertyTag,
         tss::*,
         types::{capability::CapabilityType, session::SessionType},
     },
@@ -356,6 +357,23 @@ mod test_get_capability {
             }
             _ => panic!("Invalid properties returned"),
         };
+    }
+
+    #[test]
+    fn test_get_tpm_property() {
+        let mut context = create_ctx_without_session();
+
+        let rev = context
+            .get_tpm_property(PropertyTag::Revision)
+            .unwrap()
+            .unwrap();
+        assert_ne!(rev, 0);
+
+        let year = context
+            .get_tpm_property(PropertyTag::Year)
+            .unwrap()
+            .unwrap();
+        assert_ne!(year, 0);
     }
 }
 
