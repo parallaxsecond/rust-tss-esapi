@@ -5,6 +5,7 @@ use crate::{
     constants::{
         algorithm::{Cipher, HashingAlgorithm},
         tags::PropertyTag,
+        tss::{TPMA_SESSION_DECRYPT, TPMA_SESSION_ENCRYPT},
         types::{capability::CapabilityType, session::SessionType},
     },
     handles::{
@@ -235,6 +236,36 @@ impl Context {
         F: FnOnce(&mut Context) -> T,
     {
         self.execute_with_sessions((None, None, None), f)
+    }
+
+    /// A special case of execute_with_sessions. Executes the closure with a newly generated empty session
+    pub fn execute_with_nullauth_session<F, T>(&mut self, f: F) -> Result<T>
+    where
+        // We only need to call f once, so it can be FnOnce
+        F: FnOnce(&mut Context) -> Result<T>,
+    {
+        let session = match self.start_auth_session(
+            None,
+            None,
+            None,
+            SessionType::Hmac,
+            Cipher::aes_256_cfb(),
+            HashingAlgorithm::Sha256,
+        )? {
+            Some(ses) => ses,
+            None => return Err(Error::local_error(ErrorKind::WrongValueFromTpm)),
+        };
+        let session_attr = TpmaSessionBuilder::new()
+            .with_flag(TPMA_SESSION_DECRYPT)
+            .with_flag(TPMA_SESSION_ENCRYPT)
+            .build();
+        self.tr_sess_set_attributes(session, session_attr)?;
+
+        let res = self.execute_with_session(Some(session), f);
+
+        self.flush_context(session.handle().into())?;
+
+        res
     }
 
     /// Get current capability information about the TPM.
