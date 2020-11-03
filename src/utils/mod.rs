@@ -9,10 +9,11 @@
 //! type name. Unions are converted to Rust `enum`s by dropping the `TPMU` qualifier and appending
 //! `Union`.
 use crate::constants::algorithm::{Cipher, EllipticCurve, HashingAlgorithm};
+use crate::constants::tags::PropertyTag;
 use crate::constants::tss::*;
 use crate::structures::{Digest, PcrSlot};
 use crate::tss2_esys::*;
-use crate::{Error, Result, WrapperErrorKind};
+use crate::{Context, Error, Result, WrapperErrorKind};
 use bitfield::bitfield;
 use enumflags2::BitFlags;
 use log::error;
@@ -1515,4 +1516,37 @@ impl From<PcrData> for TPML_DIGEST {
         }
         tpml_digest
     }
+}
+
+fn tpm_int_to_string(num: u32) -> String {
+    num.to_be_bytes()
+        .iter()
+        .filter(|x| **x != 0)
+        .map(|x| char::from(*x))
+        .collect()
+}
+
+/// Get the TPM vendor name
+pub fn get_tpm_vendor(context: &mut Context) -> Result<String> {
+    // Retrieve the TPM property values
+    Ok([
+        PropertyTag::VendorString1,
+        PropertyTag::VendorString2,
+        PropertyTag::VendorString3,
+        PropertyTag::VendorString4,
+    ]
+    .iter()
+    // Retrieve property values
+    .map(|propid| context.get_tpm_property(*propid))
+    // Collect and return an error if we got one
+    .collect::<Result<Vec<Option<u32>>>>()?
+    .iter()
+    // Filter out the Option::None values
+    .filter_map(|x| *x)
+    // Filter out zero values
+    .filter(|x| *x != 0)
+    // Map through int_to_string
+    .map(tpm_int_to_string)
+    // Collect to a single string
+    .collect())
 }
