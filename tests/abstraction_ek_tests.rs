@@ -1,19 +1,13 @@
 // Copyright 2020 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
 
-use std::{env, str::FromStr};
 use tss_esapi::abstraction::ek;
+use tss_esapi::constants::algorithm::AsymmetricAlgorithm;
 use tss_esapi::constants::response_code::{FormatOneResponseCode, Tss2ResponseCode};
 use tss_esapi::Error;
-use tss_esapi::{constants::algorithm::AsymmetricAlgorithm, Context, Tcti};
 
-pub fn create_ctx_without_session() -> Context {
-    let tcti = match env::var("TEST_TCTI") {
-        Err(_) => Tcti::Mssim(Default::default()),
-        Ok(tctistr) => Tcti::from_str(&tctistr).expect("Error parsing TEST_TCTI"),
-    };
-    unsafe { Context::new(tcti).unwrap() }
-}
+mod common;
+use common::create_ctx_without_session;
 
 #[test]
 fn test_retrieve_ek_pubcert() {

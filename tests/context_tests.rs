@@ -33,8 +33,6 @@ const KEY: [u8; 512] = [
 ];
 
 use std::convert::{TryFrom, TryInto};
-use std::env;
-use std::str::FromStr;
 use tss_esapi::{
     algorithm::structures::SensitiveData,
     constants::{
@@ -55,31 +53,11 @@ use tss_esapi::{
         self, AsymSchemeUnion, Hierarchy, ObjectAttributes, PublicIdUnion, PublicParmsUnion,
         Signature, SignatureData, Tpm2BPublicBuilder, TpmaSessionBuilder, TpmsRsaParmsBuilder,
     },
-    Context, Tcti,
+    Context,
 };
 
-fn create_ctx_with_session() -> Context {
-    let mut ctx = create_ctx_without_session();
-    let session = ctx
-        .start_auth_session(
-            None,
-            None,
-            None,
-            SessionType::Hmac,
-            Cipher::aes_256_cfb(),
-            HashingAlgorithm::Sha256,
-        )
-        .unwrap();
-    let session_attr = TpmaSessionBuilder::new()
-        .with_flag(TPMA_SESSION_DECRYPT)
-        .with_flag(TPMA_SESSION_ENCRYPT)
-        .build();
-    ctx.tr_sess_set_attributes(session.unwrap(), session_attr)
-        .unwrap();
-    ctx.set_sessions((session, None, None));
-
-    ctx
-}
+mod common;
+use common::{create_ctx_with_session, create_ctx_without_session};
 
 fn create_public_sealed_object() -> tss_esapi::tss2_esys::TPM2B_PUBLIC {
     let mut object_attributes = utils::ObjectAttributes(0);
@@ -105,14 +83,6 @@ fn create_public_sealed_object() -> tss_esapi::tss2_esys::TPM2B_PUBLIC {
     }
 }
 
-fn create_ctx_without_session() -> Context {
-    let tcti = match env::var("TEST_TCTI") {
-        Err(_) => Tcti::Mssim(Default::default()),
-        Ok(tctistr) => Tcti::from_str(&tctistr).expect("Error parsing TEST_TCTI"),
-    };
-    unsafe { Context::new(tcti).unwrap() }
-}
-
 fn signing_key_pub() -> TPM2B_PUBLIC {
     utils::create_unrestricted_signing_rsa_public(
         AsymSchemeUnion::RSASSA(HashingAlgorithm::Sha256),
@@ -132,8 +102,6 @@ fn encryption_decryption_key_pub() -> TPM2B_PUBLIC {
 
 #[test]
 fn comprehensive_test() {
-    env_logger::init();
-
     let mut context = create_ctx_with_session();
     let random_digest = context.get_random(16).unwrap();
     let key_auth = Auth::try_from(random_digest.value().to_vec()).unwrap();
