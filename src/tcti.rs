@@ -10,6 +10,7 @@ use std::str::FromStr;
 
 const DEVICE: &str = "device";
 const MSSIM: &str = "mssim";
+const SWTPM: &str = "swtpm";
 const TABRMD: &str = "tabrmd";
 
 // Possible TCTI to use with the ESYS API.
@@ -21,10 +22,14 @@ pub enum Tcti {
     ///
     /// For more information about configuration, see [this page](https://www.mankier.com/3/Tss2_Tcti_Device_Init)
     Device(DeviceConfig),
-    /// Connect to a TPM (simulator) available as a network device
+    /// Connect to a TPM (simulator) available as a network device via the MSSIM protocol
     ///
     /// For more information about configuration, see [this page](https://www.mankier.com/3/Tss2_Tcti_Mssim_Init)
-    Mssim(MssimConfig),
+    Mssim(NetworkTPMConfig),
+    /// Connect to a TPM (simulator) available as a network device via the SWTPM protocol
+    ///
+    /// For more information about configuration, see [this page](https://www.mankier.com/3/Tss2_Tcti_Mssim_Init)
+    Swtpm(NetworkTPMConfig),
     /// Connect to a TPM through an Access Broker/Resource Manager daemon
     ///
     /// For more information about configuration, see [this page](https://www.mankier.com/3/Tss2_Tcti_Tabrmd_Init)
@@ -38,11 +43,20 @@ impl TryFrom<Tcti> for CString {
         let tcti_name = match tcti {
             Tcti::Device(..) => DEVICE,
             Tcti::Mssim(..) => MSSIM,
+            Tcti::Swtpm(..) => SWTPM,
             Tcti::Tabrmd(..) => TABRMD,
         };
 
         let tcti_conf = match tcti {
             Tcti::Mssim(config) => {
+                if let ServerAddress::Hostname(name) = &config.host {
+                    if !hostname_validator::is_valid(name) {
+                        return Err(Error::WrapperError(WrapperErrorKind::InvalidParam));
+                    }
+                }
+                format!("host={},port={}", config.host, config.port)
+            }
+            Tcti::Swtpm(config) => {
                 if let ServerAddress::Hostname(name) = &config.host {
                     if !hostname_validator::is_valid(name) {
                         return Err(Error::WrapperError(WrapperErrorKind::InvalidParam));
@@ -81,7 +95,14 @@ impl FromStr for Tcti {
 
         let mssim_pattern = Regex::new(r"^mssim(:(.*))?$").unwrap(); //should not fail
         if let Some(captures) = mssim_pattern.captures(config_str) {
-            return Ok(Tcti::Mssim(MssimConfig::from_str(
+            return Ok(Tcti::Mssim(NetworkTPMConfig::from_str(
+                captures.get(2).map_or("", |m| m.as_str()),
+            )?));
+        }
+
+        let swtpm_pattern = Regex::new(r"^swtpm(:(.*))?$").unwrap(); //should not fail
+        if let Some(captures) = swtpm_pattern.captures(config_str) {
+            return Ok(Tcti::Swtpm(NetworkTPMConfig::from_str(
                 captures.get(2).map_or("", |m| m.as_str()),
             )?));
         }
@@ -102,7 +123,7 @@ fn validate_from_str_tcti() {
     let tcti = Tcti::from_str("mssim:port=1234,host=168.0.0.1").unwrap();
     assert_eq!(
         tcti,
-        Tcti::Mssim(MssimConfig {
+        Tcti::Mssim(NetworkTPMConfig {
             port: 1234,
             host: ServerAddress::Ip(IpAddr::V4(std::net::Ipv4Addr::new(168, 0, 0, 1)))
         })
@@ -111,7 +132,25 @@ fn validate_from_str_tcti() {
     let tcti = Tcti::from_str("mssim").unwrap();
     assert_eq!(
         tcti,
-        Tcti::Mssim(MssimConfig {
+        Tcti::Mssim(NetworkTPMConfig {
+            port: DEFAULT_SERVER_PORT,
+            host: Default::default()
+        })
+    );
+
+    let tcti = Tcti::from_str("swtpm:port=1234,host=168.0.0.1").unwrap();
+    assert_eq!(
+        tcti,
+        Tcti::Swtpm(NetworkTPMConfig {
+            port: 1234,
+            host: ServerAddress::Ip(IpAddr::V4(std::net::Ipv4Addr::new(168, 0, 0, 1)))
+        })
+    );
+
+    let tcti = Tcti::from_str("swtpm").unwrap();
+    assert_eq!(
+        tcti,
+        Tcti::Swtpm(NetworkTPMConfig {
             port: DEFAULT_SERVER_PORT,
             host: Default::default()
         })
@@ -188,7 +227,7 @@ fn validate_from_str_device_config() {
 ///
 /// The default configuration will point to `localhost:2321`
 #[derive(Clone, Debug, PartialEq)]
-pub struct MssimConfig {
+pub struct NetworkTPMConfig {
     /// Address of the server to connect to
     ///
     /// Defaults to `localhost`
@@ -201,16 +240,16 @@ pub struct MssimConfig {
 
 const DEFAULT_SERVER_PORT: u16 = 2321;
 
-impl Default for MssimConfig {
+impl Default for NetworkTPMConfig {
     fn default() -> Self {
-        MssimConfig {
+        NetworkTPMConfig {
             host: Default::default(),
             port: DEFAULT_SERVER_PORT,
         }
     }
 }
 
-impl FromStr for MssimConfig {
+impl FromStr for NetworkTPMConfig {
     type Err = Error;
 
     fn from_str(config_str: &str) -> Result<Self, Self::Err> {
@@ -232,50 +271,50 @@ impl FromStr for MssimConfig {
                     u16::from_str(captures.get(2).map_or("", |m| m.as_str()))
                         .or(Err(Error::WrapperError(WrapperErrorKind::InvalidParam)))
                 })?;
-        Ok(MssimConfig { host, port })
+        Ok(NetworkTPMConfig { host, port })
     }
 }
 
 #[test]
-fn validate_from_str_mssim_config() {
-    let config = MssimConfig::from_str("").unwrap();
+fn validate_from_str_networktpm_config() {
+    let config = NetworkTPMConfig::from_str("").unwrap();
     assert_eq!(config, Default::default());
 
-    let config = MssimConfig::from_str("fjshd89943r=joishdf894u9r,sio0983=9u98jj").unwrap();
+    let config = NetworkTPMConfig::from_str("fjshd89943r=joishdf894u9r,sio0983=9u98jj").unwrap();
     assert_eq!(config, Default::default());
 
-    let config = MssimConfig::from_str("host=127.0.0.1,random=value").unwrap();
+    let config = NetworkTPMConfig::from_str("host=127.0.0.1,random=value").unwrap();
     assert_eq!(
         config.host,
         ServerAddress::Ip(IpAddr::V4(std::net::Ipv4Addr::new(127, 0, 0, 1)))
     );
     assert_eq!(config.port, DEFAULT_SERVER_PORT);
 
-    let config = MssimConfig::from_str("port=1234,random=value").unwrap();
+    let config = NetworkTPMConfig::from_str("port=1234,random=value").unwrap();
     assert_eq!(config.host, Default::default());
     assert_eq!(config.port, 1234);
 
-    let config = MssimConfig::from_str("host=localhost,port=1234").unwrap();
+    let config = NetworkTPMConfig::from_str("host=localhost,port=1234").unwrap();
     assert_eq!(
         config.host,
         ServerAddress::Hostname(String::from("localhost"))
     );
     assert_eq!(config.port, 1234);
 
-    let config = MssimConfig::from_str("port=1234,host=localhost").unwrap();
+    let config = NetworkTPMConfig::from_str("port=1234,host=localhost").unwrap();
     assert_eq!(config.host, "localhost".parse::<ServerAddress>().unwrap());
     assert_eq!(config.port, 1234);
 
-    let config = MssimConfig::from_str("port=1234,host=localhost,random=value").unwrap();
+    let config = NetworkTPMConfig::from_str("port=1234,host=localhost,random=value").unwrap();
     assert_eq!(config.host, "localhost".parse::<ServerAddress>().unwrap());
     assert_eq!(config.port, 1234);
 
-    let _ = MssimConfig::from_str("port=abdef").unwrap_err();
-    let _ = MssimConfig::from_str("host=-timey-wimey").unwrap_err();
-    let _ = MssimConfig::from_str("host=1234.1234.1234.1234.12445.111").unwrap_err();
-    let _ = MssimConfig::from_str("host=").unwrap_err();
-    let _ = MssimConfig::from_str("port=").unwrap_err();
-    let _ = MssimConfig::from_str("port=,host=,yas").unwrap_err();
+    let _ = NetworkTPMConfig::from_str("port=abdef").unwrap_err();
+    let _ = NetworkTPMConfig::from_str("host=-timey-wimey").unwrap_err();
+    let _ = NetworkTPMConfig::from_str("host=1234.1234.1234.1234.12445.111").unwrap_err();
+    let _ = NetworkTPMConfig::from_str("host=").unwrap_err();
+    let _ = NetworkTPMConfig::from_str("port=").unwrap_err();
+    let _ = NetworkTPMConfig::from_str("port=,host=,yas").unwrap_err();
 }
 
 /// Address of a TPM server
