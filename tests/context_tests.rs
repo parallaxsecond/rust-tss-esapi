@@ -2116,7 +2116,7 @@ mod test_nv_define_space {
     fn test_nv_define_space() {
         let mut context = create_ctx_with_session();
 
-        let nv_index = NvIndexTpmHandle::new(0x01500015).unwrap();
+        let nv_index = NvIndexTpmHandle::new(0x01500016).unwrap();
 
         // Create owner nv public.
         let mut owner_nv_index_attributes = NvIndexAttributes(0);
@@ -2170,7 +2170,7 @@ mod test_nv_undefine_space {
     fn test_nv_undefine_space() {
         let mut context = create_ctx_with_session();
 
-        let nv_index = NvIndexTpmHandle::new(0x01500015).unwrap();
+        let nv_index = NvIndexTpmHandle::new(0x01500017).unwrap();
 
         // Create owner nv public.
         let mut owner_nv_index_attributes = NvIndexAttributes(0);
@@ -2203,7 +2203,7 @@ mod test_nv_write {
     fn test_nv_write() {
         let mut context = create_ctx_with_session();
 
-        let nv_index = NvIndexTpmHandle::new(0x01500015).unwrap();
+        let nv_index = NvIndexTpmHandle::new(0x01500018).unwrap();
 
         // Create owner nv public.
         let mut owner_nv_index_attributes = NvIndexAttributes(0);
@@ -2247,7 +2247,7 @@ mod test_nv_read_public {
     fn test_nv_read_public() {
         let mut context = create_ctx_with_session();
 
-        let nv_index = NvIndexTpmHandle::new(0x01500015).unwrap();
+        let nv_index = NvIndexTpmHandle::new(0x01500019).unwrap();
 
         let mut nv_index_attributes = NvIndexAttributes(0);
         nv_index_attributes.set_owner_write(true);
@@ -2289,7 +2289,7 @@ mod test_nv_read {
     fn test_nv_read() {
         let mut context = create_ctx_with_session();
 
-        let nv_index = NvIndexTpmHandle::new(0x01500015).unwrap();
+        let nv_index = NvIndexTpmHandle::new(0x01500020).unwrap();
 
         // Create owner nv public.
         let mut owner_nv_index_attributes = NvIndexAttributes(0);
@@ -2352,7 +2352,7 @@ mod test_tr_from_tpm_public {
     fn test_tr_from_tpm_public_owner_auth() {
         let mut context = create_ctx_without_session();
 
-        let nv_index_tpm_handle = NvIndexTpmHandle::new(0x01500015).unwrap();
+        let nv_index_tpm_handle = NvIndexTpmHandle::new(0x01500021).unwrap();
 
         // closure for cleaning up if a call fails.
         let cleanup = |context: &mut Context,
@@ -2425,7 +2425,7 @@ mod test_tr_from_tpm_public {
     fn test_tr_from_tpm_public_password_auth() {
         let mut context = create_ctx_without_session();
 
-        let nv_index_tpm_handle = NvIndexTpmHandle::new(0x01500016).unwrap();
+        let nv_index_tpm_handle = NvIndexTpmHandle::new(0x01500022).unwrap();
 
         let auth = Auth::try_from(vec![
             10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29,
@@ -2521,10 +2521,10 @@ mod test_tr_from_tpm_public {
     }
 
     #[test]
-    fn read_from_retrieved_handle_using_password_authroization() {
+    fn read_from_retrieved_handle_using_password_authorization() {
         let mut context = create_ctx_without_session();
 
-        let nv_index_tpm_handle = NvIndexTpmHandle::new(0x01500016).unwrap();
+        let nv_index_tpm_handle = NvIndexTpmHandle::new(0x01500023).unwrap();
 
         let auth = Auth::try_from(vec![
             10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29,

@@ -7,18 +7,29 @@ jobs:
     name: Check formatting
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
     - name: Check formatting
       run: cargo fmt --all -- --check
 
   # All in one job as I think it is a big overhead to build and run the Docker
   # container?
-  all:
-    name: Use Docker to execute the test script
+  tests-ubuntu:
+    name: Ubuntu tests
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
     - name: Build the container
-      run: docker build -t tss2.0 tests/
+      run: docker build -t ubuntucontainer tests/ --file tests/Dockerfile-ubuntu
     - name: Run the container
-      run: docker run -v $(pwd):/tmp/rust-tss-esapi -w /tmp/rust-tss-esapi tss2.0 /tmp/rust-tss-esapi/tests/all.sh
+      run: docker run -v $(pwd):/tmp/rust-tss-esapi -w /tmp/rust-tss-esapi ubuntucontainer /tmp/rust-tss-esapi/tests/all-ubuntu.sh
+
+  tests-fedora:
+    name: Fedora tests
+    # We just build a container... GitHub doesn't like Fedora :(
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Build the container
+      run: docker build -t fedoracontainer tests/ --file tests/Dockerfile-fedora
+    - name: Run the tests
+      run: docker run -v $(pwd):/tmp/rust-tss-esapi -w /tmp/rust-tss-esapi fedoracontainer dbus-run-session -- /tmp/rust-tss-esapi/tests/all-fedora.sh
