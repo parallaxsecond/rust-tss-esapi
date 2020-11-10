@@ -9,9 +9,13 @@ use crate::{
         types::{capability::CapabilityType, session::SessionType},
     },
     handles::{
-        AuthHandle, KeyHandle, NvIndexHandle, ObjectHandle, PcrHandle, SessionHandle, TpmHandle,
+        AuthHandle, KeyHandle, NvIndexHandle, ObjectHandle, PcrHandle, PersistentTpmHandle,
+        SessionHandle, TpmHandle,
     },
-    interface_types::resource_handles::{Hierarchy, NvAuth},
+    interface_types::{
+        dynamic_handles::Persistent,
+        resource_handles::{Hierarchy, NvAuth, Provision},
+    },
     nv::storage::NvPublic,
     session::Session,
     structures::{
@@ -874,6 +878,35 @@ impl Context {
         }
     }
 
+    /// Evicts persistent objects or allows certain transient objects
+    /// to be made peristent.
+    pub fn evict_control(
+        &mut self,
+        auth: Provision,
+        object_handle: ObjectHandle,
+        persistent: Persistent,
+    ) -> Result<ObjectHandle> {
+        let mut esys_object_handle: ESYS_TR = ESYS_TR_NONE;
+        let ret = unsafe {
+            Esys_EvictControl(
+                self.mut_context(),
+                AuthHandle::from(auth).into(),
+                object_handle.into(),
+                self.required_session_1()?,
+                self.optional_session_2(),
+                self.optional_session_3(),
+                PersistentTpmHandle::from(persistent).into(),
+                &mut esys_object_handle,
+            )
+        };
+        let ret = Error::from_tss_rc(ret);
+        if ret.is_success() {
+            Ok(ObjectHandle::from(esys_object_handle))
+        } else {
+            Err(ret)
+        }
+    }
+
     pub fn pcr_extend(&mut self, pcr_handle: PcrHandle, digests: DigestValues) -> Result<()> {
         let ret = unsafe {
             Esys_PCR_Extend(
@@ -1728,6 +1761,16 @@ impl Context {
     ///
     fn optional_session_3(&self) -> ESYS_TR {
         Session::handle_from_option(self.sessions.2).into()
+    }
+
+    /// Function that returns the required
+    /// session handle if it is available else
+    /// returns an error.
+    fn required_session_1(&self) -> Result<ESYS_TR> {
+        self.sessions.0.map(|v| v.handle().into()).ok_or_else(|| {
+            error!("Missing session handle for authorization (authSession1 = None)");
+            Error::local_error(ErrorKind::MissingAuthSession)
+        })
     }
 }
 
