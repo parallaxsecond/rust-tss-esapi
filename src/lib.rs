@@ -115,6 +115,7 @@ pub mod constants;
 mod context;
 mod error;
 pub mod handles;
+pub mod interface_types;
 pub mod nv;
 pub mod session;
 pub mod structures;

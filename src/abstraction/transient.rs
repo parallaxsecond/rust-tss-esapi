@@ -17,15 +17,16 @@ use crate::constants::algorithm::{Cipher, EllipticCurve, HashingAlgorithm};
 use crate::constants::tss::*;
 use crate::constants::types::session::SessionType;
 use crate::handles::KeyHandle;
+use crate::interface_types::resource_handles::Hierarchy;
 use crate::structures::{Auth, Data, Digest, PublicKeyRSA, VerifiedTicket};
 use crate::tcti::Tcti;
 use crate::tss2_esys::*;
 use crate::utils::{
     self, create_restricted_decryption_rsa_public,
     create_unrestricted_encryption_decryption_rsa_public, create_unrestricted_signing_ecc_public,
-    create_unrestricted_signing_rsa_public, AsymSchemeUnion, Hierarchy, ObjectAttributes,
-    PublicIdUnion, PublicKey, PublicParmsUnion, Tpm2BPublicBuilder, TpmaSessionBuilder,
-    TpmsContext, TpmsRsaParmsBuilder, RSA_KEY_SIZES,
+    create_unrestricted_signing_rsa_public, AsymSchemeUnion, ObjectAttributes, PublicIdUnion,
+    PublicKey, PublicParmsUnion, Tpm2BPublicBuilder, TpmaSessionBuilder, TpmsContext,
+    TpmsRsaParmsBuilder, RSA_KEY_SIZES,
 };
 use crate::Context;
 use crate::{Error, Result, WrapperErrorKind as ErrorKind};
@@ -691,7 +692,7 @@ impl TransientKeyContextBuilder {
         }
 
         let root_key_handle = context.create_primary_key(
-            self.hierarchy.esys_rh(),
+            self.hierarchy,
             &create_restricted_decryption_rsa_public(
                 self.default_context_cipher,
                 self.root_key_size,

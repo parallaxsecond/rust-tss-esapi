@@ -255,6 +255,9 @@ macro_rules! impl_handle_conversion {
 ///
 pub mod auth {
     use super::object::ObjectHandle;
+    use crate::tss2_esys::{
+        ESYS_TR_RH_ENDORSEMENT, ESYS_TR_RH_LOCKOUT, ESYS_TR_RH_OWNER, ESYS_TR_RH_PLATFORM,
+    };
     impl_basic_handle!(
         /// Auth handle
         ///
@@ -263,6 +266,14 @@ pub mod auth {
         AuthHandle
     );
     impl_handle_conversion!(AuthHandle, ObjectHandle);
+    // The following constant handles can be used for authorization
+    // according to the TCG TPM2 r1p59 Structures specification.
+    add_constant_handle!(AuthHandle, OwnerHandle, ESYS_TR_RH_OWNER);
+    add_constant_handle!(AuthHandle, Lockout, ESYS_TR_RH_LOCKOUT);
+    add_constant_handle!(AuthHandle, EndorsementHandle, ESYS_TR_RH_ENDORSEMENT);
+    add_constant_handle!(AuthHandle, PlatformHandle, ESYS_TR_RH_PLATFORM);
+    // TODO: Figure out how to add AUTH_00 to AUTH_FF range
+    // TODO: Figure out how to add ACT_0 to ACT_F range
 }
 
 ///

@@ -11,7 +11,8 @@ use crate::{
     handles::{
         AuthHandle, KeyHandle, NvIndexHandle, ObjectHandle, PcrHandle, SessionHandle, TpmHandle,
     },
-    nv::storage::{NvAuthorization, NvPublic},
+    interface_types::resource_handles::{Hierarchy, NvAuth},
+    nv::storage::NvPublic,
     session::Session,
     structures::{
         Auth, CapabilityData, Data, Digest, DigestList, DigestValues, HashcheckTicket, MaxBuffer,
@@ -19,10 +20,7 @@ use crate::{
     },
     tcti::Tcti,
     tss2_esys::*,
-    utils::{
-        Hierarchy, PcrData, PublicParmsUnion, Signature, TpmaSession, TpmaSessionBuilder,
-        TpmsContext,
-    },
+    utils::{PcrData, PublicParmsUnion, Signature, TpmaSession, TpmaSessionBuilder, TpmsContext},
     Error, Result, WrapperErrorKind as ErrorKind,
 };
 use log::{error, info};
@@ -353,7 +351,7 @@ impl Context {
     #[allow(clippy::too_many_arguments)]
     pub fn create_primary_key(
         &mut self,
-        primary_handle: ESYS_TR,
+        primary_handle: Hierarchy,
         public: &TPM2B_PUBLIC,
         auth_value: Option<&Auth>,
         initial_data: Option<&SensitiveData>,
@@ -391,7 +389,7 @@ impl Context {
         let ret = unsafe {
             Esys_CreatePrimary(
                 self.mut_context(),
-                primary_handle,
+                primary_handle.esys_rh(),
                 self.optional_session_1(),
                 self.optional_session_2(),
                 self.optional_session_3(),
@@ -813,6 +811,10 @@ impl Context {
             Err(ret)
         }
     }
+
+    //////////////////////////////////////////////////////////////////////////////////
+    /// Context Management
+    //////////////////////////////////////////////////////////////////////////////////
 
     /// Flush the context of an object from the TPM.
     pub fn flush_context(&mut self, handle: ObjectHandle) -> Result<()> {
@@ -1548,7 +1550,7 @@ impl Context {
     /// storage.
     pub fn nv_define_space(
         &mut self,
-        nv_authorization: NvAuthorization,
+        nv_auth: NvAuth,
         auth: Option<&Auth>,
         public_info: &NvPublic,
     ) -> Result<NvIndexHandle> {
@@ -1558,7 +1560,7 @@ impl Context {
         let ret = unsafe {
             Esys_NV_DefineSpace(
                 self.mut_context(),
-                nv_authorization.into(),
+                AuthHandle::from(nv_auth).into(),
                 self.optional_session_1(),
                 self.optional_session_2(),
                 self.optional_session_3(),
@@ -1581,13 +1583,13 @@ impl Context {
     /// storage.
     pub fn nv_undefine_space(
         &mut self,
-        nv_authorization: NvAuthorization,
+        nv_auth: NvAuth,
         nv_index_handle: NvIndexHandle,
     ) -> Result<()> {
         let ret = unsafe {
             Esys_NV_UndefineSpace(
                 self.mut_context(),
-                nv_authorization.into(),
+                AuthHandle::from(nv_auth).into(),
                 nv_index_handle.into(),
                 self.optional_session_1(),
                 self.optional_session_2(),
@@ -1697,6 +1699,7 @@ impl Context {
             Err(ret)
         }
     }
+
     ///////////////////////////////////////////////////////////////////////////
     /// Private Methods Section
     ///////////////////////////////////////////////////////////////////////////
