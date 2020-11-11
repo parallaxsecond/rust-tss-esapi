@@ -1,7 +1,6 @@
 // Copyright 2020 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
 use crate::{
-    algorithm::structures::SensitiveData,
     constants::{
         algorithm::{Cipher, HashingAlgorithm},
         tags::PropertyTag,
@@ -20,11 +19,15 @@ use crate::{
     session::Session,
     structures::{
         Auth, CapabilityData, Data, Digest, DigestList, DigestValues, HashcheckTicket, MaxBuffer,
-        MaxNvBuffer, Name, Nonce, PcrSelectionList, PublicKeyRSA,
+        MaxNvBuffer, Name, Nonce, PcrSelectionList, Private, PublicKeyRSA, SensitiveData,
+        VerifiedTicket,
     },
     tcti::Tcti,
     tss2_esys::*,
-    utils::{PcrData, PublicParmsUnion, Signature, TpmaSession, TpmaSessionBuilder, TpmsContext},
+    utils::{
+        AsymSchemeUnion, PcrData, PublicParmsUnion, Signature, TpmaSession, TpmaSessionBuilder,
+        TpmsContext,
+    },
     Error, Result, WrapperErrorKind as ErrorKind,
 };
 use log::{error, info};
@@ -360,7 +363,7 @@ impl Context {
         auth_value: Option<&Auth>,
         initial_data: Option<&SensitiveData>,
         outside_info: Option<&Data>,
-        creation_pcrs: &[TPMS_PCR_SELECTION],
+        creation_pcrs: PcrSelectionList,
     ) -> Result<KeyHandle> {
         let sensitive_create = TPM2B_SENSITIVE_CREATE {
             size: std::mem::size_of::<TPMS_SENSITIVE_CREATE>()
@@ -370,18 +373,6 @@ impl Context {
                 userAuth: TPM2B_AUTH::try_from(auth_value.cloned().unwrap_or_default())?,
                 data: TPM2B_SENSITIVE_DATA::try_from(initial_data.cloned().unwrap_or_default())?,
             },
-        };
-
-        if creation_pcrs.len() > 16 {
-            return Err(Error::local_error(ErrorKind::WrongParamSize));
-        }
-
-        let mut creation_pcrs_buffer = [Default::default(); 16];
-        creation_pcrs_buffer[..creation_pcrs.len()]
-            .clone_from_slice(&creation_pcrs[..creation_pcrs.len()]);
-        let creation_pcrs = TPML_PCR_SELECTION {
-            count: creation_pcrs.len().try_into().unwrap(), // will not fail given the len checks above
-            pcrSelections: creation_pcrs_buffer,
         };
 
         let mut outpublic = null_mut();
@@ -400,7 +391,7 @@ impl Context {
                 &sensitive_create,
                 public,
                 &TPM2B_DATA::try_from(outside_info.cloned().unwrap_or_default())?,
-                &creation_pcrs,
+                &creation_pcrs.into(),
                 &mut esys_prim_key_handle,
                 &mut outpublic,
                 &mut creation_data,
@@ -449,8 +440,8 @@ impl Context {
         auth_value: Option<&Auth>,
         initial_data: Option<&SensitiveData>,
         outside_info: Option<&Data>,
-        creation_pcrs: &[TPMS_PCR_SELECTION],
-    ) -> Result<(TPM2B_PRIVATE, TPM2B_PUBLIC)> {
+        creation_pcrs: PcrSelectionList,
+    ) -> Result<(Private, TPM2B_PUBLIC)> {
         let sensitive_create = TPM2B_SENSITIVE_CREATE {
             size: std::mem::size_of::<TPMS_SENSITIVE_CREATE>()
                 .try_into()
@@ -459,17 +450,6 @@ impl Context {
                 userAuth: TPM2B_AUTH::try_from(auth_value.cloned().unwrap_or_default())?,
                 data: TPM2B_SENSITIVE_DATA::try_from(initial_data.cloned().unwrap_or_default())?,
             },
-        };
-
-        if creation_pcrs.len() > 16 {
-            return Err(Error::local_error(ErrorKind::WrongParamSize));
-        }
-        let mut creation_pcrs_buffer = [Default::default(); 16];
-        creation_pcrs_buffer[..creation_pcrs.len()]
-            .clone_from_slice(&creation_pcrs[..creation_pcrs.len()]);
-        let creation_pcrs = TPML_PCR_SELECTION {
-            count: creation_pcrs.len().try_into().unwrap(), // will not fail given the len checks above
-            pcrSelections: creation_pcrs_buffer,
         };
 
         let mut outpublic = null_mut();
@@ -488,7 +468,7 @@ impl Context {
                 &sensitive_create,
                 public,
                 &TPM2B_DATA::try_from(outside_info.cloned().unwrap_or_default())?,
-                &creation_pcrs,
+                &creation_pcrs.into(),
                 &mut outprivate,
                 &mut outpublic,
                 &mut creation_data,
@@ -500,13 +480,14 @@ impl Context {
 
         if ret.is_success() {
             let outprivate = unsafe { MBox::from_raw(outprivate) };
+            let outprivate = Private::try_from(*outprivate)?;
             let outpublic = unsafe { MBox::from_raw(outpublic) };
             unsafe {
                 let _ = MBox::from_raw(creation_data);
                 let _ = MBox::from_raw(digest);
                 let _ = MBox::from_raw(creation);
             }
-            Ok((*outprivate, *outpublic))
+            Ok((outprivate, *outpublic))
         } else {
             error!("Error in creating derived key: {}.", ret);
             Err(ret)
@@ -514,13 +495,13 @@ impl Context {
     }
 
     /// Unseal and return data from a Sealed Data Object
-    pub fn unseal(&mut self, item_handle: ESYS_TR) -> Result<SensitiveData> {
+    pub fn unseal(&mut self, item_handle: ObjectHandle) -> Result<SensitiveData> {
         let mut out_data = null_mut();
 
         let ret = unsafe {
             Esys_Unseal(
                 self.mut_context(),
-                item_handle,
+                item_handle.into(),
                 self.optional_session_1(),
                 self.optional_session_2(),
                 self.optional_session_3(),
@@ -542,7 +523,7 @@ impl Context {
     pub fn load(
         &mut self,
         parent_handle: KeyHandle,
-        private: TPM2B_PRIVATE,
+        private: Private,
         public: TPM2B_PUBLIC,
     ) -> Result<KeyHandle> {
         let mut esys_key_handle = ESYS_TR_NONE;
@@ -553,7 +534,7 @@ impl Context {
                 self.optional_session_1(),
                 self.optional_session_2(),
                 self.optional_session_3(),
-                &private,
+                &private.try_into()?,
                 &public,
                 &mut esys_key_handle,
             )
@@ -583,10 +564,11 @@ impl Context {
         key_handle: KeyHandle,
         digest: &Digest,
         scheme: TPMT_SIG_SCHEME,
-        validation: &TPMT_TK_HASHCHECK,
+        validation: HashcheckTicket,
     ) -> Result<Signature> {
         let mut signature = null_mut();
         let tss_digest = TPM2B_DIGEST::try_from(digest.clone())?;
+        let validation = TPMT_TK_HASHCHECK::try_from(validation)?;
         let ret = unsafe {
             Esys_Sign(
                 self.mut_context(),
@@ -596,7 +578,7 @@ impl Context {
                 self.optional_session_3(),
                 &tss_digest,
                 &scheme,
-                validation,
+                &validation,
                 &mut signature,
             )
         };
@@ -624,9 +606,10 @@ impl Context {
         &mut self,
         key_handle: KeyHandle,
         digest: &Digest,
-        signature: &TPMT_SIGNATURE,
-    ) -> Result<TPMT_TK_VERIFIED> {
+        signature: Signature,
+    ) -> Result<VerifiedTicket> {
         let mut validation = null_mut();
+        let signature = TPMT_SIGNATURE::try_from(signature)?;
         let tss_digest = TPM2B_DIGEST::try_from(digest.clone())?;
         let ret = unsafe {
             Esys_VerifySignature(
@@ -636,7 +619,7 @@ impl Context {
                 self.optional_session_2(),
                 self.optional_session_3(),
                 &tss_digest,
-                signature,
+                &signature,
                 &mut validation,
             )
         };
@@ -644,7 +627,8 @@ impl Context {
 
         if ret.is_success() {
             let validation = unsafe { MBox::from_raw(validation) };
-            Ok(*validation)
+            let validation = VerifiedTicket::try_from(*validation)?;
+            Ok(validation)
         } else {
             error!("Error in loading: {}.", ret);
             Err(ret)
@@ -656,7 +640,7 @@ impl Context {
         &mut self,
         key_handle: KeyHandle,
         message: PublicKeyRSA,
-        in_scheme: &TPMT_RSA_DECRYPT,
+        in_scheme: AsymSchemeUnion,
         label: Data,
     ) -> Result<PublicKeyRSA> {
         let tss_message = TPM2B_PUBLIC_KEY_RSA::try_from(message)?;
@@ -670,7 +654,7 @@ impl Context {
                 self.optional_session_2(),
                 self.optional_session_3(),
                 &tss_message,
-                in_scheme,
+                &in_scheme.get_rsa_decrypt_struct(),
                 &tss_label,
                 &mut out_data,
             )
@@ -690,7 +674,7 @@ impl Context {
         &mut self,
         key_handle: KeyHandle,
         cipher_text: PublicKeyRSA,
-        in_scheme: &TPMT_RSA_DECRYPT,
+        in_scheme: AsymSchemeUnion,
         label: Data,
     ) -> Result<PublicKeyRSA> {
         let tss_cipher_text = TPM2B_PUBLIC_KEY_RSA::try_from(cipher_text)?;
@@ -704,7 +688,7 @@ impl Context {
                 self.optional_session_2(),
                 self.optional_session_3(),
                 &tss_cipher_text,
-                in_scheme,
+                &in_scheme.get_rsa_decrypt_struct(),
                 &tss_label,
                 &mut message,
             )
@@ -1314,11 +1298,12 @@ impl Context {
         approved_policy: &Digest,
         policy_ref: &Nonce,
         key_sign: &Name,
-        check_ticket: TPMT_TK_VERIFIED,
+        check_ticket: VerifiedTicket,
     ) -> Result<()> {
         let tss_approved_policy = TPM2B_DIGEST::try_from(approved_policy.clone())?;
         let tss_policy_ref = TPM2B_NONCE::try_from(policy_ref.clone())?;
         let tss_key_sign = TPM2B_NAME::try_from(key_sign.clone())?;
+        let check_ticket = TPMT_TK_VERIFIED::try_from(check_ticket)?;
         let ret = unsafe {
             Esys_PolicyAuthorize(
                 self.mut_context(),

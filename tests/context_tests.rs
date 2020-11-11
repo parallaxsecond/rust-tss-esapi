@@ -34,7 +34,6 @@ const KEY: [u8; 512] = [
 
 use std::convert::{TryFrom, TryInto};
 use tss_esapi::{
-    algorithm::structures::SensitiveData,
     constants::{
         algorithm::{Cipher, HashingAlgorithm},
         tags::PropertyTag,
@@ -53,7 +52,7 @@ use tss_esapi::{
     session::Session,
     structures::{
         Auth, CapabilityData, Data, Digest, DigestList, DigestValues, MaxBuffer, MaxNvBuffer,
-        Nonce, PcrSelectionListBuilder, PcrSlot, PublicKeyRSA, Ticket,
+        Nonce, PcrSelectionListBuilder, PcrSlot, PublicKeyRSA, SensitiveData, Ticket,
     },
     tss2_esys::*,
     utils::{
@@ -113,6 +112,7 @@ fn comprehensive_test() {
     let random_digest = context.get_random(16).unwrap();
     let key_auth = Auth::try_from(random_digest.value().to_vec()).unwrap();
 
+    let creation_pcrs = PcrSelectionListBuilder::new().build();
     let prim_key_handle = context
         .create_primary_key(
             Hierarchy::Owner,
@@ -120,7 +120,7 @@ fn comprehensive_test() {
             Some(&key_auth),
             None,
             None,
-            &[],
+            creation_pcrs,
         )
         .unwrap();
 
@@ -150,7 +150,7 @@ fn comprehensive_test() {
             Some(&key_auth),
             None,
             None,
-            &[],
+            PcrSelectionListBuilder::new().build(),
         )
         .unwrap();
     let key_handle = context.load(prim_key_handle, key_priv, key_pub).unwrap();
@@ -175,14 +175,14 @@ fn comprehensive_test() {
             key_handle,
             &Digest::try_from(HASH[..32].to_vec()).unwrap(),
             scheme,
-            &validation,
+            validation.try_into().unwrap(),
         )
         .unwrap();
     context
         .verify_signature(
             key_handle,
             &Digest::try_from(HASH[..32].to_vec()).unwrap(),
-            &signature.try_into().unwrap(),
+            signature,
         )
         .unwrap();
 }
@@ -239,7 +239,7 @@ mod test_start_sess {
                 None,
                 None,
                 None,
-                &[],
+                PcrSelectionListBuilder::new().build(),
             )
             .unwrap();
 
@@ -570,7 +570,7 @@ mod test_unseal {
                 None,
                 None,
                 None,
-                &[],
+                PcrSelectionListBuilder::new().build(),
             )
             .unwrap();
         let key_handle_unseal = context
@@ -580,7 +580,7 @@ mod test_unseal {
                 None,
                 None,
                 None,
-                &[],
+                PcrSelectionListBuilder::new().build(),
             )
             .unwrap();
 
@@ -592,7 +592,7 @@ mod test_unseal {
                 None,
                 Some(SensitiveData::try_from(testbytes.to_vec()).unwrap()).as_ref(),
                 None,
-                &[],
+                PcrSelectionListBuilder::new().build(),
             )
             .unwrap();
         let loaded_key = context
@@ -622,7 +622,14 @@ mod test_quote {
         let qualifying_data = vec![0xff; 16];
 
         let key_handle = context
-            .create_primary_key(Hierarchy::Owner, &signing_key_pub(), None, None, None, &[])
+            .create_primary_key(
+                Hierarchy::Owner,
+                &signing_key_pub(),
+                None,
+                None,
+                None,
+                PcrSelectionListBuilder::new().build(),
+            )
             .unwrap();
 
         let res = context
@@ -770,7 +777,7 @@ mod test_policies {
                 Some(&key_auth),
                 None,
                 None,
-                &[],
+                PcrSelectionListBuilder::new().build(),
             )
             .unwrap();
         let key_name = context.tr_get_name(key_handle.into()).unwrap();
@@ -799,10 +806,10 @@ mod test_policies {
         };
         // A signature over just the policy_digest, since the policy_ref is empty
         let signature = context
-            .sign(key_handle, &ahash, scheme, &validation)
+            .sign(key_handle, &ahash, scheme, validation.try_into().unwrap())
             .unwrap();
         let tkt = context
-            .verify_signature(key_handle, &ahash, &signature.try_into().unwrap())
+            .verify_signature(key_handle, &ahash, signature)
             .unwrap();
 
         // Since the signature is over this sessions' state, it should be valid
@@ -1217,26 +1224,10 @@ mod test_create_primary {
                 Some(&key_auth),
                 None,
                 None,
-                &[],
+                PcrSelectionListBuilder::new().build(),
             )
             .unwrap();
         assert!(ESYS_TR::from(key_handle) != ESYS_TR_NONE);
-    }
-
-    #[test]
-    fn test_long_pcrs_create_primary() {
-        let mut context = create_ctx_with_session();
-
-        let _ = context
-            .create_primary_key(
-                Hierarchy::Owner,
-                &decryption_key_pub(),
-                None,
-                None,
-                None,
-                &[Default::default(); 20],
-            )
-            .unwrap_err();
     }
 }
 
@@ -1256,7 +1247,7 @@ mod test_create {
                 Some(&key_auth),
                 None,
                 None,
-                &[],
+                PcrSelectionListBuilder::new().build(),
             )
             .unwrap();
 
@@ -1267,38 +1258,9 @@ mod test_create {
                 Some(&key_auth),
                 None,
                 None,
-                &[],
+                PcrSelectionListBuilder::new().build(),
             )
             .unwrap();
-    }
-
-    #[test]
-    fn test_long_pcrs_create() {
-        let mut context = create_ctx_with_session();
-        let random_digest = context.get_random(16).unwrap();
-        let key_auth = Auth::try_from(random_digest.value().to_vec()).unwrap();
-
-        let prim_key_handle = context
-            .create_primary_key(
-                Hierarchy::Owner,
-                &decryption_key_pub(),
-                Some(&key_auth),
-                None,
-                None,
-                &[],
-            )
-            .unwrap();
-
-        assert!(context
-            .create_key(
-                prim_key_handle,
-                &decryption_key_pub(),
-                None,
-                None,
-                None,
-                &[Default::default(); 20],
-            )
-            .is_err());
     }
 }
 
@@ -1318,7 +1280,7 @@ mod test_load {
                 Some(&key_auth),
                 None,
                 None,
-                &[],
+                PcrSelectionListBuilder::new().build(),
             )
             .unwrap();
 
@@ -1329,7 +1291,7 @@ mod test_load {
                 Some(&key_auth),
                 None,
                 None,
-                &[],
+                PcrSelectionListBuilder::new().build(),
             )
             .unwrap();
 
@@ -1353,7 +1315,7 @@ mod test_sign {
                 Some(&key_auth),
                 None,
                 None,
-                &[],
+                PcrSelectionListBuilder::new().build(),
             )
             .unwrap();
 
@@ -1371,7 +1333,7 @@ mod test_sign {
                 key_handle,
                 &Digest::try_from(HASH[..32].to_vec()).unwrap(),
                 scheme,
-                &validation,
+                validation.try_into().unwrap(),
             )
             .unwrap();
     }
@@ -1389,7 +1351,7 @@ mod test_sign {
                 Some(&key_auth),
                 None,
                 None,
-                &[],
+                PcrSelectionListBuilder::new().build(),
             )
             .unwrap();
 
@@ -1407,7 +1369,7 @@ mod test_sign {
                 key_handle,
                 &Digest::try_from(Vec::<u8>::new()).unwrap(),
                 scheme,
-                &validation,
+                validation.try_into().unwrap(),
             )
             .unwrap_err();
     }
@@ -1425,7 +1387,7 @@ mod test_sign {
                 Some(&key_auth),
                 None,
                 None,
-                &[],
+                PcrSelectionListBuilder::new().build(),
             )
             .unwrap();
 
@@ -1443,7 +1405,7 @@ mod test_sign {
                 key_handle,
                 &Digest::try_from([0xbb; 40].to_vec()).unwrap(),
                 scheme,
-                &validation,
+                validation.try_into().unwrap(),
             )
             .unwrap_err();
     }
@@ -1465,24 +1427,24 @@ mod test_rsa_encrypt_decrypt {
                 Some(&key_auth),
                 None,
                 None,
-                &[],
+                PcrSelectionListBuilder::new().build(),
             )
             .unwrap();
 
-        let scheme = AsymSchemeUnion::RSAOAEP(HashingAlgorithm::Sha256).get_rsa_decrypt_struct();
+        let scheme = AsymSchemeUnion::RSAOAEP(HashingAlgorithm::Sha256);
 
         let plaintext_bytes: Vec<u8> = vec![0x01, 0x02, 0x03];
 
         let plaintext = PublicKeyRSA::try_from(plaintext_bytes.clone()).unwrap();
 
         let ciphertext = context
-            .rsa_encrypt(key_handle, plaintext, &scheme, Data::default())
+            .rsa_encrypt(key_handle, plaintext, scheme, Data::default())
             .unwrap();
 
         assert_ne!(plaintext_bytes, ciphertext.value());
 
         let decrypted = context
-            .rsa_decrypt(key_handle, ciphertext, &scheme, Data::default())
+            .rsa_decrypt(key_handle, ciphertext, scheme, Data::default())
             .unwrap();
 
         assert_eq!(plaintext_bytes, decrypted.value());
@@ -1505,7 +1467,7 @@ mod test_verify_sig {
                 Some(&key_auth),
                 None,
                 None,
-                &[],
+                PcrSelectionListBuilder::new().build(),
             )
             .unwrap();
 
@@ -1523,7 +1485,7 @@ mod test_verify_sig {
                 key_handle,
                 &Digest::try_from(HASH[..32].to_vec()).unwrap(),
                 scheme,
-                &validation,
+                validation.try_into().unwrap(),
             )
             .unwrap();
 
@@ -1531,7 +1493,7 @@ mod test_verify_sig {
             .verify_signature(
                 key_handle,
                 &Digest::try_from(HASH[..32].to_vec()).unwrap(),
-                &signature.try_into().unwrap(),
+                signature,
             )
             .unwrap();
     }
@@ -1549,7 +1511,7 @@ mod test_verify_sig {
                 Some(&key_auth),
                 None,
                 None,
-                &[],
+                PcrSelectionListBuilder::new().build(),
             )
             .unwrap();
 
@@ -1567,7 +1529,7 @@ mod test_verify_sig {
                 key_handle,
                 &Digest::try_from(HASH[..32].to_vec()).unwrap(),
                 scheme,
-                &validation,
+                validation.try_into().unwrap(),
             )
             .unwrap();
 
@@ -1578,7 +1540,7 @@ mod test_verify_sig {
             .verify_signature(
                 key_handle,
                 &Digest::try_from(HASH[..32].to_vec()).unwrap(),
-                &signature.try_into().unwrap()
+                signature,
             )
             .is_err());
     }
@@ -1596,7 +1558,7 @@ mod test_verify_sig {
                 Some(&key_auth),
                 None,
                 None,
-                &[],
+                PcrSelectionListBuilder::new().build(),
             )
             .unwrap();
 
@@ -1608,7 +1570,7 @@ mod test_verify_sig {
             .verify_signature(
                 key_handle,
                 &Digest::try_from(HASH[..32].to_vec()).unwrap(),
-                &signature.try_into().unwrap()
+                signature,
             )
             .is_err());
     }
@@ -1626,7 +1588,7 @@ mod test_verify_sig {
                 Some(&key_auth),
                 None,
                 None,
-                &[],
+                PcrSelectionListBuilder::new().build(),
             )
             .unwrap();
 
@@ -1638,7 +1600,7 @@ mod test_verify_sig {
             .verify_signature(
                 key_handle,
                 &Digest::try_from(HASH[..32].to_vec()).unwrap(),
-                &signature.try_into().unwrap()
+                signature,
             )
             .is_err());
     }
@@ -1701,7 +1663,7 @@ mod test_read_pub {
                 Some(&key_auth),
                 None,
                 None,
-                &[],
+                PcrSelectionListBuilder::new().build(),
             )
             .unwrap();
         let _ = context.read_public(key_handle).unwrap();
@@ -1724,7 +1686,7 @@ mod test_flush_context {
                 Some(&key_auth),
                 None,
                 None,
-                &[],
+                PcrSelectionListBuilder::new().build(),
             )
             .unwrap();
         context.flush_context(key_handle.into()).unwrap();
@@ -1744,7 +1706,7 @@ mod test_flush_context {
                 Some(&key_auth),
                 None,
                 None,
-                &[],
+                PcrSelectionListBuilder::new().build(),
             )
             .unwrap();
 
@@ -1755,7 +1717,7 @@ mod test_flush_context {
                 Some(&key_auth),
                 None,
                 None,
-                &[],
+                PcrSelectionListBuilder::new().build(),
             )
             .unwrap();
 
@@ -1781,7 +1743,7 @@ mod test_ctx_save {
                 Some(&key_auth),
                 None,
                 None,
-                &[],
+                PcrSelectionListBuilder::new().build(),
             )
             .unwrap();
         let _ = context.context_save(key_handle.into()).unwrap();
@@ -1800,7 +1762,7 @@ mod test_ctx_save {
                 Some(&key_auth),
                 None,
                 None,
-                &[],
+                PcrSelectionListBuilder::new().build(),
             )
             .unwrap();
 
@@ -1811,7 +1773,7 @@ mod test_ctx_save {
                 Some(&key_auth),
                 None,
                 None,
-                &[],
+                PcrSelectionListBuilder::new().build(),
             )
             .unwrap();
 
@@ -1836,7 +1798,7 @@ mod test_ctx_load {
                 Some(Auth::try_from(key_auth.value().to_vec()).unwrap()).as_ref(),
                 None,
                 None,
-                &[],
+                PcrSelectionListBuilder::new().build(),
             )
             .unwrap();
 
@@ -1847,7 +1809,7 @@ mod test_ctx_load {
                 Some(Auth::try_from(key_auth.value().to_vec()).unwrap()).as_ref(),
                 None,
                 None,
-                &[],
+                PcrSelectionListBuilder::new().build(),
             )
             .unwrap();
 
@@ -1965,7 +1927,7 @@ mod test_handle_auth {
                 Some(&key_auth),
                 None,
                 None,
-                &[],
+                PcrSelectionListBuilder::new().build(),
             )
             .unwrap();
 
@@ -1991,7 +1953,7 @@ mod test_handle_auth {
                 new_key_handle,
                 &Digest::try_from(HASH[..32].to_vec()).unwrap(),
                 scheme,
-                &validation,
+                validation.try_into().unwrap(),
             )
             .unwrap();
     }
@@ -2251,6 +2213,9 @@ mod test_nv_define_space {
             .nv_undefine_space(NvAuth::Owner, owner_nv_index_handle)
             .unwrap();
 
+        // If you see this line fail, you are likely running it against a live TPM.
+        // On many TPMs, you will get error 0x00000185, indicating the Platform hierarchy to
+        // be unavailable (because the system went to operating system)
         let platform_nv_index_handle = context
             .nv_define_space(NvAuth::Platform, None, &platform_nv_public)
             .unwrap();
