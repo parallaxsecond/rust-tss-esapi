@@ -38,6 +38,10 @@ pub use self::buffers::max_nv_buffer::MaxNvBuffer;
 
 pub use self::buffers::data::Data;
 
+pub use self::buffers::sensitive_data::SensitiveData;
+
+pub use self::buffers::private::Private;
+
 pub use self::buffers::public_key_rsa::PublicKeyRSA;
 
 pub use self::buffers::nonce::Nonce;

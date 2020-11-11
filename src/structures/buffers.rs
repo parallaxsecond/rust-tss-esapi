@@ -92,6 +92,14 @@ pub mod data {
     buffer_type!(Data, 64, TPM2B_DATA);
 }
 
+pub mod sensitive_data {
+    buffer_type!(SensitiveData, 256, TPM2B_SENSITIVE_DATA);
+}
+
+pub mod private {
+    buffer_type!(Private, 256, TPM2B_PRIVATE);
+}
+
 pub mod digest {
     buffer_type!(Digest, 64, TPM2B_DIGEST);
 
