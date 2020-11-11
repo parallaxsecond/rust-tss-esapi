@@ -110,7 +110,6 @@ pub mod tss2_esys {
     include!(concat!(env!("CARGO_MANIFEST_DIR"), "/doc_bindings.rs"));
 }
 pub mod abstraction;
-pub mod algorithm;
 pub mod constants;
 mod context;
 mod error;
