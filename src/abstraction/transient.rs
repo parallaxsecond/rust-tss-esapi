@@ -18,7 +18,9 @@ use crate::constants::tss::*;
 use crate::constants::types::session::SessionType;
 use crate::handles::KeyHandle;
 use crate::interface_types::resource_handles::Hierarchy;
-use crate::structures::{Auth, Data, Digest, PublicKeyRSA, VerifiedTicket};
+use crate::structures::{
+    Auth, Data, Digest, PcrSelectionListBuilder, PublicKeyRSA, VerifiedTicket,
+};
 use crate::tcti::Tcti;
 use crate::tss2_esys::*;
 use crate::utils::{
@@ -109,6 +111,8 @@ impl TransientKeyContext {
             None
         };
 
+        let creation_pcrs = PcrSelectionListBuilder::new().build();
+
         self.set_session_attrs()?;
         let (key_priv, key_pub) = self.context.create_key(
             self.root_key_handle,
@@ -116,7 +120,7 @@ impl TransientKeyContext {
             key_auth.as_ref(),
             None,
             None,
-            &[],
+            creation_pcrs,
         )?;
         self.set_session_attrs()?;
         let key_handle = self.context.load(self.root_key_handle, key_priv, key_pub)?;
@@ -375,12 +379,11 @@ impl TransientKeyContext {
                     Err(e)
                 })?;
         }
-        let scheme = scheme.get_rsa_decrypt_struct();
         self.set_session_attrs()?;
 
         let ciphertext = self
             .context
-            .rsa_encrypt(key_handle, message, &scheme, label.unwrap_or_default())
+            .rsa_encrypt(key_handle, message, scheme, label.unwrap_or_default())
             .or_else(|e| {
                 self.context.flush_context(key_handle.into())?;
                 Err(e)
@@ -421,12 +424,11 @@ impl TransientKeyContext {
                     Err(e)
                 })?;
         }
-        let scheme = scheme.get_rsa_decrypt_struct();
         self.set_session_attrs()?;
 
         let plaintext = self
             .context
-            .rsa_decrypt(key_handle, ciphertext, &scheme, label.unwrap_or_default())
+            .rsa_decrypt(key_handle, ciphertext, scheme, label.unwrap_or_default())
             .or_else(|e| {
                 self.context.flush_context(key_handle.into())?;
                 Err(e)
@@ -476,7 +478,7 @@ impl TransientKeyContext {
         self.set_session_attrs()?;
         let signature = self
             .context
-            .sign(key_handle, &digest, scheme, &validation)
+            .sign(key_handle, &digest, scheme, validation.try_into()?)
             .or_else(|e| {
                 self.context.flush_context(key_handle.into())?;
                 Err(e)
@@ -507,20 +509,16 @@ impl TransientKeyContext {
             .context_load(key_context)
             .map(KeyHandle::from)?;
 
-        let signature: TPMT_SIGNATURE = signature.try_into().or_else(|e| {
-            self.context.flush_context(key_handle.into())?;
-            Err(e)
-        })?;
         self.set_session_attrs()?;
         let verified = self
             .context
-            .verify_signature(key_handle, &digest, &signature)
+            .verify_signature(key_handle, &digest, signature)
             .or_else(|e| {
                 self.context.flush_context(key_handle.into())?;
                 Err(e)
             })?;
         self.context.flush_context(key_handle.into())?;
-        Ok(verified.try_into()?)
+        Ok(verified)
     }
 
     /// Sets the encrypt and decrypt flags on the main session used by the context.
@@ -691,6 +689,8 @@ impl TransientKeyContextBuilder {
             context.tr_set_auth(self.hierarchy.esys_rh().into(), &auth_hierarchy)?;
         }
 
+        let creation_pcrs = PcrSelectionListBuilder::new().build();
+
         let root_key_handle = context.create_primary_key(
             self.hierarchy,
             &create_restricted_decryption_rsa_public(
@@ -701,7 +701,7 @@ impl TransientKeyContextBuilder {
             root_key_auth.as_ref(),
             None,
             None,
-            &[],
+            creation_pcrs,
         )?;
 
         let new_session = context
