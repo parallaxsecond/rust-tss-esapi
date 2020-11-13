@@ -41,8 +41,14 @@ use tss_esapi::{
         tss::*,
         types::{capability::CapabilityType, session::SessionType},
     },
-    handles::{AuthHandle, KeyHandle, NvIndexHandle, NvIndexTpmHandle, ObjectHandle, PcrHandle},
-    interface_types::resource_handles::{Hierarchy, NvAuth},
+    handles::{
+        AuthHandle, KeyHandle, NvIndexHandle, NvIndexTpmHandle, ObjectHandle, PcrHandle,
+        PersistentTpmHandle, TpmHandle,
+    },
+    interface_types::{
+        dynamic_handles::Persistent,
+        resource_handles::{Hierarchy, NvAuth, Provision},
+    },
     nv::storage::{NvIndexAttributes, NvPublicBuilder},
     session::Session,
     structures::{
@@ -1850,6 +1856,97 @@ mod test_ctx_load {
         let key_ctx = context.context_save(key_handle.into()).unwrap();
         let key_handle = context.context_load(key_ctx).map(KeyHandle::from).unwrap();
         let _ = context.read_public(key_handle).unwrap();
+    }
+}
+
+mod test_evict_control {
+    use super::*;
+
+    fn remove_persitent_handle(persistent_tpm_handle: PersistentTpmHandle) {
+        let mut context = create_ctx_without_session();
+        if let Ok(mut handle) =
+            context.tr_from_tpm_public(TpmHandle::Persistent(persistent_tpm_handle))
+        {
+            // The peristent handle existed and is now loaded
+            // so it needs to be evicted
+            context.execute_with_session(Some(Session::Password), |ctx| {
+                ctx.evict_control(
+                    Provision::Owner,
+                    handle,
+                    Persistent::Persistent(persistent_tpm_handle),
+                )
+                .expect("Failed to evict persitent handle");
+            });
+            // close the handle.
+            context.execute_without_session(|ctx| {
+                ctx.tr_close(&mut handle).expect("Failed to close handle");
+            });
+        }
+    }
+
+    #[test]
+    fn test_basic_evict_control() {
+        // Create persistent TPM handle with
+        let persistent_tpm_handle =
+            PersistentTpmHandle::new(u32::from_be_bytes([0x81, 0x00, 0x00, 0x01]))
+                .expect("Failed to create persitent tpm handle");
+        // Create interface type Persistent by using the handle.
+        let persistent = Persistent::Persistent(persistent_tpm_handle);
+
+        // Make sure the handle is not already persistent
+        remove_persitent_handle(persistent_tpm_handle);
+
+        // Create context
+        let mut context = create_ctx_without_session();
+
+        // Set Password session
+        context.set_sessions((Some(Session::Password), None, None));
+
+        // Create primary key handle
+        let auth_value_primary = Auth::try_from(vec![1, 2, 3, 4, 5])
+            .expect("Failed to crate auth value for primary key");
+        let primary_key_handle = context
+            .create_primary_key(
+                Hierarchy::Owner,
+                &decryption_key_pub(),
+                Some(auth_value_primary).as_ref(),
+                None,
+                None,
+                &[],
+            )
+            .expect("Failed to create primary key");
+
+        // Evict control to make primary_key_handle persistent
+        let mut peristent_primary_key_handle = context
+            .evict_control(Provision::Owner, primary_key_handle.into(), persistent)
+            .expect("Failed to make the primary key handle persistent");
+
+        // Flush out the primary_key_handle
+        context
+            .flush_context(ObjectHandle::from(primary_key_handle))
+            .expect("Failed to flush context");
+        // Close the persistant_handle returned by evict_control
+        context
+            .tr_close(&mut peristent_primary_key_handle)
+            .expect("Failed to close persistant handle");
+
+        // Retrieve the handle from the tpm again.
+        let retireved_persistant_handle = context.execute_without_session(|ctx| {
+            ctx.tr_from_tpm_public(TpmHandle::Persistent(persistent_tpm_handle))
+                .expect("Failed to load the persistant handle")
+        });
+
+        // Evict the persitent handle from the tpm
+        context
+            .evict_control(Provision::Owner, retireved_persistant_handle, persistent)
+            .expect("Failed to evict persistent handle");
+
+        context.clear_sessions();
+
+        assert_ne!(
+            retireved_persistant_handle,
+            ObjectHandle::from(ESYS_TR_NONE)
+        );
     }
 }
 
