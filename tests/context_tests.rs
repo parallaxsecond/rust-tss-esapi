@@ -1874,7 +1874,7 @@ mod test_evict_control {
                 Some(auth_value_primary).as_ref(),
                 None,
                 None,
-                &[],
+                PcrSelectionListBuilder::new().build(),
             )
             .expect("Failed to create primary key");
 
