@@ -2,9 +2,11 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use crate::{
-    constants::tags::PropertyTag,
-    handles::{AuthHandle, NvIndexHandle, NvIndexTpmHandle, TpmHandle},
-    Context, Result,
+    constants::{tags::PropertyTag, tss::*, types::capability::CapabilityType},
+    handles::{AuthHandle, NvIndexHandle, NvIndexTpmHandle, ObjectHandle, TpmHandle},
+    nv::storage::NvPublic,
+    structures::{CapabilityData, Name},
+    Context, Error, Result, WrapperErrorKind,
 };
 
 /// Allows reading an NV Index completely, regardless of the max TPM NV buffer size
@@ -36,4 +38,27 @@ pub fn read_full(
     }
 
     Ok(result)
+}
+
+/// Lists all the currently defined NV Indexes' names and public components
+pub fn list(context: &mut Context) -> Result<Vec<(NvPublic, Name)>> {
+    context.execute_without_session(|ctx| {
+        let (handles, _) = ctx.get_capabilities(
+            CapabilityType::Handles,
+            TPM2_NV_INDEX_FIRST,
+            TPM2_PT_NV_INDEX_MAX,
+        )?;
+        let handles = match handles {
+            CapabilityData::Handles(handles) => handles,
+            _ => return Err(Error::local_error(WrapperErrorKind::WrongValueFromTpm)),
+        };
+        handles
+            .iter()
+            .map(|h| ctx.tr_from_tpm_public(*h))
+            .collect::<Result<Vec<ObjectHandle>>>()?
+            .iter()
+            .map(|h| NvIndexHandle::from(*h))
+            .map(|h| ctx.nv_read_public(h))
+            .collect()
+    })
 }
