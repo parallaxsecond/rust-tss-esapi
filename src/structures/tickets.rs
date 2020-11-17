@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 use crate::constants::tags::StructureTag;
 use crate::interface_types::resource_handles::Hierarchy;
-use crate::tss2_esys::{TPM2B_DIGEST, TPMT_TK_HASHCHECK, TPMT_TK_VERIFIED};
+use crate::tss2_esys::{TPM2B_DIGEST, TPMT_TK_CREATION, TPMT_TK_HASHCHECK, TPMT_TK_VERIFIED};
 use crate::{Error, Result, WrapperErrorKind};
 use log::error;
 use std::convert::{TryFrom, TryInto};
@@ -118,3 +118,26 @@ impl Ticket for VerifiedTicket {
 }
 
 impl_ticket_try_froms!(VerifiedTicket, TPMT_TK_VERIFIED);
+
+/// Rust native wrapper for `TPMT_TK_CREATION` objects.
+#[derive(Debug)]
+pub struct CreationTicket {
+    hierarchy: Hierarchy,
+    digest: Vec<u8>,
+}
+
+impl Ticket for CreationTicket {
+    // type TssTicketType = TPMT_TK_VERIFIED;
+    /// The tag of the verified ticket.
+    const TAG: StructureTag = StructureTag::Creation;
+    /// Get the hierarchy associated with the verification ticket.
+    fn hierarchy(&self) -> Hierarchy {
+        self.hierarchy
+    }
+    /// Get the digest associated with the verification ticket.
+    fn digest(&self) -> &[u8] {
+        &self.digest
+    }
+}
+
+impl_ticket_try_froms!(CreationTicket, TPMT_TK_CREATION);

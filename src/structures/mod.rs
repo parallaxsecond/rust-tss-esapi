@@ -46,6 +46,11 @@ pub use self::buffers::public_key_rsa::PublicKeyRSA;
 
 pub use self::buffers::nonce::Nonce;
 /////////////////////////////////////////////////////////
+/// The creation section
+/////////////////////////////////////////////////////////
+mod creation;
+pub use self::creation::CreationData;
+/////////////////////////////////////////////////////////
 /// The hash section
 /////////////////////////////////////////////////////////
 mod hash;
@@ -88,6 +93,7 @@ pub mod pcr_selection_list {
 /// The tickets section
 /////////////////////////////////////////////////////////
 mod tickets;
+pub use tickets::CreationTicket;
 pub use tickets::HashcheckTicket;
 pub use tickets::Ticket;
 pub use tickets::VerifiedTicket;

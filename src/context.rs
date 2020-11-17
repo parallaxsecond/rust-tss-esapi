@@ -18,9 +18,9 @@ use crate::{
     nv::storage::NvPublic,
     session::Session,
     structures::{
-        Auth, CapabilityData, Data, Digest, DigestList, DigestValues, HashcheckTicket, MaxBuffer,
-        MaxNvBuffer, Name, Nonce, PcrSelectionList, Private, PublicKeyRSA, SensitiveData,
-        VerifiedTicket,
+        Auth, CapabilityData, CreationData, CreationTicket, Data, Digest, DigestList, DigestValues,
+        HashcheckTicket, MaxBuffer, MaxNvBuffer, Name, Nonce, PcrSelectionList, Private,
+        PublicKeyRSA, SensitiveData, VerifiedTicket,
     },
     tcti::Tcti,
     tss2_esys::*,
@@ -364,7 +364,13 @@ impl Context {
         initial_data: Option<&SensitiveData>,
         outside_info: Option<&Data>,
         creation_pcrs: PcrSelectionList,
-    ) -> Result<KeyHandle> {
+    ) -> Result<(
+        KeyHandle,
+        TPM2B_PUBLIC,
+        CreationData,
+        Digest,
+        CreationTicket,
+    )> {
         let sensitive_create = TPM2B_SENSITIVE_CREATE {
             size: std::mem::size_of::<TPMS_SENSITIVE_CREATE>()
                 .try_into()
@@ -402,15 +408,24 @@ impl Context {
         let ret = Error::from_tss_rc(ret);
 
         if ret.is_success() {
-            unsafe {
-                let _ = MBox::from_raw(outpublic);
-                let _ = MBox::from_raw(creation_data);
-                let _ = MBox::from_raw(creation_hash);
-                let _ = MBox::from_raw(creation_ticket);
-            }
+            let out_public = unsafe { MBox::from_raw(outpublic) };
+            let creation_data = unsafe { MBox::from_raw(creation_data) };
+            let creation_hash = unsafe { MBox::from_raw(creation_hash) };
+            let creation_ticket = unsafe { MBox::from_raw(creation_ticket) };
+
+            let creation_data = CreationData::try_from(*creation_data)?;
+            let creation_hash = Digest::try_from(*creation_hash)?;
+            let creation_ticket = CreationTicket::try_from(*creation_ticket)?;
+
             let primary_key_handle = KeyHandle::from(esys_prim_key_handle);
             let _ = self.open_handles.insert(primary_key_handle.into());
-            Ok(primary_key_handle)
+            Ok((
+                primary_key_handle,
+                *out_public,
+                creation_data,
+                creation_hash,
+                creation_ticket,
+            ))
         } else {
             error!("Error in creating primary key: {}.", ret);
             Err(ret)
@@ -441,7 +456,7 @@ impl Context {
         initial_data: Option<&SensitiveData>,
         outside_info: Option<&Data>,
         creation_pcrs: PcrSelectionList,
-    ) -> Result<(Private, TPM2B_PUBLIC)> {
+    ) -> Result<(Private, TPM2B_PUBLIC, CreationData, Digest, CreationTicket)> {
         let sensitive_create = TPM2B_SENSITIVE_CREATE {
             size: std::mem::size_of::<TPMS_SENSITIVE_CREATE>()
                 .try_into()
@@ -455,8 +470,8 @@ impl Context {
         let mut outpublic = null_mut();
         let mut outprivate = null_mut();
         let mut creation_data = null_mut();
-        let mut digest = null_mut();
-        let mut creation = null_mut();
+        let mut creation_hash = null_mut();
+        let mut creation_ticket = null_mut();
 
         let ret = unsafe {
             Esys_Create(
@@ -472,8 +487,8 @@ impl Context {
                 &mut outprivate,
                 &mut outpublic,
                 &mut creation_data,
-                &mut digest,
-                &mut creation,
+                &mut creation_hash,
+                &mut creation_ticket,
             )
         };
         let ret = Error::from_tss_rc(ret);
@@ -482,12 +497,20 @@ impl Context {
             let outprivate = unsafe { MBox::from_raw(outprivate) };
             let outprivate = Private::try_from(*outprivate)?;
             let outpublic = unsafe { MBox::from_raw(outpublic) };
-            unsafe {
-                let _ = MBox::from_raw(creation_data);
-                let _ = MBox::from_raw(digest);
-                let _ = MBox::from_raw(creation);
-            }
-            Ok((outprivate, *outpublic))
+            let creation_data = unsafe { MBox::from_raw(creation_data) };
+            let creation_hash = unsafe { MBox::from_raw(creation_hash) };
+            let creation_ticket = unsafe { MBox::from_raw(creation_ticket) };
+
+            let creation_data = CreationData::try_from(*creation_data)?;
+            let creation_hash = Digest::try_from(*creation_hash)?;
+            let creation_ticket = CreationTicket::try_from(*creation_ticket)?;
+            Ok((
+                outprivate,
+                *outpublic,
+                creation_data,
+                creation_hash,
+                creation_ticket,
+            ))
         } else {
             error!("Error in creating derived key: {}.", ret);
             Err(ret)
@@ -769,7 +792,7 @@ impl Context {
     }
 
     /// Read the public part of a key currently in the TPM and return it.
-    pub fn read_public(&mut self, key_handle: KeyHandle) -> Result<TPM2B_PUBLIC> {
+    pub fn read_public(&mut self, key_handle: KeyHandle) -> Result<(TPM2B_PUBLIC, Name, Name)> {
         let mut public = null_mut();
         let mut name = null_mut();
         let mut qualified_name = null_mut();
@@ -788,12 +811,14 @@ impl Context {
         let ret = Error::from_tss_rc(ret);
 
         if ret.is_success() {
-            unsafe {
-                let _ = MBox::from_raw(name);
-                let _ = MBox::from_raw(qualified_name);
-            }
+            let name = unsafe { MBox::from_raw(name) };
+            let qualified_name = unsafe { MBox::from_raw(qualified_name) };
             let public = unsafe { MBox::<TPM2B_PUBLIC>::from_raw(public) };
-            Ok(*public)
+
+            let name = Name::try_from(*name)?;
+            let qualified_name = Name::try_from(*qualified_name)?;
+
+            Ok((*public, name, qualified_name))
         } else {
             error!("Error in loading: {}.", ret);
             Err(ret)
