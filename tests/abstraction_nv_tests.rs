@@ -15,6 +15,12 @@ mod common;
 use common::create_ctx_with_session;
 
 #[test]
+fn list() {
+    let mut context = create_ctx_with_session();
+    nv::list(&mut context).unwrap();
+}
+
+#[test]
 fn read_full() {
     let mut context = create_ctx_with_session();
 
