@@ -116,16 +116,18 @@ pub fn create_ek_object(context: &mut Context, alg: AsymmetricAlgorithm) -> Resu
 
     let creation_pcrs = PcrSelectionListBuilder::new().build();
 
-    context.execute_with_nullauth_session(|ctx| {
-        ctx.create_primary_key(
-            Hierarchy::Endorsement,
-            &ek_public,
-            None,
-            None,
-            None,
-            creation_pcrs,
-        )
-    })
+    Ok(context
+        .execute_with_nullauth_session(|ctx| {
+            ctx.create_primary_key(
+                Hierarchy::Endorsement,
+                &ek_public,
+                None,
+                None,
+                None,
+                creation_pcrs,
+            )
+        })?
+        .0)
 }
 
 /// Retreive the Endorsement Key public certificate from the TPM

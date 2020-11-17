@@ -114,7 +114,7 @@ impl TransientKeyContext {
         let creation_pcrs = PcrSelectionListBuilder::new().build();
 
         self.set_session_attrs()?;
-        let (key_priv, key_pub) = self.context.create_key(
+        let (key_priv, key_pub, _, _, _) = self.context.create_key(
             self.root_key_handle,
             &self.get_public_from_params(key_params)?,
             key_auth.as_ref(),
@@ -324,10 +324,14 @@ impl TransientKeyContext {
         let key_handle = self.context.context_load(key_context)?;
 
         self.set_session_attrs()?;
-        let key_pub_id = self.context.read_public(key_handle.into()).or_else(|e| {
-            self.context.flush_context(key_handle)?;
-            Err(e)
-        })?;
+        let key_pub_id = self
+            .context
+            .read_public(key_handle.into())
+            .or_else(|e| {
+                self.context.flush_context(key_handle)?;
+                Err(e)
+            })?
+            .0;
         let key = match unsafe { PublicIdUnion::from_public(&key_pub_id)? } {
             // call should be safe given our trust in the TSS library
             PublicIdUnion::Rsa(pub_key) => {
@@ -691,18 +695,20 @@ impl TransientKeyContextBuilder {
 
         let creation_pcrs = PcrSelectionListBuilder::new().build();
 
-        let root_key_handle = context.create_primary_key(
-            self.hierarchy,
-            &create_restricted_decryption_rsa_public(
-                self.default_context_cipher,
-                self.root_key_size,
-                0,
-            )?,
-            root_key_auth.as_ref(),
-            None,
-            None,
-            creation_pcrs,
-        )?;
+        let root_key_handle = context
+            .create_primary_key(
+                self.hierarchy,
+                &create_restricted_decryption_rsa_public(
+                    self.default_context_cipher,
+                    self.root_key_size,
+                    0,
+                )?,
+                root_key_auth.as_ref(),
+                None,
+                None,
+                creation_pcrs,
+            )?
+            .0;
 
         let new_session = context
             .start_auth_session(
