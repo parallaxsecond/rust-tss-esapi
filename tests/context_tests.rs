@@ -123,7 +123,7 @@ fn comprehensive_test() {
             creation_pcrs,
         )
         .unwrap()
-        .0;
+        .key_handle;
 
     let new_session = context
         .start_auth_session(
@@ -144,7 +144,7 @@ fn comprehensive_test() {
         .unwrap();
     context.set_sessions((new_session, None, None));
 
-    let (key_priv, key_pub, _, _, _) = context
+    let result = context
         .create_key(
             prim_key_handle,
             &signing_key_pub(),
@@ -154,7 +154,9 @@ fn comprehensive_test() {
             PcrSelectionListBuilder::new().build(),
         )
         .unwrap();
-    let key_handle = context.load(prim_key_handle, key_priv, key_pub).unwrap();
+    let key_handle = context
+        .load(prim_key_handle, result.out_private, result.out_public)
+        .unwrap();
 
     let key_context = context.context_save(key_handle.into()).unwrap();
     let key_handle = context
@@ -243,7 +245,7 @@ mod test_start_sess {
                 PcrSelectionListBuilder::new().build(),
             )
             .unwrap()
-            .0;
+            .key_handle;
 
         context
             .start_auth_session(
@@ -575,7 +577,7 @@ mod test_unseal {
                 PcrSelectionListBuilder::new().build(),
             )
             .unwrap()
-            .0;
+            .key_handle;
         let key_handle_unseal = context
             .create_primary_key(
                 Hierarchy::Owner,
@@ -586,10 +588,10 @@ mod test_unseal {
                 PcrSelectionListBuilder::new().build(),
             )
             .unwrap()
-            .0;
+            .key_handle;
 
         let key_pub = create_public_sealed_object();
-        let (sealed_priv, sealed_pub, _, _, _) = context
+        let result = context
             .create_key(
                 key_handle_seal,
                 &key_pub,
@@ -600,7 +602,7 @@ mod test_unseal {
             )
             .unwrap();
         let loaded_key = context
-            .load(key_handle_unseal, sealed_priv, sealed_pub)
+            .load(key_handle_unseal, result.out_private, result.out_public)
             .unwrap();
         let unsealed = context.unseal(loaded_key.into()).unwrap();
         let unsealed = unsealed.value();
@@ -635,7 +637,7 @@ mod test_quote {
                 PcrSelectionListBuilder::new().build(),
             )
             .unwrap()
-            .0;
+            .key_handle;
 
         let res = context
             .quote(
@@ -785,7 +787,7 @@ mod test_policies {
                 PcrSelectionListBuilder::new().build(),
             )
             .unwrap()
-            .0;
+            .key_handle;
         let key_name = context.tr_get_name(key_handle.into()).unwrap();
 
         let policy_ref: TPM2B_NONCE = Default::default();
@@ -1233,7 +1235,7 @@ mod test_create_primary {
                 PcrSelectionListBuilder::new().build(),
             )
             .unwrap()
-            .0;
+            .key_handle;
         assert!(ESYS_TR::from(key_handle) != ESYS_TR_NONE);
     }
 }
@@ -1257,7 +1259,7 @@ mod test_create {
                 PcrSelectionListBuilder::new().build(),
             )
             .unwrap()
-            .0;
+            .key_handle;
 
         let _ = context
             .create_key(
@@ -1291,9 +1293,9 @@ mod test_load {
                 PcrSelectionListBuilder::new().build(),
             )
             .unwrap()
-            .0;
+            .key_handle;
 
-        let (private, public, _, _, _) = context
+        let result = context
             .create_key(
                 prim_key_handle,
                 &signing_key_pub(),
@@ -1304,7 +1306,9 @@ mod test_load {
             )
             .unwrap();
 
-        let _ = context.load(prim_key_handle, private, public).unwrap();
+        let _ = context
+            .load(prim_key_handle, result.out_private, result.out_public)
+            .unwrap();
     }
 }
 
@@ -1327,7 +1331,7 @@ mod test_sign {
                 PcrSelectionListBuilder::new().build(),
             )
             .unwrap()
-            .0;
+            .key_handle;
 
         let scheme = TPMT_SIG_SCHEME {
             scheme: TPM2_ALG_NULL,
@@ -1364,7 +1368,7 @@ mod test_sign {
                 PcrSelectionListBuilder::new().build(),
             )
             .unwrap()
-            .0;
+            .key_handle;
 
         let scheme = TPMT_SIG_SCHEME {
             scheme: TPM2_ALG_NULL,
@@ -1401,7 +1405,7 @@ mod test_sign {
                 PcrSelectionListBuilder::new().build(),
             )
             .unwrap()
-            .0;
+            .key_handle;
 
         let scheme = TPMT_SIG_SCHEME {
             scheme: TPM2_ALG_NULL,
@@ -1442,7 +1446,7 @@ mod test_rsa_encrypt_decrypt {
                 PcrSelectionListBuilder::new().build(),
             )
             .unwrap()
-            .0;
+            .key_handle;
 
         let scheme = AsymSchemeUnion::RSAOAEP(HashingAlgorithm::Sha256);
 
@@ -1483,7 +1487,7 @@ mod test_verify_sig {
                 PcrSelectionListBuilder::new().build(),
             )
             .unwrap()
-            .0;
+            .key_handle;
 
         let scheme = TPMT_SIG_SCHEME {
             scheme: TPM2_ALG_NULL,
@@ -1528,7 +1532,7 @@ mod test_verify_sig {
                 PcrSelectionListBuilder::new().build(),
             )
             .unwrap()
-            .0;
+            .key_handle;
 
         let scheme = TPMT_SIG_SCHEME {
             scheme: TPM2_ALG_NULL,
@@ -1576,7 +1580,7 @@ mod test_verify_sig {
                 PcrSelectionListBuilder::new().build(),
             )
             .unwrap()
-            .0;
+            .key_handle;
 
         let signature = Signature {
             scheme: AsymSchemeUnion::RSASSA(HashingAlgorithm::Sha256),
@@ -1607,7 +1611,7 @@ mod test_verify_sig {
                 PcrSelectionListBuilder::new().build(),
             )
             .unwrap()
-            .0;
+            .key_handle;
 
         let signature = Signature {
             scheme: AsymSchemeUnion::RSASSA(HashingAlgorithm::Sha256),
@@ -1683,7 +1687,7 @@ mod test_read_pub {
                 PcrSelectionListBuilder::new().build(),
             )
             .unwrap()
-            .0;
+            .key_handle;
         let _ = context.read_public(key_handle).unwrap();
     }
 }
@@ -1707,7 +1711,7 @@ mod test_flush_context {
                 PcrSelectionListBuilder::new().build(),
             )
             .unwrap()
-            .0;
+            .key_handle;
         context.flush_context(key_handle.into()).unwrap();
         assert!(context.read_public(key_handle).is_err());
     }
@@ -1728,9 +1732,9 @@ mod test_flush_context {
                 PcrSelectionListBuilder::new().build(),
             )
             .unwrap()
-            .0;
+            .key_handle;
 
-        let (private, public, _, _, _) = context
+        let result = context
             .create_key(
                 prim_key_handle,
                 &signing_key_pub(),
@@ -1741,7 +1745,9 @@ mod test_flush_context {
             )
             .unwrap();
 
-        let key_handle = context.load(prim_key_handle, private, public).unwrap();
+        let key_handle = context
+            .load(prim_key_handle, result.out_private, result.out_public)
+            .unwrap();
         context.flush_context(prim_key_handle.into()).unwrap();
         let _ = context.read_public(key_handle).unwrap();
     }
@@ -1766,7 +1772,7 @@ mod test_ctx_save {
                 PcrSelectionListBuilder::new().build(),
             )
             .unwrap()
-            .0;
+            .key_handle;
         let _ = context.context_save(key_handle.into()).unwrap();
     }
 
@@ -1786,9 +1792,9 @@ mod test_ctx_save {
                 PcrSelectionListBuilder::new().build(),
             )
             .unwrap()
-            .0;
+            .key_handle;
 
-        let (private, public, _, _, _) = context
+        let result = context
             .create_key(
                 prim_key_handle,
                 &signing_key_pub(),
@@ -1799,7 +1805,9 @@ mod test_ctx_save {
             )
             .unwrap();
 
-        let key_handle = context.load(prim_key_handle, private, public).unwrap();
+        let key_handle = context
+            .load(prim_key_handle, result.out_private, result.out_public)
+            .unwrap();
         context.flush_context(prim_key_handle.into()).unwrap();
         let _ = context.context_save(key_handle.into()).unwrap();
     }
@@ -1823,9 +1831,9 @@ mod test_ctx_load {
                 PcrSelectionListBuilder::new().build(),
             )
             .unwrap()
-            .0;
+            .key_handle;
 
-        let (private, public, _, _, _) = context
+        let result = context
             .create_key(
                 prim_key_handle,
                 &signing_key_pub(),
@@ -1836,7 +1844,9 @@ mod test_ctx_load {
             )
             .unwrap();
 
-        let key_handle = context.load(prim_key_handle, private, public).unwrap();
+        let key_handle = context
+            .load(prim_key_handle, result.out_private, result.out_public)
+            .unwrap();
         context.flush_context(prim_key_handle.into()).unwrap();
         let key_ctx = context.context_save(key_handle.into()).unwrap();
         let key_handle = context.context_load(key_ctx).map(KeyHandle::from).unwrap();
@@ -1900,7 +1910,7 @@ mod test_evict_control {
                 PcrSelectionListBuilder::new().build(),
             )
             .expect("Failed to create primary key")
-            .0;
+            .key_handle;
 
         // Evict control to make primary_key_handle persistent
         let mut peristent_primary_key_handle = context
@@ -1954,7 +1964,7 @@ mod test_handle_auth {
                 PcrSelectionListBuilder::new().build(),
             )
             .unwrap()
-            .0;
+            .key_handle;
 
         let key_ctx = context.context_save(prim_key_handle.into()).unwrap();
         context.flush_context(prim_key_handle.into()).unwrap();

@@ -127,7 +127,7 @@ pub fn create_ek_object(context: &mut Context, alg: AsymmetricAlgorithm) -> Resu
                 creation_pcrs,
             )
         })?
-        .0)
+        .key_handle)
 }
 
 /// Retreive the Endorsement Key public certificate from the TPM
