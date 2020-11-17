@@ -19,7 +19,7 @@ use crate::constants::types::session::SessionType;
 use crate::handles::KeyHandle;
 use crate::interface_types::resource_handles::Hierarchy;
 use crate::structures::{
-    Auth, Data, Digest, PcrSelectionListBuilder, PublicKeyRSA, VerifiedTicket,
+    Auth, CreateKeyResult, Data, Digest, PcrSelectionListBuilder, PublicKeyRSA, VerifiedTicket,
 };
 use crate::tcti::Tcti;
 use crate::tss2_esys::*;
@@ -114,7 +114,11 @@ impl TransientKeyContext {
         let creation_pcrs = PcrSelectionListBuilder::new().build();
 
         self.set_session_attrs()?;
-        let (key_priv, key_pub, _, _, _) = self.context.create_key(
+        let CreateKeyResult {
+            out_private,
+            out_public,
+            ..
+        } = self.context.create_key(
             self.root_key_handle,
             &self.get_public_from_params(key_params)?,
             key_auth.as_ref(),
@@ -123,7 +127,9 @@ impl TransientKeyContext {
             creation_pcrs,
         )?;
         self.set_session_attrs()?;
-        let key_handle = self.context.load(self.root_key_handle, key_priv, key_pub)?;
+        let key_handle = self
+            .context
+            .load(self.root_key_handle, out_private, out_public)?;
 
         self.set_session_attrs()?;
         let key_context = self.context.context_save(key_handle.into()).or_else(|e| {
@@ -708,7 +714,7 @@ impl TransientKeyContextBuilder {
                 None,
                 creation_pcrs,
             )?
-            .0;
+            .key_handle;
 
         let new_session = context
             .start_auth_session(

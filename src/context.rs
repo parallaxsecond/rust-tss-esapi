@@ -18,9 +18,10 @@ use crate::{
     nv::storage::NvPublic,
     session::Session,
     structures::{
-        Auth, CapabilityData, CreationData, CreationTicket, Data, Digest, DigestList, DigestValues,
-        HashcheckTicket, MaxBuffer, MaxNvBuffer, Name, Nonce, PcrSelectionList, Private,
-        PublicKeyRSA, SensitiveData, VerifiedTicket,
+        Auth, CapabilityData, CreateKeyResult, CreatePrimaryKeyResult, CreationData,
+        CreationTicket, Data, Digest, DigestList, DigestValues, HashcheckTicket, MaxBuffer,
+        MaxNvBuffer, Name, Nonce, PcrSelectionList, Private, PublicKeyRSA, SensitiveData,
+        VerifiedTicket,
     },
     tcti::Tcti,
     tss2_esys::*,
@@ -364,13 +365,7 @@ impl Context {
         initial_data: Option<&SensitiveData>,
         outside_info: Option<&Data>,
         creation_pcrs: PcrSelectionList,
-    ) -> Result<(
-        KeyHandle,
-        TPM2B_PUBLIC,
-        CreationData,
-        Digest,
-        CreationTicket,
-    )> {
+    ) -> Result<CreatePrimaryKeyResult> {
         let sensitive_create = TPM2B_SENSITIVE_CREATE {
             size: std::mem::size_of::<TPMS_SENSITIVE_CREATE>()
                 .try_into()
@@ -419,13 +414,13 @@ impl Context {
 
             let primary_key_handle = KeyHandle::from(esys_prim_key_handle);
             let _ = self.open_handles.insert(primary_key_handle.into());
-            Ok((
-                primary_key_handle,
-                *out_public,
+            Ok(CreatePrimaryKeyResult {
+                key_handle: primary_key_handle,
+                out_public: *out_public,
                 creation_data,
                 creation_hash,
                 creation_ticket,
-            ))
+            })
         } else {
             error!("Error in creating primary key: {}.", ret);
             Err(ret)
@@ -456,7 +451,7 @@ impl Context {
         initial_data: Option<&SensitiveData>,
         outside_info: Option<&Data>,
         creation_pcrs: PcrSelectionList,
-    ) -> Result<(Private, TPM2B_PUBLIC, CreationData, Digest, CreationTicket)> {
+    ) -> Result<CreateKeyResult> {
         let sensitive_create = TPM2B_SENSITIVE_CREATE {
             size: std::mem::size_of::<TPMS_SENSITIVE_CREATE>()
                 .try_into()
@@ -504,13 +499,13 @@ impl Context {
             let creation_data = CreationData::try_from(*creation_data)?;
             let creation_hash = Digest::try_from(*creation_hash)?;
             let creation_ticket = CreationTicket::try_from(*creation_ticket)?;
-            Ok((
-                outprivate,
-                *outpublic,
+            Ok(CreateKeyResult {
+                out_private: outprivate,
+                out_public: *outpublic,
                 creation_data,
                 creation_hash,
                 creation_ticket,
-            ))
+            })
         } else {
             error!("Error in creating derived key: {}.", ret);
             Err(ret)
