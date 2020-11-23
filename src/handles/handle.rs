@@ -59,7 +59,10 @@ macro_rules! add_constant_handle {
 /// Object handle module
 ///
 pub mod object {
-    use crate::tss2_esys::{ESYS_TR_NONE, ESYS_TR_PASSWORD};
+    use crate::tss2_esys::{
+        ESYS_TR_NONE, ESYS_TR_PASSWORD, ESYS_TR_RH_ENDORSEMENT, ESYS_TR_RH_LOCKOUT,
+        ESYS_TR_RH_NULL, ESYS_TR_RH_OWNER, ESYS_TR_RH_PLATFORM, ESYS_TR_RH_PLATFORM_NV,
+    };
     impl_basic_handle!(
         /// General handle type.
         ObjectHandle
@@ -67,6 +70,12 @@ pub mod object {
 
     add_constant_handle!(ObjectHandle, PasswordHandle, ESYS_TR_PASSWORD);
     add_constant_handle!(ObjectHandle, NoneHandle, ESYS_TR_NONE);
+    add_constant_handle!(ObjectHandle, OwnerHandle, ESYS_TR_RH_OWNER);
+    add_constant_handle!(ObjectHandle, LockoutHandle, ESYS_TR_RH_LOCKOUT);
+    add_constant_handle!(ObjectHandle, EndorsementHandle, ESYS_TR_RH_ENDORSEMENT);
+    add_constant_handle!(ObjectHandle, PlatformHandle, ESYS_TR_RH_PLATFORM);
+    add_constant_handle!(ObjectHandle, PlatformNvHandle, ESYS_TR_RH_PLATFORM_NV);
+    add_constant_handle!(ObjectHandle, NullHandle, ESYS_TR_RH_NULL);
 }
 
 ///
@@ -269,7 +278,7 @@ pub mod auth {
     // The following constant handles can be used for authorization
     // according to the TCG TPM2 r1p59 Structures specification.
     add_constant_handle!(AuthHandle, OwnerHandle, ESYS_TR_RH_OWNER);
-    add_constant_handle!(AuthHandle, Lockout, ESYS_TR_RH_LOCKOUT);
+    add_constant_handle!(AuthHandle, LockoutHandle, ESYS_TR_RH_LOCKOUT);
     add_constant_handle!(AuthHandle, EndorsementHandle, ESYS_TR_RH_ENDORSEMENT);
     add_constant_handle!(AuthHandle, PlatformHandle, ESYS_TR_RH_PLATFORM);
     // TODO: Figure out how to add AUTH_00 to AUTH_FF range

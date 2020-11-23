@@ -1,16 +1,9 @@
 // Copyright 2020 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
 use crate::{
-    constants::tss::{
-        TPM2_RH_ENDORSEMENT, TPM2_RH_LOCKOUT, TPM2_RH_NULL, TPM2_RH_OWNER, TPM2_RH_PLATFORM,
-        TPM2_RH_PLATFORM_NV,
-    },
     handles::{
-        AttachedComponentTpmHandle, AuthHandle, NvIndexHandle, NvIndexTpmHandle, TpmConstantsHandle,
-    },
-    tss2_esys::{
-        ESYS_TR, ESYS_TR_RH_ENDORSEMENT, ESYS_TR_RH_LOCKOUT, ESYS_TR_RH_NULL, ESYS_TR_RH_OWNER,
-        ESYS_TR_RH_PLATFORM, ESYS_TR_RH_PLATFORM_NV, TPM2_HANDLE, TPM2_RH, TPMI_RH_HIERARCHY,
+        AttachedComponentTpmHandle, AuthHandle, NvIndexHandle, NvIndexTpmHandle, ObjectHandle,
+        PermanentTpmHandle, TpmConstantsHandle, TpmHandle,
     },
     Error, Result, WrapperErrorKind,
 };
@@ -28,41 +21,59 @@ pub enum Hierarchy {
     Null,
 }
 
-impl Hierarchy {
-    /// Get the ESYS resource handle for the hierarchy.
-    pub fn esys_rh(self) -> TPMI_RH_HIERARCHY {
-        match self {
-            Hierarchy::Owner => ESYS_TR_RH_OWNER,
-            Hierarchy::Platform => ESYS_TR_RH_PLATFORM,
-            Hierarchy::Endorsement => ESYS_TR_RH_ENDORSEMENT,
-            Hierarchy::Null => ESYS_TR_RH_NULL,
-        }
-    }
-
-    /// Get the TPM resource handle for the hierarchy.
-    pub fn rh(self) -> TPM2_RH {
-        match self {
-            Hierarchy::Owner => TPM2_RH_OWNER,
-            Hierarchy::Platform => TPM2_RH_PLATFORM,
-            Hierarchy::Endorsement => TPM2_RH_ENDORSEMENT,
-            Hierarchy::Null => TPM2_RH_NULL,
+impl From<Hierarchy> for ObjectHandle {
+    fn from(hierarchy: Hierarchy) -> ObjectHandle {
+        match hierarchy {
+            Hierarchy::Owner => ObjectHandle::OwnerHandle,
+            Hierarchy::Platform => ObjectHandle::PlatformHandle,
+            Hierarchy::Endorsement => ObjectHandle::EndorsementHandle,
+            Hierarchy::Null => ObjectHandle::NullHandle,
         }
     }
 }
 
-impl TryFrom<TPM2_HANDLE> for Hierarchy {
+impl From<Hierarchy> for TpmHandle {
+    fn from(hierarchy: Hierarchy) -> TpmHandle {
+        match hierarchy {
+            Hierarchy::Owner => TpmHandle::Permanent(PermanentTpmHandle::OwnerHandle),
+            Hierarchy::Platform => TpmHandle::Permanent(PermanentTpmHandle::PlatformHandle),
+            Hierarchy::Endorsement => TpmHandle::Permanent(PermanentTpmHandle::EndorsementHandle),
+            Hierarchy::Null => TpmHandle::Permanent(PermanentTpmHandle::NullHandle),
+        }
+    }
+}
+
+impl TryFrom<ObjectHandle> for Hierarchy {
     type Error = Error;
 
-    fn try_from(handle: TPM2_HANDLE) -> Result<Self> {
-        match handle {
-            TPM2_RH_OWNER | ESYS_TR_RH_OWNER => Ok(Hierarchy::Owner),
-            TPM2_RH_PLATFORM | ESYS_TR_RH_PLATFORM => Ok(Hierarchy::Platform),
-            TPM2_RH_ENDORSEMENT | ESYS_TR_RH_ENDORSEMENT => Ok(Hierarchy::Endorsement),
-            TPM2_RH_NULL | ESYS_TR_RH_NULL => Ok(Hierarchy::Null),
+    fn try_from(object_handle: ObjectHandle) -> Result<Hierarchy> {
+        match object_handle {
+            ObjectHandle::OwnerHandle => Ok(Hierarchy::Owner),
+            ObjectHandle::PlatformHandle => Ok(Hierarchy::Platform),
+            ObjectHandle::EndorsementHandle => Ok(Hierarchy::Endorsement),
+            ObjectHandle::NullHandle => Ok(Hierarchy::Null),
             _ => Err(Error::local_error(WrapperErrorKind::InvalidParam)),
         }
     }
 }
+
+impl TryFrom<TpmHandle> for Hierarchy {
+    type Error = Error;
+
+    fn try_from(tpm_handle: TpmHandle) -> Result<Hierarchy> {
+        match tpm_handle {
+            TpmHandle::Permanent(permanent_handle) => match permanent_handle {
+                PermanentTpmHandle::OwnerHandle => Ok(Hierarchy::Owner),
+                PermanentTpmHandle::PlatformHandle => Ok(Hierarchy::Platform),
+                PermanentTpmHandle::EndorsementHandle => Ok(Hierarchy::Endorsement),
+                PermanentTpmHandle::NullHandle => Ok(Hierarchy::Null),
+                _ => Err(Error::local_error(WrapperErrorKind::InvalidParam)),
+            },
+            _ => Err(Error::local_error(WrapperErrorKind::InvalidParam)),
+        }
+    }
+}
+
 //////////////////////////////////////////////////////////////////////////////////
 /// Enables
 //////////////////////////////////////////////////////////////////////////////////
@@ -75,44 +86,63 @@ pub enum Enables {
     Null,
 }
 
-impl Enables {
-    /// Get the ESYS resource handle for the enables.
-    pub fn esys_rh(self) -> ESYS_TR {
-        match self {
-            Enables::Owner => ESYS_TR_RH_OWNER,
-            Enables::Platform => ESYS_TR_RH_PLATFORM,
-            Enables::Endorsement => ESYS_TR_RH_ENDORSEMENT,
-            Enables::PlatformNv => ESYS_TR_RH_PLATFORM_NV,
-            Enables::Null => ESYS_TR_RH_NULL,
-        }
-    }
-
-    /// Get the TPM resource handle for the enables.
-    pub fn rh(self) -> TPM2_RH {
-        match self {
-            Enables::Owner => TPM2_RH_OWNER,
-            Enables::Platform => TPM2_RH_PLATFORM,
-            Enables::Endorsement => TPM2_RH_ENDORSEMENT,
-            Enables::PlatformNv => TPM2_RH_PLATFORM_NV,
-            Enables::Null => TPM2_RH_NULL,
+impl From<Enables> for ObjectHandle {
+    fn from(enables: Enables) -> ObjectHandle {
+        match enables {
+            Enables::Owner => ObjectHandle::OwnerHandle,
+            Enables::Platform => ObjectHandle::PlatformHandle,
+            Enables::Endorsement => ObjectHandle::EndorsementHandle,
+            Enables::PlatformNv => ObjectHandle::PlatformNvHandle,
+            Enables::Null => ObjectHandle::NullHandle,
         }
     }
 }
 
-impl TryFrom<TPM2_HANDLE> for Enables {
+impl From<Enables> for TpmHandle {
+    fn from(enables: Enables) -> TpmHandle {
+        match enables {
+            Enables::Owner => TpmHandle::Permanent(PermanentTpmHandle::OwnerHandle),
+            Enables::Platform => TpmHandle::Permanent(PermanentTpmHandle::PlatformHandle),
+            Enables::Endorsement => TpmHandle::Permanent(PermanentTpmHandle::EndorsementHandle),
+            Enables::PlatformNv => TpmHandle::Permanent(PermanentTpmHandle::PlatformNvHandle),
+            Enables::Null => TpmHandle::Permanent(PermanentTpmHandle::NullHandle),
+        }
+    }
+}
+
+impl TryFrom<ObjectHandle> for Enables {
     type Error = Error;
 
-    fn try_from(handle: TPM2_HANDLE) -> Result<Self> {
-        match handle {
-            TPM2_RH_OWNER | ESYS_TR_RH_OWNER => Ok(Enables::Owner),
-            TPM2_RH_PLATFORM | ESYS_TR_RH_PLATFORM => Ok(Enables::Platform),
-            TPM2_RH_ENDORSEMENT | ESYS_TR_RH_ENDORSEMENT => Ok(Enables::Endorsement),
-            TPM2_RH_PLATFORM_NV | ESYS_TR_RH_PLATFORM_NV => Ok(Enables::PlatformNv),
-            TPM2_RH_NULL | ESYS_TR_RH_NULL => Ok(Enables::Null),
+    fn try_from(object_handle: ObjectHandle) -> Result<Enables> {
+        match object_handle {
+            ObjectHandle::OwnerHandle => Ok(Enables::Owner),
+            ObjectHandle::PlatformHandle => Ok(Enables::Platform),
+            ObjectHandle::EndorsementHandle => Ok(Enables::Endorsement),
+            ObjectHandle::PlatformNvHandle => Ok(Enables::PlatformNv),
+            ObjectHandle::NullHandle => Ok(Enables::Null),
             _ => Err(Error::local_error(WrapperErrorKind::InvalidParam)),
         }
     }
 }
+
+impl TryFrom<TpmHandle> for Enables {
+    type Error = Error;
+
+    fn try_from(tpm_handle: TpmHandle) -> Result<Enables> {
+        match tpm_handle {
+            TpmHandle::Permanent(permanent_handle) => match permanent_handle {
+                PermanentTpmHandle::OwnerHandle => Ok(Enables::Owner),
+                PermanentTpmHandle::PlatformHandle => Ok(Enables::Platform),
+                PermanentTpmHandle::EndorsementHandle => Ok(Enables::Endorsement),
+                PermanentTpmHandle::PlatformNvHandle => Ok(Enables::PlatformNv),
+                PermanentTpmHandle::NullHandle => Ok(Enables::Null),
+                _ => Err(Error::local_error(WrapperErrorKind::InvalidParam)),
+            },
+            _ => Err(Error::local_error(WrapperErrorKind::InvalidParam)),
+        }
+    }
+}
+
 //////////////////////////////////////////////////////////////////////////////////
 /// HierarchyAuth
 //////////////////////////////////////////////////////////////////////////////////
@@ -124,37 +154,56 @@ pub enum HierarchyAuth {
     Lockout,
 }
 
-impl HierarchyAuth {
-    /// Get the ESYS resource handle for the hierarchy auth.
-    pub fn esys_rh(self) -> ESYS_TR {
-        match self {
-            HierarchyAuth::Owner => ESYS_TR_RH_OWNER,
-            HierarchyAuth::Platform => ESYS_TR_RH_PLATFORM,
-            HierarchyAuth::Endorsement => ESYS_TR_RH_ENDORSEMENT,
-            HierarchyAuth::Lockout => ESYS_TR_RH_LOCKOUT,
-        }
-    }
-
-    /// Get the TPM resource handle for the hierarchy auth.
-    pub fn rh(self) -> TPM2_RH {
-        match self {
-            HierarchyAuth::Owner => TPM2_RH_OWNER,
-            HierarchyAuth::Platform => TPM2_RH_PLATFORM,
-            HierarchyAuth::Endorsement => TPM2_RH_ENDORSEMENT,
-            HierarchyAuth::Lockout => TPM2_RH_LOCKOUT,
+impl From<HierarchyAuth> for ObjectHandle {
+    fn from(hierarchy_auth: HierarchyAuth) -> ObjectHandle {
+        match hierarchy_auth {
+            HierarchyAuth::Owner => ObjectHandle::OwnerHandle,
+            HierarchyAuth::Platform => ObjectHandle::PlatformHandle,
+            HierarchyAuth::Endorsement => ObjectHandle::EndorsementHandle,
+            HierarchyAuth::Lockout => ObjectHandle::LockoutHandle,
         }
     }
 }
 
-impl TryFrom<TPM2_HANDLE> for HierarchyAuth {
+impl From<HierarchyAuth> for TpmHandle {
+    fn from(hierarchy_auth: HierarchyAuth) -> TpmHandle {
+        match hierarchy_auth {
+            HierarchyAuth::Owner => TpmHandle::Permanent(PermanentTpmHandle::OwnerHandle),
+            HierarchyAuth::Platform => TpmHandle::Permanent(PermanentTpmHandle::PlatformHandle),
+            HierarchyAuth::Endorsement => {
+                TpmHandle::Permanent(PermanentTpmHandle::EndorsementHandle)
+            }
+            HierarchyAuth::Lockout => TpmHandle::Permanent(PermanentTpmHandle::LockoutHandle),
+        }
+    }
+}
+
+impl TryFrom<ObjectHandle> for HierarchyAuth {
     type Error = Error;
 
-    fn try_from(handle: TPM2_HANDLE) -> Result<Self> {
-        match handle {
-            TPM2_RH_OWNER | ESYS_TR_RH_OWNER => Ok(HierarchyAuth::Owner),
-            TPM2_RH_PLATFORM | ESYS_TR_RH_PLATFORM => Ok(HierarchyAuth::Platform),
-            TPM2_RH_ENDORSEMENT | ESYS_TR_RH_ENDORSEMENT => Ok(HierarchyAuth::Endorsement),
-            TPM2_RH_LOCKOUT | ESYS_TR_RH_LOCKOUT => Ok(HierarchyAuth::Lockout),
+    fn try_from(object_handle: ObjectHandle) -> Result<HierarchyAuth> {
+        match object_handle {
+            ObjectHandle::OwnerHandle => Ok(HierarchyAuth::Owner),
+            ObjectHandle::PlatformHandle => Ok(HierarchyAuth::Platform),
+            ObjectHandle::EndorsementHandle => Ok(HierarchyAuth::Endorsement),
+            ObjectHandle::LockoutHandle => Ok(HierarchyAuth::Lockout),
+            _ => Err(Error::local_error(WrapperErrorKind::InvalidParam)),
+        }
+    }
+}
+
+impl TryFrom<TpmHandle> for HierarchyAuth {
+    type Error = Error;
+
+    fn try_from(tpm_handle: TpmHandle) -> Result<HierarchyAuth> {
+        match tpm_handle {
+            TpmHandle::Permanent(permanent_handle) => match permanent_handle {
+                PermanentTpmHandle::OwnerHandle => Ok(HierarchyAuth::Owner),
+                PermanentTpmHandle::PlatformHandle => Ok(HierarchyAuth::Platform),
+                PermanentTpmHandle::EndorsementHandle => Ok(HierarchyAuth::Endorsement),
+                PermanentTpmHandle::LockoutHandle => Ok(HierarchyAuth::Lockout),
+                _ => Err(Error::local_error(WrapperErrorKind::InvalidParam)),
+            },
             _ => Err(Error::local_error(WrapperErrorKind::InvalidParam)),
         }
     }
@@ -404,7 +453,7 @@ impl From<AttachedComponent> for AttachedComponentTpmHandle {
 }
 
 //////////////////////////////////////////////////////////////////////////////////
-// Act
+// Act (authenticated timers)
 //
 // TODO: Figure out how to implement this. This is some kind of counter.
 //////////////////////////////////////////////////////////////////////////////////

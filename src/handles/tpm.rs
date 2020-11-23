@@ -2,14 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 use crate::{
     constants::tss::{
-        TPM2_AC_FIRST, TPM2_AC_LAST, TPM2_HMAC_SESSION_FIRST, TPM2_HMAC_SESSION_LAST, TPM2_HT_AC,
-        TPM2_HT_HMAC_SESSION, TPM2_HT_LOADED_SESSION, TPM2_HT_NV_INDEX, TPM2_HT_PCR,
-        TPM2_HT_PERMANENT, TPM2_HT_PERSISTENT, TPM2_HT_POLICY_SESSION, TPM2_HT_SAVED_SESSION,
-        TPM2_HT_TRANSIENT, TPM2_LOADED_SESSION_FIRST, TPM2_LOADED_SESSION_LAST,
-        TPM2_NV_INDEX_FIRST, TPM2_NV_INDEX_LAST, TPM2_PCR_FIRST, TPM2_PCR_LAST,
-        TPM2_PERMANENT_FIRST, TPM2_PERMANENT_LAST, TPM2_PERSISTENT_FIRST, TPM2_PERSISTENT_LAST,
-        TPM2_POLICY_SESSION_FIRST, TPM2_POLICY_SESSION_LAST, TPM2_TRANSIENT_FIRST,
-        TPM2_TRANSIENT_LAST,
+        TPM2_HT_AC, TPM2_HT_HMAC_SESSION, TPM2_HT_NV_INDEX, TPM2_HT_PCR, TPM2_HT_PERMANENT,
+        TPM2_HT_PERSISTENT, TPM2_HT_POLICY_SESSION, TPM2_HT_TRANSIENT,
     },
     tss2_esys::TPM2_HANDLE,
     Error, Result, WrapperErrorKind,
@@ -31,31 +25,31 @@ use std::stringify;
 /// ESYS [ObjectHandle](crate::handles::ObjectHandle).
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub enum TpmHandle {
-    Pcr(PcrTpmHandle),
-    NvIndex(NvIndexTpmHandle),
-    HmacSession(HmacSessionTpmHandle),
-    LoadedSession(LoadedSessionTpmHandle),
-    PolicySession(PolicySessionTpmHandle),
-    SavedSession(SavedSessionTpmHandle),
-    Permanent(PermanentTpmHandle),
-    Transient(TransientTpmHandle),
-    Persistent(PersistentTpmHandle),
-    AttachedComponent(AttachedComponentTpmHandle),
+    Pcr(pcr::PcrTpmHandle),
+    NvIndex(nv_index::NvIndexTpmHandle),
+    HmacSession(hmac_session::HmacSessionTpmHandle),
+    LoadedSession(loaded_session::LoadedSessionTpmHandle),
+    PolicySession(policy_session::PolicySessionTpmHandle),
+    SavedSession(saved_session::SavedSessionTpmHandle),
+    Permanent(permanent::PermanentTpmHandle),
+    Transient(transient::TransientTpmHandle),
+    Persistent(persistent::PersistentTpmHandle),
+    AttachedComponent(attached_component::AttachedComponentTpmHandle),
 }
 
 impl From<TpmHandle> for TPM2_HANDLE {
     fn from(tpm_handle: TpmHandle) -> TPM2_HANDLE {
         match tpm_handle {
-            TpmHandle::Pcr(handle) => handle.value,
-            TpmHandle::NvIndex(handle) => handle.value,
-            TpmHandle::HmacSession(handle) => handle.value,
-            TpmHandle::LoadedSession(handle) => handle.value,
-            TpmHandle::PolicySession(handle) => handle.value,
-            TpmHandle::SavedSession(handle) => handle.value,
-            TpmHandle::Permanent(handle) => handle.value,
-            TpmHandle::Transient(handle) => handle.value,
-            TpmHandle::Persistent(handle) => handle.value,
-            TpmHandle::AttachedComponent(handle) => handle.value,
+            TpmHandle::Pcr(handle) => handle.into(),
+            TpmHandle::NvIndex(handle) => handle.into(),
+            TpmHandle::HmacSession(handle) => handle.into(),
+            TpmHandle::LoadedSession(handle) => handle.into(),
+            TpmHandle::PolicySession(handle) => handle.into(),
+            TpmHandle::SavedSession(handle) => handle.into(),
+            TpmHandle::Permanent(handle) => handle.into(),
+            TpmHandle::Transient(handle) => handle.into(),
+            TpmHandle::Persistent(handle) => handle.into(),
+            TpmHandle::AttachedComponent(handle) => handle.into(),
         }
     }
 }
@@ -65,27 +59,29 @@ impl TryFrom<TPM2_HANDLE> for TpmHandle {
     fn try_from(tss_tpm_handle: TPM2_HANDLE) -> Result<TpmHandle> {
         let most_significant_byte = tss_tpm_handle.to_be_bytes()[0];
         match most_significant_byte {
-            TPM2_HT_PCR => Ok(TpmHandle::Pcr(PcrTpmHandle::new(tss_tpm_handle)?)),
-            TPM2_HT_NV_INDEX => Ok(TpmHandle::NvIndex(NvIndexTpmHandle::new(tss_tpm_handle)?)),
-            TPM2_HT_HMAC_SESSION => Ok(TpmHandle::HmacSession(HmacSessionTpmHandle::new(
+            TPM2_HT_PCR => Ok(TpmHandle::Pcr(pcr::PcrTpmHandle::new(tss_tpm_handle)?)),
+            TPM2_HT_NV_INDEX => Ok(TpmHandle::NvIndex(nv_index::NvIndexTpmHandle::new(
                 tss_tpm_handle,
             )?)),
+            TPM2_HT_HMAC_SESSION => Ok(TpmHandle::HmacSession(
+                hmac_session::HmacSessionTpmHandle::new(tss_tpm_handle)?,
+            )),
             // HMAC and LOADED has the same type id
-            TPM2_HT_POLICY_SESSION => Ok(TpmHandle::PolicySession(PolicySessionTpmHandle::new(
-                tss_tpm_handle,
-            )?)),
+            TPM2_HT_POLICY_SESSION => Ok(TpmHandle::PolicySession(
+                policy_session::PolicySessionTpmHandle::new(tss_tpm_handle)?,
+            )),
             // POLICY and SAVED has the same type id.
-            TPM2_HT_PERMANENT => Ok(TpmHandle::Permanent(PermanentTpmHandle::new(
+            TPM2_HT_PERMANENT => Ok(TpmHandle::Permanent(permanent::PermanentTpmHandle::new(
                 tss_tpm_handle,
             )?)),
-            TPM2_HT_TRANSIENT => Ok(TpmHandle::Transient(TransientTpmHandle::new(
+            TPM2_HT_TRANSIENT => Ok(TpmHandle::Transient(transient::TransientTpmHandle::new(
                 tss_tpm_handle,
             )?)),
-            TPM2_HT_PERSISTENT => Ok(TpmHandle::Persistent(PersistentTpmHandle::new(
+            TPM2_HT_PERSISTENT => Ok(TpmHandle::Persistent(persistent::PersistentTpmHandle::new(
                 tss_tpm_handle,
             )?)),
             TPM2_HT_AC => Ok(TpmHandle::AttachedComponent(
-                AttachedComponentTpmHandle::new(tss_tpm_handle)?,
+                attached_component::AttachedComponentTpmHandle::new(tss_tpm_handle)?,
             )),
             _ => {
                 error!("Error: Invalid TPM handle type {}", most_significant_byte);
@@ -163,75 +159,206 @@ macro_rules! create_tpm_handle_type {
     };
 }
 
-// Creates the specific handle types
-create_tpm_handle_type!(
-    PcrTpmHandle,
-    TpmHandle::Pcr,
-    TPM2_HT_PCR,
-    TPM2_PCR_FIRST,
-    TPM2_PCR_LAST
-);
-create_tpm_handle_type!(
-    NvIndexTpmHandle,
-    TpmHandle::NvIndex,
-    TPM2_HT_NV_INDEX,
-    TPM2_NV_INDEX_FIRST,
-    TPM2_NV_INDEX_LAST
-);
-create_tpm_handle_type!(
-    HmacSessionTpmHandle,
-    TpmHandle::HmacSession,
-    TPM2_HT_HMAC_SESSION,
-    TPM2_HMAC_SESSION_FIRST,
-    TPM2_HMAC_SESSION_LAST
-);
-create_tpm_handle_type!(
-    LoadedSessionTpmHandle,
-    TpmHandle::LoadedSession,
-    TPM2_HT_LOADED_SESSION,
-    TPM2_LOADED_SESSION_FIRST,
-    TPM2_LOADED_SESSION_LAST
-);
-create_tpm_handle_type!(
-    PolicySessionTpmHandle,
-    TpmHandle::PolicySession,
-    TPM2_HT_POLICY_SESSION,
-    TPM2_POLICY_SESSION_FIRST,
-    TPM2_POLICY_SESSION_LAST
-);
+/// Macro for making a constant available
+/// for a TPM handle type.
+macro_rules! add_constant_handle {
+    ($handle_type:ident, $constant_handle_name:ident, $constant_handle_value:ident) => {
+        impl $handle_type {
+            #[allow(non_upper_case_globals)]
+            pub const $constant_handle_name: $handle_type = $handle_type {
+                value: $constant_handle_value,
+            };
+        }
+    };
+}
 
-create_tpm_handle_type!(
-    SavedSessionTpmHandle,
-    TpmHandle::SavedSession,
-    TPM2_HT_SAVED_SESSION,
-    TPM2_POLICY_SESSION_FIRST, // Policy session have the same type as saved session.
-    TPM2_POLICY_SESSION_LAST   // so assuming they have the same valid range makes sense.
-);
-create_tpm_handle_type!(
-    PermanentTpmHandle,
-    TpmHandle::Permanent,
-    TPM2_HT_PERMANENT,
-    TPM2_PERMANENT_FIRST,
-    TPM2_PERMANENT_LAST
-);
-create_tpm_handle_type!(
-    TransientTpmHandle,
-    TpmHandle::Transient,
-    TPM2_HT_TRANSIENT,
-    TPM2_TRANSIENT_FIRST,
-    TPM2_TRANSIENT_LAST
-);
-create_tpm_handle_type!(
-    PersistentTpmHandle,
-    TpmHandle::Persistent,
-    TPM2_HT_PERSISTENT,
-    TPM2_PERSISTENT_FIRST,
-    TPM2_PERSISTENT_LAST
-);
-create_tpm_handle_type!(
-    AttachedComponentTpmHandle,
-    TpmHandle::AttachedComponent,
-    TPM2_HT_AC,
-    TPM2_AC_FIRST,
-    TPM2_AC_LAST
-);
+pub mod pcr {
+    //! Module for the PCR TPM handle.
+    use super::*;
+    use crate::constants::tss::{TPM2_HT_PCR, TPM2_PCR_FIRST, TPM2_PCR_LAST};
+    // Creates the specific handle types
+    create_tpm_handle_type!(
+        PcrTpmHandle,
+        TpmHandle::Pcr,
+        TPM2_HT_PCR,
+        TPM2_PCR_FIRST,
+        TPM2_PCR_LAST
+    );
+}
+
+pub mod nv_index {
+    //! Module for the NV index TPM handle.
+    use super::*;
+    use crate::constants::tss::{TPM2_HT_NV_INDEX, TPM2_NV_INDEX_FIRST, TPM2_NV_INDEX_LAST};
+
+    create_tpm_handle_type!(
+        NvIndexTpmHandle,
+        TpmHandle::NvIndex,
+        TPM2_HT_NV_INDEX,
+        TPM2_NV_INDEX_FIRST,
+        TPM2_NV_INDEX_LAST
+    );
+}
+
+pub mod hmac_session {
+    //! Module for the HMAC session TPM handle.
+    use super::*;
+    use crate::constants::tss::{
+        TPM2_HMAC_SESSION_FIRST, TPM2_HMAC_SESSION_LAST, TPM2_HT_HMAC_SESSION,
+    };
+
+    create_tpm_handle_type!(
+        HmacSessionTpmHandle,
+        TpmHandle::HmacSession,
+        TPM2_HT_HMAC_SESSION,
+        TPM2_HMAC_SESSION_FIRST,
+        TPM2_HMAC_SESSION_LAST
+    );
+}
+
+pub mod loaded_session {
+    //! Module for the loaded session TPM handle.
+    use super::*;
+    use crate::constants::tss::{
+        TPM2_HT_LOADED_SESSION, TPM2_LOADED_SESSION_FIRST, TPM2_LOADED_SESSION_LAST,
+    };
+
+    create_tpm_handle_type!(
+        LoadedSessionTpmHandle,
+        TpmHandle::LoadedSession,
+        TPM2_HT_LOADED_SESSION,
+        TPM2_LOADED_SESSION_FIRST,
+        TPM2_LOADED_SESSION_LAST
+    );
+}
+
+pub mod policy_session {
+    //! Module for policy session TPM handles.
+    use super::*;
+    use crate::constants::tss::{
+        TPM2_HT_POLICY_SESSION, TPM2_POLICY_SESSION_FIRST, TPM2_POLICY_SESSION_LAST,
+    };
+
+    create_tpm_handle_type!(
+        PolicySessionTpmHandle,
+        TpmHandle::PolicySession,
+        TPM2_HT_POLICY_SESSION,
+        TPM2_POLICY_SESSION_FIRST,
+        TPM2_POLICY_SESSION_LAST
+    );
+}
+
+pub mod permanent {
+    //! Module for permanent TPM handles
+    use super::*;
+    use crate::constants::tss::{
+        TPM2_HT_PERMANENT, TPM2_PERMANENT_FIRST, TPM2_PERMANENT_LAST, TPM2_RH_ACT_0, TPM2_RH_ACT_F,
+        TPM2_RH_ADMIN, TPM2_RH_AUTH_00, TPM2_RH_AUTH_FF, TPM2_RH_EK, TPM2_RH_ENDORSEMENT,
+        TPM2_RH_FIRST, TPM2_RH_LAST, TPM2_RH_LOCKOUT, TPM2_RH_NULL, TPM2_RH_OPERATOR,
+        TPM2_RH_OWNER, TPM2_RH_PLATFORM, TPM2_RH_PLATFORM_NV, TPM2_RH_REVOKE, TPM2_RH_SRK,
+        TPM2_RH_TRANSPORT, TPM2_RH_UNASSIGNED, TPM2_RS_PW,
+    };
+
+    create_tpm_handle_type!(
+        PermanentTpmHandle,
+        TpmHandle::Permanent,
+        TPM2_HT_PERMANENT,
+        TPM2_PERMANENT_FIRST,
+        TPM2_PERMANENT_LAST
+    );
+
+    add_constant_handle!(PermanentTpmHandle, FirstHandle, TPM2_RH_FIRST);
+    add_constant_handle!(PermanentTpmHandle, StorageRootKeyHandle, TPM2_RH_SRK);
+    add_constant_handle!(PermanentTpmHandle, OwnerHandle, TPM2_RH_OWNER);
+    add_constant_handle!(PermanentTpmHandle, RevokeHandle, TPM2_RH_REVOKE);
+    add_constant_handle!(PermanentTpmHandle, TransportHandle, TPM2_RH_TRANSPORT);
+    add_constant_handle!(PermanentTpmHandle, OperatorHandle, TPM2_RH_OPERATOR);
+    add_constant_handle!(PermanentTpmHandle, AdminHandle, TPM2_RH_ADMIN);
+    add_constant_handle!(PermanentTpmHandle, EndorsementKeyHandle, TPM2_RH_EK);
+    add_constant_handle!(PermanentTpmHandle, NullHandle, TPM2_RH_NULL);
+    add_constant_handle!(PermanentTpmHandle, UnassignedHandle, TPM2_RH_UNASSIGNED);
+    add_constant_handle!(PermanentTpmHandle, PasswordSessionHandle, TPM2_RS_PW);
+    add_constant_handle!(PermanentTpmHandle, LockoutHandle, TPM2_RH_LOCKOUT);
+    add_constant_handle!(PermanentTpmHandle, EndorsementHandle, TPM2_RH_ENDORSEMENT);
+    add_constant_handle!(PermanentTpmHandle, PlatformHandle, TPM2_RH_PLATFORM);
+    add_constant_handle!(PermanentTpmHandle, PlatformNvHandle, TPM2_RH_PLATFORM_NV);
+    add_constant_handle!(
+        PermanentTpmHandle,
+        VendorSpecificAuthorizationFirstHandle,
+        TPM2_RH_AUTH_00
+    );
+    add_constant_handle!(
+        PermanentTpmHandle,
+        VendorSpecificAuthorizationLastHandle,
+        TPM2_RH_AUTH_FF
+    );
+    add_constant_handle!(
+        PermanentTpmHandle,
+        AuthenticatedTimersFirstHandle,
+        TPM2_RH_ACT_0
+    );
+    add_constant_handle!(
+        PermanentTpmHandle,
+        AuthenticatedTimersLastHandle,
+        TPM2_RH_ACT_F
+    );
+    add_constant_handle!(PermanentTpmHandle, LastHandle, TPM2_RH_LAST);
+}
+
+pub mod saved_session {
+    //! Module for saved session TPM handles
+    use super::*;
+    use crate::constants::tss::{
+        TPM2_HT_SAVED_SESSION, TPM2_POLICY_SESSION_FIRST, TPM2_POLICY_SESSION_LAST,
+    };
+
+    create_tpm_handle_type!(
+        SavedSessionTpmHandle,
+        TpmHandle::SavedSession,
+        TPM2_HT_SAVED_SESSION,
+        TPM2_POLICY_SESSION_FIRST, // Policy session have the same type as saved session.
+        TPM2_POLICY_SESSION_LAST   // so assuming they have the same valid range makes sense.
+    );
+}
+
+pub mod transient {
+    //! Module for transient TPM handles
+    use super::*;
+    use crate::constants::tss::{TPM2_HT_TRANSIENT, TPM2_TRANSIENT_FIRST, TPM2_TRANSIENT_LAST};
+
+    create_tpm_handle_type!(
+        TransientTpmHandle,
+        TpmHandle::Transient,
+        TPM2_HT_TRANSIENT,
+        TPM2_TRANSIENT_FIRST,
+        TPM2_TRANSIENT_LAST
+    );
+}
+
+pub mod persistent {
+    //! Module for persistent TPM handles
+    use super::*;
+    use crate::constants::tss::{TPM2_HT_PERSISTENT, TPM2_PERSISTENT_FIRST, TPM2_PERSISTENT_LAST};
+
+    create_tpm_handle_type!(
+        PersistentTpmHandle,
+        TpmHandle::Persistent,
+        TPM2_HT_PERSISTENT,
+        TPM2_PERSISTENT_FIRST,
+        TPM2_PERSISTENT_LAST
+    );
+}
+
+pub mod attached_component {
+    //! Module for attached component TPM handles.
+    use super::*;
+    use crate::constants::tss::{TPM2_AC_FIRST, TPM2_AC_LAST, TPM2_HT_AC};
+
+    create_tpm_handle_type!(
+        AttachedComponentTpmHandle,
+        TpmHandle::AttachedComponent,
+        TPM2_HT_AC,
+        TPM2_AC_FIRST,
+        TPM2_AC_LAST
+    );
+}

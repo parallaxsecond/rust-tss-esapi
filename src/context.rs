@@ -385,7 +385,7 @@ impl Context {
         let ret = unsafe {
             Esys_CreatePrimary(
                 self.mut_context(),
-                primary_handle.esys_rh(),
+                ObjectHandle::from(primary_handle).into(),
                 self.optional_session_1(),
                 self.optional_session_2(),
                 self.optional_session_3(),
@@ -738,9 +738,9 @@ impl Context {
                 private,
                 public,
                 if cfg!(tpm2_tss_version = "3") {
-                    hierarchy.esys_rh()
+                    ObjectHandle::from(hierarchy).into()
                 } else {
-                    hierarchy.rh()
+                    TpmHandle::from(hierarchy).into()
                 },
                 &mut esys_key_handle,
             )
@@ -774,9 +774,9 @@ impl Context {
                 null(),
                 public,
                 if cfg!(tpm2_tss_version = "3") {
-                    hierarchy.esys_rh()
+                    ObjectHandle::from(hierarchy).into()
                 } else {
-                    hierarchy.rh()
+                    TpmHandle::from(hierarchy).into()
                 },
                 &mut esys_key_handle,
             )
@@ -1434,9 +1434,9 @@ impl Context {
                 &in_data,
                 hashing_algorithm.into(),
                 if cfg!(tpm2_tss_version = "3") {
-                    hierarchy.esys_rh()
+                    ObjectHandle::from(hierarchy).into()
                 } else {
-                    hierarchy.rh()
+                    TpmHandle::from(hierarchy).into()
                 },
                 &mut out_hash_ptr,
                 &mut validation_ptr,

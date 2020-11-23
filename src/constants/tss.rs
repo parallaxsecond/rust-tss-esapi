@@ -510,6 +510,8 @@ pub const TPM2_RH_PLATFORM: TPM2_RH = 0x4000000C; /* K A P */
 pub const TPM2_RH_PLATFORM_NV: TPM2_RH = 0x4000000D; /* C */
 pub const TPM2_RH_AUTH_00: TPM2_RH = 0x40000010; /* A */
 pub const TPM2_RH_AUTH_FF: TPM2_RH = 0x4000010F; /* A */
+pub const TPM2_RH_ACT_0: TPM2_RH = 0x40000110; /* A P */
+pub const TPM2_RH_ACT_F: TPM2_RH = 0x4000011F; /* A P */
 pub const TPM2_RH_LAST: TPM2_RH = 0x4000010F; /* R */
 
 pub const TPM2_HR_HANDLE_MASK: TPM2_HC = 0x00FFFFFF; /* to mask off the HR */

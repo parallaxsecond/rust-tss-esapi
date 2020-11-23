@@ -2,15 +2,14 @@
 // SPDX-License-Identifier: Apache-2.0
 use std::convert::TryFrom;
 use tss_esapi::{
-    constants::tss::{TPM2_RH_ENDORSEMENT, TPM2_RH_NULL, TPM2_RH_OWNER, TPM2_RH_PLATFORM},
-    handles::{AuthHandle, NvIndexHandle, TpmConstantsHandle},
+    handles::{
+        AuthHandle, NvIndexHandle, ObjectHandle, PermanentTpmHandle, TpmConstantsHandle, TpmHandle,
+    },
     interface_types::resource_handles::{
-        Clear, Endorsement, Hierarchy, HierarchyAuth, Lockout, NvAuth, Owner, Platform, Provision,
+        Clear, Enables, Endorsement, Hierarchy, HierarchyAuth, Lockout, NvAuth, Owner, Platform,
+        Provision,
     },
-    tss2_esys::{
-        ESYS_TR, ESYS_TR_RH_ENDORSEMENT, ESYS_TR_RH_NULL, ESYS_TR_RH_OWNER, ESYS_TR_RH_PLATFORM,
-        TPM2_RH,
-    },
+    tss2_esys::ESYS_TR,
 };
 
 mod test_hierarchy {
@@ -18,9 +17,9 @@ mod test_hierarchy {
     #[test]
     fn test_conversions() {
         let test_conversion =
-            |hierarchy: Hierarchy, tpm_rh: TPM2_RH, esys_rh: ESYS_TR, name: &str| {
-                assert_eq!(hierarchy.esys_rh(), esys_rh);
-                assert_eq!(hierarchy.rh(), tpm_rh);
+            |hierarchy: Hierarchy, tpm_rh: TpmHandle, esys_rh: ObjectHandle, name: &str| {
+                assert_eq!(ObjectHandle::from(hierarchy), esys_rh);
+                assert_eq!(TpmHandle::from(hierarchy), tpm_rh);
                 let from_esys_rh = Hierarchy::try_from(esys_rh).unwrap_or_else(|_| {
                     panic!(format!(
                         "Failed to create Hierarchy from ESYS_TR_RH={}",
@@ -28,30 +27,95 @@ mod test_hierarchy {
                     ))
                 });
                 assert_eq!(from_esys_rh, hierarchy);
-                assert_eq!(from_esys_rh.esys_rh(), esys_rh);
-                assert_eq!(from_esys_rh.rh(), tpm_rh);
+                assert_eq!(ObjectHandle::from(from_esys_rh), esys_rh);
+                assert_eq!(TpmHandle::from(from_esys_rh), tpm_rh);
                 let from_tpm_rh = Hierarchy::try_from(tpm_rh).unwrap_or_else(|_| {
                     panic!(format!("Failed to create Hierarchy from TPM2_RH={}", name))
                 });
                 assert_eq!(from_tpm_rh, hierarchy);
-                assert_eq!(from_tpm_rh.esys_rh(), esys_rh);
-                assert_eq!(from_tpm_rh.rh(), tpm_rh);
+                assert_eq!(ObjectHandle::from(from_tpm_rh), esys_rh);
+                assert_eq!(TpmHandle::from(from_tpm_rh), tpm_rh);
             };
 
-        test_conversion(Hierarchy::Owner, TPM2_RH_OWNER, ESYS_TR_RH_OWNER, "OWNER");
+        test_conversion(
+            Hierarchy::Owner,
+            TpmHandle::Permanent(PermanentTpmHandle::OwnerHandle),
+            ObjectHandle::OwnerHandle,
+            "OWNER",
+        );
         test_conversion(
             Hierarchy::Platform,
-            TPM2_RH_PLATFORM,
-            ESYS_TR_RH_PLATFORM,
+            TpmHandle::Permanent(PermanentTpmHandle::PlatformHandle),
+            ObjectHandle::PlatformHandle,
             "PLATFORM",
         );
         test_conversion(
             Hierarchy::Endorsement,
-            TPM2_RH_ENDORSEMENT,
-            ESYS_TR_RH_ENDORSEMENT,
+            TpmHandle::Permanent(PermanentTpmHandle::EndorsementHandle),
+            ObjectHandle::EndorsementHandle,
             "ENDORSEMENT",
         );
-        test_conversion(Hierarchy::Null, TPM2_RH_NULL, ESYS_TR_RH_NULL, "NULL");
+        test_conversion(
+            Hierarchy::Null,
+            TpmHandle::Permanent(PermanentTpmHandle::NullHandle),
+            ObjectHandle::NullHandle,
+            "NULL",
+        );
+    }
+}
+
+mod test_enables {
+    use super::*;
+    #[test]
+    fn test_conversions() {
+        let test_conversion =
+            |enables: Enables, tpm_rh: TpmHandle, esys_rh: ObjectHandle, name: &str| {
+                assert_eq!(ObjectHandle::from(enables), esys_rh);
+                assert_eq!(TpmHandle::from(enables), tpm_rh);
+                let from_esys_rh = Enables::try_from(esys_rh).unwrap_or_else(|_| {
+                    panic!(format!("Failed to create Enables from ESYS_TR_RH={}", name))
+                });
+                assert_eq!(from_esys_rh, enables);
+                assert_eq!(ObjectHandle::from(from_esys_rh), esys_rh);
+                assert_eq!(TpmHandle::from(from_esys_rh), tpm_rh);
+                let from_tpm_rh = Enables::try_from(tpm_rh).unwrap_or_else(|_| {
+                    panic!(format!("Failed to create Enables from TPM2_RH={}", name))
+                });
+                assert_eq!(from_tpm_rh, enables);
+                assert_eq!(ObjectHandle::from(from_tpm_rh), esys_rh);
+                assert_eq!(TpmHandle::from(from_tpm_rh), tpm_rh);
+            };
+
+        test_conversion(
+            Enables::Owner,
+            TpmHandle::Permanent(PermanentTpmHandle::OwnerHandle),
+            ObjectHandle::OwnerHandle,
+            "OWNER",
+        );
+        test_conversion(
+            Enables::Platform,
+            TpmHandle::Permanent(PermanentTpmHandle::PlatformHandle),
+            ObjectHandle::PlatformHandle,
+            "PLATFORM",
+        );
+        test_conversion(
+            Enables::Endorsement,
+            TpmHandle::Permanent(PermanentTpmHandle::EndorsementHandle),
+            ObjectHandle::EndorsementHandle,
+            "ENDORSEMENT",
+        );
+        test_conversion(
+            Enables::PlatformNv,
+            TpmHandle::Permanent(PermanentTpmHandle::PlatformNvHandle),
+            ObjectHandle::PlatformNvHandle,
+            "PLATFORM_NV",
+        );
+        test_conversion(
+            Enables::Null,
+            TpmHandle::Permanent(PermanentTpmHandle::NullHandle),
+            ObjectHandle::NullHandle,
+            "NULL",
+        );
     }
 }
 
@@ -59,47 +123,55 @@ mod test_hierarchy_auth {
     use super::*;
     #[test]
     fn test_conversions() {
-        let test_conversion =
-            |hierarchy_auth: HierarchyAuth, tpm_rh: TPM2_RH, esys_rh: ESYS_TR, name: &str| {
-                assert_eq!(hierarchy_auth.esys_rh(), esys_rh);
-                assert_eq!(hierarchy_auth.rh(), tpm_rh);
-                let from_esys_rh = HierarchyAuth::try_from(esys_rh).unwrap_or_else(|_| {
-                    panic!(format!(
-                        "Failed to create HierarchyAuth from ESYS_TR_RH={}",
-                        name
-                    ))
-                });
-                assert_eq!(from_esys_rh, hierarchy_auth);
-                assert_eq!(from_esys_rh.esys_rh(), esys_rh);
-                assert_eq!(from_esys_rh.rh(), tpm_rh);
-                let from_tpm_rh = HierarchyAuth::try_from(tpm_rh).unwrap_or_else(|_| {
-                    panic!(format!(
-                        "Failed to create HierarchyAuth from TPM2_RH={}",
-                        name
-                    ))
-                });
-                assert_eq!(from_tpm_rh, hierarchy_auth);
-                assert_eq!(from_tpm_rh.esys_rh(), esys_rh);
-                assert_eq!(from_tpm_rh.rh(), tpm_rh);
-            };
+        let test_conversion = |hierarchy_auth: HierarchyAuth,
+                               tpm_rh: TpmHandle,
+                               esys_rh: ObjectHandle,
+                               name: &str| {
+            assert_eq!(ObjectHandle::from(hierarchy_auth), esys_rh);
+            assert_eq!(TpmHandle::from(hierarchy_auth), tpm_rh);
+            let from_esys_rh = HierarchyAuth::try_from(esys_rh).unwrap_or_else(|_| {
+                panic!(format!(
+                    "Failed to create HierarchyAuth from ESYS_TR_RH={}",
+                    name
+                ))
+            });
+            assert_eq!(from_esys_rh, hierarchy_auth);
+            assert_eq!(ObjectHandle::from(from_esys_rh), esys_rh);
+            assert_eq!(TpmHandle::from(from_esys_rh), tpm_rh);
+            let from_tpm_rh = HierarchyAuth::try_from(tpm_rh).unwrap_or_else(|_| {
+                panic!(format!(
+                    "Failed to create HierarchyAuth from TPM2_RH={}",
+                    name
+                ))
+            });
+            assert_eq!(from_tpm_rh, hierarchy_auth);
+            assert_eq!(ObjectHandle::from(from_tpm_rh), esys_rh);
+            assert_eq!(TpmHandle::from(from_tpm_rh), tpm_rh);
+        };
 
         test_conversion(
             HierarchyAuth::Owner,
-            TPM2_RH_OWNER,
-            ESYS_TR_RH_OWNER,
+            TpmHandle::Permanent(PermanentTpmHandle::OwnerHandle),
+            ObjectHandle::OwnerHandle,
             "OWNER",
         );
         test_conversion(
             HierarchyAuth::Platform,
-            TPM2_RH_PLATFORM,
-            ESYS_TR_RH_PLATFORM,
+            TpmHandle::Permanent(PermanentTpmHandle::PlatformHandle),
+            ObjectHandle::PlatformHandle,
             "PLATFORM",
         );
         test_conversion(
             HierarchyAuth::Endorsement,
-            TPM2_RH_ENDORSEMENT,
-            ESYS_TR_RH_ENDORSEMENT,
+            TpmHandle::Permanent(PermanentTpmHandle::EndorsementHandle),
+            ObjectHandle::EndorsementHandle,
             "ENDORSEMENT",
+        );
+        test_conversion(
+            HierarchyAuth::Lockout,
+            TpmHandle::Permanent(PermanentTpmHandle::LockoutHandle),
+            ObjectHandle::LockoutHandle,
+            "LOCKOUT",
         );
     }
 }
