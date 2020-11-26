@@ -14,7 +14,6 @@ pub use handle::nv_index::NvIndexHandle;
 pub use handle::object::ObjectHandle;
 pub use handle::pcr::PcrHandle;
 pub use handle::session::SessionHandle;
-pub use handle::tpm_constants::TpmConstantsHandle;
 mod handle;
 /////////////////////////////////////////////////////////
 /// TPM Handles

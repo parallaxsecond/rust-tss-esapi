@@ -2,9 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 use std::convert::TryFrom;
 use tss_esapi::{
-    handles::{
-        AuthHandle, NvIndexHandle, ObjectHandle, PermanentTpmHandle, TpmConstantsHandle, TpmHandle,
-    },
+    handles::{AuthHandle, NvIndexHandle, ObjectHandle, PermanentTpmHandle, TpmHandle},
     interface_types::resource_handles::{
         Clear, Enables, Endorsement, Hierarchy, HierarchyAuth, Lockout, NvAuth, Owner, Platform,
         Provision,
@@ -39,26 +37,26 @@ mod test_hierarchy {
 
         test_conversion(
             Hierarchy::Owner,
-            TpmHandle::Permanent(PermanentTpmHandle::OwnerHandle),
-            ObjectHandle::OwnerHandle,
+            TpmHandle::Permanent(PermanentTpmHandle::Owner),
+            ObjectHandle::Owner,
             "OWNER",
         );
         test_conversion(
             Hierarchy::Platform,
-            TpmHandle::Permanent(PermanentTpmHandle::PlatformHandle),
-            ObjectHandle::PlatformHandle,
+            TpmHandle::Permanent(PermanentTpmHandle::Platform),
+            ObjectHandle::Platform,
             "PLATFORM",
         );
         test_conversion(
             Hierarchy::Endorsement,
-            TpmHandle::Permanent(PermanentTpmHandle::EndorsementHandle),
-            ObjectHandle::EndorsementHandle,
+            TpmHandle::Permanent(PermanentTpmHandle::Endorsement),
+            ObjectHandle::Endorsement,
             "ENDORSEMENT",
         );
         test_conversion(
             Hierarchy::Null,
-            TpmHandle::Permanent(PermanentTpmHandle::NullHandle),
-            ObjectHandle::NullHandle,
+            TpmHandle::Permanent(PermanentTpmHandle::Null),
+            ObjectHandle::Null,
             "NULL",
         );
     }
@@ -88,32 +86,32 @@ mod test_enables {
 
         test_conversion(
             Enables::Owner,
-            TpmHandle::Permanent(PermanentTpmHandle::OwnerHandle),
-            ObjectHandle::OwnerHandle,
+            TpmHandle::Permanent(PermanentTpmHandle::Owner),
+            ObjectHandle::Owner,
             "OWNER",
         );
         test_conversion(
             Enables::Platform,
-            TpmHandle::Permanent(PermanentTpmHandle::PlatformHandle),
-            ObjectHandle::PlatformHandle,
+            TpmHandle::Permanent(PermanentTpmHandle::Platform),
+            ObjectHandle::Platform,
             "PLATFORM",
         );
         test_conversion(
             Enables::Endorsement,
-            TpmHandle::Permanent(PermanentTpmHandle::EndorsementHandle),
-            ObjectHandle::EndorsementHandle,
+            TpmHandle::Permanent(PermanentTpmHandle::Endorsement),
+            ObjectHandle::Endorsement,
             "ENDORSEMENT",
         );
         test_conversion(
-            Enables::PlatformNv,
-            TpmHandle::Permanent(PermanentTpmHandle::PlatformNvHandle),
-            ObjectHandle::PlatformNvHandle,
+            Enables::Endorsement,
+            TpmHandle::Permanent(PermanentTpmHandle::Endorsement),
+            ObjectHandle::Endorsement,
             "PLATFORM_NV",
         );
         test_conversion(
             Enables::Null,
-            TpmHandle::Permanent(PermanentTpmHandle::NullHandle),
-            ObjectHandle::NullHandle,
+            TpmHandle::Permanent(PermanentTpmHandle::Null),
+            ObjectHandle::Null,
             "NULL",
         );
     }
@@ -151,26 +149,26 @@ mod test_hierarchy_auth {
 
         test_conversion(
             HierarchyAuth::Owner,
-            TpmHandle::Permanent(PermanentTpmHandle::OwnerHandle),
-            ObjectHandle::OwnerHandle,
+            TpmHandle::Permanent(PermanentTpmHandle::Owner),
+            ObjectHandle::Owner,
             "OWNER",
         );
         test_conversion(
             HierarchyAuth::Platform,
-            TpmHandle::Permanent(PermanentTpmHandle::PlatformHandle),
-            ObjectHandle::PlatformHandle,
+            TpmHandle::Permanent(PermanentTpmHandle::Platform),
+            ObjectHandle::Platform,
             "PLATFORM",
         );
         test_conversion(
             HierarchyAuth::Endorsement,
-            TpmHandle::Permanent(PermanentTpmHandle::EndorsementHandle),
-            ObjectHandle::EndorsementHandle,
+            TpmHandle::Permanent(PermanentTpmHandle::Endorsement),
+            ObjectHandle::Endorsement,
             "ENDORSEMENT",
         );
         test_conversion(
             HierarchyAuth::Lockout,
-            TpmHandle::Permanent(PermanentTpmHandle::LockoutHandle),
-            ObjectHandle::LockoutHandle,
+            TpmHandle::Permanent(PermanentTpmHandle::Lockout),
+            ObjectHandle::Lockout,
             "LOCKOUT",
         );
     }
@@ -180,12 +178,9 @@ mod test_platform {
     use super::*;
     #[test]
     fn test_conversions() {
+        assert_eq!(AuthHandle::from(Platform::Platform), AuthHandle::Platform);
         assert_eq!(
-            AuthHandle::from(Platform::Platform),
-            AuthHandle::PlatformHandle
-        );
-        assert_eq!(
-            Platform::try_from(AuthHandle::PlatformHandle)
+            Platform::try_from(AuthHandle::Platform)
                 .expect("Failed to convert AuthHandle into Platform"),
             Platform::Platform
         );
@@ -196,21 +191,15 @@ mod test_owner {
     use super::*;
     #[test]
     fn test_conversions() {
+        assert_eq!(ObjectHandle::from(Owner::Owner), ObjectHandle::Owner);
+        assert_eq!(ObjectHandle::from(Owner::Null), ObjectHandle::Null);
         assert_eq!(
-            TpmConstantsHandle::from(Owner::Owner),
-            TpmConstantsHandle::Owner
-        );
-        assert_eq!(
-            TpmConstantsHandle::from(Owner::Null),
-            TpmConstantsHandle::Null
-        );
-        assert_eq!(
-            Owner::try_from(TpmConstantsHandle::Owner)
+            Owner::try_from(ObjectHandle::Owner)
                 .expect("Failed to convert TpmConstantHandle into Owner"),
             Owner::Owner
         );
         assert_eq!(
-            Owner::try_from(TpmConstantsHandle::Null)
+            Owner::try_from(ObjectHandle::Null)
                 .expect("Failed to convert TpmConstantHandle into Owner"),
             Owner::Null
         );
@@ -222,20 +211,17 @@ mod test_endorsement {
     #[test]
     fn test_conversions() {
         assert_eq!(
-            TpmConstantsHandle::from(Endorsement::Endorsement),
-            TpmConstantsHandle::Endorsement
+            ObjectHandle::from(Endorsement::Endorsement),
+            ObjectHandle::Endorsement
         );
+        assert_eq!(ObjectHandle::from(Endorsement::Null), ObjectHandle::Null);
         assert_eq!(
-            TpmConstantsHandle::from(Endorsement::Null),
-            TpmConstantsHandle::Null
-        );
-        assert_eq!(
-            Endorsement::try_from(TpmConstantsHandle::Endorsement)
+            Endorsement::try_from(ObjectHandle::Endorsement)
                 .expect("Failed to convert TpmConstantHandle into Endorsement"),
             Endorsement::Endorsement
         );
         assert_eq!(
-            Endorsement::try_from(TpmConstantsHandle::Null)
+            Endorsement::try_from(ObjectHandle::Null)
                 .expect("Failed to convert TpmConstantHandle into Endorsement"),
             Endorsement::Null
         );
@@ -246,18 +232,15 @@ mod test_provision {
     use super::*;
     #[test]
     fn test_conversions() {
-        assert_eq!(AuthHandle::from(Provision::Owner), AuthHandle::OwnerHandle);
+        assert_eq!(AuthHandle::from(Provision::Owner), AuthHandle::Owner);
+        assert_eq!(AuthHandle::from(Provision::Platform), AuthHandle::Platform);
         assert_eq!(
-            AuthHandle::from(Provision::Platform),
-            AuthHandle::PlatformHandle
-        );
-        assert_eq!(
-            Provision::try_from(AuthHandle::OwnerHandle)
+            Provision::try_from(AuthHandle::Owner)
                 .expect("Failed to convert AuthHandle into Provision"),
             Provision::Owner
         );
         assert_eq!(
-            Provision::try_from(AuthHandle::PlatformHandle)
+            Provision::try_from(AuthHandle::Platform)
                 .expect("Failed to convert AuthHandle into Provision"),
             Provision::Platform
         );
@@ -268,18 +251,14 @@ mod test_clear {
     use super::*;
     #[test]
     fn test_conversions() {
-        assert_eq!(AuthHandle::from(Clear::Owner), AuthHandle::OwnerHandle);
+        assert_eq!(AuthHandle::from(Clear::Owner), AuthHandle::Owner);
+        assert_eq!(AuthHandle::from(Clear::Platform), AuthHandle::Platform);
         assert_eq!(
-            AuthHandle::from(Clear::Platform),
-            AuthHandle::PlatformHandle
-        );
-        assert_eq!(
-            Clear::try_from(AuthHandle::OwnerHandle)
-                .expect("Failed to convert AuthHandle into Clear"),
+            Clear::try_from(AuthHandle::Owner).expect("Failed to convert AuthHandle into Clear"),
             Clear::Owner
         );
         assert_eq!(
-            Clear::try_from(AuthHandle::PlatformHandle)
+            Clear::try_from(AuthHandle::Platform)
                 .expect("Failed to convert AuthHandle into Provision"),
             Clear::Platform
         );
@@ -291,11 +270,8 @@ mod test_nv_auth {
 
     #[test]
     fn test_conversions() {
-        assert_eq!(
-            AuthHandle::from(NvAuth::Platform),
-            AuthHandle::PlatformHandle
-        );
-        assert_eq!(AuthHandle::from(NvAuth::Owner), AuthHandle::OwnerHandle);
+        assert_eq!(AuthHandle::from(NvAuth::Platform), AuthHandle::Platform);
+        assert_eq!(AuthHandle::from(NvAuth::Owner), AuthHandle::Owner);
 
         let esys_handle: ESYS_TR = 0x12345678;
         let nv_index_handle = NvIndexHandle::from(esys_handle);
@@ -305,13 +281,12 @@ mod test_nv_auth {
         );
 
         assert_eq!(
-            NvAuth::try_from(AuthHandle::PlatformHandle)
+            NvAuth::try_from(AuthHandle::Platform)
                 .expect("Failed to convert AuthHandle into NvAuth"),
             NvAuth::Platform
         );
         assert_eq!(
-            NvAuth::try_from(AuthHandle::OwnerHandle)
-                .expect("Failed to convert AuthHandle into NvAuth"),
+            NvAuth::try_from(AuthHandle::Owner).expect("Failed to convert AuthHandle into NvAuth"),
             NvAuth::Owner
         );
         assert_eq!(
@@ -326,12 +301,9 @@ mod test_lockout {
     use super::*;
     #[test]
     fn test_conversions() {
+        assert_eq!(ObjectHandle::from(Lockout::Lockout), ObjectHandle::Lockout);
         assert_eq!(
-            TpmConstantsHandle::from(Lockout::Lockout),
-            TpmConstantsHandle::Lockout
-        );
-        assert_eq!(
-            Lockout::try_from(TpmConstantsHandle::Lockout)
+            Lockout::try_from(ObjectHandle::Lockout)
                 .expect("Failed to convert TpmConstantHandle into Lockout"),
             Lockout::Lockout
         );

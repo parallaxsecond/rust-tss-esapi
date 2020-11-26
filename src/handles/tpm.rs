@@ -249,7 +249,6 @@ pub mod policy_session {
 }
 
 pub mod permanent {
-    //! Module for permanent TPM handles
     use super::*;
     use crate::constants::tss::{
         TPM2_HT_PERMANENT, TPM2_PERMANENT_FIRST, TPM2_PERMANENT_LAST, TPM2_RH_ACT_0, TPM2_RH_ACT_F,
@@ -267,42 +266,34 @@ pub mod permanent {
         TPM2_PERMANENT_LAST
     );
 
-    add_constant_handle!(PermanentTpmHandle, FirstHandle, TPM2_RH_FIRST);
-    add_constant_handle!(PermanentTpmHandle, StorageRootKeyHandle, TPM2_RH_SRK);
-    add_constant_handle!(PermanentTpmHandle, OwnerHandle, TPM2_RH_OWNER);
-    add_constant_handle!(PermanentTpmHandle, RevokeHandle, TPM2_RH_REVOKE);
-    add_constant_handle!(PermanentTpmHandle, TransportHandle, TPM2_RH_TRANSPORT);
-    add_constant_handle!(PermanentTpmHandle, OperatorHandle, TPM2_RH_OPERATOR);
-    add_constant_handle!(PermanentTpmHandle, AdminHandle, TPM2_RH_ADMIN);
-    add_constant_handle!(PermanentTpmHandle, EndorsementKeyHandle, TPM2_RH_EK);
-    add_constant_handle!(PermanentTpmHandle, NullHandle, TPM2_RH_NULL);
-    add_constant_handle!(PermanentTpmHandle, UnassignedHandle, TPM2_RH_UNASSIGNED);
-    add_constant_handle!(PermanentTpmHandle, PasswordSessionHandle, TPM2_RS_PW);
-    add_constant_handle!(PermanentTpmHandle, LockoutHandle, TPM2_RH_LOCKOUT);
-    add_constant_handle!(PermanentTpmHandle, EndorsementHandle, TPM2_RH_ENDORSEMENT);
-    add_constant_handle!(PermanentTpmHandle, PlatformHandle, TPM2_RH_PLATFORM);
-    add_constant_handle!(PermanentTpmHandle, PlatformNvHandle, TPM2_RH_PLATFORM_NV);
+    add_constant_handle!(PermanentTpmHandle, First, TPM2_RH_FIRST);
+    add_constant_handle!(PermanentTpmHandle, StorageRootKey, TPM2_RH_SRK);
+    add_constant_handle!(PermanentTpmHandle, Owner, TPM2_RH_OWNER);
+    add_constant_handle!(PermanentTpmHandle, Revoke, TPM2_RH_REVOKE);
+    add_constant_handle!(PermanentTpmHandle, Transport, TPM2_RH_TRANSPORT);
+    add_constant_handle!(PermanentTpmHandle, Operator, TPM2_RH_OPERATOR);
+    add_constant_handle!(PermanentTpmHandle, Admin, TPM2_RH_ADMIN);
+    add_constant_handle!(PermanentTpmHandle, EndorsementKey, TPM2_RH_EK);
+    add_constant_handle!(PermanentTpmHandle, Null, TPM2_RH_NULL);
+    add_constant_handle!(PermanentTpmHandle, Unassigned, TPM2_RH_UNASSIGNED);
+    add_constant_handle!(PermanentTpmHandle, PasswordSession, TPM2_RS_PW);
+    add_constant_handle!(PermanentTpmHandle, Lockout, TPM2_RH_LOCKOUT);
+    add_constant_handle!(PermanentTpmHandle, Endorsement, TPM2_RH_ENDORSEMENT);
+    add_constant_handle!(PermanentTpmHandle, Platform, TPM2_RH_PLATFORM);
+    add_constant_handle!(PermanentTpmHandle, PlatformNv, TPM2_RH_PLATFORM_NV);
     add_constant_handle!(
         PermanentTpmHandle,
-        VendorSpecificAuthorizationFirstHandle,
+        VendorSpecificAuthorizationFirst,
         TPM2_RH_AUTH_00
     );
     add_constant_handle!(
         PermanentTpmHandle,
-        VendorSpecificAuthorizationLastHandle,
+        VendorSpecificAuthorizationLast,
         TPM2_RH_AUTH_FF
     );
-    add_constant_handle!(
-        PermanentTpmHandle,
-        AuthenticatedTimersFirstHandle,
-        TPM2_RH_ACT_0
-    );
-    add_constant_handle!(
-        PermanentTpmHandle,
-        AuthenticatedTimersLastHandle,
-        TPM2_RH_ACT_F
-    );
-    add_constant_handle!(PermanentTpmHandle, LastHandle, TPM2_RH_LAST);
+    add_constant_handle!(PermanentTpmHandle, AuthenticatedTimersFirst, TPM2_RH_ACT_0);
+    add_constant_handle!(PermanentTpmHandle, AuthenticatedTimersLast, TPM2_RH_ACT_F);
+    add_constant_handle!(PermanentTpmHandle, Last, TPM2_RH_LAST);
 }
 
 pub mod saved_session {

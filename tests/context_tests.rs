@@ -2410,15 +2410,11 @@ mod test_nv_read {
         let expected_data = MaxNvBuffer::try_from(value.to_vec()).unwrap();
 
         // Write the data using Owner authorization
-        let write_result = context.nv_write(
-            AuthHandle::OwnerHandle,
-            owner_nv_index_handle,
-            &expected_data,
-            0,
-        );
+        let write_result =
+            context.nv_write(AuthHandle::Owner, owner_nv_index_handle, &expected_data, 0);
         // read data using owner authorization
         let read_result = context.nv_read(
-            AuthHandle::OwnerHandle,
+            AuthHandle::Owner,
             owner_nv_index_handle,
             value.len() as u16,
             0,
@@ -2704,7 +2700,7 @@ mod test_tr_from_tpm_public {
             .tr_close(&mut handle_to_be_closed)
             .map_err(|e| cleanup(&mut context, e, initial_nv_index_handle, "tr_close"))
             .unwrap();
-        assert_eq!(handle_to_be_closed, ObjectHandle::NoneHandle);
+        assert_eq!(handle_to_be_closed, ObjectHandle::None);
         // The value of the handle_to_be_closed will be set to a 'None' handle
         // if the operations was successful.
 

@@ -1,9 +1,14 @@
 // Copyright 2020 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
 
-///
+//! ESYS handle types
+//!
+//! The ESAPI specification has only one handle type
+//! ESYS_TR. That type is wrapped by ObjectHandle but there
+//! are also specific handle types that indicates what created
+//! them or how they are intended to be used.
+
 /// Macro for generating a basic handle implementation
-///
 macro_rules! impl_basic_handle {
     (
         $(#[$outer:meta])*
@@ -40,10 +45,8 @@ macro_rules! impl_basic_handle {
     };
 }
 
-///
 /// Macro for making a esys constant available
 /// for a handle type.
-///
 macro_rules! add_constant_handle {
     ($handle_type:ident, $constant_handle_name:ident, $constant_handle_value:ident) => {
         impl $handle_type {
@@ -55,33 +58,34 @@ macro_rules! add_constant_handle {
     };
 }
 
-///
-/// Object handle module
-///
+/// Module for the ObjectHandle
 pub mod object {
     use crate::tss2_esys::{
         ESYS_TR_NONE, ESYS_TR_PASSWORD, ESYS_TR_RH_ENDORSEMENT, ESYS_TR_RH_LOCKOUT,
         ESYS_TR_RH_NULL, ESYS_TR_RH_OWNER, ESYS_TR_RH_PLATFORM, ESYS_TR_RH_PLATFORM_NV,
     };
+
     impl_basic_handle!(
-        /// General handle type.
+        /// The ObjectHandle is the general handle type
+        /// and it wraps the ESYS_TR.
+        ///
+        /// All the other more specific handle types can be
+        /// converted into an ObjectHandle.
         ObjectHandle
     );
 
-    add_constant_handle!(ObjectHandle, PasswordHandle, ESYS_TR_PASSWORD);
-    add_constant_handle!(ObjectHandle, NoneHandle, ESYS_TR_NONE);
-    add_constant_handle!(ObjectHandle, OwnerHandle, ESYS_TR_RH_OWNER);
-    add_constant_handle!(ObjectHandle, LockoutHandle, ESYS_TR_RH_LOCKOUT);
-    add_constant_handle!(ObjectHandle, EndorsementHandle, ESYS_TR_RH_ENDORSEMENT);
-    add_constant_handle!(ObjectHandle, PlatformHandle, ESYS_TR_RH_PLATFORM);
-    add_constant_handle!(ObjectHandle, PlatformNvHandle, ESYS_TR_RH_PLATFORM_NV);
-    add_constant_handle!(ObjectHandle, NullHandle, ESYS_TR_RH_NULL);
+    add_constant_handle!(ObjectHandle, Password, ESYS_TR_PASSWORD);
+    add_constant_handle!(ObjectHandle, None, ESYS_TR_NONE);
+    add_constant_handle!(ObjectHandle, Owner, ESYS_TR_RH_OWNER);
+    add_constant_handle!(ObjectHandle, Lockout, ESYS_TR_RH_LOCKOUT);
+    add_constant_handle!(ObjectHandle, Endorsement, ESYS_TR_RH_ENDORSEMENT);
+    add_constant_handle!(ObjectHandle, Platform, ESYS_TR_RH_PLATFORM);
+    add_constant_handle!(ObjectHandle, PlatformNv, ESYS_TR_RH_PLATFORM_NV);
+    add_constant_handle!(ObjectHandle, Null, ESYS_TR_RH_NULL);
 }
 
-///
 /// Macro for creating ESYS_TR conversion for
 /// constant handle types
-///
 macro_rules! impl_basic_multiple_constant_values_handle {
     ($constant_handle_type:ident) => {
         impl From<$constant_handle_type> for ESYS_TR {
@@ -106,11 +110,9 @@ macro_rules! impl_basic_multiple_constant_values_handle {
     };
 }
 
-///
 /// Macro for creating handle conversion
 /// from constant handle to a 'non-restricted'
 /// handle type
-///
 macro_rules! impl_multiple_constant_values_handle_conversion {
     ($constant_handle_type:ident, $handle_type_other:ident) => {
         impl From<$constant_handle_type> for $handle_type_other {
@@ -135,9 +137,12 @@ macro_rules! impl_multiple_constant_values_handle_conversion {
     };
 }
 
-///
 /// PCR handle module
 ///
+/// The specification:
+/// "TCG TSS 2.0 Enhanced System API (ESAPI) Specification, Version 1.00, Revision 08, May 28, 2020"
+/// specifies preallocated identifiers for PCRs
+/// the PcrHandle is a wrapper for those handles.
 pub mod pcr {
     use super::object::ObjectHandle;
     use crate::{
@@ -202,45 +207,7 @@ pub mod pcr {
     impl_multiple_constant_values_handle_conversion!(PcrHandle, ObjectHandle);
 }
 
-///
-/// TPM Constants handle module
-///
-pub mod tpm_constants {
-    use super::object::ObjectHandle;
-    use crate::{
-        tss2_esys::{
-            ESYS_TR, ESYS_TR_RH_ENDORSEMENT, ESYS_TR_RH_LOCKOUT, ESYS_TR_RH_NULL, ESYS_TR_RH_OWNER,
-            ESYS_TR_RH_PLATFORM, ESYS_TR_RH_PLATFORM_NV,
-        },
-        Error, Result, WrapperErrorKind,
-    };
-    use log::error;
-    use num_derive::{FromPrimitive, ToPrimitive};
-    use num_traits::{FromPrimitive, ToPrimitive};
-    use std::convert::{From, TryFrom};
-    /// TpmConstants Handle
-    ///
-    /// Represents an esys handle for
-    /// tpm constant resource handles.
-    #[derive(FromPrimitive, ToPrimitive, Debug, Copy, Clone, PartialEq, Eq)]
-    #[repr(u32)]
-    pub enum TpmConstantsHandle {
-        Owner = ESYS_TR_RH_OWNER,
-        Null = ESYS_TR_RH_NULL,
-        Lockout = ESYS_TR_RH_LOCKOUT,
-        Endorsement = ESYS_TR_RH_ENDORSEMENT,
-        Platform = ESYS_TR_RH_PLATFORM,
-        PlatformNv = ESYS_TR_RH_PLATFORM_NV,
-        // ESYS_TR_RH_AUTH ....?
-    }
-
-    impl_basic_multiple_constant_values_handle!(TpmConstantsHandle);
-    impl_multiple_constant_values_handle_conversion!(TpmConstantsHandle, ObjectHandle);
-}
-
-///
 /// Macro for implmeneting conversion between handles.
-///
 macro_rules! impl_handle_conversion {
     ($handle_type_self:ident, $handle_type_other:ident) => {
         impl From<$handle_type_self> for $handle_type_other {
@@ -259,9 +226,7 @@ macro_rules! impl_handle_conversion {
     };
 }
 
-///
 /// Auth handle module
-///
 pub mod auth {
     use super::object::ObjectHandle;
     use crate::tss2_esys::{
@@ -277,17 +242,15 @@ pub mod auth {
     impl_handle_conversion!(AuthHandle, ObjectHandle);
     // The following constant handles can be used for authorization
     // according to the TCG TPM2 r1p59 Structures specification.
-    add_constant_handle!(AuthHandle, OwnerHandle, ESYS_TR_RH_OWNER);
-    add_constant_handle!(AuthHandle, LockoutHandle, ESYS_TR_RH_LOCKOUT);
-    add_constant_handle!(AuthHandle, EndorsementHandle, ESYS_TR_RH_ENDORSEMENT);
-    add_constant_handle!(AuthHandle, PlatformHandle, ESYS_TR_RH_PLATFORM);
+    add_constant_handle!(AuthHandle, Owner, ESYS_TR_RH_OWNER);
+    add_constant_handle!(AuthHandle, Lockout, ESYS_TR_RH_LOCKOUT);
+    add_constant_handle!(AuthHandle, Endorsement, ESYS_TR_RH_ENDORSEMENT);
+    add_constant_handle!(AuthHandle, Platform, ESYS_TR_RH_PLATFORM);
     // TODO: Figure out how to add AUTH_00 to AUTH_FF range
     // TODO: Figure out how to add ACT_0 to ACT_F range
 }
 
-///
 /// NV Index handle module
-///
 pub mod nv_index {
     use super::auth::AuthHandle;
     use super::object::ObjectHandle;
@@ -315,9 +278,7 @@ pub mod key {
     impl_handle_conversion!(KeyHandle, ObjectHandle);
 }
 
-///
 /// Session handle module
-///
 pub mod session {
     use super::auth::AuthHandle;
     use super::object::ObjectHandle;
@@ -331,6 +292,9 @@ pub mod session {
     );
     impl_handle_conversion!(SessionHandle, ObjectHandle);
     impl_handle_conversion!(SessionHandle, AuthHandle);
-    add_constant_handle!(SessionHandle, PasswordHandle, ESYS_TR_PASSWORD);
-    add_constant_handle!(SessionHandle, NoneHandle, ESYS_TR_NONE);
+    // TSS ESAPI v1p0_r08 specifies that both
+    // PASSWORD and NONE can be used as session handles
+    // NONE are used when session handle is optional.
+    add_constant_handle!(SessionHandle, Password, ESYS_TR_PASSWORD);
+    add_constant_handle!(SessionHandle, None, ESYS_TR_NONE);
 }

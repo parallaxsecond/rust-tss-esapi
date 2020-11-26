@@ -27,7 +27,7 @@ impl Session {
         session_handle: SessionHandle,
         auth_hash: HashingAlgorithm,
     ) -> Option<Session> {
-        if session_handle != SessionHandle::NoneHandle {
+        if session_handle != SessionHandle::None {
             Some(match session_type {
                 SessionType::Hmac => Session::Hmac(HmacSession::new(session_handle, auth_hash)),
                 SessionType::Policy => {
@@ -43,9 +43,7 @@ impl Session {
     /// Function for retrieving the SessionHandle from Option<Session>
     ///
     pub fn handle_from_option(session: Option<Session>) -> SessionHandle {
-        session
-            .map(|v| v.handle())
-            .unwrap_or(SessionHandle::NoneHandle)
+        session.map(|v| v.handle()).unwrap_or(SessionHandle::None)
     }
     ///
     /// Function for retrieving the session handle associated with
@@ -56,7 +54,7 @@ impl Session {
             Session::Hmac(session_object) => session_object.handle(),
             Session::Policy(session_object) => session_object.handle(),
             Session::Trial(session_object) => session_object.handle(),
-            Session::Password => SessionHandle::PasswordHandle,
+            Session::Password => SessionHandle::Password,
         }
     }
     ///
