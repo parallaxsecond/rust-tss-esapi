@@ -14,20 +14,19 @@ pub use handle::nv_index::NvIndexHandle;
 pub use handle::object::ObjectHandle;
 pub use handle::pcr::PcrHandle;
 pub use handle::session::SessionHandle;
-pub use handle::tpm_constants::TpmConstantsHandle;
 mod handle;
 /////////////////////////////////////////////////////////
 /// TPM Handles
 /////////////////////////////////////////////////////////
-pub use tpm::AttachedComponentTpmHandle;
-pub use tpm::HmacSessionTpmHandle;
-pub use tpm::LoadedSessionTpmHandle;
-pub use tpm::NvIndexTpmHandle;
-pub use tpm::PcrTpmHandle;
-pub use tpm::PermanentTpmHandle;
-pub use tpm::PersistentTpmHandle;
-pub use tpm::PolicySessionTpmHandle;
-pub use tpm::SavedSessionTpmHandle;
+pub use tpm::attached_component::AttachedComponentTpmHandle;
+pub use tpm::hmac_session::HmacSessionTpmHandle;
+pub use tpm::loaded_session::LoadedSessionTpmHandle;
+pub use tpm::nv_index::NvIndexTpmHandle;
+pub use tpm::pcr::PcrTpmHandle;
+pub use tpm::permanent::PermanentTpmHandle;
+pub use tpm::persistent::PersistentTpmHandle;
+pub use tpm::policy_session::PolicySessionTpmHandle;
+pub use tpm::saved_session::SavedSessionTpmHandle;
+pub use tpm::transient::TransientTpmHandle;
 pub use tpm::TpmHandle;
-pub use tpm::TransientTpmHandle;
 mod tpm;

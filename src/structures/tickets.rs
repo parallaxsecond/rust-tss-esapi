@@ -1,9 +1,13 @@
 // Copyright 2020 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
-use crate::constants::tags::StructureTag;
-use crate::interface_types::resource_handles::Hierarchy;
-use crate::tss2_esys::{TPM2B_DIGEST, TPMT_TK_CREATION, TPMT_TK_HASHCHECK, TPMT_TK_VERIFIED};
-use crate::{Error, Result, WrapperErrorKind};
+use crate::{
+    constants::tags::StructureTag,
+    handles::TpmHandle,
+    interface_types::resource_handles::Hierarchy,
+    tss2_esys::{TPM2B_DIGEST, TPMT_TK_CREATION, TPMT_TK_HASHCHECK, TPMT_TK_VERIFIED},
+    Error, Result, WrapperErrorKind,
+};
+
 use log::error;
 use std::convert::{TryFrom, TryInto};
 
@@ -24,7 +28,7 @@ macro_rules! impl_ticket_try_froms {
                 buffer[..digest.len()].clone_from_slice(&digest[..digest.len()]);
                 Ok($tss_ticket_type {
                     tag: <$ticket_type>::TAG.into(),
-                    hierarchy: ticket.hierarchy.rh(),
+                    hierarchy: TpmHandle::from(ticket.hierarchy).into(),
                     digest: TPM2B_DIGEST {
                         size: digest.len().try_into().unwrap(), // should not fail based on the checks done above
                         buffer,
@@ -60,7 +64,7 @@ macro_rules! impl_ticket_try_froms {
                 let mut digest = tss_ticket.digest.buffer.to_vec();
                 digest.truncate(len);
 
-                let hierarchy = tss_ticket.hierarchy.try_into()?;
+                let hierarchy = Hierarchy::try_from(TpmHandle::try_from(tss_ticket.hierarchy)?)?;
 
                 Ok($ticket_type { hierarchy, digest })
             }

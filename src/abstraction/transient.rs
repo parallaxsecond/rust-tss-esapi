@@ -696,7 +696,7 @@ impl TransientKeyContextBuilder {
 
         if !self.hierarchy_auth.is_empty() {
             let auth_hierarchy = Auth::try_from(self.hierarchy_auth)?;
-            context.tr_set_auth(self.hierarchy.esys_rh().into(), &auth_hierarchy)?;
+            context.tr_set_auth(self.hierarchy.into(), &auth_hierarchy)?;
         }
 
         let creation_pcrs = PcrSelectionListBuilder::new().build();

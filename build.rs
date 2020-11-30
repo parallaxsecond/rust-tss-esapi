@@ -21,6 +21,13 @@ fn main() {
             .probe("tss2-mu")
             .expect("Error with pkg-config finding tss2-mu.");
 
+        // Check version to automatically set compatability flag.
+        match tss2_esys.version.chars().next().unwrap() {
+            '2' => println!("cargo:rustc-cfg=tpm2_tss_version=\"2\""),
+            '3' => println!("cargo:rustc-cfg=tpm2_tss_version=\"3\""),
+            major => panic!("Unsupported TSS version: {}", major),
+        }
+
         // These three pkg-config files should contain only one include/lib path.
         let tss2_esys_include_path = tss2_esys.include_paths[0]
             .clone()
