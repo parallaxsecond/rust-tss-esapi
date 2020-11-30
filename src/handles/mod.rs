@@ -14,6 +14,9 @@ pub use handle::nv_index::NvIndexHandle;
 pub use handle::object::ObjectHandle;
 pub use handle::pcr::PcrHandle;
 pub use handle::session::SessionHandle;
+pub(crate) mod handle_conversion {
+    pub(crate) use super::handle::conversions::*;
+}
 mod handle;
 /////////////////////////////////////////////////////////
 /// TPM Handles

@@ -1,5 +1,6 @@
 // Copyright 2020 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
+mod handle_manager;
 use crate::{
     constants::{
         algorithm::{Cipher, HashingAlgorithm},
@@ -8,8 +9,8 @@ use crate::{
         types::{capability::CapabilityType, session::SessionType},
     },
     handles::{
-        AuthHandle, KeyHandle, NvIndexHandle, ObjectHandle, PcrHandle, PersistentTpmHandle,
-        SessionHandle, TpmHandle,
+        handle_conversion::TryIntoNotNone, AuthHandle, KeyHandle, NvIndexHandle, ObjectHandle,
+        PcrHandle, PersistentTpmHandle, SessionHandle, TpmHandle,
     },
     interface_types::{
         dynamic_handles::Persistent,
@@ -31,9 +32,10 @@ use crate::{
     },
     Error, Result, WrapperErrorKind as ErrorKind,
 };
+use handle_manager::{HandleDropAction, HandleManager};
 use log::{error, info};
 use mbox::MBox;
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 use std::convert::{TryFrom, TryInto};
 use std::ffi::CString;
 use std::ptr::{null, null_mut};
@@ -73,8 +75,9 @@ pub struct Context {
     /// TCTI context handle associated with the ESYS context.
     /// As with the ESYS context, an optional Mbox wrapper allows the context to be deallocated.
     tcti_context: Option<MBox<TSS2_TCTI_CONTEXT>>,
-    /// A set of currently open object handles that should be flushed before closing the context.
-    open_handles: HashSet<ObjectHandle>,
+    /// Handle manager that keep tracks of the state of the handles and how they are to be
+    /// disposed.
+    handle_manager: HandleManager,
     /// A cache of determined TPM limits
     cached_tpm_properties: HashMap<PropertyTag, u32>,
 }
@@ -116,7 +119,7 @@ impl Context {
                 esys_context,
                 sessions: (None, None, None),
                 tcti_context,
-                open_handles: HashSet::new(),
+                handle_manager: HandleManager::new(),
                 cached_tpm_properties: HashMap::new(),
             };
             Ok(context)
@@ -176,9 +179,10 @@ impl Context {
 
         let ret = Error::from_tss_rc(ret);
         if ret.is_success() {
-            let _ = self
-                .open_handles
-                .insert(ObjectHandle::from(esys_session_handle));
+            self.handle_manager.add_handle(
+                ObjectHandle::from(esys_session_handle),
+                HandleDropAction::Flush,
+            )?;
             Ok(Session::create(
                 session_type,
                 SessionHandle::from(esys_session_handle),
@@ -413,7 +417,8 @@ impl Context {
             let creation_ticket = CreationTicket::try_from(*creation_ticket)?;
 
             let primary_key_handle = KeyHandle::from(esys_prim_key_handle);
-            let _ = self.open_handles.insert(primary_key_handle.into());
+            self.handle_manager
+                .add_handle(primary_key_handle.into(), HandleDropAction::Flush)?;
             Ok(CreatePrimaryKeyResult {
                 key_handle: primary_key_handle,
                 out_public: *out_public,
@@ -560,7 +565,8 @@ impl Context {
         let ret = Error::from_tss_rc(ret);
         if ret.is_success() {
             let key_handle = KeyHandle::from(esys_key_handle);
-            let _ = self.open_handles.insert(key_handle.into());
+            self.handle_manager
+                .add_handle(key_handle.into(), HandleDropAction::Flush)?;
             Ok(key_handle)
         } else {
             error!("Error in loading: {}.", ret);
@@ -750,7 +756,8 @@ impl Context {
 
         if ret.is_success() {
             let key_handle = KeyHandle::from(esys_key_handle);
-            let _ = self.open_handles.insert(key_handle.into());
+            self.handle_manager
+                .add_handle(key_handle.into(), HandleDropAction::Flush)?;
             Ok(key_handle)
         } else {
             error!("Error in loading: {}.", ret);
@@ -786,7 +793,8 @@ impl Context {
 
         if ret.is_success() {
             let key_handle = KeyHandle::from(esys_key_handle);
-            let _ = self.open_handles.insert(key_handle.into());
+            self.handle_manager
+                .add_handle(key_handle.into(), HandleDropAction::Flush)?;
             Ok(key_handle)
         } else {
             error!("Error in loading: {}.", ret);
@@ -834,10 +842,10 @@ impl Context {
 
     /// Flush the context of an object from the TPM.
     pub fn flush_context(&mut self, handle: ObjectHandle) -> Result<()> {
-        let ret = unsafe { Esys_FlushContext(self.mut_context(), handle.into()) };
+        let ret = unsafe { Esys_FlushContext(self.mut_context(), handle.try_into_not_none()?) };
         let ret = Error::from_tss_rc(ret);
         if ret.is_success() {
-            let _ = self.open_handles.remove(&handle);
+            self.handle_manager.set_as_flushed(handle)?;
             Ok(())
         } else {
             error!("Error in flushing context: {}.", ret);
@@ -882,7 +890,8 @@ impl Context {
         let ret = Error::from_tss_rc(ret);
         if ret.is_success() {
             let object_handle = ObjectHandle::from(esys_handle);
-            let _ = self.open_handles.insert(object_handle);
+            self.handle_manager
+                .add_handle(object_handle, HandleDropAction::Flush)?;
             Ok(object_handle)
         } else {
             error!("Error in loading context: {}.", ret);
@@ -892,6 +901,14 @@ impl Context {
 
     /// Evicts persistent objects or allows certain transient objects
     /// to be made peristent.
+    ///
+    /// # Returns
+    /// If the input object_handle was transient object then it will be made
+    /// persistent and the returned ObjectHandle will refer to this object.
+    ///
+    /// If the input object_handle refers to a presistent object the returned
+    /// value will be ObjectHandle::None and the input object_handle will not
+    /// be valid after this call is made.
     pub fn evict_control(
         &mut self,
         auth: Provision,
@@ -913,7 +930,18 @@ impl Context {
         };
         let ret = Error::from_tss_rc(ret);
         if ret.is_success() {
-            Ok(ObjectHandle::from(esys_object_handle))
+            let new_object_handle = ObjectHandle::from(esys_object_handle);
+            // If you look at the specification and see that it says ESYS_TR_NULL
+            // then that is an error in the spec. ESYS_TR_NULL was renamed to
+            // ESYS_TR NONE.
+            if !new_object_handle.is_none() {
+                self.handle_manager
+                    .add_handle(new_object_handle, HandleDropAction::Close)?;
+            } else {
+                self.handle_manager.set_as_closed(object_handle)?;
+            }
+
+            Ok(new_object_handle)
         } else {
             Err(ret)
         }
@@ -1572,18 +1600,29 @@ impl Context {
         let ret = Error::from_tss_rc(ret);
         if ret.is_success() {
             let object_handle = ObjectHandle::from(esys_object_handle);
-            let _ = self.open_handles.insert(object_handle);
+            self.handle_manager.add_handle(
+                object_handle,
+                if tpm_handle.may_be_flushed() {
+                    HandleDropAction::Flush
+                } else {
+                    HandleDropAction::Close
+                },
+            )?;
             Ok(object_handle)
         } else {
             Err(ret)
         }
     }
 
+    /// Instructs the ESAPI to release the metadata and resources allocated for a specific ObjectHandle.
+    ///
+    /// This is useful for cleaning up handles for which the context cannot be flushed.
     pub fn tr_close(&mut self, object_handle: &mut ObjectHandle) -> Result<()> {
-        let mut tss_esys_object_handle: ESYS_TR = (*object_handle).into();
+        let mut tss_esys_object_handle = object_handle.try_into_not_none()?;
         let ret = unsafe { Esys_TR_Close(self.mut_context(), &mut tss_esys_object_handle) };
         let ret = Error::from_tss_rc(ret);
         if ret.is_success() {
+            self.handle_manager.set_as_closed(*object_handle)?;
             *object_handle = ObjectHandle::from(tss_esys_object_handle);
             Ok(())
         } else {
@@ -1621,6 +1660,8 @@ impl Context {
         };
         let ret = Error::from_tss_rc(ret);
         if ret.is_success() {
+            self.handle_manager
+                .add_handle(object_identifier.into(), HandleDropAction::Close)?;
             Ok(NvIndexHandle::from(object_identifier))
         } else {
             Err(ret)
@@ -1649,6 +1690,7 @@ impl Context {
 
         let ret = Error::from_tss_rc(ret);
         if ret.is_success() {
+            self.handle_manager.set_as_closed(nv_index_handle.into())?;
             Ok(())
         } else {
             Err(ret)
@@ -1795,13 +1837,26 @@ impl Drop for Context {
     fn drop(&mut self) {
         info!("Closing context.");
 
-        // Flush the open handles.
-        self.open_handles.clone().iter().for_each(|handle| {
-            info!("Flushing handle {}", ESYS_TR::from(*handle));
-            if let Err(e) = self.flush_context(*handle) {
+        // Flush handles
+        for handle in self.handle_manager.handles_to_flush() {
+            info!("Flushing handle {}", ESYS_TR::from(handle));
+            if let Err(e) = self.flush_context(handle) {
                 error!("Error when dropping the context: {}.", e);
             }
-        });
+        }
+
+        // Close handles
+        for handle in self.handle_manager.handles_to_close().iter_mut() {
+            info!("Closing handle {}", ESYS_TR::from(*handle));
+            if let Err(e) = self.tr_close(handle) {
+                error!("Error when dropping context: {}.", e);
+            }
+        }
+
+        // Check if all handles have been cleaned up proeprly.
+        if self.handle_manager.has_open_handles() {
+            error!("Not all handles have had their resources successfully released");
+        }
 
         let esys_context = self.esys_context.take().unwrap(); // should not fail based on how the context is initialised/used
         let tcti_context = self.tcti_context.take().unwrap(); // should not fail based on how the context is initialised/used
