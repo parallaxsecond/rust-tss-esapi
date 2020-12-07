@@ -1380,14 +1380,14 @@ impl PcrData {
             // Parse hash algorithm from selection
             let parsed_hash_algorithm =
                 HashingAlgorithm::try_from(pcr_selection.hash).map_err(|e| {
-                    error!("Error converting hash to a HashingAlgorithm: {}.", e);
+                    error!("Error converting hash to a HashingAlgorithm: {}", e);
                     Error::local_error(WrapperErrorKind::InvalidParam)
                 })?;
             // Parse pcr slots from selection
             let parsed_pcr_slots: BitFlags<PcrSlot> =
                 BitFlags::<PcrSlot>::try_from(u32::from_le_bytes(pcr_selection.pcrSelect))
                     .map_err(|e| {
-                        error!("Error parsing pcrSelect to a BitFlags<PcrSlot>: {}.", e);
+                        error!("Error parsing pcrSelect to a BitFlags<PcrSlot>: {}", e);
                         Error::local_error(WrapperErrorKind::UnsupportedParam)
                     })?;
             // Create PCR bank by mapping the pcr slots to the pcr values
@@ -1399,7 +1399,7 @@ impl PcrData {
                 let digest = match digest_iter.next() {
                     Some(val) => val,
                     None => {
-                        error!("Error number of items in selection does not match number of items in data.");
+                        error!("Error number of items in selection does not match number of items in data");
                         return Err(Error::local_error(WrapperErrorKind::InconsistentParams));
                     }
                 };
@@ -1409,7 +1409,7 @@ impl PcrData {
                     .insert(pcr_slot, PcrValue::try_from(*digest)?)
                     .is_some()
                 {
-                    error!("Error trying to insert data into PcrSlot where data have already been inserted.");
+                    error!("Error trying to insert data into PcrSlot where data have already been inserted");
                     return Err(Error::local_error(WrapperErrorKind::InconsistentParams));
                 }
             }
@@ -1419,13 +1419,13 @@ impl PcrData {
                 .insert(parsed_hash_algorithm, parsed_pcr_bank)
                 .is_some()
             {
-                error!("Error trying to insert data into a PcrBank where data have already been inserted.");
+                error!("Error trying to insert data into a PcrBank where data have already been inserted");
                 return Err(Error::local_error(WrapperErrorKind::InconsistentParams));
             }
         }
         // Make sure all values in the digest have been read.
         if digest_iter.next().is_some() {
-            error!("Error not all values in the digest have been handled.");
+            error!("Error not all values in the digest have been handled");
             return Err(Error::local_error(WrapperErrorKind::InconsistentParams));
         }
 

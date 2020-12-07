@@ -38,12 +38,12 @@ impl PcrSelection {
     pub fn merge(&mut self, other: &Self) -> Result<()> {
         // Check that the hashing algorithm match
         if self.hashing_algorithm != other.hashing_algorithm {
-            error!("Error: Found inconsistencies in the hashing algorithm.");
+            error!("Error: Found inconsistencies in the hashing algorithm");
             return Err(Error::local_error(WrapperErrorKind::InconsistentParams));
         }
         // Check that size of select match.
         if self.size_of_select != other.size_of_select {
-            error!("Error: Found inconsistencies in the size of select.");
+            error!("Error: Found inconsistencies in the size of select");
             return Err(Error::local_error(WrapperErrorKind::InconsistentParams));
         }
         self.selected_pcrs |= other.selected_pcrs;
@@ -60,17 +60,17 @@ impl PcrSelection {
     pub fn subtract(&mut self, other: &Self) -> Result<()> {
         // Check that the hashing algorithm match
         if self.hashing_algorithm != other.hashing_algorithm {
-            error!("Error: Found inconsistencies in the hashing algorithm.");
+            error!("Error: Found inconsistencies in the hashing algorithm");
             return Err(Error::local_error(WrapperErrorKind::InconsistentParams));
         }
         // Check that size of select match.
         if self.size_of_select != other.size_of_select {
-            error!("Error: Found inconsistencies in the size of select.");
+            error!("Error: Found inconsistencies in the size of select");
             return Err(Error::local_error(WrapperErrorKind::InconsistentParams));
         }
-        // Check if the
+        // Check if the value in other is contained in current select
         if !self.selected_pcrs.contains(other.selected_pcrs) {
-            error!("Error: Trying to remove item that did not exist.");
+            error!("Error: Trying to remove item that did not exist");
             return Err(Error::local_error(WrapperErrorKind::InvalidParam));
         }
 
@@ -90,7 +90,7 @@ impl TryFrom<TPMS_PCR_SELECTION> for PcrSelection {
         Ok(PcrSelection {
             // Parse hashing algorithm.
             hashing_algorithm: HashingAlgorithm::try_from(tss_pcr_selection.hash).map_err(|e| {
-                error!("Error converting hash to a HashingAlgorithm: {}.", e);
+                error!("Error converting hash to a HashingAlgorithm: {}", e);
                 Error::local_error(WrapperErrorKind::InvalidParam)
             })?,
             // Parse the sizeofSelect into a SelectSize.
@@ -108,7 +108,7 @@ impl TryFrom<TPMS_PCR_SELECTION> for PcrSelection {
                 tss_pcr_selection.pcrSelect,
             ))
             .map_err(|e| {
-                error!("Error parsing pcrSelect to a BitFlags<PcrSlot>: {}.", e);
+                error!("Error parsing pcrSelect to a BitFlags<PcrSlot>: {}", e);
                 Error::local_error(WrapperErrorKind::UnsupportedParam)
             })?,
         })

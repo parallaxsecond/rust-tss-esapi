@@ -49,7 +49,7 @@ impl TryFrom<TPM2B_NV_PUBLIC> for NvPublic {
     type Error = Error;
     fn try_from(tss_nv_public: TPM2B_NV_PUBLIC) -> Result<NvPublic> {
         if tss_nv_public.size as usize > NvPublic::MAX_SIZE {
-            error!("Error: Encounted an invalid size of the TPMS_NV_PUBLIC.");
+            error!("Error: Encountered an invalid size of the TPMS_NV_PUBLIC");
             return Err(Error::local_error(WrapperErrorKind::WrongParamSize));
         }
         // Parse actual data
@@ -139,17 +139,17 @@ impl NvPublicBuilder {
         Ok(NvPublic {
             // Nv Index
             nv_index: self.nv_index.ok_or_else(|| {
-                error!("Error: No NV index was specified.");
+                error!("Error: No NV index was specified");
                 Error::local_error(WrapperErrorKind::ParamsMissing)
             })?,
             // Hashing algorithm for the name of index
             name_algorithm: self.name_algorithm.ok_or_else(|| {
-                error!("Error: No name algorithm was specified.");
+                error!("Error: No name algorithm was specified");
                 Error::local_error(WrapperErrorKind::ParamsMissing)
             })?,
             // Index attributes
             attributes: self.attributes.ok_or_else(|| {
-                error!("Error: No attributes were specified.");
+                error!("Error: No attributes were specified");
                 Error::local_error(WrapperErrorKind::ParamsMissing)
             })?,
             // Index Auth policy
@@ -158,12 +158,12 @@ impl NvPublicBuilder {
             data_size: self
                 .data_size
                 .ok_or_else(|| {
-                    error!("Error: No attributes were specified.");
+                    error!("Error: No data size specified");
                     Error::local_error(WrapperErrorKind::ParamsMissing)
                 })
                 .and_then(|v| {
                     if v > std::u16::MAX.into() {
-                        error!("Error: data area size is to large(>{})", std::u16::MAX);
+                        error!("Error: data area size is too large (>{})", std::u16::MAX);
                         return Err(Error::local_error(WrapperErrorKind::InvalidParam));
                     }
                     Ok(v)

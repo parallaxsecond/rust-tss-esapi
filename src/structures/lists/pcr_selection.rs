@@ -77,7 +77,7 @@ impl PcrSelectionList {
         }
 
         if self.is_empty() {
-            error!("Error: Trying to remove item that did not exist.");
+            error!("Error: Trying to remove item that did not exist");
             return Err(Error::local_error(WrapperErrorKind::InvalidParam));
         }
 
@@ -86,7 +86,7 @@ impl PcrSelectionList {
             let pcr_selection = match self.items.get_mut(&hashing_algorithm) {
                 Some(val) => val,
                 None => {
-                    error!("Error: Trying to remove item that did not exist.");
+                    error!("Error: Trying to remove item that did not exist");
                     return Err(Error::local_error(WrapperErrorKind::InvalidParam));
                 }
             };

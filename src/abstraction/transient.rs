@@ -659,7 +659,7 @@ impl TransientKeyContextBuilder {
             .find(|sz| **sz == self.root_key_size)
             .is_none()
         {
-            error!("The reference implementation only supports key sizes of 1,024 and 2,048 bits.");
+            error!("The reference implementation only supports key sizes of 1,024 and 2,048 bits");
             return Err(Error::local_error(ErrorKind::WrongParamSize));
         }
         let mut context = Context::new(self.tcti)?;

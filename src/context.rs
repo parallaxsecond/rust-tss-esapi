@@ -101,7 +101,7 @@ impl Context {
         let ret = Tss2_TctiLdr_Initialize(tcti_name_conf.as_ptr(), &mut tcti_context);
         let ret = Error::from_tss_rc(ret);
         if !ret.is_success() {
-            error!("Error when creating a TCTI context: {}.", ret);
+            error!("Error when creating a TCTI context: {}", ret);
             return Err(ret);
         }
         let mut tcti_context = Some(MBox::from_raw(tcti_context));
@@ -124,7 +124,7 @@ impl Context {
             };
             Ok(context)
         } else {
-            error!("Error when creating a new context: {}.", ret);
+            error!("Error when creating a new context: {}", ret);
             Err(ret)
         }
     }
@@ -189,7 +189,7 @@ impl Context {
                 auth_hash,
             ))
         } else {
-            error!("Error when creating a session: {}.", ret);
+            error!("Error when creating a session: {}", ret);
             Err(ret)
         }
     }
@@ -315,6 +315,7 @@ impl Context {
             let capabilities = CapabilityData::try_from(*capabilitydata)?;
             Ok((capabilities, moredata))
         } else {
+            error!("Error when getting capabilities: {}", ret);
             Err(ret)
         }
     }
@@ -427,7 +428,7 @@ impl Context {
                 creation_ticket,
             })
         } else {
-            error!("Error in creating primary key: {}.", ret);
+            error!("Error in creating primary key: {}", ret);
             Err(ret)
         }
     }
@@ -512,7 +513,7 @@ impl Context {
                 creation_ticket,
             })
         } else {
-            error!("Error in creating derived key: {}.", ret);
+            error!("Error in creating derived key: {}", ret);
             Err(ret)
         }
     }
@@ -537,7 +538,7 @@ impl Context {
             let out_data = unsafe { MBox::from_raw(out_data) };
             Ok(SensitiveData::try_from(*out_data)?)
         } else {
-            error!("Error in unsealing: {}.", ret);
+            error!("Error in unsealing: {}", ret);
             Err(ret)
         }
     }
@@ -569,7 +570,7 @@ impl Context {
                 .add_handle(key_handle.into(), HandleDropAction::Flush)?;
             Ok(key_handle)
         } else {
-            error!("Error in loading: {}.", ret);
+            error!("Error in loading: {}", ret);
             Err(ret)
         }
     }
@@ -612,7 +613,7 @@ impl Context {
             let signature = unsafe { MBox::from_raw(signature) };
             Ok(unsafe { Signature::try_from(*signature)? })
         } else {
-            error!("Error in loading: {}.", ret);
+            error!("Error when signing: {}", ret);
             Err(ret)
         }
     }
@@ -654,7 +655,7 @@ impl Context {
             let validation = VerifiedTicket::try_from(*validation)?;
             Ok(validation)
         } else {
-            error!("Error in loading: {}.", ret);
+            error!("Error when verifying signature: {}", ret);
             Err(ret)
         }
     }
@@ -689,6 +690,7 @@ impl Context {
             let data = unsafe { PublicKeyRSA::try_from(*out_data)? };
             Ok(data)
         } else {
+            error!("Error when performing RSA encryption: {}", ret);
             Err(ret)
         }
     }
@@ -723,6 +725,7 @@ impl Context {
             let data = unsafe { PublicKeyRSA::try_from(*message)? };
             Ok(data)
         } else {
+            error!("Error when performing RSA decryption: {}", ret);
             Err(ret)
         }
     }
@@ -760,7 +763,7 @@ impl Context {
                 .add_handle(key_handle.into(), HandleDropAction::Flush)?;
             Ok(key_handle)
         } else {
-            error!("Error in loading: {}.", ret);
+            error!("Error in loading external object: {}", ret);
             Err(ret)
         }
     }
@@ -797,7 +800,7 @@ impl Context {
                 .add_handle(key_handle.into(), HandleDropAction::Flush)?;
             Ok(key_handle)
         } else {
-            error!("Error in loading: {}.", ret);
+            error!("Error in loading external public object: {}", ret);
             Err(ret)
         }
     }
@@ -831,7 +834,7 @@ impl Context {
 
             Ok((*public, name, qualified_name))
         } else {
-            error!("Error in loading: {}.", ret);
+            error!("Error in reading public part of object: {}", ret);
             Err(ret)
         }
     }
@@ -848,7 +851,7 @@ impl Context {
             self.handle_manager.set_as_flushed(handle)?;
             Ok(())
         } else {
-            error!("Error in flushing context: {}.", ret);
+            error!("Error in flushing context: {}", ret);
             Err(ret)
         }
     }
@@ -867,7 +870,7 @@ impl Context {
             let context = unsafe { MBox::<TPMS_CONTEXT>::from_raw(context) };
             Ok((*context).try_into()?)
         } else {
-            error!("Error in saving context: {}.", ret);
+            error!("Error in saving context: {}", ret);
             Err(ret)
         }
     }
@@ -894,7 +897,7 @@ impl Context {
                 .add_handle(object_handle, HandleDropAction::Flush)?;
             Ok(object_handle)
         } else {
-            error!("Error in loading context: {}.", ret);
+            error!("Error in loading context: {}", ret);
             Err(ret)
         }
     }
@@ -943,6 +946,7 @@ impl Context {
 
             Ok(new_object_handle)
         } else {
+            error!("Error in evict control: {}", ret);
             Err(ret)
         }
     }
@@ -963,6 +967,7 @@ impl Context {
         if ret.is_success() {
             Ok(())
         } else {
+            error!("Error when extending PCR: {}", ret);
             Err(ret)
         }
     }
@@ -982,6 +987,7 @@ impl Context {
         if ret.is_success() {
             Ok(())
         } else {
+            error!("Error when resetting PCR: {}", ret);
             Err(ret)
         }
     }
@@ -1029,7 +1035,7 @@ impl Context {
                 PcrData::new(tss_pcr_selection_list_out.as_ref(), tss_digest.as_ref())?,
             ))
         } else {
-            error!("Error in creating derived key: {}.", ret);
+            error!("Error when reading PCR: {}", ret);
             Err(ret)
         }
     }
@@ -1118,6 +1124,7 @@ impl Context {
         if ret.is_success() {
             Ok(())
         } else {
+            error!("Error when computing policy PCR: {}", ret);
             Err(ret)
         }
     }
@@ -1151,6 +1158,7 @@ impl Context {
         if ret.is_success() {
             Ok(())
         } else {
+            error!("Error when computing policy OR: {}", ret);
             Err(ret)
         }
     }
@@ -1178,6 +1186,7 @@ impl Context {
         if ret.is_success() {
             Ok(())
         } else {
+            error!("Error when computing policy locality: {}", ret);
             Err(ret)
         }
     }
@@ -1201,6 +1210,7 @@ impl Context {
         if ret.is_success() {
             Ok(())
         } else {
+            error!("Error when computing policy command code: {}", ret);
             Err(ret)
         }
     }
@@ -1223,6 +1233,7 @@ impl Context {
         if ret.is_success() {
             Ok(())
         } else {
+            error!("Error when computing policy physical presence: {}", ret);
             Err(ret)
         }
     }
@@ -1247,6 +1258,7 @@ impl Context {
         if ret.is_success() {
             Ok(())
         } else {
+            error!("Error when computing policy command parameters: {}", ret);
             Err(ret)
         }
     }
@@ -1271,6 +1283,7 @@ impl Context {
         if ret.is_success() {
             Ok(())
         } else {
+            error!("Error when computing policy name hash: {}", ret);
             Err(ret)
         }
     }
@@ -1293,6 +1306,7 @@ impl Context {
         if ret.is_success() {
             Ok(())
         } else {
+            error!("Error when computing policy auth value: {}", ret);
             Err(ret)
         }
     }
@@ -1315,6 +1329,7 @@ impl Context {
         if ret.is_success() {
             Ok(())
         } else {
+            error!("Error when computing policy password: {}", ret);
             Err(ret)
         }
     }
@@ -1337,6 +1352,7 @@ impl Context {
         if ret.is_success() {
             Ok(())
         } else {
+            error!("Error when computing policy NV written state: {}", ret);
             Err(ret)
         }
     }
@@ -1377,6 +1393,7 @@ impl Context {
         if ret.is_success() {
             Ok(())
         } else {
+            error!("Error when computing policy authorize: {}", ret);
             Err(ret)
         }
     }
@@ -1408,7 +1425,7 @@ impl Context {
             random.truncate(buffer.size.try_into().unwrap()); // should not panic given the TryInto above
             Ok(Digest::try_from(random)?)
         } else {
-            error!("Error in getting random bytes: {}.", ret);
+            error!("Error in getting random bytes: {}", ret);
             Err(ret)
         }
     }
@@ -1437,7 +1454,7 @@ impl Context {
         if ret.is_success() {
             Ok(())
         } else {
-            error!("Error while testing parameters: {}.", ret);
+            error!("Error while testing parameters: {}", ret);
             Err(ret)
         }
     }
@@ -1479,7 +1496,7 @@ impl Context {
                 HashcheckTicket::try_from(*validation)?,
             ))
         } else {
-            error!("Error failed to peform hash operation: {}.", ret);
+            error!("Error failed to peform hash operation: {}", ret);
             Err(ret)
         }
     }
@@ -1530,6 +1547,7 @@ impl Context {
         if ret.is_success() {
             Ok(())
         } else {
+            error!("Error when setting authentication value: {}", ret);
             Err(ret)
         }
     }
@@ -1543,7 +1561,7 @@ impl Context {
             let tss_name = unsafe { MBox::<TPM2B_NAME>::from_raw(name) };
             Ok(Name::try_from(*tss_name)?)
         } else {
-            error!("Error in getting name: {}.", ret);
+            error!("Error in getting name: {}", ret);
             Err(ret)
         }
     }
@@ -1566,6 +1584,7 @@ impl Context {
         if ret.is_success() {
             Ok(())
         } else {
+            error!("Error when setting session attributes: {}", ret);
             Err(ret)
         }
     }
@@ -1580,6 +1599,7 @@ impl Context {
         if ret.is_success() {
             Ok(TpmaSessionBuilder::new().with_flag(flags).build())
         } else {
+            error!("Error when getting session attributes: {}", ret);
             Err(ret)
         }
     }
@@ -1610,6 +1630,7 @@ impl Context {
             )?;
             Ok(object_handle)
         } else {
+            error!("Error when getting ESYS handle from TPM handle: {}", ret);
             Err(ret)
         }
     }
@@ -1626,6 +1647,7 @@ impl Context {
             *object_handle = ObjectHandle::from(tss_esys_object_handle);
             Ok(())
         } else {
+            error!("Error when closing an ESYS handle: {}", ret);
             Err(ret)
         }
     }
@@ -1664,6 +1686,7 @@ impl Context {
                 .add_handle(object_identifier.into(), HandleDropAction::Close)?;
             Ok(NvIndexHandle::from(object_identifier))
         } else {
+            error!("Error when defining NV space: {}", ret);
             Err(ret)
         }
     }
@@ -1693,6 +1716,7 @@ impl Context {
             self.handle_manager.set_as_closed(nv_index_handle.into())?;
             Ok(())
         } else {
+            error!("Error when undefining NV space: {}", ret);
             Err(ret)
         }
     }
@@ -1724,6 +1748,7 @@ impl Context {
                 Name::try_from(*tss_nv_name)?,
             ))
         } else {
+            error!("Error when reading NV public: {}", ret);
             Err(ret)
         }
     }
@@ -1758,6 +1783,7 @@ impl Context {
                 unsafe { MBox::<TPM2B_MAX_NV_BUFFER>::from_raw(tss_max_nv_buffer_ptr) };
             Ok(MaxNvBuffer::try_from(*tss_max_nv_buffer)?)
         } else {
+            error!("Error when reading NV: {}", ret);
             Err(ret)
         }
     }
@@ -1788,6 +1814,7 @@ impl Context {
         if ret.is_success() {
             Ok(())
         } else {
+            error!("Error when writing NV: {}", ret);
             Err(ret)
         }
     }
@@ -1841,7 +1868,7 @@ impl Drop for Context {
         for handle in self.handle_manager.handles_to_flush() {
             info!("Flushing handle {}", ESYS_TR::from(handle));
             if let Err(e) = self.flush_context(handle) {
-                error!("Error when dropping the context: {}.", e);
+                error!("Error when dropping the context: {}", e);
             }
         }
 
