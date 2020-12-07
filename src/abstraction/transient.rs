@@ -664,6 +664,20 @@ impl TransientKeyContextBuilder {
         }
         let mut context = Context::new(self.tcti)?;
 
+        let root_key_auth = if self.root_key_auth_size > 0 {
+            let random = context.get_random(self.root_key_auth_size)?;
+            Some(Auth::try_from(random.value().to_vec())?)
+        } else {
+            None
+        };
+
+        if !self.hierarchy_auth.is_empty() {
+            let auth_hierarchy = Auth::try_from(self.hierarchy_auth)?;
+            context.tr_set_auth(self.hierarchy.into(), &auth_hierarchy)?;
+        }
+
+        let creation_pcrs = PcrSelectionListBuilder::new().build();
+
         let session = context
             .start_auth_session(
                 None,
@@ -679,27 +693,12 @@ impl TransientKeyContextBuilder {
                     Error::local_error(ErrorKind::WrongValueFromTpm)
                 })
             })?;
-
         let session_attr = TpmaSessionBuilder::new()
             .with_flag(TPMA_SESSION_DECRYPT)
             .with_flag(TPMA_SESSION_ENCRYPT)
             .build();
         context.tr_sess_set_attributes(session, session_attr)?;
-
         context.set_sessions((Some(session), None, None));
-        let root_key_auth = if self.root_key_auth_size > 0 {
-            let random = context.get_random(self.root_key_auth_size)?;
-            Some(Auth::try_from(random.value().to_vec())?)
-        } else {
-            None
-        };
-
-        if !self.hierarchy_auth.is_empty() {
-            let auth_hierarchy = Auth::try_from(self.hierarchy_auth)?;
-            context.tr_set_auth(self.hierarchy.into(), &auth_hierarchy)?;
-        }
-
-        let creation_pcrs = PcrSelectionListBuilder::new().build();
 
         let root_key_handle = context
             .create_primary_key(
