@@ -1380,7 +1380,7 @@ impl Context {
             random.truncate(buffer.size.try_into().unwrap()); // should not panic given the TryInto above
             Ok(Digest::try_from(random)?)
         } else {
-            error!("Error in flushing context: {}.", ret);
+            error!("Error in getting random bytes: {}.", ret);
             Err(ret)
         }
     }
