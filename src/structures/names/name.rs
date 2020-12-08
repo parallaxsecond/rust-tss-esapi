@@ -47,7 +47,7 @@ impl TryFrom<Name> for TPM2B_NAME {
     fn try_from(name: Name) -> Result<TPM2B_NAME> {
         let size = name.value.len();
         if size > Name::MAX_SIZE {
-            error!("Error: Invalid Name size(> {})", Name::MAX_SIZE);
+            error!("Error: Invalid TPM2B_NAME size(> {})", Name::MAX_SIZE);
             return Err(Error::local_error(WrapperErrorKind::WrongParamSize));
         }
         let mut tss_name: TPM2B_NAME = Default::default();

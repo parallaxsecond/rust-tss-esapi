@@ -48,7 +48,7 @@ impl TryFrom<TPM2_NT> for NvIndexType {
             TPM2_NT_PIN_FAIL => Ok(NvIndexType::PinFail),
             TPM2_NT_PIN_PASS => Ok(NvIndexType::PinPass),
             _ => {
-                error!("Error: Found invalid value when trying to parse Nv Index Type.");
+                error!("Error: Found invalid value when trying to parse Nv Index Type");
                 Err(Error::local_error(WrapperErrorKind::InvalidParam))
             }
         }

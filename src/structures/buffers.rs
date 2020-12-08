@@ -51,7 +51,7 @@ macro_rules! buffer_type {
 
             fn try_from(bytes: &[u8]) -> Result<Self> {
                 if bytes.len() > Self::MAX_SIZE {
-                    error!("Error: Invalid Vec<u8> size(> {})", Self::MAX_SIZE);
+                    error!("Error: Invalid &[u8] size(> {})", Self::MAX_SIZE);
                     return Err(Error::local_error(WrapperErrorKind::WrongParamSize));
                 }
                 Ok($native_type(bytes.to_vec().into()))

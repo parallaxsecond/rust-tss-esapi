@@ -84,6 +84,15 @@
 //! thoroughly documented and justified - preferably `unwrap` and `expect` should *never* fail
 //! during normal operation.
 //! * these rules can be broken in test-only code and in tests.
+//!
+//! # Logging
+//! This crate uses the typical `log` crate for printing errors generated in method calls. If
+//! you would like to filter out these log messages, please check with your logger documentation
+//! on how to do that.
+//!
+//! Additionally, the TSS library will also generate its own log messages and these can be
+//! controlled through environment variables as explained
+//! [here](https://github.com/tpm2-software/tpm2-tss/blob/master/doc/logging.md#runtime-log-level).
 
 pub use abstraction::transient::TransientKeyContext;
 pub use context::Context;
