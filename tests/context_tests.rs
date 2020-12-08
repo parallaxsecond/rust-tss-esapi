@@ -1856,26 +1856,39 @@ mod test_ctx_load {
 
 mod test_evict_control {
     use super::*;
+    use tss_esapi::constants::tss::TPM2_PERSISTENT_FIRST;
 
     fn remove_persitent_handle(persistent_tpm_handle: PersistentTpmHandle) {
         let mut context = create_ctx_without_session();
-        if let Ok(mut handle) =
-            context.tr_from_tpm_public(TpmHandle::Persistent(persistent_tpm_handle))
+        let mut property = TPM2_PERSISTENT_FIRST;
+        while let Ok((capability_data, more_data_available)) =
+            context.get_capabilities(CapabilityType::Handles, property, 1)
         {
-            // The peristent handle existed and is now loaded
-            // so it needs to be evicted
-            context.execute_with_session(Some(Session::Password), |ctx| {
-                ctx.evict_control(
-                    Provision::Owner,
-                    handle,
-                    Persistent::Persistent(persistent_tpm_handle),
-                )
-                .expect("Failed to evict persitent handle");
-            });
-            // close the handle.
-            context.execute_without_session(|ctx| {
-                ctx.tr_close(&mut handle).expect("Failed to close handle");
-            });
+            if let CapabilityData::Handles(persistent_handles) = capability_data {
+                if let Some(&retrieved_persistent_handle) = persistent_handles.first() {
+                    if retrieved_persistent_handle == persistent_tpm_handle.into() {
+                        let handle = context
+                            .tr_from_tpm_public(TpmHandle::Persistent(persistent_tpm_handle))
+                            .expect("Failed to retrieve handle from TPM");
+                        context
+                            .evict_control(
+                                Provision::Owner,
+                                handle,
+                                Persistent::Persistent(persistent_tpm_handle),
+                            )
+                            .expect("Failed to evict persitent handle");
+                        return;
+                    }
+
+                    if more_data_available {
+                        property = TPM2_HANDLE::from(retrieved_persistent_handle) + 1;
+                    }
+                }
+            }
+
+            if !more_data_available {
+                return;
+            }
         }
     }
 
@@ -1913,9 +1926,12 @@ mod test_evict_control {
             .key_handle;
 
         // Evict control to make primary_key_handle persistent
-        let mut peristent_primary_key_handle = context
+        let mut persistent_primary_key_handle = context
             .evict_control(Provision::Owner, primary_key_handle.into(), persistent)
             .expect("Failed to make the primary key handle persistent");
+
+        assert_ne!(persistent_primary_key_handle, ObjectHandle::Null);
+        assert_ne!(persistent_primary_key_handle, ObjectHandle::None);
 
         // Flush out the primary_key_handle
         context
@@ -1923,7 +1939,7 @@ mod test_evict_control {
             .expect("Failed to flush context");
         // Close the persistant_handle returned by evict_control
         context
-            .tr_close(&mut peristent_primary_key_handle)
+            .tr_close(&mut persistent_primary_key_handle)
             .expect("Failed to close persistant handle");
 
         // Retrieve the handle from the tpm again.
@@ -1939,10 +1955,7 @@ mod test_evict_control {
 
         context.clear_sessions();
 
-        assert_ne!(
-            retireved_persistant_handle,
-            ObjectHandle::from(ESYS_TR_NONE)
-        );
+        assert_ne!(retireved_persistant_handle, ObjectHandle::None);
     }
 }
 
@@ -2439,6 +2452,40 @@ mod test_nv_read {
 
 mod test_tr_from_tpm_public {
     use super::*;
+    use tss_esapi::constants::tss::TPM2_NV_INDEX_FIRST;
+
+    fn remove_nv_index_handle_from_tpm(nv_index_tpm_handle: NvIndexTpmHandle, nv_auth: NvAuth) {
+        let mut context = create_ctx_without_session();
+        let mut property = TPM2_NV_INDEX_FIRST;
+        println!("KALLEE");
+        while let Ok((capability_data, more_data_available)) =
+            context.get_capabilities(CapabilityType::Handles, property, 1)
+        {
+            if let CapabilityData::Handles(nv_index_handles) = capability_data {
+                if let Some(&retrieved_nv_index_tpm_handle) = nv_index_handles.first() {
+                    if retrieved_nv_index_tpm_handle == nv_index_tpm_handle.into() {
+                        let handle = context
+                            .tr_from_tpm_public(nv_index_tpm_handle.into())
+                            .map(NvIndexHandle::from)
+                            .expect("Failed to get nv index from tpm");
+                        context.execute_with_session(Some(Session::Password), |ctx| {
+                            ctx.nv_undefine_space(nv_auth, handle)
+                                .expect("Failed to undefine space");
+                        });
+                        return;
+                    }
+
+                    if more_data_available {
+                        property = TPM2_HANDLE::from(retrieved_nv_index_tpm_handle) + 1;
+                    }
+                }
+            }
+
+            if !more_data_available {
+                return;
+            }
+        }
+    }
 
     // Need to set the shEnable in the TPMA_STARTUP in order for this to work.
     #[ignore]
@@ -2494,10 +2541,7 @@ mod test_tr_from_tpm_public {
         // data in the TPM.
         let new_nv_index_handle = context
             .tr_from_tpm_public(nv_index_tpm_handle.into())
-            .map_err(|e| -> tss_esapi::Result<ObjectHandle> {
-                panic!("tr_from_tpm_public failed: {}", e);
-            })
-            .unwrap();
+            .expect("tr_from_tpm_public failed");
         ///////////////////////////////////////////////
         // Get name of the object using the new handle
         let actual_name = context
@@ -2515,14 +2559,15 @@ mod test_tr_from_tpm_public {
 
     #[test]
     fn test_tr_from_tpm_public_password_auth() {
-        let mut context = create_ctx_without_session();
-
         let nv_index_tpm_handle = NvIndexTpmHandle::new(0x01500022).unwrap();
+        remove_nv_index_handle_from_tpm(nv_index_tpm_handle, NvAuth::Owner);
+
+        let mut context = create_ctx_without_session();
 
         let auth = Auth::try_from(vec![
             10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29,
         ])
-        .unwrap();
+        .expect("Failed to create auth");
 
         // closure for cleaning up if a call fails.
         let cleanup = |context: &mut Context,
@@ -2532,7 +2577,9 @@ mod test_tr_from_tpm_public {
          -> tss_esapi::Error {
             // Set password authorization
             context.set_sessions((Some(Session::Password), None, None));
-            let _ = context.nv_undefine_space(NvAuth::Owner, handle).unwrap();
+            let _ = context
+                .nv_undefine_space(NvAuth::Owner, handle)
+                .expect("Failed to call nv_undefine_space");
             panic!("{} failed: {}", fn_name, e);
         };
 
@@ -2547,7 +2594,7 @@ mod test_tr_from_tpm_public {
             .with_index_attributes(nv_index_attributes)
             .with_data_area_size(32)
             .build()
-            .unwrap();
+            .expect("Failed to build nv public");
         ///////////////////////////////////////////////////////////////
         // Define space
         //
@@ -2555,7 +2602,7 @@ mod test_tr_from_tpm_public {
         context.set_sessions((Some(Session::Password), None, None));
         let initial_nv_index_handle = context
             .nv_define_space(NvAuth::Owner, Some(&auth), &nv_public)
-            .unwrap();
+            .expect("Failed to call nv_define_space");
         ///////////////////////////////////////////////////////////////
         // Read the name from the tpm
         //
@@ -2564,7 +2611,7 @@ mod test_tr_from_tpm_public {
         let (_expected_nv_public, expected_name) = context
             .nv_read_public(initial_nv_index_handle)
             .map_err(|e| cleanup(&mut context, e, initial_nv_index_handle, "nv_read_public"))
-            .unwrap();
+            .expect("Failed to call nv_read_public");
         ///////////////////////////////////////////////////////////////
         // Close the esys handle (remove all meta data).
         //
@@ -2572,7 +2619,7 @@ mod test_tr_from_tpm_public {
         context
             .tr_close(&mut handle_to_be_closed)
             .map_err(|e| cleanup(&mut context, e, initial_nv_index_handle, "tr_close"))
-            .unwrap();
+            .expect("Failed to call tr_close");
         assert_eq!(handle_to_be_closed, ObjectHandle::from(ESYS_TR_NONE));
         // The value of the handle_to_be_closed will be set to a 'None' handle
         // if the operations was successful.
@@ -2588,14 +2635,14 @@ mod test_tr_from_tpm_public {
             .map_err(|e| -> tss_esapi::Result<ObjectHandle> {
                 panic!("tr_from_tpm_public failed: {}", e);
             })
-            .unwrap();
+            .expect("Error when call tr_from_tpm_public");
         ///////////////////////////////////////////////////////////////
         // Get name of the object using the new handle
         //
         let actual_name = context
             .tr_get_name(new_nv_index_handle)
             .map_err(|e| cleanup(&mut context, e, new_nv_index_handle.into(), "tr_get_name"))
-            .unwrap();
+            .expect("Failed to call tr_get_name");
         ///////////////////////////////////////////////////////////////
         // Remove undefine the space
         //
@@ -2603,7 +2650,7 @@ mod test_tr_from_tpm_public {
         context.set_sessions((Some(Session::Password), None, None));
         let _ = context
             .nv_undefine_space(NvAuth::Owner, new_nv_index_handle.into())
-            .unwrap();
+            .expect("Failed to call nv_undefine_space");
         ///////////////////////////////////////////////////////////////
         // Check that we got the correct name
         //
@@ -2612,9 +2659,11 @@ mod test_tr_from_tpm_public {
 
     #[test]
     fn read_from_retrieved_handle_using_password_authorization() {
-        let mut context = create_ctx_without_session();
-
         let nv_index_tpm_handle = NvIndexTpmHandle::new(0x01500023).unwrap();
+
+        remove_nv_index_handle_from_tpm(nv_index_tpm_handle, NvAuth::Owner);
+
+        let mut context = create_ctx_without_session();
 
         let auth = Auth::try_from(vec![
             10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29,

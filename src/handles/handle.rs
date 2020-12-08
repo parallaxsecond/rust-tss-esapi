@@ -8,6 +8,12 @@
 //! are also specific handle types that indicates what created
 //! them or how they are intended to be used.
 
+pub mod conversions {
+    pub(crate) trait TryIntoNotNone {
+        fn try_into_not_none(self) -> crate::Result<crate::tss2_esys::ESYS_TR>;
+    }
+}
+
 /// Macro for generating a basic handle implementation
 macro_rules! impl_basic_handle {
     (
@@ -58,11 +64,44 @@ macro_rules! add_constant_handle {
     };
 }
 
+/// Macro for making the Esys None constant available
+/// for a handle type
+macro_rules! add_constant_none_handle {
+    ($handle_type:ident) => {
+        use crate::{
+            handles::handle_conversion::TryIntoNotNone, tss2_esys::ESYS_TR_NONE, Error, Result,
+            WrapperErrorKind as ErrorKind,
+        };
+        use log::error;
+
+        add_constant_handle!($handle_type, None, ESYS_TR_NONE);
+
+        impl $handle_type {
+            /// Method that returns true if the handle corresponds
+            /// to the None handle.
+            pub fn is_none(&self) -> bool {
+                *self == $handle_type::None
+            }
+        }
+
+        impl TryIntoNotNone for $handle_type {
+            fn try_into_not_none(self) -> Result<ESYS_TR> {
+                if !self.is_none() {
+                    Ok(self.into())
+                } else {
+                    error!("Found invalid parameter {}::None", stringify!($handle_type));
+                    Err(Error::local_error(ErrorKind::InvalidParam))
+                }
+            }
+        }
+    };
+}
+
 /// Module for the ObjectHandle
 pub mod object {
     use crate::tss2_esys::{
-        ESYS_TR_NONE, ESYS_TR_PASSWORD, ESYS_TR_RH_ENDORSEMENT, ESYS_TR_RH_LOCKOUT,
-        ESYS_TR_RH_NULL, ESYS_TR_RH_OWNER, ESYS_TR_RH_PLATFORM, ESYS_TR_RH_PLATFORM_NV,
+        ESYS_TR_PASSWORD, ESYS_TR_RH_ENDORSEMENT, ESYS_TR_RH_LOCKOUT, ESYS_TR_RH_NULL,
+        ESYS_TR_RH_OWNER, ESYS_TR_RH_PLATFORM, ESYS_TR_RH_PLATFORM_NV,
     };
 
     impl_basic_handle!(
@@ -74,8 +113,10 @@ pub mod object {
         ObjectHandle
     );
 
+    // Add None handle
+    add_constant_none_handle!(ObjectHandle);
+    // Add all the other constant handles
     add_constant_handle!(ObjectHandle, Password, ESYS_TR_PASSWORD);
-    add_constant_handle!(ObjectHandle, None, ESYS_TR_NONE);
     add_constant_handle!(ObjectHandle, Owner, ESYS_TR_RH_OWNER);
     add_constant_handle!(ObjectHandle, Lockout, ESYS_TR_RH_LOCKOUT);
     add_constant_handle!(ObjectHandle, Endorsement, ESYS_TR_RH_ENDORSEMENT);
@@ -282,7 +323,7 @@ pub mod key {
 pub mod session {
     use super::auth::AuthHandle;
     use super::object::ObjectHandle;
-    use crate::tss2_esys::{ESYS_TR_NONE, ESYS_TR_PASSWORD};
+    use crate::tss2_esys::ESYS_TR_PASSWORD;
     impl_basic_handle!(
         /// Session Handle
         ///
@@ -290,11 +331,16 @@ pub mod session {
         /// referencing session resources.
         SessionHandle
     );
-    impl_handle_conversion!(SessionHandle, ObjectHandle);
-    impl_handle_conversion!(SessionHandle, AuthHandle);
+
     // TSS ESAPI v1p0_r08 specifies that both
     // PASSWORD and NONE can be used as session handles
     // NONE are used when session handle is optional.
+
+    // Add the none handle
+    add_constant_none_handle!(SessionHandle);
+    // Add all other constant handles
     add_constant_handle!(SessionHandle, Password, ESYS_TR_PASSWORD);
-    add_constant_handle!(SessionHandle, None, ESYS_TR_NONE);
+
+    impl_handle_conversion!(SessionHandle, ObjectHandle);
+    impl_handle_conversion!(SessionHandle, AuthHandle);
 }

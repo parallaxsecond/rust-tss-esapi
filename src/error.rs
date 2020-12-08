@@ -66,9 +66,12 @@ pub enum WrapperErrorKind {
     InvalidParam,
     /// Returned when the TPM returns an invalid value from a call.
     WrongValueFromTpm,
-    /// Returned when when a session for authentication has not been set
+    /// Returned when a session for authentication has not been set
     /// before the call is made.
     MissingAuthSession,
+    /// Returned when a handle is required to be in a specific state
+    /// (i.g. Open, Flushed, Closed) but it is not.
+    InvalidHandleState,
 }
 
 impl std::fmt::Display for WrapperErrorKind {
@@ -93,6 +96,7 @@ impl std::fmt::Display for WrapperErrorKind {
             }
             WrapperErrorKind::WrongValueFromTpm => write!(f, "the TPM returned an invalid value."),
             WrapperErrorKind::MissingAuthSession => write!(f, "Missing authorization session"),
+            WrapperErrorKind::InvalidHandleState => write!(f, "Invalid handle state"),
         }
     }
 }

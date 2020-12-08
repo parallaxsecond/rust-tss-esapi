@@ -37,6 +37,19 @@ pub enum TpmHandle {
     AttachedComponent(attached_component::AttachedComponentTpmHandle),
 }
 
+impl TpmHandle {
+    /// Method that indicates if the flushing the
+    /// context of the handle is a valid action.
+    pub(crate) fn may_be_flushed(&self) -> bool {
+        match self {
+            TpmHandle::HmacSession(_) => true,
+            TpmHandle::LoadedSession(_) => true,
+            TpmHandle::Transient(_) => true,
+            _ => false,
+        }
+    }
+}
+
 impl From<TpmHandle> for TPM2_HANDLE {
     fn from(tpm_handle: TpmHandle) -> TPM2_HANDLE {
         match tpm_handle {
