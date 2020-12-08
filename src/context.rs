@@ -20,9 +20,9 @@ use crate::{
     session::Session,
     structures::{
         Auth, CapabilityData, CreateKeyResult, CreatePrimaryKeyResult, CreationData,
-        CreationTicket, Data, Digest, DigestList, DigestValues, HashcheckTicket, MaxBuffer,
-        MaxNvBuffer, Name, Nonce, PcrSelectionList, Private, PublicKeyRSA, SensitiveData,
-        VerifiedTicket,
+        CreationTicket, Data, Digest, DigestList, DigestValues, EncryptedSecret, HashcheckTicket,
+        IDObject, MaxBuffer, MaxNvBuffer, Name, Nonce, PcrSelectionList, Private, PublicKeyRSA,
+        SensitiveData, VerifiedTicket,
     },
     tcti::Tcti,
     tss2_esys::*,
@@ -656,6 +656,83 @@ impl Context {
             Ok(validation)
         } else {
             error!("Error when verifying signature: {}", ret);
+            Err(ret)
+        }
+    }
+
+    /// Activates a credential in a way that ensures parameters are validated.
+    pub fn activate_credential(
+        &mut self,
+        activate_handle: KeyHandle,
+        key_handle: KeyHandle,
+        credential_blob: IDObject,
+        secret: EncryptedSecret,
+    ) -> Result<Digest> {
+        let mut out_cert_info = null_mut();
+        let ret = unsafe {
+            Esys_ActivateCredential(
+                self.mut_context(),
+                activate_handle.into(),
+                key_handle.into(),
+                self.required_session_1()?,
+                self.required_session_2()?,
+                self.optional_session_3(),
+                &credential_blob.try_into()?,
+                &secret.try_into()?,
+                &mut out_cert_info,
+            )
+        };
+
+        let ret = Error::from_tss_rc(ret);
+
+        if ret.is_success() {
+            let out_cert_info = unsafe { MBox::<TPM2B_DIGEST>::from_raw(out_cert_info) };
+
+            Ok(Digest::try_from(*out_cert_info)?)
+        } else {
+            error!("Error when activating credential: {}", ret);
+            Err(ret)
+        }
+    }
+
+    /// Perform actions to create a TPM2B_ID_OBJECT containing an activation credential.
+    ///
+    /// This does not use any TPM secrets, and is really just a convenience function.
+    pub fn make_credential(
+        &mut self,
+        key_handle: KeyHandle,
+        credential: Digest,
+        object_name: Name,
+    ) -> Result<(IDObject, EncryptedSecret)> {
+        let mut out_credential_blob = null_mut();
+        let mut out_secret = null_mut();
+        let ret = unsafe {
+            Esys_MakeCredential(
+                self.mut_context(),
+                key_handle.into(),
+                self.optional_session_1(),
+                self.optional_session_2(),
+                self.optional_session_3(),
+                &credential.try_into()?,
+                &object_name.try_into()?,
+                &mut out_credential_blob,
+                &mut out_secret,
+            )
+        };
+
+        let ret = Error::from_tss_rc(ret);
+
+        if ret.is_success() {
+            let out_credential_blob =
+                unsafe { MBox::<TPM2B_ID_OBJECT>::from_raw(out_credential_blob) };
+            let out_secret = unsafe { MBox::<TPM2B_ENCRYPTED_SECRET>::from_raw(out_secret) };
+
+            Ok((
+                IDObject::try_from(*out_credential_blob)?,
+                EncryptedSecret::try_from(*out_secret)?,
+            ))
+        } else {
+            error!("Error when making credential: {}", ret);
             Err(ret)
         }
     }
@@ -1850,11 +1927,21 @@ impl Context {
     }
 
     /// Function that returns the required
-    /// session handle if it is available else
+    /// session handle 1 if it is available else
     /// returns an error.
     fn required_session_1(&self) -> Result<ESYS_TR> {
         self.sessions.0.map(|v| v.handle().into()).ok_or_else(|| {
             error!("Missing session handle for authorization (authSession1 = None)");
+            Error::local_error(ErrorKind::MissingAuthSession)
+        })
+    }
+
+    /// Function that returns the required
+    /// session handle 2 if it is available else
+    /// returns an error.
+    fn required_session_2(&self) -> Result<ESYS_TR> {
+        self.sessions.1.map(|v| v.handle().into()).ok_or_else(|| {
+            error!("Missing session handle for authorization (authSession2 = None)");
             Error::local_error(ErrorKind::MissingAuthSession)
         })
     }

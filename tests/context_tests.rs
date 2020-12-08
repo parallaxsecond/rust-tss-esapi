@@ -356,6 +356,103 @@ mod test_get_capability {
     }
 }
 
+mod make_active_credential {
+    use super::*;
+
+    #[test]
+    fn test_make_credential() {
+        let mut context = create_ctx_with_session();
+
+        let key_handle = context
+            .create_primary_key(
+                Hierarchy::Owner,
+                &decryption_key_pub(),
+                None,
+                None,
+                None,
+                PcrSelectionListBuilder::new().build(),
+            )
+            .unwrap()
+            .key_handle;
+
+        let (_, key_name, _) = context.read_public(key_handle).unwrap();
+
+        let cred = vec![1, 2, 3, 4, 5];
+
+        context
+            .execute_without_session(|ctx| {
+                ctx.make_credential(key_handle, cred.try_into().unwrap(), key_name)
+            })
+            .unwrap();
+    }
+
+    #[test]
+    fn test_make_activate_credential() {
+        let mut context = create_ctx_with_session();
+
+        let session_attr = TpmaSessionBuilder::new().build();
+
+        let session_1 = context
+            .start_auth_session(
+                None,
+                None,
+                None,
+                SessionType::Hmac,
+                Cipher::aes_256_cfb(),
+                HashingAlgorithm::Sha256,
+            )
+            .unwrap();
+        context
+            .tr_sess_set_attributes(session_1.unwrap(), session_attr)
+            .unwrap();
+        let session_2 = context
+            .start_auth_session(
+                None,
+                None,
+                None,
+                SessionType::Hmac,
+                Cipher::aes_256_cfb(),
+                HashingAlgorithm::Sha256,
+            )
+            .unwrap();
+        context
+            .tr_sess_set_attributes(session_2.unwrap(), session_attr)
+            .unwrap();
+
+        let key_handle = context
+            .create_primary_key(
+                Hierarchy::Owner,
+                &decryption_key_pub(),
+                None,
+                None,
+                None,
+                PcrSelectionListBuilder::new().build(),
+            )
+            .unwrap()
+            .key_handle;
+
+        let (_, key_name, _) = context.read_public(key_handle).unwrap();
+
+        let cred = vec![1, 2, 3, 4, 5];
+
+        let (credential_blob, secret) = context
+            .execute_without_session(|ctx| {
+                ctx.make_credential(key_handle, cred.try_into().unwrap(), key_name)
+            })
+            .unwrap();
+
+        context.set_sessions((session_1, session_2, None));
+
+        let decrypted = context
+            .activate_credential(key_handle, key_handle, credential_blob, secret)
+            .unwrap();
+
+        let expected = Digest::try_from(vec![1, 2, 3, 4, 5]).unwrap();
+
+        assert_eq!(expected, decrypted);
+    }
+}
+
 mod test_pcr_extend_reset {
     use super::*;
 
