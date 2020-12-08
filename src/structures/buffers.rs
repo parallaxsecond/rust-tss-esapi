@@ -1,8 +1,8 @@
 // Copyright 2020 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
 #[allow(unused_macros)]
-macro_rules! buffer_type {
-    ($native_type:ident,$MAX:expr,$tss_type:ident) => {
+macro_rules! named_field_buffer_type {
+    ($native_type:ident,$MAX:expr,$tss_type:ident,$buffer_field_name:ident) => {
         use crate::tss2_esys::$tss_type;
         use crate::{Error, Result, WrapperErrorKind};
         use log::error;
@@ -67,7 +67,7 @@ macro_rules! buffer_type {
                     error!("Error: Invalid buffer size(> {})", Self::MAX_SIZE);
                     return Err(Error::local_error(WrapperErrorKind::WrongParamSize));
                 }
-                Ok($native_type(tss.buffer[..size].to_vec().into()))
+                Ok($native_type(tss.$buffer_field_name[..size].to_vec().into()))
             }
         }
 
@@ -77,10 +77,17 @@ macro_rules! buffer_type {
             fn try_from(native: $native_type) -> Result<Self> {
                 let mut buffer: $tss_type = Default::default();
                 buffer.size = native.0.len() as u16;
-                buffer.buffer[..native.0.len()].copy_from_slice(&native.0);
+                buffer.$buffer_field_name[..native.0.len()].copy_from_slice(&native.0);
                 Ok(buffer)
             }
         }
+    };
+}
+
+#[allow(unused_macros)]
+macro_rules! buffer_type {
+    ($native_type:ident,$MAX:expr,$tss_type:ident) => {
+        named_field_buffer_type!($native_type, $MAX, $tss_type, buffer);
     };
 }
 
@@ -98,6 +105,14 @@ pub mod sensitive_data {
 
 pub mod private {
     buffer_type!(Private, 256, TPM2B_PRIVATE);
+}
+
+pub mod encrypted_secret {
+    named_field_buffer_type!(EncryptedSecret, 256, TPM2B_ENCRYPTED_SECRET, secret);
+}
+
+pub mod id_object {
+    named_field_buffer_type!(IDObject, 256, TPM2B_ID_OBJECT, credential);
 }
 
 pub mod digest {

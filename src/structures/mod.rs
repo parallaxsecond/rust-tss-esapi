@@ -44,6 +44,10 @@ pub use self::buffers::max_nv_buffer::MaxNvBuffer;
 
 pub use self::buffers::data::Data;
 
+pub use self::buffers::id_object::IDObject;
+
+pub use self::buffers::encrypted_secret::EncryptedSecret;
+
 pub use self::buffers::sensitive_data::SensitiveData;
 
 pub use self::buffers::private::Private;
