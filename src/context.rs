@@ -1605,6 +1605,58 @@ impl Context {
         }
     }
 
+    /// Change authorization for a hierarchy root
+    pub fn hierarchy_change_auth(&mut self, auth_handle: AuthHandle, new_auth: Auth) -> Result<()> {
+        let ret = unsafe {
+            Esys_HierarchyChangeAuth(
+                self.mut_context(),
+                auth_handle.into(),
+                self.required_session_1()?,
+                self.optional_session_2(),
+                self.optional_session_3(),
+                &new_auth.try_into()?,
+            )
+        };
+        let ret = Error::from_tss_rc(ret);
+        if ret.is_success() {
+            Ok(())
+        } else {
+            error!("Error changing hierarchy auth: {}", ret);
+            Err(ret)
+        }
+    }
+
+    /// Change authorization for a TPM-resident object.
+    pub fn object_change_auth(
+        &mut self,
+        object_handle: ObjectHandle,
+        parent_handle: ObjectHandle,
+        new_auth: Auth,
+    ) -> Result<Private> {
+        let mut out_private = null_mut();
+        let ret = unsafe {
+            Esys_ObjectChangeAuth(
+                self.mut_context(),
+                object_handle.into(),
+                parent_handle.into(),
+                self.required_session_1()?,
+                self.optional_session_2(),
+                self.optional_session_3(),
+                &new_auth.try_into()?,
+                &mut out_private,
+            )
+        };
+        let ret = Error::from_tss_rc(ret);
+        if ret.is_success() {
+            let out_private = unsafe { MBox::from_raw(out_private) };
+            let out_private = Private::try_from(*out_private)?;
+            Ok(out_private)
+        } else {
+            error!("Error changing hierarchy auth: {}", ret);
+            Err(ret)
+        }
+    }
+
     ///////////////////////////////////////////////////////////////////////////
     /// TPM Resource Section
     ///////////////////////////////////////////////////////////////////////////

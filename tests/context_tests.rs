@@ -1257,6 +1257,69 @@ mod test_policy_pcr {
     }
 }
 
+mod test_change_auth {
+    use super::*;
+
+    #[test]
+    fn test_object_change_auth() {
+        let mut context = create_ctx_with_session();
+
+        let prim_key_handle = context
+            .create_primary_key(
+                Hierarchy::Owner,
+                &decryption_key_pub(),
+                None,
+                None,
+                None,
+                PcrSelectionListBuilder::new().build(),
+            )
+            .unwrap()
+            .key_handle;
+        let keyresult = context
+            .create_key(
+                prim_key_handle,
+                &decryption_key_pub(),
+                None,
+                None,
+                None,
+                PcrSelectionListBuilder::new().build(),
+            )
+            .unwrap();
+        let loaded_key = context
+            .load(prim_key_handle, keyresult.out_private, keyresult.out_public)
+            .unwrap();
+
+        let random_digest = context.get_random(16).unwrap();
+        let new_key_auth = Auth::try_from(random_digest.value().to_vec()).unwrap();
+
+        let new_private = context
+            .object_change_auth(loaded_key.into(), prim_key_handle.into(), new_key_auth)
+            .unwrap();
+        context
+            .load(prim_key_handle, new_private, keyresult.out_public)
+            .unwrap();
+    }
+
+    #[test]
+    fn test_hierarchy_change_auth() {
+        let mut context = create_ctx_with_session();
+
+        let random_digest = context.get_random(16).unwrap();
+        let new_auth = Auth::try_from(random_digest.value().to_vec()).unwrap();
+
+        // NOTE: If this test failed on your system, you are probably running it against a
+        //  real (hardware) TPM or one that is provisioned. This hierarchy is supposed to be
+        //  used by the platform. It's used in this test because if we fail at restoring auth,
+        //  it should not be a big deal on a software TPM, and it won't impact the other tests.
+        context
+            .hierarchy_change_auth(AuthHandle::Platform, new_auth)
+            .unwrap();
+        context
+            .hierarchy_change_auth(AuthHandle::Platform, Default::default())
+            .unwrap();
+    }
+}
+
 mod test_get_random {
     use super::*;
 
