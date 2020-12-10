@@ -19,10 +19,10 @@ use crate::{
     nv::storage::NvPublic,
     session::Session,
     structures::{
-        Auth, CapabilityData, CreateKeyResult, CreatePrimaryKeyResult, CreationData,
+        Auth, AuthTicket, CapabilityData, CreateKeyResult, CreatePrimaryKeyResult, CreationData,
         CreationTicket, Data, Digest, DigestList, DigestValues, EncryptedSecret, HashcheckTicket,
         IDObject, MaxBuffer, MaxNvBuffer, Name, Nonce, PcrSelectionList, Private, PublicKeyRSA,
-        SensitiveData, VerifiedTicket,
+        SensitiveData, Timeout, VerifiedTicket,
     },
     tcti::Tcti,
     tss2_esys::*,
@@ -39,6 +39,7 @@ use std::collections::HashMap;
 use std::convert::{TryFrom, TryInto};
 use std::ffi::CString;
 use std::ptr::{null, null_mut};
+use std::time::Duration;
 use zeroize::Zeroize;
 /// Safe abstraction over an ESYS_CONTEXT.
 ///
@@ -1159,6 +1160,110 @@ impl Context {
             Err(ret)
         }
     }
+
+    /// Cause the policy to include a signed authorization
+    #[allow(clippy::too_many_arguments)]
+    pub fn policy_signed(
+        &mut self,
+        policy_session: Session,
+        auth_object: ObjectHandle,
+        nonce_tpm: Nonce,
+        cp_hash_a: Digest,
+        policy_ref: Nonce,
+        expiration: Option<Duration>,
+        signature: Signature,
+    ) -> Result<(Timeout, AuthTicket)> {
+        let mut out_timeout = null_mut();
+        let mut out_policy_ticket = null_mut();
+        let expiration = match expiration {
+            None => 0,
+            Some(val) => match i32::try_from(val.as_secs()) {
+                Ok(val) => val,
+                Err(_) => return Err(Error::local_error(ErrorKind::InvalidParam)),
+            },
+        };
+
+        let ret = unsafe {
+            Esys_PolicySigned(
+                self.mut_context(),
+                auth_object.into(),
+                policy_session.handle().into(),
+                self.required_session_1()?,
+                self.optional_session_2(),
+                self.optional_session_3(),
+                &nonce_tpm.try_into()?,
+                &cp_hash_a.try_into()?,
+                &policy_ref.try_into()?,
+                expiration,
+                &signature.try_into()?,
+                &mut out_timeout,
+                &mut out_policy_ticket,
+            )
+        };
+        let ret = Error::from_tss_rc(ret);
+        if ret.is_success() {
+            let out_timeout = unsafe { MBox::from_raw(out_timeout) };
+            let out_timeout = Timeout::try_from(*out_timeout)?;
+            let out_policy_ticket = unsafe { MBox::from_raw(out_policy_ticket) };
+            let out_policy_ticket = AuthTicket::try_from(*out_policy_ticket)?;
+
+            Ok((out_timeout, out_policy_ticket))
+        } else {
+            error!("Error when sending policy signed: {}", ret);
+            Err(ret)
+        }
+    }
+
+    /// Cause the policy to require a secret in authValue
+    pub fn policy_secret(
+        &mut self,
+        policy_session: Session,
+        auth_handle: AuthHandle,
+        nonce_tpm: Nonce,
+        cp_hash_a: Digest,
+        policy_ref: Nonce,
+        expiration: Option<Duration>,
+    ) -> Result<(Timeout, AuthTicket)> {
+        let mut out_timeout = null_mut();
+        let mut out_policy_ticket = null_mut();
+        let expiration = match expiration {
+            None => 0,
+            Some(val) => match i32::try_from(val.as_secs()) {
+                Ok(val) => val,
+                Err(_) => return Err(Error::local_error(ErrorKind::InvalidParam)),
+            },
+        };
+
+        let ret = unsafe {
+            Esys_PolicySecret(
+                self.mut_context(),
+                auth_handle.into(),
+                policy_session.handle().into(),
+                self.required_session_1()?,
+                self.optional_session_2(),
+                self.optional_session_3(),
+                &nonce_tpm.try_into()?,
+                &cp_hash_a.try_into()?,
+                &policy_ref.try_into()?,
+                expiration,
+                &mut out_timeout,
+                &mut out_policy_ticket,
+            )
+        };
+        let ret = Error::from_tss_rc(ret);
+        if ret.is_success() {
+            let out_timeout = unsafe { MBox::from_raw(out_timeout) };
+            let out_timeout = Timeout::try_from(*out_timeout)?;
+            let out_policy_ticket = unsafe { MBox::from_raw(out_policy_ticket) };
+            let out_policy_ticket = AuthTicket::try_from(*out_policy_ticket)?;
+
+            Ok((out_timeout, out_policy_ticket))
+        } else {
+            error!("Error when sending policy secret: {}", ret);
+            Err(ret)
+        }
+    }
+
     /// Cause conditional gating of a policy based on PCR.
     ///
     /// The TPM will use the hash algorithm of the policy_session

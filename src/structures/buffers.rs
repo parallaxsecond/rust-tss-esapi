@@ -201,3 +201,7 @@ pub mod nonce {
 pub mod public_key_rsa {
     buffer_type!(PublicKeyRSA, 512, TPM2B_PUBLIC_KEY_RSA);
 }
+
+pub mod timeout {
+    buffer_type!(Timeout, 8, TPM2B_TIMEOUT);
+}

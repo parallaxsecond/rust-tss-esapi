@@ -55,6 +55,8 @@ pub use self::buffers::private::Private;
 pub use self::buffers::public_key_rsa::PublicKeyRSA;
 
 pub use self::buffers::nonce::Nonce;
+
+pub use self::buffers::timeout::Timeout;
 /////////////////////////////////////////////////////////
 /// The creation section
 /////////////////////////////////////////////////////////
@@ -103,6 +105,7 @@ pub mod pcr_selection_list {
 /// The tickets section
 /////////////////////////////////////////////////////////
 mod tickets;
+pub use tickets::AuthTicket;
 pub use tickets::CreationTicket;
 pub use tickets::HashcheckTicket;
 pub use tickets::Ticket;
