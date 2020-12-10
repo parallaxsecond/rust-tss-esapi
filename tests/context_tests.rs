@@ -33,6 +33,7 @@ const KEY: [u8; 512] = [
 ];
 
 use std::convert::{TryFrom, TryInto};
+use std::time::Duration;
 use tss_esapi::{
     constants::{
         algorithm::{Cipher, HashingAlgorithm},
@@ -867,6 +868,101 @@ fn get_pcr_policy_digest(context: &mut Context, mangle: bool, do_trial: bool) ->
 
 mod test_policies {
     use super::*;
+
+    #[test]
+    fn test_policy_signed() {
+        let mut context = create_ctx_with_session();
+
+        let key_handle = context
+            .create_primary_key(
+                Hierarchy::Owner,
+                &signing_key_pub(),
+                None,
+                None,
+                None,
+                PcrSelectionListBuilder::new().build(),
+            )
+            .unwrap()
+            .key_handle;
+
+        let trial_session = context
+            .start_auth_session(
+                None,
+                None,
+                None,
+                SessionType::Trial,
+                Cipher::aes_256_cfb(),
+                HashingAlgorithm::Sha256,
+            )
+            .expect("Start auth session failed")
+            .expect("Start auth session returned a NONE handle");
+        let trial_session_attr = TpmaSessionBuilder::new()
+            .with_flag(TPMA_SESSION_DECRYPT)
+            .with_flag(TPMA_SESSION_ENCRYPT)
+            .build();
+        context
+            .tr_sess_set_attributes(trial_session, trial_session_attr)
+            .unwrap();
+
+        let nonce_tpm = Nonce::try_from(vec![1, 2, 3]).unwrap();
+        let cp_hash_a = Digest::try_from(vec![1, 2, 3]).unwrap();
+        let policy_ref = Nonce::try_from(vec![1, 2, 3]).unwrap();
+        let signature = Signature {
+            scheme: AsymSchemeUnion::RSASSA(HashingAlgorithm::Sha256),
+            signature: SignatureData::RsaSignature(vec![0xab; 32]),
+        };
+
+        context
+            .policy_signed(
+                trial_session,
+                key_handle.try_into().unwrap(),
+                nonce_tpm,
+                cp_hash_a,
+                policy_ref,
+                Some(Duration::from_secs(3600)),
+                signature,
+            )
+            .unwrap();
+    }
+
+    #[test]
+    fn test_policy_secret() {
+        let mut context = create_ctx_with_session();
+
+        let trial_session = context
+            .start_auth_session(
+                None,
+                None,
+                None,
+                SessionType::Trial,
+                Cipher::aes_256_cfb(),
+                HashingAlgorithm::Sha256,
+            )
+            .expect("Start auth session failed")
+            .expect("Start auth session returned a NONE handle");
+        let trial_session_attr = TpmaSessionBuilder::new()
+            .with_flag(TPMA_SESSION_DECRYPT)
+            .with_flag(TPMA_SESSION_ENCRYPT)
+            .build();
+        context
+            .tr_sess_set_attributes(trial_session, trial_session_attr)
+            .unwrap();
+
+        let nonce_tpm = Nonce::try_from(vec![1, 2, 3]).unwrap();
+        let cp_hash_a = Digest::try_from(vec![1, 2, 3]).unwrap();
+        let policy_ref = Nonce::try_from(vec![1, 2, 3]).unwrap();
+
+        context
+            .policy_secret(
+                trial_session,
+                AuthHandle::Endorsement,
+                nonce_tpm,
+                cp_hash_a,
+                policy_ref,
+                Some(Duration::from_secs(3600)),
+            )
+            .unwrap();
+    }
 
     #[test]
     fn test_policy_authorize() {

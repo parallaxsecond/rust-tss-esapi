@@ -4,7 +4,9 @@ use crate::{
     constants::tags::StructureTag,
     handles::TpmHandle,
     interface_types::resource_handles::Hierarchy,
-    tss2_esys::{TPM2B_DIGEST, TPMT_TK_CREATION, TPMT_TK_HASHCHECK, TPMT_TK_VERIFIED},
+    tss2_esys::{
+        TPM2B_DIGEST, TPMT_TK_AUTH, TPMT_TK_CREATION, TPMT_TK_HASHCHECK, TPMT_TK_VERIFIED,
+    },
     Error, Result, WrapperErrorKind,
 };
 
@@ -20,6 +22,7 @@ macro_rules! impl_ticket_try_froms {
         impl TryFrom<$ticket_type> for $tss_ticket_type {
             type Error = Error;
             fn try_from(ticket: $ticket_type) -> Result<Self> {
+                let tag = ticket.tag();
                 let digest = ticket.digest;
                 if digest.len() > TPM2B_DIGEST_BUFFER_SIZE {
                     return Err(Error::local_error(WrapperErrorKind::WrongParamSize));
@@ -27,7 +30,7 @@ macro_rules! impl_ticket_try_froms {
                 let mut buffer = [0; TPM2B_DIGEST_BUFFER_SIZE];
                 buffer[..digest.len()].clone_from_slice(&digest[..digest.len()]);
                 Ok($tss_ticket_type {
-                    tag: <$ticket_type>::TAG.into(),
+                    tag: tag.into(),
                     hierarchy: TpmHandle::from(ticket.hierarchy).into(),
                     digest: TPM2B_DIGEST {
                         size: digest.len().try_into().unwrap(), // should not fail based on the checks done above
@@ -41,11 +44,12 @@ macro_rules! impl_ticket_try_froms {
             type Error = Error;
 
             fn try_from(tss_ticket: $tss_ticket_type) -> Result<Self> {
-                match StructureTag::try_from(tss_ticket.tag) {
+                let tag = match StructureTag::try_from(tss_ticket.tag) {
                     Ok(val) => {
-                        if val != <$ticket_type>::TAG {
+                        if !<$ticket_type>::POSSIBLE_TAGS.contains(&val) {
                             return Err(Error::local_error(WrapperErrorKind::InconsistentParams));
                         }
+                        val
                     }
                     Err(why) => {
                         error!("Failed to parsed tag: {}", why);
@@ -66,27 +70,69 @@ macro_rules! impl_ticket_try_froms {
 
                 let hierarchy = Hierarchy::try_from(TpmHandle::try_from(tss_ticket.hierarchy)?)?;
 
-                Ok($ticket_type { hierarchy, digest })
+                Ok($ticket_type {
+                    tag,
+                    hierarchy,
+                    digest,
+                })
             }
         }
     };
 }
 
 pub trait Ticket {
-    const TAG: StructureTag;
+    const POSSIBLE_TAGS: &'static [StructureTag];
+    fn tag(&self) -> StructureTag;
     fn hierarchy(&self) -> Hierarchy;
     fn digest(&self) -> &[u8];
 }
 
 #[derive(Debug, Clone)]
+pub struct AuthTicket {
+    tag: StructureTag,
+    hierarchy: Hierarchy,
+    digest: Vec<u8>,
+}
+
+impl Ticket for AuthTicket {
+    /// The possible tags of AuthTickets
+    const POSSIBLE_TAGS: &'static [StructureTag] =
+        &[StructureTag::AuthSecret, StructureTag::AuthSigned];
+
+    /// Get the tag associated with the auth ticket.
+    fn tag(&self) -> StructureTag {
+        self.tag
+    }
+
+    /// Get the hierarchy associated with the auth ticket.
+    fn hierarchy(&self) -> Hierarchy {
+        self.hierarchy
+    }
+
+    /// Get the digest associated with the auth ticket.
+    fn digest(&self) -> &[u8] {
+        &self.digest
+    }
+}
+
+impl_ticket_try_froms!(AuthTicket, TPMT_TK_AUTH);
+
+#[derive(Debug, Clone)]
 pub struct HashcheckTicket {
+    tag: StructureTag,
     hierarchy: Hierarchy,
     digest: Vec<u8>,
 }
 
 impl Ticket for HashcheckTicket {
     /// The tag of the verified ticket.
-    const TAG: StructureTag = StructureTag::Hashcheck;
+    const POSSIBLE_TAGS: &'static [StructureTag] = &[StructureTag::Hashcheck];
+
+    /// Get the tag associated with the hashcheck ticket.
+    fn tag(&self) -> StructureTag {
+        Self::POSSIBLE_TAGS[0]
+    }
+
     /// Get the hierarchy associated with the verification ticket.
     fn hierarchy(&self) -> Hierarchy {
         self.hierarchy
@@ -103,6 +149,7 @@ impl_ticket_try_froms!(HashcheckTicket, TPMT_TK_HASHCHECK);
 /// Rust native wrapper for `TPMT_TK_VERIFIED` objects.
 #[derive(Debug)]
 pub struct VerifiedTicket {
+    tag: StructureTag,
     hierarchy: Hierarchy,
     digest: Vec<u8>,
 }
@@ -110,7 +157,11 @@ pub struct VerifiedTicket {
 impl Ticket for VerifiedTicket {
     // type TssTicketType = TPMT_TK_VERIFIED;
     /// The tag of the verified ticket.
-    const TAG: StructureTag = StructureTag::Verified;
+    const POSSIBLE_TAGS: &'static [StructureTag] = &[StructureTag::Verified];
+    /// Get the tag associated with the verification ticket.
+    fn tag(&self) -> StructureTag {
+        Self::POSSIBLE_TAGS[0]
+    }
     /// Get the hierarchy associated with the verification ticket.
     fn hierarchy(&self) -> Hierarchy {
         self.hierarchy
@@ -126,6 +177,7 @@ impl_ticket_try_froms!(VerifiedTicket, TPMT_TK_VERIFIED);
 /// Rust native wrapper for `TPMT_TK_CREATION` objects.
 #[derive(Debug)]
 pub struct CreationTicket {
+    tag: StructureTag,
     hierarchy: Hierarchy,
     digest: Vec<u8>,
 }
@@ -133,7 +185,13 @@ pub struct CreationTicket {
 impl Ticket for CreationTicket {
     // type TssTicketType = TPMT_TK_VERIFIED;
     /// The tag of the verified ticket.
-    const TAG: StructureTag = StructureTag::Creation;
+    const POSSIBLE_TAGS: &'static [StructureTag] = &[StructureTag::Creation];
+
+    /// Get the tag associated with the creation ticket.
+    fn tag(&self) -> StructureTag {
+        Self::POSSIBLE_TAGS[0]
+    }
+
     /// Get the hierarchy associated with the verification ticket.
     fn hierarchy(&self) -> Hierarchy {
         self.hierarchy
