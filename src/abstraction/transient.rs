@@ -18,9 +18,7 @@ use crate::constants::tss::*;
 use crate::constants::types::session::SessionType;
 use crate::handles::KeyHandle;
 use crate::interface_types::resource_handles::Hierarchy;
-use crate::structures::{
-    Auth, CreateKeyResult, Data, Digest, PcrSelectionListBuilder, PublicKeyRSA, VerifiedTicket,
-};
+use crate::structures::{Auth, CreateKeyResult, Data, Digest, PublicKeyRSA, VerifiedTicket};
 use crate::tcti::Tcti;
 use crate::tss2_esys::*;
 use crate::utils::{
@@ -111,8 +109,6 @@ impl TransientKeyContext {
             None
         };
 
-        let creation_pcrs = PcrSelectionListBuilder::new().build();
-
         self.set_session_attrs()?;
         let CreateKeyResult {
             out_private,
@@ -124,7 +120,7 @@ impl TransientKeyContext {
             key_auth.as_ref(),
             None,
             None,
-            creation_pcrs,
+            None,
         )?;
         self.set_session_attrs()?;
         let key_handle = self
@@ -676,8 +672,6 @@ impl TransientKeyContextBuilder {
             context.tr_set_auth(self.hierarchy.into(), &auth_hierarchy)?;
         }
 
-        let creation_pcrs = PcrSelectionListBuilder::new().build();
-
         let session = context
             .start_auth_session(
                 None,
@@ -711,7 +705,7 @@ impl TransientKeyContextBuilder {
                 root_key_auth.as_ref(),
                 None,
                 None,
-                creation_pcrs,
+                None,
             )?
             .key_handle;
 

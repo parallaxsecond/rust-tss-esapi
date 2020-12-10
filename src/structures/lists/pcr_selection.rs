@@ -26,6 +26,13 @@ impl PcrSelectionList {
         self.items.is_empty()
     }
 
+    /// Function for retrieving the PcrSelectionList from Option<PcrSelectionList>
+    ///
+    /// This returns an empty list if None is passed
+    pub fn list_from_option(pcr_list: Option<PcrSelectionList>) -> PcrSelectionList {
+        pcr_list.unwrap_or_else(|| PcrSelectionListBuilder::new().build())
+    }
+
     /// Removes items in `other` from `self.
     ///
     /// # Arguments
