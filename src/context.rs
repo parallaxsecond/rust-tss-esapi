@@ -370,7 +370,7 @@ impl Context {
         auth_value: Option<&Auth>,
         initial_data: Option<&SensitiveData>,
         outside_info: Option<&Data>,
-        creation_pcrs: PcrSelectionList,
+        creation_pcrs: Option<PcrSelectionList>,
     ) -> Result<CreatePrimaryKeyResult> {
         let sensitive_create = TPM2B_SENSITIVE_CREATE {
             size: std::mem::size_of::<TPMS_SENSITIVE_CREATE>()
@@ -381,6 +381,7 @@ impl Context {
                 data: TPM2B_SENSITIVE_DATA::try_from(initial_data.cloned().unwrap_or_default())?,
             },
         };
+        let creation_pcrs = PcrSelectionList::list_from_option(creation_pcrs);
 
         let mut outpublic = null_mut();
         let mut creation_data = null_mut();
@@ -457,7 +458,7 @@ impl Context {
         auth_value: Option<&Auth>,
         initial_data: Option<&SensitiveData>,
         outside_info: Option<&Data>,
-        creation_pcrs: PcrSelectionList,
+        creation_pcrs: Option<PcrSelectionList>,
     ) -> Result<CreateKeyResult> {
         let sensitive_create = TPM2B_SENSITIVE_CREATE {
             size: std::mem::size_of::<TPMS_SENSITIVE_CREATE>()
@@ -468,6 +469,7 @@ impl Context {
                 data: TPM2B_SENSITIVE_DATA::try_from(initial_data.cloned().unwrap_or_default())?,
             },
         };
+        let creation_pcrs = PcrSelectionList::list_from_option(creation_pcrs);
 
         let mut outpublic = null_mut();
         let mut outprivate = null_mut();

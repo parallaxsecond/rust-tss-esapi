@@ -113,7 +113,6 @@ fn comprehensive_test() {
     let random_digest = context.get_random(16).unwrap();
     let key_auth = Auth::try_from(random_digest.value().to_vec()).unwrap();
 
-    let creation_pcrs = PcrSelectionListBuilder::new().build();
     let prim_key_handle = context
         .create_primary_key(
             Hierarchy::Owner,
@@ -121,7 +120,7 @@ fn comprehensive_test() {
             Some(&key_auth),
             None,
             None,
-            creation_pcrs,
+            None,
         )
         .unwrap()
         .key_handle;
@@ -152,7 +151,7 @@ fn comprehensive_test() {
             Some(&key_auth),
             None,
             None,
-            PcrSelectionListBuilder::new().build(),
+            None,
         )
         .unwrap();
     let key_handle = context
@@ -243,7 +242,7 @@ mod test_start_sess {
                 None,
                 None,
                 None,
-                PcrSelectionListBuilder::new().build(),
+                None,
             )
             .unwrap()
             .key_handle;
@@ -371,7 +370,7 @@ mod make_active_credential {
                 None,
                 None,
                 None,
-                PcrSelectionListBuilder::new().build(),
+                None,
             )
             .unwrap()
             .key_handle;
@@ -427,7 +426,7 @@ mod make_active_credential {
                 None,
                 None,
                 None,
-                PcrSelectionListBuilder::new().build(),
+                None,
             )
             .unwrap()
             .key_handle;
@@ -672,7 +671,7 @@ mod test_unseal {
                 None,
                 None,
                 None,
-                PcrSelectionListBuilder::new().build(),
+                None,
             )
             .unwrap()
             .key_handle;
@@ -683,7 +682,7 @@ mod test_unseal {
                 None,
                 None,
                 None,
-                PcrSelectionListBuilder::new().build(),
+                None,
             )
             .unwrap()
             .key_handle;
@@ -696,7 +695,7 @@ mod test_unseal {
                 None,
                 Some(SensitiveData::try_from(testbytes.to_vec()).unwrap()).as_ref(),
                 None,
-                PcrSelectionListBuilder::new().build(),
+                None,
             )
             .unwrap();
         let loaded_key = context
@@ -726,14 +725,7 @@ mod test_quote {
         let qualifying_data = vec![0xff; 16];
 
         let key_handle = context
-            .create_primary_key(
-                Hierarchy::Owner,
-                &signing_key_pub(),
-                None,
-                None,
-                None,
-                PcrSelectionListBuilder::new().build(),
-            )
+            .create_primary_key(Hierarchy::Owner, &signing_key_pub(), None, None, None, None)
             .unwrap()
             .key_handle;
 
@@ -874,14 +866,7 @@ mod test_policies {
         let mut context = create_ctx_with_session();
 
         let key_handle = context
-            .create_primary_key(
-                Hierarchy::Owner,
-                &signing_key_pub(),
-                None,
-                None,
-                None,
-                PcrSelectionListBuilder::new().build(),
-            )
+            .create_primary_key(Hierarchy::Owner, &signing_key_pub(), None, None, None, None)
             .unwrap()
             .key_handle;
 
@@ -977,7 +962,7 @@ mod test_policies {
                 Some(&key_auth),
                 None,
                 None,
-                PcrSelectionListBuilder::new().build(),
+                None,
             )
             .unwrap()
             .key_handle;
@@ -1367,7 +1352,7 @@ mod test_change_auth {
                 None,
                 None,
                 None,
-                PcrSelectionListBuilder::new().build(),
+                None,
             )
             .unwrap()
             .key_handle;
@@ -1378,7 +1363,7 @@ mod test_change_auth {
                 None,
                 None,
                 None,
-                PcrSelectionListBuilder::new().build(),
+                None,
             )
             .unwrap();
         let loaded_key = context
@@ -1488,7 +1473,7 @@ mod test_create_primary {
                 Some(&key_auth),
                 None,
                 None,
-                PcrSelectionListBuilder::new().build(),
+                None,
             )
             .unwrap()
             .key_handle;
@@ -1512,7 +1497,7 @@ mod test_create {
                 Some(&key_auth),
                 None,
                 None,
-                PcrSelectionListBuilder::new().build(),
+                None,
             )
             .unwrap()
             .key_handle;
@@ -1524,7 +1509,7 @@ mod test_create {
                 Some(&key_auth),
                 None,
                 None,
-                PcrSelectionListBuilder::new().build(),
+                None,
             )
             .unwrap();
     }
@@ -1546,7 +1531,7 @@ mod test_load {
                 Some(&key_auth),
                 None,
                 None,
-                PcrSelectionListBuilder::new().build(),
+                None,
             )
             .unwrap()
             .key_handle;
@@ -1558,7 +1543,7 @@ mod test_load {
                 Some(&key_auth),
                 None,
                 None,
-                PcrSelectionListBuilder::new().build(),
+                None,
             )
             .unwrap();
 
@@ -1584,7 +1569,7 @@ mod test_sign {
                 Some(&key_auth),
                 None,
                 None,
-                PcrSelectionListBuilder::new().build(),
+                None,
             )
             .unwrap()
             .key_handle;
@@ -1621,7 +1606,7 @@ mod test_sign {
                 Some(&key_auth),
                 None,
                 None,
-                PcrSelectionListBuilder::new().build(),
+                None,
             )
             .unwrap()
             .key_handle;
@@ -1658,7 +1643,7 @@ mod test_sign {
                 Some(&key_auth),
                 None,
                 None,
-                PcrSelectionListBuilder::new().build(),
+                None,
             )
             .unwrap()
             .key_handle;
@@ -1699,7 +1684,7 @@ mod test_rsa_encrypt_decrypt {
                 Some(&key_auth),
                 None,
                 None,
-                PcrSelectionListBuilder::new().build(),
+                None,
             )
             .unwrap()
             .key_handle;
@@ -1740,7 +1725,7 @@ mod test_verify_sig {
                 Some(&key_auth),
                 None,
                 None,
-                PcrSelectionListBuilder::new().build(),
+                None,
             )
             .unwrap()
             .key_handle;
@@ -1785,7 +1770,7 @@ mod test_verify_sig {
                 Some(&key_auth),
                 None,
                 None,
-                PcrSelectionListBuilder::new().build(),
+                None,
             )
             .unwrap()
             .key_handle;
@@ -1833,7 +1818,7 @@ mod test_verify_sig {
                 Some(&key_auth),
                 None,
                 None,
-                PcrSelectionListBuilder::new().build(),
+                None,
             )
             .unwrap()
             .key_handle;
@@ -1864,7 +1849,7 @@ mod test_verify_sig {
                 Some(&key_auth),
                 None,
                 None,
-                PcrSelectionListBuilder::new().build(),
+                None,
             )
             .unwrap()
             .key_handle;
@@ -1940,7 +1925,7 @@ mod test_read_pub {
                 Some(&key_auth),
                 None,
                 None,
-                PcrSelectionListBuilder::new().build(),
+                None,
             )
             .unwrap()
             .key_handle;
@@ -1964,7 +1949,7 @@ mod test_flush_context {
                 Some(&key_auth),
                 None,
                 None,
-                PcrSelectionListBuilder::new().build(),
+                None,
             )
             .unwrap()
             .key_handle;
@@ -1985,7 +1970,7 @@ mod test_flush_context {
                 Some(&key_auth),
                 None,
                 None,
-                PcrSelectionListBuilder::new().build(),
+                None,
             )
             .unwrap()
             .key_handle;
@@ -1997,7 +1982,7 @@ mod test_flush_context {
                 Some(&key_auth),
                 None,
                 None,
-                PcrSelectionListBuilder::new().build(),
+                None,
             )
             .unwrap();
 
@@ -2025,7 +2010,7 @@ mod test_ctx_save {
                 Some(&key_auth),
                 None,
                 None,
-                PcrSelectionListBuilder::new().build(),
+                None,
             )
             .unwrap()
             .key_handle;
@@ -2045,7 +2030,7 @@ mod test_ctx_save {
                 Some(&key_auth),
                 None,
                 None,
-                PcrSelectionListBuilder::new().build(),
+                None,
             )
             .unwrap()
             .key_handle;
@@ -2057,7 +2042,7 @@ mod test_ctx_save {
                 Some(&key_auth),
                 None,
                 None,
-                PcrSelectionListBuilder::new().build(),
+                None,
             )
             .unwrap();
 
@@ -2084,7 +2069,7 @@ mod test_ctx_load {
                 Some(Auth::try_from(key_auth.value().to_vec()).unwrap()).as_ref(),
                 None,
                 None,
-                PcrSelectionListBuilder::new().build(),
+                None,
             )
             .unwrap()
             .key_handle;
@@ -2096,7 +2081,7 @@ mod test_ctx_load {
                 Some(Auth::try_from(key_auth.value().to_vec()).unwrap()).as_ref(),
                 None,
                 None,
-                PcrSelectionListBuilder::new().build(),
+                None,
             )
             .unwrap();
 
@@ -2176,7 +2161,7 @@ mod test_evict_control {
                 Some(auth_value_primary).as_ref(),
                 None,
                 None,
-                PcrSelectionListBuilder::new().build(),
+                None,
             )
             .expect("Failed to create primary key")
             .key_handle;
@@ -2230,7 +2215,7 @@ mod test_handle_auth {
                 Some(&key_auth),
                 None,
                 None,
-                PcrSelectionListBuilder::new().build(),
+                None,
             )
             .unwrap()
             .key_handle;

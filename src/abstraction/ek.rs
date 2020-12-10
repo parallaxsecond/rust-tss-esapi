@@ -6,7 +6,6 @@ use crate::{
     constants::{algorithm::AsymmetricAlgorithm, tss::*},
     handles::{AuthHandle, KeyHandle, NvIndexTpmHandle, TpmHandle},
     interface_types::resource_handles::Hierarchy,
-    structures::PcrSelectionListBuilder,
     tss2_esys::{
         TPM2B_ECC_PARAMETER, TPM2B_PUBLIC, TPM2B_PUBLIC_KEY_RSA, TPMS_ECC_PARMS, TPMS_ECC_POINT,
         TPMS_RSA_PARMS, TPMS_SCHEME_HASH, TPMT_ECC_SCHEME, TPMT_KDF_SCHEME, TPMT_RSA_SCHEME,
@@ -114,18 +113,9 @@ fn create_ek_public_from_default_template(alg: AsymmetricAlgorithm) -> Result<TP
 pub fn create_ek_object(context: &mut Context, alg: AsymmetricAlgorithm) -> Result<KeyHandle> {
     let ek_public = create_ek_public_from_default_template(alg)?;
 
-    let creation_pcrs = PcrSelectionListBuilder::new().build();
-
     Ok(context
         .execute_with_nullauth_session(|ctx| {
-            ctx.create_primary_key(
-                Hierarchy::Endorsement,
-                &ek_public,
-                None,
-                None,
-                None,
-                creation_pcrs,
-            )
+            ctx.create_primary_key(Hierarchy::Endorsement, &ek_public, None, None, None, None)
         })?
         .key_handle)
 }
