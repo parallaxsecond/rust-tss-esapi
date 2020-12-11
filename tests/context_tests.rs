@@ -454,6 +454,28 @@ mod make_active_credential {
     }
 }
 
+mod test_clear {
+    use super::*;
+
+    #[test]
+    fn test_clear() {
+        let mut context = create_ctx_with_session();
+
+        context.clear(AuthHandle::Platform).unwrap();
+    }
+
+    #[test]
+    fn test_clear_control() {
+        let mut context = create_ctx_with_session();
+
+        context.clear(AuthHandle::Platform).unwrap();
+        context.clear_control(AuthHandle::Platform, true).unwrap();
+        context.clear(AuthHandle::Platform).unwrap_err();
+        context.clear_control(AuthHandle::Platform, false).unwrap();
+        context.clear(AuthHandle::Platform).unwrap();
+    }
+}
+
 mod test_pcr_extend_reset {
     use super::*;
 

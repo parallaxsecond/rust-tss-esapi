@@ -519,6 +519,49 @@ impl Context {
         }
     }
 
+    /// Clear all TPM context associated with a specific Owner
+    pub fn clear(&mut self, auth_handle: AuthHandle) -> Result<()> {
+        let ret = unsafe {
+            Esys_Clear(
+                self.mut_context(),
+                auth_handle.into(),
+                self.required_session_1()?,
+                self.optional_session_2(),
+                self.optional_session_3(),
+            )
+        };
+        let ret = Error::from_tss_rc(ret);
+
+        if ret.is_success() {
+            Ok(())
+        } else {
+            error!("Error in clearing TPM hierarchy: {}", ret);
+            Err(ret)
+        }
+    }
+
+    /// Disable or enable the TPM2_CLEAR command
+    pub fn clear_control(&mut self, auth_handle: AuthHandle, disable: bool) -> Result<()> {
+        let ret = unsafe {
+            Esys_ClearControl(
+                self.mut_context(),
+                auth_handle.into(),
+                self.required_session_1()?,
+                self.optional_session_2(),
+                self.optional_session_3(),
+                if disable { 1 } else { 0 },
+            )
+        };
+        let ret = Error::from_tss_rc(ret);
+
+        if ret.is_success() {
+            Ok(())
+        } else {
+            error!("Error in controlling clear command: {}", ret);
+            Err(ret)
+        }
+    }
+
     /// Unseal and return data from a Sealed Data Object
     pub fn unseal(&mut self, item_handle: ObjectHandle) -> Result<SensitiveData> {
         let mut out_data = null_mut();
