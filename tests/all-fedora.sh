@@ -45,7 +45,7 @@ RUST_BACKTRACE=1 cargo build
 #################
 # Run the tests #
 #################
-TEST_TCTI=tabrmd:bus_type=session RUST_BACKTRACE=1 RUST_LOG=info cargo test -- --nocapture
+TEST_TCTI=tabrmd:bus_type=session RUST_BACKTRACE=1 RUST_LOG=info cargo test --  --test-threads=1 --nocapture
 
 ####################
 # Verify doc build #
