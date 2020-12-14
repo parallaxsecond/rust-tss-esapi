@@ -31,33 +31,3 @@ RUST_BACKTRACE=1 cargo build
 # Run the tests #
 #################
 RUST_BACKTRACE=1 RUST_LOG=info cargo test -- --test-threads=1 --nocapture
-
-###################
-# Stop TPM server #
-###################
-pkill tpm_server
-
-#############################
-# Install nightly toolchain #
-#############################
-rustup toolchain install nightly
-
-############################
-# Install legacy toolchain #
-############################
-rustup toolchain install 1.38.0
-
-####################
-# Verify doc build #
-####################
-cargo +nightly doc --features docs --verbose --no-deps
-
-########################
-# Verify nightly build #
-########################
-cargo +nightly build
-
-#####################################
-# Verify build with legacy compiler #
-#####################################
-RUST_BACKTRACE=1 cargo +1.38.0 build

@@ -33,6 +33,15 @@ case:
 $ export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig
 ```
 
+## Minimum Supported Rust Version (MSRV)
+
+At the moment we test (via CI) and support the following Rust compiler versions:
+
+* On Ubuntu we test with the latest stable compiler version, as accessible through `rustup`.
+* On Fedora we test with the compiler version included with the Fedora 33 release.
+
+If you need support for other versions of the compiler, get in touch with us to see what we can do!
+
 ## Community channel
 
 Come and talk to us in [our Slack channel](https://app.slack.com/client/T0JK1PCN6/CPMQ9D4H1)!
