@@ -20,22 +20,6 @@ use crate::{
     Context, Error, Result, WrapperErrorKind,
 };
 
-fn test_algs_compatibility(key_alg: AsymmetricAlgorithm, sign_alg: SignatureScheme) -> Result<()> {
-    match key_alg {
-        AsymmetricAlgorithm::Rsa => match sign_alg {
-            SignatureScheme::RsaPss | SignatureScheme::RsaSsa => Ok(()),
-            _ => Err(Error::local_error(WrapperErrorKind::InconsistentParams)),
-        },
-        AsymmetricAlgorithm::Ecc => match sign_alg {
-            SignatureScheme::EcDaa
-            | SignatureScheme::EcDsa
-            | SignatureScheme::EcSchnorr
-            | SignatureScheme::Sm2 => Ok(()),
-            _ => Err(Error::local_error(WrapperErrorKind::InconsistentParams)),
-        },
-    }
-}
-
 fn create_ak_public(
     key_alg: AsymmetricAlgorithm,
     hash_alg: HashingAlgorithm,
@@ -153,12 +137,11 @@ pub fn load_ak(
 pub fn create_ak(
     context: &mut Context,
     parent: KeyHandle,
-    key_alg: AsymmetricAlgorithm,
     hash_alg: HashingAlgorithm,
     sign_alg: SignatureScheme,
     ak_auth_value: Option<&Auth>,
 ) -> Result<CreateKeyResult> {
-    test_algs_compatibility(key_alg, sign_alg)?;
+    let key_alg = sign_alg.get_key_alg();
 
     let ak_pub = create_ak_public(key_alg, hash_alg, sign_alg)?;
 

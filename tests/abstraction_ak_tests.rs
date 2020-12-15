@@ -6,7 +6,10 @@ use std::convert::{TryFrom, TryInto};
 use tss_esapi::{
     abstraction::{ak, ek},
     constants::{
-        algorithm::{AsymmetricAlgorithm, Cipher, HashingAlgorithm, SignatureScheme},
+        algorithm::{
+            AsymmetricAlgorithm, Cipher, EccSignatureScheme, HashingAlgorithm, RsaSignatureScheme,
+            SignatureScheme,
+        },
         types::session::SessionType,
     },
     handles::AuthHandle,
@@ -25,32 +28,11 @@ fn test_create_ak_rsa_rsa() {
     ak::create_ak(
         &mut context,
         ek_rsa,
-        AsymmetricAlgorithm::Rsa,
         HashingAlgorithm::Sha256,
-        SignatureScheme::RsaPss,
+        SignatureScheme::Rsa(RsaSignatureScheme::RsaPss),
         None,
     )
     .unwrap();
-}
-
-#[test]
-fn test_create_ak_rsa_ecc_invalid_sig_alg() {
-    let mut context = create_ctx_without_session();
-
-    let ek_rsa = ek::create_ek_object(&mut context, AsymmetricAlgorithm::Rsa).unwrap();
-    if ak::create_ak(
-        &mut context,
-        ek_rsa,
-        AsymmetricAlgorithm::Ecc,
-        HashingAlgorithm::Sha256,
-        SignatureScheme::RsaPss,
-        None,
-    )
-    .is_ok()
-    {
-        // We can't use unwrap_err because that requires Debug on the T
-        panic!("Should have errored");
-    }
 }
 
 #[test]
@@ -61,9 +43,8 @@ fn test_create_ak_rsa_ecc() {
     if ak::create_ak(
         &mut context,
         ek_rsa,
-        AsymmetricAlgorithm::Ecc,
         HashingAlgorithm::Sha256,
-        SignatureScheme::EcDsa,
+        SignatureScheme::Ecc(EccSignatureScheme::Sm2),
         None,
     )
     .is_ok()
@@ -82,9 +63,8 @@ fn test_create_and_use_ak() {
     let att_key = ak::create_ak(
         &mut context,
         ek_rsa,
-        AsymmetricAlgorithm::Rsa,
         HashingAlgorithm::Sha256,
-        SignatureScheme::RsaPss,
+        SignatureScheme::Rsa(RsaSignatureScheme::RsaPss),
         Some(&ak_auth),
     )
     .unwrap();

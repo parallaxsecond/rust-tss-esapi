@@ -224,27 +224,27 @@ mod test_signature_scheme {
     #[test]
     fn test_into_alogithm_id() {
         assert_eq!(
-            Into::<TPM2_ALG_ID>::into(SignatureScheme::RsaSsa),
+            Into::<TPM2_ALG_ID>::into(SignatureScheme::Rsa(RsaSignatureScheme::RsaSsa)),
             TPM2_ALG_RSASSA
         );
         assert_eq!(
-            Into::<TPM2_ALG_ID>::into(SignatureScheme::RsaPss),
+            Into::<TPM2_ALG_ID>::into(SignatureScheme::Rsa(RsaSignatureScheme::RsaPss)),
             TPM2_ALG_RSAPSS
         );
         assert_eq!(
-            Into::<TPM2_ALG_ID>::into(SignatureScheme::EcDsa),
+            Into::<TPM2_ALG_ID>::into(SignatureScheme::Ecc(EccSignatureScheme::EcDsa)),
             TPM2_ALG_ECDSA
         );
         assert_eq!(
-            Into::<TPM2_ALG_ID>::into(SignatureScheme::EcDaa),
+            Into::<TPM2_ALG_ID>::into(SignatureScheme::Ecc(EccSignatureScheme::EcDaa)),
             TPM2_ALG_ECDAA
         );
         assert_eq!(
-            Into::<TPM2_ALG_ID>::into(SignatureScheme::EcSchnorr),
+            Into::<TPM2_ALG_ID>::into(SignatureScheme::Ecc(EccSignatureScheme::EcSchnorr)),
             TPM2_ALG_ECSCHNORR
         );
         assert_eq!(
-            Into::<TPM2_ALG_ID>::into(SignatureScheme::Sm2),
+            Into::<TPM2_ALG_ID>::into(SignatureScheme::Ecc(EccSignatureScheme::Sm2)),
             TPM2_ALG_SM2
         );
     }
@@ -253,27 +253,27 @@ mod test_signature_scheme {
     fn test_try_from_alogithm_id() {
         assert_eq!(
             SignatureScheme::try_from(TPM2_ALG_RSASSA).unwrap(),
-            SignatureScheme::RsaSsa
+            SignatureScheme::Rsa(RsaSignatureScheme::RsaSsa)
         );
         assert_eq!(
             SignatureScheme::try_from(TPM2_ALG_RSAPSS).unwrap(),
-            SignatureScheme::RsaPss
+            SignatureScheme::Rsa(RsaSignatureScheme::RsaPss)
         );
         assert_eq!(
             SignatureScheme::try_from(TPM2_ALG_ECDSA).unwrap(),
-            SignatureScheme::EcDsa
+            SignatureScheme::Ecc(EccSignatureScheme::EcDsa)
         );
         assert_eq!(
             SignatureScheme::try_from(TPM2_ALG_ECDAA).unwrap(),
-            SignatureScheme::EcDaa
+            SignatureScheme::Ecc(EccSignatureScheme::EcDaa)
         );
         assert_eq!(
             SignatureScheme::try_from(TPM2_ALG_ECSCHNORR).unwrap(),
-            SignatureScheme::EcSchnorr
+            SignatureScheme::Ecc(EccSignatureScheme::EcSchnorr)
         );
         assert_eq!(
             SignatureScheme::try_from(TPM2_ALG_SM2).unwrap(),
-            SignatureScheme::Sm2
+            SignatureScheme::Ecc(EccSignatureScheme::Sm2)
         );
         assert!(
             SignatureScheme::try_from(TPM2_ALG_ERROR).is_err(),
