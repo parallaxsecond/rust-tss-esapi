@@ -291,6 +291,19 @@ impl Context {
         res
     }
 
+    /// Execute the closure in f, and clear up the object after it's done before returning the result
+    /// This is a convenience function that ensures object is always closed, even if an error occurs
+    pub fn execute_with_temporary_object<F, T>(&mut self, object: ObjectHandle, f: F) -> Result<T>
+    where
+        F: FnOnce(&mut Context, ObjectHandle) -> Result<T>,
+    {
+        let res = f(self, object);
+
+        self.flush_context(object)?;
+
+        res
+    }
+
     /// Get current capability information about the TPM.
     pub fn get_capabilities(
         &mut self,
