@@ -254,23 +254,15 @@ impl TryFrom<TPM2_ALG_ID> for HashingAlgorithm {
 /// Enum containing signature schemes
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum SignatureScheme {
-    RsaSsa,
-    RsaPss,
-    EcDsa,
-    EcDaa,
-    EcSchnorr,
-    Sm2,
+    Rsa(RsaSignatureScheme),
+    Ecc(EccSignatureScheme),
 }
 
 impl From<SignatureScheme> for TPM2_ALG_ID {
     fn from(signature_scheme: SignatureScheme) -> Self {
         match signature_scheme {
-            SignatureScheme::RsaSsa => TPM2_ALG_RSASSA,
-            SignatureScheme::RsaPss => TPM2_ALG_RSAPSS,
-            SignatureScheme::EcDsa => TPM2_ALG_ECDSA,
-            SignatureScheme::EcDaa => TPM2_ALG_ECDAA,
-            SignatureScheme::EcSchnorr => TPM2_ALG_ECSCHNORR,
-            SignatureScheme::Sm2 => TPM2_ALG_SM2,
+            SignatureScheme::Rsa(ss) => ss.into(),
+            SignatureScheme::Ecc(ss) => ss.into(),
         }
     }
 }
@@ -280,13 +272,22 @@ impl TryFrom<TPM2_ALG_ID> for SignatureScheme {
 
     fn try_from(algorithm_id: TPM2_ALG_ID) -> Result<Self> {
         match algorithm_id {
-            TPM2_ALG_RSASSA => Ok(SignatureScheme::RsaSsa),
-            TPM2_ALG_RSAPSS => Ok(SignatureScheme::RsaPss),
-            TPM2_ALG_ECDSA => Ok(SignatureScheme::EcDsa),
-            TPM2_ALG_ECDAA => Ok(SignatureScheme::EcDaa),
-            TPM2_ALG_ECSCHNORR => Ok(SignatureScheme::EcSchnorr),
-            TPM2_ALG_SM2 => Ok(SignatureScheme::Sm2),
+            TPM2_ALG_RSASSA => Ok(SignatureScheme::Rsa(RsaSignatureScheme::RsaSsa)),
+            TPM2_ALG_RSAPSS => Ok(SignatureScheme::Rsa(RsaSignatureScheme::RsaPss)),
+            TPM2_ALG_ECDSA => Ok(SignatureScheme::Ecc(EccSignatureScheme::EcDsa)),
+            TPM2_ALG_ECDAA => Ok(SignatureScheme::Ecc(EccSignatureScheme::EcDaa)),
+            TPM2_ALG_ECSCHNORR => Ok(SignatureScheme::Ecc(EccSignatureScheme::EcSchnorr)),
+            TPM2_ALG_SM2 => Ok(SignatureScheme::Ecc(EccSignatureScheme::Sm2)),
             _ => Err(Error::local_error(WrapperErrorKind::InvalidParam)),
+        }
+    }
+}
+
+impl SignatureScheme {
+    pub fn get_key_alg(&self) -> AsymmetricAlgorithm {
+        match self {
+            SignatureScheme::Rsa(_) => AsymmetricAlgorithm::Rsa,
+            SignatureScheme::Ecc(_) => AsymmetricAlgorithm::Ecc,
         }
     }
 }
