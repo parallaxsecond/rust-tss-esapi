@@ -93,7 +93,7 @@
 //! Additionally, the TSS library will also generate its own log messages and these can be
 //! controlled through environment variables as explained
 //! [here](https://github.com/tpm2-software/tpm2-tss/blob/master/doc/logging.md#runtime-log-level).
-
+//!
 pub use abstraction::transient::TransientKeyContext;
 pub use context::Context;
 pub use error::{Error, Result, WrapperErrorKind};

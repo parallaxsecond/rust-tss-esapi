@@ -144,15 +144,34 @@ impl Context {
     /// If the returned session handle from ESYS api is ESYS_TR_NONE then
     /// the value of the option in the result will be None.
     ///
-    /// The caller nonce is passed as a slice and converted by the method in a TSS digest
-    /// structure.
+    /// # Example
     ///
-    /// # Constraints
-    /// * nonce must be at most 64 elements long
+    /// ```rust, no_run
+    /// use tss_esapi::{Context, Tcti,
+    ///     constants::{
+    ///         algorithm::{Cipher, HashingAlgorithm},
+    ///         types::session::SessionType,
+    ///     },
+    /// };
+    /// // Create context that uses Device TCTI.
+    /// let mut context = unsafe {
+    ///     Context::new(Tcti::Device(Default::default())).expect("Failed to create Context")
+    /// };
     ///
-    /// # Errors
-    /// * if the `nonce` is larger than allowed, a `WrongSizeParam` wrapper error is returned
-    // TODO: Fix when compacting the arguments into a struct
+    /// // Create auth session without key_handle, bind_handle
+    /// // and Nonce
+    /// let session = context
+    ///     .start_auth_session(
+    ///         None,
+    ///         None,
+    ///         None,
+    ///         SessionType::Hmac,
+    ///         Cipher::aes_256_cfb(),
+    ///         HashingAlgorithm::Sha256,
+    ///     )
+    ///     .expect("Failed to create session")
+    ///     .expect("Recived invalid handle");
+    /// ```
     #[allow(clippy::too_many_arguments)]
     pub fn start_auth_session(
         &mut self,
@@ -203,6 +222,44 @@ impl Context {
         }
     }
 
+    /// Set the sessions to be used in calls to ESAPI.
+    ///
+    /// # Details
+    /// In some calls these sessions are optional and in others
+    /// they are required.
+    ///
+    /// # Example
+    ///
+    /// ```rust, no_run
+    /// use tss_esapi::{Context, Tcti,
+    ///     constants::{
+    ///         algorithm::{Cipher, HashingAlgorithm},
+    ///         types::session::SessionType,
+    ///     },
+    /// };
+    /// // Create context that uses Device TCTI.
+    /// let mut context = unsafe {
+    ///     Context::new(Tcti::Device(Default::default())).expect("Failed to create Context")
+    /// };
+    ///
+    /// // Create auth session without key_handle, bind_handle
+    /// // and Nonce
+    /// let auth_session = context
+    ///     .start_auth_session(
+    ///         None,
+    ///         None,
+    ///         None,
+    ///         SessionType::Hmac,
+    ///         Cipher::aes_256_cfb(),
+    ///         HashingAlgorithm::Sha256,
+    ///     )
+    ///     .expect("Failed to create session");
+    ///
+    /// // Set auth_session as the first handle to be
+    /// // used in calls to ESAPI no matter if it None
+    /// // or not.
+    /// context.set_sessions((auth_session, None, None));
+    /// ```
     pub fn set_sessions(
         &mut self,
         session_handles: (Option<Session>, Option<Session>, Option<Session>),
@@ -210,10 +267,52 @@ impl Context {
         self.sessions = session_handles;
     }
 
+    /// Clears any sessions that have been set
+    ///
+    /// This will result in the None handle being
+    /// used in all calls to ESAPI.
+    ///
+    /// # Example
+    ///
+    /// ```rust, no_run
+    /// use tss_esapi::{Context, Tcti, session::Session};
+    ///
+    /// // Create context that uses Device TCTI.
+    /// let mut context = unsafe {
+    ///     Context::new(Tcti::Device(Default::default())).expect("Failed to create Context")
+    /// };
+    ///
+    /// // Use password session for auth
+    /// context.set_sessions((Some(Session::Password), None, None));
+    ///
+    /// // Clear auth sessions
+    /// context.clear_sessions();
+    /// ```
     pub fn clear_sessions(&mut self) {
         self.sessions = (None, None, None)
     }
 
+    /// Returns the sessions that are currently set.
+    ///
+    /// # Example
+    ///
+    /// ```rust, no_run
+    /// use tss_esapi::{Context, Tcti, session::Session};
+    ///
+    /// // Create context that uses Device TCTI.
+    /// let mut context = unsafe {
+    ///     Context::new(Tcti::Device(Default::default())).expect("Failed to create Context")
+    /// };
+    ///
+    /// // Use password session for auth
+    /// context.set_sessions((Some(Session::Password), None, None));
+    ///
+    /// // Retreive sessions in use
+    /// let (session_1, session_2, session_3) = context.sessions();
+    /// assert_eq!(Some(Session::Password), session_1);
+    /// assert_eq!(None, session_2);
+    /// assert_eq!(None, session_3);
+    /// ```
     pub fn sessions(&self) -> (Option<Session>, Option<Session>, Option<Session>) {
         self.sessions
     }
@@ -347,10 +446,38 @@ impl Context {
         }
     }
 
-    /// Determine a TPM property, which is automatically cached if available
+    /// Determine a TPM property
+    ///
+    /// # Details
+    /// Returns the value of the provided `TpmProperty` if
+    /// the TPM has a value for it else None will be returned.
+    /// If None is returned then use default from specification.
+    ///
+    /// # Errors
+    /// If the TPM returns a value that is wrong when
+    /// its capabilities is being retrieved then a
+    /// `WrongValueFromTpm` is returned.
+    ///
+    /// # Example
+    ///
+    /// ```rust, no_run
+    /// use tss_esapi::{Context, Tcti, constants::tags::PropertyTag};
+    /// use std::str::FromStr;
+    ///
+    /// // Create context that uses Device TCTI.
+    /// let mut context = unsafe {
+    ///     Context::new(Tcti::Device(Default::default())).expect("Failed to create Context")
+    /// };
+    ///
+    /// let rev = context
+    ///     .get_tpm_property(PropertyTag::Revision)
+    ///     .expect("Wrong value from TPM")
+    ///     .expect("Value is not supported");
+    /// ```
     pub fn get_tpm_property(&mut self, property: PropertyTag) -> Result<Option<u32>> {
-        if let Some(val) = self.cached_tpm_properties.get(&property) {
-            return Ok(Some(*val));
+        // Return cahced value if it exists
+        if let Some(&val) = self.cached_tpm_properties.get(&property) {
+            return Ok(Some(val));
         }
 
         let (capabs, _) = self.execute_without_session(|ctx| {
@@ -377,12 +504,6 @@ impl Context {
     ///
     /// The authentication value, initial data, outside info and creation PCRs are passed as slices
     /// which are then converted by the method into TSS native structures.
-    ///
-    /// # Constraints
-    /// * `outside_info` must be at most 64 elements long
-    /// * `creation_pcrs` must be at most 16 elements long
-    /// * `auth_value` must be at most 64 elements long
-    /// * `initial_data` must be at most 256 elements long
     ///
     /// # Errors
     /// * if either of the slices is larger than the maximum size of the native objects, a
@@ -465,12 +586,6 @@ impl Context {
     ///
     /// The authentication value, initial data, outside info and creation PCRs are passed as slices
     /// which are then converted by the method into TSS native structures.
-    ///
-    /// # Constraints
-    /// * `outside_info` must be at most 64 elements long
-    /// * `creation_pcrs` must be at most 16 elements long
-    /// * `auth_value` must be at most 64 elements long
-    /// * `initial_data` must be at most 256 elements long
     ///
     /// # Errors
     /// * if either of the slices is larger than the maximum size of the native objects, a
@@ -648,14 +763,6 @@ impl Context {
     }
 
     /// Sign a digest with a key present in the TPM and return the signature.
-    ///
-    /// The digest is passed as a slice, converted by the method to a TSS digest structure.
-    ///
-    /// # Constraints
-    /// * `digest` must be at most 64 elements long
-    ///
-    /// # Errors
-    /// * if the digest provided is too long, a `WrongParamSize` wrapper error will be returned
     pub fn sign(
         &mut self,
         key_handle: KeyHandle,
@@ -691,14 +798,6 @@ impl Context {
     }
 
     /// Verify if a signature was generated by signing a given digest with a key in the TPM.
-    ///
-    /// The digest is passed as a sliice and converted by the method to a TSS digest structure.
-    ///
-    /// # Constraints
-    /// * `digest` must be at most 64 elements long
-    ///
-    /// # Errors
-    /// * if the digest provided is too long, a `WrongParamSize` wrapper error will be returned
     pub fn verify_signature(
         &mut self,
         key_handle: KeyHandle,
@@ -767,7 +866,7 @@ impl Context {
         }
     }
 
-    /// Perform actions to create a TPM2B_ID_OBJECT containing an activation credential.
+    /// Perform actions to create a [IDObject] containing an activation credential.
     ///
     /// This does not use any TPM secrets, and is really just a convenience function.
     pub fn make_credential(
@@ -988,11 +1087,84 @@ impl Context {
         }
     }
 
-    //////////////////////////////////////////////////////////////////////////////////
-    /// Context Management
-    //////////////////////////////////////////////////////////////////////////////////
+    // ////////////////////////////////////////////////////////////////////////////////
+    // Context Management
+    // ////////////////////////////////////////////////////////////////////////////////
 
     /// Flush the context of an object from the TPM.
+    ///
+    /// # Example
+    ///
+    /// ```rust, no_run
+    /// use tss_esapi::{
+    ///     Context, Tcti, structures::Auth,
+    ///     constants::{
+    ///         algorithm::{Cipher, HashingAlgorithm},
+    ///         tss::{TPMA_SESSION_DECRYPT, TPMA_SESSION_ENCRYPT},
+    ///         types::session::SessionType,
+    ///     },
+    ///     interface_types::resource_handles::Hierarchy,
+    ///     utils::{create_unrestricted_signing_rsa_public, AsymSchemeUnion},
+    ///     session::SessionAttributesBuilder,
+    /// };
+    /// use std::convert::TryFrom;
+    /// use std::str::FromStr;
+    ///
+    /// // Create context that uses Device TCTI.
+    /// let mut context = unsafe {
+    ///     Context::new(Tcti::Device(Default::default())).expect("Failed to create Context")
+    /// };
+    ///
+    /// // Create session for a key
+    /// let session = context
+    ///     .start_auth_session(
+    ///         None,
+    ///         None,
+    ///         None,
+    ///         SessionType::Hmac,
+    ///         Cipher::aes_256_cfb(),
+    ///         HashingAlgorithm::Sha256,
+    ///     )
+    ///     .expect("Failed to create session")
+    ///     .expect("Recived invalid handle");
+    /// let (session_attributes, session_attributes_mask) = SessionAttributesBuilder::new()
+    ///     .with_decrypt(true)
+    ///     .with_encrypt(true)
+    ///     .build();
+    /// context.tr_sess_set_attributes(session, session_attributes, session_attributes_mask)
+    ///     .expect("Failed to set attributes on session");
+    ///
+    /// // Create public area for a rsa key
+    /// let public_area = create_unrestricted_signing_rsa_public(
+    ///         AsymSchemeUnion::RSASSA(HashingAlgorithm::Sha256),
+    ///         2048,
+    ///         0,
+    ///     )
+    ///     .expect("Failed to create rsa public area");
+    ///
+    /// // Execute context methods using the session
+    /// context.execute_with_session(Some(session), |ctx| {
+    ///     let random_digest = ctx.get_random(16)
+    ///         .expect("Call to get_random failed");
+    ///     let key_auth = Auth::try_from(random_digest.value().to_vec())
+    ///         .expect("Failed to create Auth");
+    ///     let key_handle = ctx
+    ///         .create_primary_key(
+    ///             Hierarchy::Owner,
+    ///             &public_area,
+    ///             Some(&key_auth),
+    ///             None,
+    ///             None,
+    ///             None,
+    ///         )
+    ///         .expect("Failed to create primary key")
+    ///         .key_handle;
+    ///
+    ///         // Flush the context of the key.
+    ///         ctx.flush_context(key_handle.into()).expect("Call to flush_context failed");
+    ///         assert!(ctx.read_public(key_handle).is_err());
+    /// })
+    /// ```
     pub fn flush_context(&mut self, handle: ObjectHandle) -> Result<()> {
         let ret = unsafe { Esys_FlushContext(self.mut_context(), handle.try_into_not_none()?) };
         let ret = Error::from_tss_rc(ret);
@@ -1100,6 +1272,11 @@ impl Context {
         }
     }
 
+    /// Extends a PCR with the specified digests.
+    ///
+    /// # Details
+    /// This method is used to cause an update to the indicated PCR. The digests param
+    /// contains the digests for specific algorithms that are to be used.
     pub fn pcr_extend(&mut self, pcr_handle: PcrHandle, digests: DigestValues) -> Result<()> {
         let ret = unsafe {
             Esys_PCR_Extend(
@@ -1121,6 +1298,12 @@ impl Context {
         }
     }
 
+    /// Resets the value in a PCR register.
+    ///
+    /// # Details
+    /// If the attributes of the PCR indicates that it is allowed
+    /// to reset them and the proper authorization is provided then
+    /// this method can be used to set the PCR in all banks to 0.
     pub fn pcr_reset(&mut self, pcr_handle: PcrHandle) -> Result<()> {
         let ret = unsafe {
             Esys_PCR_Reset(
@@ -1141,18 +1324,47 @@ impl Context {
         }
     }
 
-    /// Reads the value of a PCR slot associated with
-    /// a specific hashing algorithm
+    /// Reads the values of PCR slots.
     ///
-    /// # Constraints
-    /// * If the selection contains more pcr values then 16 (number of
-    /// elements in TPML_DIGEST). Then not all values will be read. The
-    /// Selection in the return value will indicate what values that have
-    /// been read.
+    /// # Arguments
+    /// *`pcr_selection_list` - A [PcrSelectionList] that contains pcr slots in
+    /// different banks that is going to be read.
+    ///
+    /// # Details
+    /// The provided [PcrSelectionList] contains the pcr slots in the different
+    /// banks that is going to be read. It is possible to select more pcr slots
+    /// then what will fit in the returned result so the method returns a [PcrSelectionList]
+    /// that indicates what values that was read. The values that was read are returned
+    /// in the [PcrData].
     ///
     /// # Errors
     /// * Several different errors can occur if conversion of return
     ///   data fails.
+    ///
+    /// # Example
+    ///
+    /// ```rust, no_run
+    /// use tss_esapi::{
+    ///     Context, Tcti,
+    ///     constants::algorithm::HashingAlgorithm,
+    ///     structures::{PcrSelectionListBuilder, PcrSlot},
+    /// };
+    /// use std::str::FromStr;
+    ///
+    /// // Create context that uses Device TCTI.
+    /// let mut context = unsafe {
+    ///     Context::new(Tcti::Device(Default::default())).expect("Failed to create Context")
+    /// };
+    ///
+    /// // Create PCR selection list with slots in a bank
+    /// // that is going to be read.
+    /// let pcr_selection_list = PcrSelectionListBuilder::new()
+    ///     .with_selection(HashingAlgorithm::Sha256, &[PcrSlot::Slot0, PcrSlot::Slot1])
+    ///     .build();
+    ///
+    /// let (update_counter, read_pcr_list, pcr_data) = context.pcr_read(&pcr_selection_list)
+    ///     .expect("Call to pcr_read failed");
+    /// ```
     pub fn pcr_read(
         &mut self,
         pcr_selection_list: &PcrSelectionList,
@@ -1190,9 +1402,6 @@ impl Context {
     }
 
     /// Generate a quote on the selected PCRs
-    ///
-    /// # Constraints
-    /// * `qualifying_data` must be at most 64 elements long
     ///
     /// # Errors
     /// * if the qualifying data provided is too long, a `WrongParamSize` wrapper error will be returned
@@ -1337,24 +1546,15 @@ impl Context {
 
     /// Cause conditional gating of a policy based on PCR.
     ///
+    /// # Details
     /// The TPM will use the hash algorithm of the policy_session
     /// to calculate a digest from the values of the pcr slots
     /// specified in the pcr_selections.
     /// This is then compared to pcr_policy_digest if they match then
     /// the policyDigest of the policy session is extended.
     ///
-    /// # Constraints
-    /// * `pcr_policy_digest` must be at most 64 elements long
-    ///
     /// # Errors
     /// * if the pcr policy digest provided is too long, a `WrongParamSize` wrapper error will be returned
-    ///
-    /// See:
-    /// "Trusted Platform Module Library",
-    /// "Part 3: Commands"
-    /// "Family “2.0”
-    /// Level 00 Revision 01.59
-    /// Section: 23.7 TPM2_PolicyPCR
     pub fn policy_pcr(
         &mut self,
         policy_session: Session,
@@ -1651,7 +1851,6 @@ impl Context {
         }
     }
 
-    // TODO: Should we really keep `num_bytes` as `u16`?
     /// Get a number of random bytes from the TPM and return them.
     ///
     /// # Errors
@@ -1712,8 +1911,46 @@ impl Context {
         }
     }
 
-    /// Function for invoking TPM2_Hash command.
+    /// Hashes the provided data using the specified algorithm.
     ///
+    /// # Details
+    /// Performs the specified hash operation on a data buffer and return
+    /// the result. The HashCheckTicket indicates if the hash can be used in
+    /// a signing operation that uses restricted signing key.
+    ///
+    /// # Example
+    ///
+    /// ```rust, no_run
+    /// use tss_esapi::{Context, Tcti,
+    ///     structures::{MaxBuffer, Ticket},
+    ///     constants::algorithm::HashingAlgorithm,
+    ///     interface_types::resource_handles::Hierarchy,
+    /// };
+    /// use std::convert::TryFrom;
+    ///
+    /// // Create context that uses Device TCTI.
+    /// let mut context = unsafe {
+    ///     Context::new(Tcti::Device(Default::default())).expect("Failed to create Context")
+    /// };
+    /// let input_data = MaxBuffer::try_from("There is no spoon".as_bytes().to_vec())
+    ///     .expect("Failed to create buffer for input data.");
+    /// let expected_hashed_data: [u8; 32] = [
+    ///     0x6b, 0x38, 0x4d, 0x2b, 0xfb, 0x0e, 0x0d, 0xfb, 0x64, 0x89, 0xdb, 0xf4, 0xf8, 0xe9,
+    ///     0xe5, 0x2f, 0x71, 0xee, 0xb1, 0x0d, 0x06, 0x4c, 0x56, 0x59, 0x70, 0xcd, 0xd9, 0x44,
+    ///     0x43, 0x18, 0x5d, 0xc1,
+    /// ];
+    /// let expected_hierarchy = Hierarchy::Owner;
+    /// let (actual_hashed_data, ticket) = context
+    ///     .hash(
+    ///         &input_data,
+    ///         HashingAlgorithm::Sha256,
+    ///         expected_hierarchy,
+    ///     )
+    ///     .expect("Call to hash failed.");
+    /// assert_eq!(expected_hashed_data.len(), actual_hashed_data.len());
+    /// assert_eq!(&expected_hashed_data[..], &actual_hashed_data[..]);
+    /// assert_eq!(ticket.hierarchy(), expected_hierarchy);
+    /// ```
     pub fn hash(
         &mut self,
         data: &MaxBuffer,
@@ -1833,17 +2070,11 @@ impl Context {
         }
     }
 
-    ///////////////////////////////////////////////////////////////////////////
-    /// TPM Resource Section
-    ///////////////////////////////////////////////////////////////////////////
+    // ////////////////////////////////////////////////////////////////////////
+    // TPM Resource Section
+    // ////////////////////////////////////////////////////////////////////////
 
     /// Set the authentication value for a given object handle in the ESYS context.
-    ///
-    /// # Constraints
-    /// * `auth_value` must be at most 64 elements long
-    ///
-    /// # Errors
-    /// * if `auth_value` is larger than the limit, a `WrongParamSize` wrapper error is returned
     pub fn tr_set_auth(&mut self, object_handle: ObjectHandle, auth: &Auth) -> Result<()> {
         let mut tss_auth = TPM2B_AUTH::try_from(auth.clone())?;
         let ret = unsafe { Esys_TR_SetAuth(self.mut_context(), object_handle.into(), &tss_auth) };
@@ -1957,14 +2188,16 @@ impl Context {
             Err(ret)
         }
     }
-    ///////////////////////////////////////////////////////////////////////////
-    /// TPM Non Volatile Section
-    ///////////////////////////////////////////////////////////////////////////
 
-    /// NV Define Space
+    // ////////////////////////////////////////////////////////////////////////
+    //  TPM Non Volatile Section
+    // ////////////////////////////////////////////////////////////////////////
+
+    /// Allocates an index in the non volatile storage.
     ///
-    /// Allocates an index in the non volatile
-    /// storage.
+    /// # Details
+    /// This method will instruct the TPM to reserve space for an NV index
+    /// with the attributes defined in the provided parameters.
     pub fn nv_define_space(
         &mut self,
         nv_auth: NvAuth,
@@ -1997,10 +2230,11 @@ impl Context {
         }
     }
 
-    /// NV Undefine Space
+    /// Deletes an index in the non volatile storage.
     ///
-    /// Deletes an index in the non volatile
-    /// storage.
+    /// # Details
+    /// The method will instruct the TPM to remove a
+    /// nv index.
     pub fn nv_undefine_space(
         &mut self,
         nv_auth: NvAuth,
@@ -2027,10 +2261,11 @@ impl Context {
         }
     }
 
-    /// NV Read Public
-    ///
     /// Reads the public part of an nv index.
     ///
+    /// # Details
+    /// This method is used to read the public
+    /// area and name of a nv index.
     pub fn nv_read_public(&mut self, nv_index_handle: NvIndexHandle) -> Result<(NvPublic, Name)> {
         let mut tss_nv_public_ptr = null_mut();
         let mut tss_nv_name_ptr = null_mut();
@@ -2059,9 +2294,11 @@ impl Context {
         }
     }
 
-    /// NV Read
-    ///
     /// Reads data from the nv index.
+    ///
+    /// # Details
+    /// This method is used to read a value from an area in
+    /// NV memory of the TPM.
     pub fn nv_read(
         &mut self,
         auth_handle: AuthHandle,
@@ -2094,9 +2331,11 @@ impl Context {
         }
     }
 
-    /// NV Write
-    ///
     /// Writes data to an nv index.
+    ///
+    /// # Details
+    /// This method is used to write a value to
+    /// the nv memory in the TPM.
     pub fn nv_write(
         &mut self,
         auth_handle: AuthHandle,
@@ -2125,32 +2364,29 @@ impl Context {
         }
     }
 
-    ///////////////////////////////////////////////////////////////////////////
-    /// Private Methods Section
-    ///////////////////////////////////////////////////////////////////////////
+    // ////////////////////////////////////////////////////////////////////////
+    //  Private Methods Section
+    // ////////////////////////////////////////////////////////////////////////
 
     /// Returns a mutable reference to the native ESYS context handle.
     fn mut_context(&mut self) -> *mut ESYS_CONTEXT {
         self.esys_context.as_mut().unwrap().as_mut_ptr() // will only fail if called from Drop after .take()
     }
-    ///
+
     /// Internal function for retrieving the ESYS session handle for
     /// the optional session 1.
-    ///
     fn optional_session_1(&self) -> ESYS_TR {
         Session::handle_from_option(self.sessions.0).into()
     }
-    ///
+
     /// Internal function for retrieving the ESYS session handle for
     /// the optional session 2.
-    ///
     fn optional_session_2(&self) -> ESYS_TR {
         Session::handle_from_option(self.sessions.1).into()
     }
-    ///
+
     /// Internal function for retrieving the ESYS session handle for
     /// the optional session 3.
-    ///
     fn optional_session_3(&self) -> ESYS_TR {
         Session::handle_from_option(self.sessions.2).into()
     }
