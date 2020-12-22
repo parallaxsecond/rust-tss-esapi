@@ -5,10 +5,9 @@ use std::{env, str::FromStr, sync::Once};
 use tss_esapi::{
     constants::{
         algorithm::{Cipher, HashingAlgorithm},
-        tss::*,
         types::session::SessionType,
     },
-    utils::TpmaSessionBuilder,
+    session::SessionAttributesBuilder,
     Context, Tcti,
 };
 
@@ -49,12 +48,16 @@ pub fn create_ctx_with_session() -> Context {
             HashingAlgorithm::Sha256,
         )
         .unwrap();
-    let session_attr = TpmaSessionBuilder::new()
-        .with_flag(TPMA_SESSION_DECRYPT)
-        .with_flag(TPMA_SESSION_ENCRYPT)
+    let (session_attributes, session_attributes_mask) = SessionAttributesBuilder::new()
+        .with_decrypt(true)
+        .with_encrypt(true)
         .build();
-    ctx.tr_sess_set_attributes(session.unwrap(), session_attr)
-        .unwrap();
+    ctx.tr_sess_set_attributes(
+        session.unwrap(),
+        session_attributes,
+        session_attributes_mask,
+    )
+    .unwrap();
     ctx.set_sessions((session, None, None));
 
     ctx

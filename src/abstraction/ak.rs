@@ -8,15 +8,14 @@ use crate::{
         types::session::SessionType,
     },
     handles::{AuthHandle, KeyHandle},
+    session::SessionAttributesBuilder,
     structures::{Auth, CreateKeyResult, Private},
     tss2_esys::{
         TPM2B_PUBLIC, TPMS_ECC_PARMS, TPMS_RSA_PARMS, TPMS_SCHEME_HASH, TPMT_ECC_SCHEME,
         TPMT_KDF_SCHEME, TPMT_RSA_SCHEME, TPMT_SYM_DEF_OBJECT, TPMU_ASYM_SCHEME, TPMU_SYM_KEY_BITS,
         TPMU_SYM_MODE,
     },
-    utils::{
-        ObjectAttributes, PublicIdUnion, PublicParmsUnion, Tpm2BPublicBuilder, TpmaSessionBuilder,
-    },
+    utils::{ObjectAttributes, PublicIdUnion, PublicParmsUnion, Tpm2BPublicBuilder},
     Context, Error, Result, WrapperErrorKind,
 };
 
@@ -105,11 +104,12 @@ pub fn load_ak(
         Some(ses) => ses,
         None => return Err(Error::local_error(WrapperErrorKind::WrongValueFromTpm)),
     };
-    let session_attr = TpmaSessionBuilder::new()
-        .with_flag(TPMA_SESSION_DECRYPT)
-        .with_flag(TPMA_SESSION_ENCRYPT)
+
+    let (session_attributes, session_attributes_mask) = SessionAttributesBuilder::new()
+        .with_decrypt(true)
+        .with_encrypt(true)
         .build();
-    context.tr_sess_set_attributes(session, session_attr)?;
+    context.tr_sess_set_attributes(session, session_attributes, session_attributes_mask)?;
 
     let key_handle = context.execute_with_temporary_object(session.handle().into(), |ctx, _| {
         let _ = ctx.execute_with_nullauth_session(|ctx| {
@@ -156,11 +156,11 @@ pub fn create_ak(
         Some(ses) => ses,
         None => return Err(Error::local_error(WrapperErrorKind::WrongValueFromTpm)),
     };
-    let session_attr = TpmaSessionBuilder::new()
-        .with_flag(TPMA_SESSION_DECRYPT)
-        .with_flag(TPMA_SESSION_ENCRYPT)
+    let (session_attributes, session_attributes_mask) = SessionAttributesBuilder::new()
+        .with_decrypt(true)
+        .with_encrypt(true)
         .build();
-    context.tr_sess_set_attributes(session, session_attr)?;
+    context.tr_sess_set_attributes(session, session_attributes, session_attributes_mask)?;
 
     context.execute_with_temporary_object(session.handle().into(), |ctx, _| {
         let _ = ctx.execute_with_nullauth_session(|ctx| {

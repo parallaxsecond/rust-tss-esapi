@@ -18,6 +18,7 @@ use crate::constants::tss::*;
 use crate::constants::types::session::SessionType;
 use crate::handles::KeyHandle;
 use crate::interface_types::resource_handles::Hierarchy;
+use crate::session::SessionAttributesBuilder;
 use crate::structures::{Auth, CreateKeyResult, Data, Digest, PublicKeyRSA, VerifiedTicket};
 use crate::tcti::Tcti;
 use crate::tss2_esys::*;
@@ -25,8 +26,8 @@ use crate::utils::{
     self, create_restricted_decryption_rsa_public,
     create_unrestricted_encryption_decryption_rsa_public, create_unrestricted_signing_ecc_public,
     create_unrestricted_signing_rsa_public, AsymSchemeUnion, ObjectAttributes, PublicIdUnion,
-    PublicKey, PublicParmsUnion, Tpm2BPublicBuilder, TpmaSessionBuilder, TpmsContext,
-    TpmsRsaParmsBuilder, RSA_KEY_SIZES,
+    PublicKey, PublicParmsUnion, Tpm2BPublicBuilder, TpmsContext, TpmsRsaParmsBuilder,
+    RSA_KEY_SIZES,
 };
 use crate::Context;
 use crate::{Error, Result, WrapperErrorKind as ErrorKind};
@@ -533,11 +534,15 @@ impl TransientKeyContext {
     /// * if `Context::set_session_attr` returns an error, that error is propagated through
     fn set_session_attrs(&mut self) -> Result<()> {
         if let (Some(session), _, _) = self.context.sessions() {
-            let session_attr = utils::TpmaSessionBuilder::new()
-                .with_flag(TPMA_SESSION_DECRYPT)
-                .with_flag(TPMA_SESSION_ENCRYPT)
+            let (session_attributes, session_attributes_mask) = SessionAttributesBuilder::new()
+                .with_decrypt(true)
+                .with_encrypt(true)
                 .build();
-            self.context.tr_sess_set_attributes(session, session_attr)?;
+            self.context.tr_sess_set_attributes(
+                session,
+                session_attributes,
+                session_attributes_mask,
+            )?;
         }
         Ok(())
     }
@@ -687,11 +692,11 @@ impl TransientKeyContextBuilder {
                     Error::local_error(ErrorKind::WrongValueFromTpm)
                 })
             })?;
-        let session_attr = TpmaSessionBuilder::new()
-            .with_flag(TPMA_SESSION_DECRYPT)
-            .with_flag(TPMA_SESSION_ENCRYPT)
+        let (session_attributes, session_attributes_mask) = SessionAttributesBuilder::new()
+            .with_decrypt(true)
+            .with_encrypt(true)
             .build();
-        context.tr_sess_set_attributes(session, session_attr)?;
+        context.tr_sess_set_attributes(session, session_attributes, session_attributes_mask)?;
         context.set_sessions((Some(session), None, None));
 
         let root_key_handle = context
