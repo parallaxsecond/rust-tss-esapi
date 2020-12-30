@@ -50,7 +50,7 @@ use tss_esapi::{
         resource_handles::{Hierarchy, NvAuth, Provision},
     },
     nv::storage::{NvIndexAttributes, NvPublicBuilder},
-    session::Session,
+    session::{Session, SessionAttributesBuilder},
     structures::{
         Auth, CapabilityData, Data, Digest, DigestList, DigestValues, MaxBuffer, MaxNvBuffer,
         Nonce, PcrSelectionListBuilder, PcrSlot, PublicKeyRSA, SensitiveData, Ticket,
@@ -58,7 +58,7 @@ use tss_esapi::{
     tss2_esys::*,
     utils::{
         self, AsymSchemeUnion, ObjectAttributes, PublicIdUnion, PublicParmsUnion, Signature,
-        SignatureData, Tpm2BPublicBuilder, TpmaSessionBuilder, TpmsRsaParmsBuilder,
+        SignatureData, Tpm2BPublicBuilder, TpmsRsaParmsBuilder,
     },
     Context,
 };
@@ -135,13 +135,17 @@ fn comprehensive_test() {
             HashingAlgorithm::Sha256,
         )
         .unwrap();
-    let session_attr = TpmaSessionBuilder::new()
-        .with_flag(TPMA_SESSION_DECRYPT)
-        .with_flag(TPMA_SESSION_ENCRYPT)
+    let (new_session_attributes, new_session_attributes_mask) = SessionAttributesBuilder::new()
+        .with_decrypt(true)
+        .with_encrypt(true)
         .build();
     context
-        .tr_sess_set_attributes(new_session.unwrap(), session_attr)
-        .unwrap();
+        .tr_sess_set_attributes(
+            new_session.expect("new session was None"),
+            new_session_attributes,
+            new_session_attributes_mask,
+        )
+        .expect("tr_sess_set_attributes call failed");
     context.set_sessions((new_session, None, None));
 
     let result = context
@@ -272,14 +276,17 @@ mod test_start_sess {
                 HashingAlgorithm::Sha256,
             )
             .unwrap();
-        let session_attr = utils::TpmaSessionBuilder::new()
-            .with_flag(TPMA_SESSION_DECRYPT)
-            .with_flag(TPMA_SESSION_ENCRYPT)
-            .with_flag(TPMA_SESSION_AUDIT)
+        let (session_attributes, session_attributes_mask) = SessionAttributesBuilder::new()
+            .with_encrypt(true)
+            .with_audit(true)
             .build();
         context
-            .tr_sess_set_attributes(encrypted_sess.unwrap(), session_attr)
-            .unwrap();
+            .tr_sess_set_attributes(
+                encrypted_sess.unwrap(),
+                session_attributes,
+                session_attributes_mask,
+            )
+            .expect("tr_sess_set_attributes call failed");
 
         let _ = context
             .start_auth_session(
@@ -390,7 +397,7 @@ mod make_active_credential {
     fn test_make_activate_credential() {
         let mut context = create_ctx_with_session();
 
-        let session_attr = TpmaSessionBuilder::new().build();
+        let (session_attributes, session_attributes_mask) = SessionAttributesBuilder::new().build();
 
         let session_1 = context
             .start_auth_session(
@@ -403,7 +410,11 @@ mod make_active_credential {
             )
             .unwrap();
         context
-            .tr_sess_set_attributes(session_1.unwrap(), session_attr)
+            .tr_sess_set_attributes(
+                session_1.unwrap(),
+                session_attributes,
+                session_attributes_mask,
+            )
             .unwrap();
         let session_2 = context
             .start_auth_session(
@@ -416,7 +427,11 @@ mod make_active_credential {
             )
             .unwrap();
         context
-            .tr_sess_set_attributes(session_2.unwrap(), session_attr)
+            .tr_sess_set_attributes(
+                session_2.unwrap(),
+                session_attributes,
+                session_attributes_mask,
+            )
             .unwrap();
 
         let key_handle = context
@@ -822,7 +837,7 @@ fn get_pcr_policy_digest(context: &mut Context, mangle: bool, do_trial: bool) ->
         .unwrap();
 
     if do_trial {
-        let pcr_ses = context
+        let pcr_session = context
             .start_auth_session(
                 None,
                 None,
@@ -834,28 +849,32 @@ fn get_pcr_policy_digest(context: &mut Context, mangle: bool, do_trial: bool) ->
             .expect("Start auth session failed")
             .expect("Start auth session returned a NONE handle");
 
-        let pcr_ses_attr = TpmaSessionBuilder::new()
-            .with_flag(TPMA_SESSION_DECRYPT)
-            .with_flag(TPMA_SESSION_ENCRYPT)
+        let (pcr_session_attributes, pcr_session_attributes_mask) = SessionAttributesBuilder::new()
+            .with_decrypt(true)
+            .with_encrypt(true)
             .build();
         context
-            .tr_sess_set_attributes(pcr_ses, pcr_ses_attr)
-            .unwrap();
+            .tr_sess_set_attributes(
+                pcr_session,
+                pcr_session_attributes,
+                pcr_session_attributes_mask,
+            )
+            .expect("tr_sess_set_attributes call failed");
 
         // There should be no errors setting pcr policy for trial session.
         context
-            .policy_pcr(pcr_ses, &hashed_data, pcr_selection_list)
+            .policy_pcr(pcr_session, &hashed_data, pcr_selection_list)
             .unwrap();
 
         // There is now a policy digest that can be retrived and used.
-        let digest = context.policy_get_digest(pcr_ses).unwrap();
+        let digest = context.policy_get_digest(pcr_session).unwrap();
 
         // Restore old sessions
         context.set_sessions(old_ses);
 
-        (digest, pcr_ses)
+        (digest, pcr_session)
     } else {
-        let pcr_ses = context
+        let pcr_session = context
             .start_auth_session(
                 None,
                 None,
@@ -867,26 +886,30 @@ fn get_pcr_policy_digest(context: &mut Context, mangle: bool, do_trial: bool) ->
             .expect("Start auth session failed")
             .expect("Start auth session returned a NONE handle");
 
-        let pcr_ses_attr = TpmaSessionBuilder::new()
-            .with_flag(TPMA_SESSION_DECRYPT)
-            .with_flag(TPMA_SESSION_ENCRYPT)
+        let (pcr_session_attributes, pcr_session_attributes_mask) = SessionAttributesBuilder::new()
+            .with_decrypt(true)
+            .with_encrypt(true)
             .build();
         context
-            .tr_sess_set_attributes(pcr_ses, pcr_ses_attr)
-            .unwrap();
+            .tr_sess_set_attributes(
+                pcr_session,
+                pcr_session_attributes,
+                pcr_session_attributes_mask,
+            )
+            .expect("tr_sess_set_attributes call failed");
 
         // There should be no errors setting pcr policy for trial session.
         context
-            .policy_pcr(pcr_ses, &hashed_data, pcr_selection_list)
+            .policy_pcr(pcr_session, &hashed_data, pcr_selection_list)
             .unwrap();
 
         // There is now a policy digest that can be retrived and used.
-        let digest = context.policy_get_digest(pcr_ses).unwrap();
+        let digest = context.policy_get_digest(pcr_session).unwrap();
 
         // Restore old sessions
         context.set_sessions(old_ses);
 
-        (digest, pcr_ses)
+        (digest, pcr_session)
     }
 }
 
@@ -913,13 +936,18 @@ mod test_policies {
             )
             .expect("Start auth session failed")
             .expect("Start auth session returned a NONE handle");
-        let trial_session_attr = TpmaSessionBuilder::new()
-            .with_flag(TPMA_SESSION_DECRYPT)
-            .with_flag(TPMA_SESSION_ENCRYPT)
-            .build();
+        let (trial_session_attributes, trial_session_attributes_mask) =
+            SessionAttributesBuilder::new()
+                .with_decrypt(true)
+                .with_encrypt(true)
+                .build();
         context
-            .tr_sess_set_attributes(trial_session, trial_session_attr)
-            .unwrap();
+            .tr_sess_set_attributes(
+                trial_session,
+                trial_session_attributes,
+                trial_session_attributes_mask,
+            )
+            .expect("tr_sess_set_attributes call failed");
 
         let nonce_tpm = Nonce::try_from(vec![1, 2, 3]).unwrap();
         let cp_hash_a = Digest::try_from(vec![1, 2, 3]).unwrap();
@@ -957,13 +985,18 @@ mod test_policies {
             )
             .expect("Start auth session failed")
             .expect("Start auth session returned a NONE handle");
-        let trial_session_attr = TpmaSessionBuilder::new()
-            .with_flag(TPMA_SESSION_DECRYPT)
-            .with_flag(TPMA_SESSION_ENCRYPT)
-            .build();
+        let (trial_session_attributes, trial_session_attributes_mask) =
+            SessionAttributesBuilder::new()
+                .with_decrypt(true)
+                .with_encrypt(true)
+                .build();
         context
-            .tr_sess_set_attributes(trial_session, trial_session_attr)
-            .unwrap();
+            .tr_sess_set_attributes(
+                trial_session,
+                trial_session_attributes,
+                trial_session_attributes_mask,
+            )
+            .expect("tr_sess_set_attributes call failed");
 
         let nonce_tpm = Nonce::try_from(vec![1, 2, 3]).unwrap();
         let cp_hash_a = Digest::try_from(vec![1, 2, 3]).unwrap();
@@ -1056,13 +1089,18 @@ mod test_policies {
             )
             .expect("Start auth session failed")
             .expect("Start auth session returned a NONE handle");
-        let trial_session_attr = TpmaSessionBuilder::new()
-            .with_flag(TPMA_SESSION_DECRYPT)
-            .with_flag(TPMA_SESSION_ENCRYPT)
-            .build();
+        let (trial_session_attributes, trial_session_attributes_mask) =
+            SessionAttributesBuilder::new()
+                .with_decrypt(true)
+                .with_encrypt(true)
+                .build();
         context
-            .tr_sess_set_attributes(trial_session, trial_session_attr)
-            .unwrap();
+            .tr_sess_set_attributes(
+                trial_session,
+                trial_session_attributes,
+                trial_session_attributes_mask,
+            )
+            .expect("tr_sess_set_attributes call failed");
 
         let mut digest_list = DigestList::new();
         digest_list
@@ -1090,13 +1128,18 @@ mod test_policies {
             )
             .expect("Start auth session failed")
             .expect("Start auth session returned a NONE handle");
-        let trial_session_attr = TpmaSessionBuilder::new()
-            .with_flag(TPMA_SESSION_DECRYPT)
-            .with_flag(TPMA_SESSION_ENCRYPT)
-            .build();
+        let (trial_session_attributes, trial_session_attributes_mask) =
+            SessionAttributesBuilder::new()
+                .with_decrypt(true)
+                .with_encrypt(true)
+                .build();
         context
-            .tr_sess_set_attributes(trial_session, trial_session_attr)
-            .unwrap();
+            .tr_sess_set_attributes(
+                trial_session,
+                trial_session_attributes,
+                trial_session_attributes_mask,
+            )
+            .expect("tr_sess_set_attributes call failed");
 
         // There should be no errors setting an Or for a TRIAL session
         context.policy_locality(trial_session, 3).unwrap();
@@ -1116,13 +1159,18 @@ mod test_policies {
             )
             .expect("Start auth session failed")
             .expect("Start auth session returned a NONE handle");
-        let trial_session_attr = TpmaSessionBuilder::new()
-            .with_flag(TPMA_SESSION_DECRYPT)
-            .with_flag(TPMA_SESSION_ENCRYPT)
-            .build();
+        let (trial_session_attributes, trial_session_attributes_mask) =
+            SessionAttributesBuilder::new()
+                .with_decrypt(true)
+                .with_encrypt(true)
+                .build();
         context
-            .tr_sess_set_attributes(trial_session, trial_session_attr)
-            .unwrap();
+            .tr_sess_set_attributes(
+                trial_session,
+                trial_session_attributes,
+                trial_session_attributes_mask,
+            )
+            .expect("tr_sess_set_attributes call failed");
 
         // There should be no errors setting an Or for a TRIAL session
         context
@@ -1144,13 +1192,18 @@ mod test_policies {
             )
             .expect("Start auth session failed")
             .expect("Start auth session returned a NONE handle");
-        let trial_session_attr = TpmaSessionBuilder::new()
-            .with_flag(TPMA_SESSION_DECRYPT)
-            .with_flag(TPMA_SESSION_ENCRYPT)
-            .build();
+        let (trial_session_attributes, trial_session_attributes_mask) =
+            SessionAttributesBuilder::new()
+                .with_decrypt(true)
+                .with_encrypt(true)
+                .build();
         context
-            .tr_sess_set_attributes(trial_session, trial_session_attr)
-            .unwrap();
+            .tr_sess_set_attributes(
+                trial_session,
+                trial_session_attributes,
+                trial_session_attributes_mask,
+            )
+            .expect("tr_sess_set_attributes call failed");
 
         // There should be no errors setting an Or for a TRIAL session
         context.policy_physical_presence(trial_session).unwrap();
@@ -1170,13 +1223,18 @@ mod test_policies {
             )
             .expect("Start auth session failed")
             .expect("Start auth session returned a NONE handle");
-        let trial_session_attr = TpmaSessionBuilder::new()
-            .with_flag(TPMA_SESSION_DECRYPT)
-            .with_flag(TPMA_SESSION_ENCRYPT)
-            .build();
+        let (trial_session_attributes, trial_session_attributes_mask) =
+            SessionAttributesBuilder::new()
+                .with_decrypt(true)
+                .with_encrypt(true)
+                .build();
         context
-            .tr_sess_set_attributes(trial_session, trial_session_attr)
-            .unwrap();
+            .tr_sess_set_attributes(
+                trial_session,
+                trial_session_attributes,
+                trial_session_attributes_mask,
+            )
+            .expect("tr_sess_set_attributes call failed");
 
         let test_dig = Digest::try_from(vec![
             252, 200, 17, 232, 137, 217, 130, 51, 54, 22, 184, 131, 2, 134, 99, 130, 175, 216, 159,
@@ -1201,13 +1259,18 @@ mod test_policies {
             )
             .expect("Start auth session failed")
             .expect("Start auth session returned a NONE handle");
-        let trial_session_attr = TpmaSessionBuilder::new()
-            .with_flag(TPMA_SESSION_DECRYPT)
-            .with_flag(TPMA_SESSION_ENCRYPT)
-            .build();
+        let (trial_session_attributes, trial_session_attributes_mask) =
+            SessionAttributesBuilder::new()
+                .with_decrypt(true)
+                .with_encrypt(true)
+                .build();
         context
-            .tr_sess_set_attributes(trial_session, trial_session_attr)
-            .unwrap();
+            .tr_sess_set_attributes(
+                trial_session,
+                trial_session_attributes,
+                trial_session_attributes_mask,
+            )
+            .expect("tr_sess_set_attributes call failed");
 
         let test_dig = Digest::try_from(vec![
             252, 200, 17, 232, 137, 217, 130, 51, 54, 22, 184, 131, 2, 134, 99, 130, 175, 216, 159,
@@ -1232,13 +1295,18 @@ mod test_policies {
             )
             .expect("Start auth session failed")
             .expect("Start auth session returned a NONE handle");
-        let trial_session_attr = TpmaSessionBuilder::new()
-            .with_flag(TPMA_SESSION_DECRYPT)
-            .with_flag(TPMA_SESSION_ENCRYPT)
-            .build();
+        let (trial_session_attributes, trial_session_attributes_mask) =
+            SessionAttributesBuilder::new()
+                .with_decrypt(true)
+                .with_encrypt(true)
+                .build();
         context
-            .tr_sess_set_attributes(trial_session, trial_session_attr)
-            .unwrap();
+            .tr_sess_set_attributes(
+                trial_session,
+                trial_session_attributes,
+                trial_session_attributes_mask,
+            )
+            .expect("tr_sess_set_attributes call failed");
 
         // There should be no errors setting an Or for a TRIAL session
         context.policy_auth_value(trial_session).unwrap();
@@ -1257,13 +1325,18 @@ mod test_policies {
             )
             .expect("Start auth session failed")
             .expect("Start auth session returned a NONE handle");
-        let trial_session_attr = TpmaSessionBuilder::new()
-            .with_flag(TPMA_SESSION_DECRYPT)
-            .with_flag(TPMA_SESSION_ENCRYPT)
-            .build();
+        let (trial_session_attributes, trial_session_attributes_mask) =
+            SessionAttributesBuilder::new()
+                .with_decrypt(true)
+                .with_encrypt(true)
+                .build();
         context
-            .tr_sess_set_attributes(trial_session, trial_session_attr)
-            .unwrap();
+            .tr_sess_set_attributes(
+                trial_session,
+                trial_session_attributes,
+                trial_session_attributes_mask,
+            )
+            .expect("tr_sess_set_attributes call failed");
 
         // There should be no errors setting an Or for a TRIAL session
         context.policy_password(trial_session).unwrap();
@@ -1282,13 +1355,18 @@ mod test_policies {
             )
             .expect("Start auth session failed")
             .expect("Start auth session returned a NONE handle");
-        let trial_session_attr = TpmaSessionBuilder::new()
-            .with_flag(TPMA_SESSION_DECRYPT)
-            .with_flag(TPMA_SESSION_ENCRYPT)
-            .build();
+        let (trial_session_attributes, trial_session_attributes_mask) =
+            SessionAttributesBuilder::new()
+                .with_decrypt(true)
+                .with_encrypt(true)
+                .build();
         context
-            .tr_sess_set_attributes(trial_session, trial_session_attr)
-            .unwrap();
+            .tr_sess_set_attributes(
+                trial_session,
+                trial_session_attributes,
+                trial_session_attributes_mask,
+            )
+            .expect("tr_sess_set_attributes call failed");
 
         // There should be no errors setting an Or for a TRIAL session
         context.policy_nv_written(trial_session, true).unwrap();
@@ -1312,13 +1390,18 @@ mod test_policy_pcr {
             )
             .expect("Start auth session failed")
             .expect("Start auth session returned a NONE handle");
-        let trial_session_attr = TpmaSessionBuilder::new()
-            .with_flag(TPMA_SESSION_DECRYPT)
-            .with_flag(TPMA_SESSION_ENCRYPT)
-            .build();
+        let (trial_session_attributes, trial_session_attributes_mask) =
+            SessionAttributesBuilder::new()
+                .with_decrypt(true)
+                .with_encrypt(true)
+                .build();
         context
-            .tr_sess_set_attributes(trial_session, trial_session_attr)
-            .unwrap();
+            .tr_sess_set_attributes(
+                trial_session,
+                trial_session_attributes,
+                trial_session_attributes_mask,
+            )
+            .expect("tr_sess_set_attributes call failed");
 
         // Read the pcr values using pcr_read
         let pcr_selection_list = PcrSelectionListBuilder::new()
@@ -1450,14 +1533,14 @@ mod test_get_random {
             )
             .expect("Start auth session failed")
             .expect("Start auth session returned a NONE handle");
-        let session_attr = utils::TpmaSessionBuilder::new()
-            .with_flag(TPMA_SESSION_DECRYPT)
-            .with_flag(TPMA_SESSION_ENCRYPT)
-            .with_flag(TPMA_SESSION_AUDIT)
+        let (session_attributes, session_attributes_mask) = SessionAttributesBuilder::new()
+            .with_decrypt(true)
+            .with_encrypt(true)
+            .with_audit(true)
             .build();
         context
-            .tr_sess_set_attributes(encrypted_sess, session_attr)
-            .unwrap();
+            .tr_sess_set_attributes(encrypted_sess, session_attributes, session_attributes_mask)
+            .expect("tr_sess_set_attributes call failed");
 
         context.set_sessions((Some(encrypted_sess), None, None));
         let _ = context.get_random(10).unwrap();
@@ -2301,7 +2384,7 @@ mod test_session_attr {
     #[test]
     fn test_session_attr() {
         let mut context = create_ctx_with_session();
-        let sess_handle = context
+        let session = context
             .start_auth_session(
                 None,
                 None,
@@ -2312,16 +2395,15 @@ mod test_session_attr {
             )
             .expect("Start auth session failed")
             .expect("Start auth session returned a NONE handle");
-
-        let sess_attr = TpmaSessionBuilder::new()
-            .with_flag(TPMA_SESSION_DECRYPT)
-            .with_flag(TPMA_SESSION_ENCRYPT)
-            .with_flag(TPMA_SESSION_AUDIT)
+        let (session_attributes, session_attributes_mask) = SessionAttributesBuilder::new()
+            .with_decrypt(true)
+            .with_encrypt(true)
+            .with_audit(true)
             .build();
         context
-            .tr_sess_set_attributes(sess_handle, sess_attr)
-            .unwrap();
-        context.set_sessions((Some(sess_handle), None, None));
+            .tr_sess_set_attributes(session, session_attributes, session_attributes_mask)
+            .expect("tr_sess_set_attributes call failed");
+        context.set_sessions((Some(session), None, None));
 
         let _ = context.get_random(10).unwrap();
     }
@@ -2383,13 +2465,18 @@ mod test_policy_get_digest {
             )
             .expect("Start auth session failed")
             .expect("Start auth session returned a NONE handle");
-        let trial_session_attr = TpmaSessionBuilder::new()
-            .with_flag(TPMA_SESSION_DECRYPT)
-            .with_flag(TPMA_SESSION_ENCRYPT)
-            .build();
+        let (trial_session_attributes, trial_session_attributes_mask) =
+            SessionAttributesBuilder::new()
+                .with_decrypt(true)
+                .with_encrypt(true)
+                .build();
         context
-            .tr_sess_set_attributes(trial_session, trial_session_attr)
-            .unwrap();
+            .tr_sess_set_attributes(
+                trial_session,
+                trial_session_attributes,
+                trial_session_attributes_mask,
+            )
+            .expect("tr_sess_set_attributes call failed");
 
         // Read the pcr values using pcr_read
         let pcr_selection_list = PcrSelectionListBuilder::new()

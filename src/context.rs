@@ -5,7 +5,6 @@ use crate::{
     constants::{
         algorithm::{Cipher, HashingAlgorithm},
         tags::PropertyTag,
-        tss::{TPMA_SESSION_DECRYPT, TPMA_SESSION_ENCRYPT},
         types::{capability::CapabilityType, session::SessionType, startup::StartupType},
     },
     handles::{
@@ -17,7 +16,7 @@ use crate::{
         resource_handles::{Hierarchy, NvAuth, Provision},
     },
     nv::storage::NvPublic,
-    session::Session,
+    session::{Session, SessionAttributes, SessionAttributesBuilder, SessionAttributesMask},
     structures::{
         Auth, AuthTicket, CapabilityData, CreateKeyResult, CreatePrimaryKeyResult, CreationData,
         CreationTicket, Data, Digest, DigestList, DigestValues, EncryptedSecret, HashcheckTicket,
@@ -26,10 +25,7 @@ use crate::{
     },
     tcti::Tcti,
     tss2_esys::*,
-    utils::{
-        AsymSchemeUnion, PcrData, PublicParmsUnion, Signature, TpmaSession, TpmaSessionBuilder,
-        TpmsContext,
-    },
+    utils::{AsymSchemeUnion, PcrData, PublicParmsUnion, Signature, TpmsContext},
     Error, Result, WrapperErrorKind as ErrorKind,
 };
 use handle_manager::{HandleDropAction, HandleManager};
@@ -223,7 +219,6 @@ impl Context {
     }
 
     /// Execute the closure in f with the specified set of sessions, and sets the original sessions back afterwards
-    /// This is a convenience function
     pub fn execute_with_sessions<F, T>(
         &mut self,
         session_handles: (Option<Session>, Option<Session>, Option<Session>),
@@ -243,7 +238,7 @@ impl Context {
         res
     }
 
-    /// A special case of execute_with_sessions. Executes the closure with a single session set, and the others set to None
+    /// Executes the closure with a single session set, and the others set to None
     pub fn execute_with_session<F, T>(&mut self, session_handle: Option<Session>, f: F) -> T
     where
         // We only need to call f once, so it can be FnOnce
@@ -252,7 +247,7 @@ impl Context {
         self.execute_with_sessions((session_handle, None, None), f)
     }
 
-    /// A special case of execute_with_sessions. Executes the closure without any sessions
+    /// Executes the closure without any sessions,
     pub fn execute_without_session<F, T>(&mut self, f: F) -> T
     where
         // We only need to call f once, so it can be FnOnce
@@ -261,7 +256,12 @@ impl Context {
         self.execute_with_sessions((None, None, None), f)
     }
 
-    /// A special case of execute_with_sessions. Executes the closure with a newly generated empty session
+    /// Executes the closure with a newly generated empty session
+    ///
+    /// # Details
+    /// The session attributes for the generated empty session that
+    /// is used to execute closure will have the attributes decrypt
+    /// and encrypt set.
     pub fn execute_with_nullauth_session<F, T>(&mut self, f: F) -> Result<T>
     where
         // We only need to call f once, so it can be FnOnce
@@ -278,11 +278,12 @@ impl Context {
             Some(ses) => ses,
             None => return Err(Error::local_error(ErrorKind::WrongValueFromTpm)),
         };
-        let session_attr = TpmaSessionBuilder::new()
-            .with_flag(TPMA_SESSION_DECRYPT)
-            .with_flag(TPMA_SESSION_ENCRYPT)
+
+        let (session_attributes, session_attributes_mask) = SessionAttributesBuilder::new()
+            .with_decrypt(true)
+            .with_encrypt(true)
             .build();
-        self.tr_sess_set_attributes(session, session_attr)?;
+        self.tr_sess_set_attributes(session, session_attributes, session_attributes_mask)?;
 
         let res = self.execute_with_session(Some(session), f);
 
@@ -1874,14 +1875,15 @@ impl Context {
     pub fn tr_sess_set_attributes(
         &mut self,
         session: Session,
-        attributes: TpmaSession,
+        attributes: SessionAttributes,
+        mask: SessionAttributesMask,
     ) -> Result<()> {
         let ret = unsafe {
             Esys_TRSess_SetAttributes(
                 self.mut_context(),
                 session.handle().into(),
-                attributes.flags(),
-                attributes.mask(),
+                attributes.into(),
+                mask.into(),
             )
         };
         let ret = Error::from_tss_rc(ret);
@@ -1894,14 +1896,14 @@ impl Context {
     }
 
     /// Get session attribute flags.
-    pub fn tr_sess_get_attributes(&mut self, session: Session) -> Result<TpmaSession> {
+    pub fn tr_sess_get_attributes(&mut self, session: Session) -> Result<SessionAttributes> {
         let mut flags: TPMA_SESSION = 0;
         let ret = unsafe {
             Esys_TRSess_GetAttributes(self.mut_context(), session.handle().into(), &mut flags)
         };
         let ret = Error::from_tss_rc(ret);
         if ret.is_success() {
-            Ok(TpmaSessionBuilder::new().with_flag(flags).build())
+            Ok(SessionAttributes(flags))
         } else {
             error!("Error when getting session attributes: {}", ret);
             Err(ret)
