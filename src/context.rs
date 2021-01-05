@@ -183,7 +183,7 @@ impl Context {
         auth_hash: HashingAlgorithm,
     ) -> Result<Option<Session>> {
         let nonce_ptr: *const TPM2B_NONCE = match nonce {
-            Some(val) => &TPM2B_NONCE::try_from(val.clone())?,
+            Some(val) => &val.clone().into(),
             None => null(),
         };
 
@@ -524,8 +524,8 @@ impl Context {
                 .try_into()
                 .unwrap(),
             sensitive: TPMS_SENSITIVE_CREATE {
-                userAuth: TPM2B_AUTH::try_from(auth_value.cloned().unwrap_or_default())?,
-                data: TPM2B_SENSITIVE_DATA::try_from(initial_data.cloned().unwrap_or_default())?,
+                userAuth: auth_value.cloned().unwrap_or_default().into(),
+                data: initial_data.cloned().unwrap_or_default().into(),
             },
         };
         let creation_pcrs = PcrSelectionList::list_from_option(creation_pcrs);
@@ -545,7 +545,7 @@ impl Context {
                 self.optional_session_3(),
                 &sensitive_create,
                 public,
-                &TPM2B_DATA::try_from(outside_info.cloned().unwrap_or_default())?,
+                &outside_info.cloned().unwrap_or_default().into(),
                 &creation_pcrs.into(),
                 &mut esys_prim_key_handle,
                 &mut outpublic,
@@ -606,8 +606,8 @@ impl Context {
                 .try_into()
                 .unwrap(), // will not fail on targets of at least 16 bits
             sensitive: TPMS_SENSITIVE_CREATE {
-                userAuth: TPM2B_AUTH::try_from(auth_value.cloned().unwrap_or_default())?,
-                data: TPM2B_SENSITIVE_DATA::try_from(initial_data.cloned().unwrap_or_default())?,
+                userAuth: auth_value.cloned().unwrap_or_default().into(),
+                data: initial_data.cloned().unwrap_or_default().into(),
             },
         };
         let creation_pcrs = PcrSelectionList::list_from_option(creation_pcrs);
@@ -627,7 +627,7 @@ impl Context {
                 self.optional_session_3(),
                 &sensitive_create,
                 public,
-                &TPM2B_DATA::try_from(outside_info.cloned().unwrap_or_default())?,
+                &outside_info.cloned().unwrap_or_default().into(),
                 &creation_pcrs.into(),
                 &mut outprivate,
                 &mut outpublic,
@@ -745,7 +745,7 @@ impl Context {
                 self.optional_session_1(),
                 self.optional_session_2(),
                 self.optional_session_3(),
-                &private.try_into()?,
+                &private.into(),
                 &public,
                 &mut esys_key_handle,
             )
@@ -771,7 +771,6 @@ impl Context {
         validation: HashcheckTicket,
     ) -> Result<Signature> {
         let mut signature = null_mut();
-        let tss_digest = TPM2B_DIGEST::try_from(digest.clone())?;
         let validation = TPMT_TK_HASHCHECK::try_from(validation)?;
         let ret = unsafe {
             Esys_Sign(
@@ -780,7 +779,7 @@ impl Context {
                 self.optional_session_1(),
                 self.optional_session_2(),
                 self.optional_session_3(),
-                &tss_digest,
+                &digest.clone().into(),
                 &scheme,
                 &validation,
                 &mut signature,
@@ -806,7 +805,6 @@ impl Context {
     ) -> Result<VerifiedTicket> {
         let mut validation = null_mut();
         let signature = TPMT_SIGNATURE::try_from(signature)?;
-        let tss_digest = TPM2B_DIGEST::try_from(digest.clone())?;
         let ret = unsafe {
             Esys_VerifySignature(
                 self.mut_context(),
@@ -814,7 +812,7 @@ impl Context {
                 self.optional_session_1(),
                 self.optional_session_2(),
                 self.optional_session_3(),
-                &tss_digest,
+                &digest.clone().into(),
                 &signature,
                 &mut validation,
             )
@@ -848,8 +846,8 @@ impl Context {
                 self.required_session_1()?,
                 self.required_session_2()?,
                 self.optional_session_3(),
-                &credential_blob.try_into()?,
-                &secret.try_into()?,
+                &credential_blob.into(),
+                &secret.into(),
                 &mut out_cert_info,
             )
         };
@@ -884,7 +882,7 @@ impl Context {
                 self.optional_session_1(),
                 self.optional_session_2(),
                 self.optional_session_3(),
-                &credential.try_into()?,
+                &credential.into(),
                 &object_name.try_into()?,
                 &mut out_credential_blob,
                 &mut out_secret,
@@ -916,8 +914,6 @@ impl Context {
         in_scheme: AsymSchemeUnion,
         label: Data,
     ) -> Result<PublicKeyRSA> {
-        let tss_message = TPM2B_PUBLIC_KEY_RSA::try_from(message)?;
-        let tss_label = TPM2B_DATA::try_from(label)?;
         let mut out_data = null_mut();
         let ret = unsafe {
             Esys_RSA_Encrypt(
@@ -926,9 +922,9 @@ impl Context {
                 self.optional_session_1(),
                 self.optional_session_2(),
                 self.optional_session_3(),
-                &tss_message,
+                &message.into(),
                 &in_scheme.get_rsa_decrypt_struct(),
-                &tss_label,
+                &label.into(),
                 &mut out_data,
             )
         };
@@ -951,8 +947,6 @@ impl Context {
         in_scheme: AsymSchemeUnion,
         label: Data,
     ) -> Result<PublicKeyRSA> {
-        let tss_cipher_text = TPM2B_PUBLIC_KEY_RSA::try_from(cipher_text)?;
-        let tss_label = TPM2B_DATA::try_from(label)?;
         let mut message = null_mut();
         let ret = unsafe {
             Esys_RSA_Decrypt(
@@ -961,9 +955,9 @@ impl Context {
                 self.optional_session_1(),
                 self.optional_session_2(),
                 self.optional_session_3(),
-                &tss_cipher_text,
+                &cipher_text.into(),
                 &in_scheme.get_rsa_decrypt_struct(),
-                &tss_label,
+                &label.into(),
                 &mut message,
             )
         };
@@ -1544,7 +1538,6 @@ impl Context {
     ) -> Result<(TPM2B_ATTEST, Signature)> {
         let mut quoted = null_mut();
         let mut signature = null_mut();
-        let tss_qualifying_data = TPM2B_DATA::try_from(qualifying_data.clone())?;
         let ret = unsafe {
             Esys_Quote(
                 self.mut_context(),
@@ -1552,7 +1545,7 @@ impl Context {
                 self.optional_session_1(),
                 self.optional_session_2(),
                 self.optional_session_3(),
-                &tss_qualifying_data,
+                &qualifying_data.clone().into(),
                 &signing_scheme,
                 &pcr_selection_list.into(),
                 &mut quoted,
@@ -1601,9 +1594,9 @@ impl Context {
                 self.required_session_1()?,
                 self.optional_session_2(),
                 self.optional_session_3(),
-                &nonce_tpm.try_into()?,
-                &cp_hash_a.try_into()?,
-                &policy_ref.try_into()?,
+                &nonce_tpm.into(),
+                &cp_hash_a.into(),
+                &policy_ref.into(),
                 expiration,
                 &signature.try_into()?,
                 &mut out_timeout,
@@ -1652,9 +1645,9 @@ impl Context {
                 self.required_session_1()?,
                 self.optional_session_2(),
                 self.optional_session_3(),
-                &nonce_tpm.try_into()?,
-                &cp_hash_a.try_into()?,
-                &policy_ref.try_into()?,
+                &nonce_tpm.into(),
+                &cp_hash_a.into(),
+                &policy_ref.into(),
                 expiration,
                 &mut out_timeout,
                 &mut out_policy_ticket,
@@ -1691,7 +1684,6 @@ impl Context {
         pcr_policy_digest: &Digest,
         pcr_selection_list: PcrSelectionList,
     ) -> Result<()> {
-        let pcr_digest = TPM2B_DIGEST::try_from(pcr_policy_digest.clone())?;
         let ret = unsafe {
             Esys_PolicyPCR(
                 self.mut_context(),
@@ -1699,7 +1691,7 @@ impl Context {
                 self.optional_session_1(),
                 self.optional_session_2(),
                 self.optional_session_3(),
-                &pcr_digest,
+                &pcr_policy_digest.clone().into(),
                 &pcr_selection_list.into(),
             )
         };
@@ -1826,7 +1818,6 @@ impl Context {
     /// The TPM will ensure that the current policy can only be used to authorize
     /// a command where the parameters are hashed into cp_hash_a.
     pub fn policy_cp_hash(&mut self, policy_session: Session, cp_hash_a: &Digest) -> Result<()> {
-        let cp_hash_a = TPM2B_DIGEST::try_from(cp_hash_a.clone())?;
         let ret = unsafe {
             Esys_PolicyCpHash(
                 self.mut_context(),
@@ -1834,7 +1825,7 @@ impl Context {
                 self.optional_session_1(),
                 self.optional_session_2(),
                 self.optional_session_3(),
-                &cp_hash_a,
+                &cp_hash_a.clone().into(),
             )
         };
         let ret = Error::from_tss_rc(ret);
@@ -1851,7 +1842,6 @@ impl Context {
     /// The TPM will ensure that the current policy can only be used to authorize
     /// a command acting on an object whose name hashes to name_hash.
     pub fn policy_name_hash(&mut self, policy_session: Session, name_hash: &Digest) -> Result<()> {
-        let name_hash = TPM2B_DIGEST::try_from(name_hash.clone())?;
         let ret = unsafe {
             Esys_PolicyNameHash(
                 self.mut_context(),
@@ -1859,7 +1849,7 @@ impl Context {
                 self.optional_session_1(),
                 self.optional_session_2(),
                 self.optional_session_3(),
-                &name_hash,
+                &name_hash.clone().into(),
             )
         };
         let ret = Error::from_tss_rc(ret);
@@ -1955,8 +1945,6 @@ impl Context {
         key_sign: &Name,
         check_ticket: VerifiedTicket,
     ) -> Result<()> {
-        let tss_approved_policy = TPM2B_DIGEST::try_from(approved_policy.clone())?;
-        let tss_policy_ref = TPM2B_NONCE::try_from(policy_ref.clone())?;
         let tss_key_sign = TPM2B_NAME::try_from(key_sign.clone())?;
         let check_ticket = TPMT_TK_VERIFIED::try_from(check_ticket)?;
         let ret = unsafe {
@@ -1966,8 +1954,8 @@ impl Context {
                 self.optional_session_1(),
                 self.optional_session_2(),
                 self.optional_session_3(),
-                &tss_approved_policy,
-                &tss_policy_ref,
+                &approved_policy.clone().into(),
+                &policy_ref.clone().into(),
                 &tss_key_sign,
                 &check_ticket,
             )
@@ -2087,7 +2075,6 @@ impl Context {
         hashing_algorithm: HashingAlgorithm,
         hierarchy: Hierarchy,
     ) -> Result<(Digest, HashcheckTicket)> {
-        let in_data = TPM2B_MAX_BUFFER::try_from(data.clone())?;
         let mut out_hash_ptr = null_mut();
         let mut validation_ptr = null_mut();
         let ret = unsafe {
@@ -2096,7 +2083,7 @@ impl Context {
                 self.optional_session_1(),
                 self.optional_session_2(),
                 self.optional_session_3(),
-                &in_data,
+                &data.clone().into(),
                 hashing_algorithm.into(),
                 if cfg!(tpm2_tss_version = "3") {
                     ObjectHandle::from(hierarchy).into()
@@ -2157,7 +2144,7 @@ impl Context {
                 self.required_session_1()?,
                 self.optional_session_2(),
                 self.optional_session_3(),
-                &new_auth.try_into()?,
+                &new_auth.into(),
             )
         };
         let ret = Error::from_tss_rc(ret);
@@ -2185,7 +2172,7 @@ impl Context {
                 self.required_session_1()?,
                 self.optional_session_2(),
                 self.optional_session_3(),
-                &new_auth.try_into()?,
+                &new_auth.into(),
                 &mut out_private,
             )
         };
@@ -2206,7 +2193,7 @@ impl Context {
 
     /// Set the authentication value for a given object handle in the ESYS context.
     pub fn tr_set_auth(&mut self, object_handle: ObjectHandle, auth: &Auth) -> Result<()> {
-        let mut tss_auth = TPM2B_AUTH::try_from(auth.clone())?;
+        let mut tss_auth = auth.clone().into();
         let ret = unsafe { Esys_TR_SetAuth(self.mut_context(), object_handle.into(), &tss_auth) };
         tss_auth.buffer.zeroize();
         let ret = Error::from_tss_rc(ret);
@@ -2334,8 +2321,6 @@ impl Context {
         auth: Option<&Auth>,
         public_info: &NvPublic,
     ) -> Result<NvIndexHandle> {
-        let tss_auth = TPM2B_AUTH::try_from(auth.cloned().unwrap_or_default())?;
-        let tss_nv_public = TPM2B_NV_PUBLIC::try_from(public_info.clone())?;
         let mut object_identifier: ESYS_TR = ESYS_TR_NONE;
         let ret = unsafe {
             Esys_NV_DefineSpace(
@@ -2344,8 +2329,8 @@ impl Context {
                 self.optional_session_1(),
                 self.optional_session_2(),
                 self.optional_session_3(),
-                &tss_auth,
-                &tss_nv_public,
+                &auth.cloned().unwrap_or_default().into(),
+                &public_info.clone().try_into()?,
                 &mut object_identifier,
             )
         };
@@ -2481,7 +2466,7 @@ impl Context {
                 self.optional_session_1(),
                 self.optional_session_2(),
                 self.optional_session_3(),
-                &data.clone().try_into()?,
+                &data.clone().into(),
                 offset,
             )
         };

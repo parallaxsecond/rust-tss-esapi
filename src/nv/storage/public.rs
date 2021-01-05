@@ -75,7 +75,7 @@ impl TryFrom<NvPublic> for TPM2B_NV_PUBLIC {
                 nvIndex: nv_public.nv_index.into(),
                 nameAlg: nv_public.name_algorithm.into(),
                 attributes: nv_public.attributes.try_into()?,
-                authPolicy: nv_public.authorization_policy.try_into()?,
+                authPolicy: nv_public.authorization_policy.into(),
                 dataSize: nv_public.data_size as u16,
             },
         })
