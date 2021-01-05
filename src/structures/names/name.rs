@@ -50,8 +50,10 @@ impl TryFrom<Name> for TPM2B_NAME {
             error!("Error: Invalid TPM2B_NAME size(> {})", Name::MAX_SIZE);
             return Err(Error::local_error(WrapperErrorKind::WrongParamSize));
         }
-        let mut tss_name: TPM2B_NAME = Default::default();
-        tss_name.size = size as u16;
+        let mut tss_name = TPM2B_NAME {
+            size: size as u16,
+            ..Default::default()
+        };
         tss_name.name[..size].copy_from_slice(&name.value());
         Ok(tss_name)
     }
