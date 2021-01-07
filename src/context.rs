@@ -349,28 +349,22 @@ impl Context {
 
     /// Determine a TPM property, which is automatically cached if available
     pub fn get_tpm_property(&mut self, property: PropertyTag) -> Result<Option<u32>> {
-        if let Some(val) = self.cached_tpm_properties.get(&property) {
-            return Ok(Some(*val));
-        }
-
-        let (capabs, _) = self.execute_without_session(|ctx| {
-            ctx.get_capabilities(CapabilityType::TPMProperties, property.into(), 4)
-        })?;
-        let props = match capabs {
-            CapabilityData::TPMProperties(props) => props,
-            _ => return Err(Error::WrapperError(ErrorKind::WrongValueFromTpm)),
-        };
-        for (key, val) in props.iter() {
-            if let Ok(key) = PropertyTag::try_from(*key) {
-                // If we are returned a property we don't know, just ignore it
-                let _ = self.cached_tpm_properties.insert(key, *val);
-            }
-        }
-
-        if let Some(val) = self.cached_tpm_properties.get(&property) {
-            return Ok(Some(*val));
-        }
-        Ok(None)
+        Ok(self.cached_tpm_properties.get(&property).copied().or(self
+            .execute_without_session(|ctx| {
+                ctx.get_capabilities(CapabilityType::TPMProperties, property.into(), 4)
+            })
+            .and_then(|(capabilities, _)| match capabilities {
+                CapabilityData::TPMProperties(tpm_properties) => Ok(tpm_properties),
+                _ => Err(Error::WrapperError(ErrorKind::WrongValueFromTpm)),
+            })
+            .map(|tpm_properties| {
+                self.cached_tpm_properties.extend(
+                    tpm_properties
+                        .iter()
+                        .filter_map(|(&k, &v)| PropertyTag::try_from(k).map(|pt| (pt, v)).ok()),
+                );
+                self.cached_tpm_properties.get(&property).copied()
+            })?))
     }
 
     /// Create a primary key and return the handle.
