@@ -15,10 +15,9 @@ pub fn read_full(
     auth_handle: AuthHandle,
     nv_index_handle: NvIndexTpmHandle,
 ) -> Result<Vec<u8>> {
-    let maxsize = match context.get_tpm_property(PropertyTag::NvBufferMax)? {
-        Some(val) => val,
-        None => 512,
-    } as usize;
+    let maxsize = context
+        .get_tpm_property(PropertyTag::NvBufferMax)?
+        .unwrap_or(512) as usize;
 
     let nv_idx = TpmHandle::NvIndex(nv_index_handle);
     let nv_idx = context.execute_without_session(|ctx| ctx.tr_from_tpm_public(nv_idx))?;

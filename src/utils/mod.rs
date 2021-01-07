@@ -253,11 +253,9 @@ impl TpmsRsaParmsBuilder {
         } else if self.symmetric.is_some() {
             return Err(Error::local_error(WrapperErrorKind::InconsistentParams));
         }
-        let symmetric = self.symmetric.unwrap_or_else(|| {
-            let mut def: TPMT_SYM_DEF_OBJECT = Default::default();
-            def.algorithm = TPM2_ALG_NULL;
-
-            def
+        let symmetric = self.symmetric.unwrap_or_else(|| TPMT_SYM_DEF_OBJECT {
+            algorithm: TPM2_ALG_NULL,
+            ..Default::default()
         });
 
         let scheme = self
@@ -397,11 +395,10 @@ impl TpmsEccParmsBuilder {
 
         let symmetric = match self.symmetric {
             Some(symmetric) => symmetric.into(),
-            None => {
-                let mut def: TPMT_SYM_DEF_OBJECT = Default::default();
-                def.algorithm = TPM2_ALG_NULL;
-                def
-            }
+            None => TPMT_SYM_DEF_OBJECT {
+                algorithm: TPM2_ALG_NULL,
+                ..Default::default()
+            },
         };
 
         Ok(TPMS_ECC_PARMS {

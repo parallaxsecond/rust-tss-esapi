@@ -75,8 +75,10 @@ macro_rules! named_field_buffer_type {
             type Error = Error;
 
             fn try_from(native: $native_type) -> Result<Self> {
-                let mut buffer: $tss_type = Default::default();
-                buffer.size = native.0.len() as u16;
+                let mut buffer = $tss_type {
+                    size: native.0.len() as u16,
+                    ..Default::default()
+                };
                 buffer.$buffer_field_name[..native.0.len()].copy_from_slice(&native.0);
                 Ok(buffer)
             }

@@ -12,8 +12,10 @@ mod test_digest_list {
         let mut expected_digests = Vec::<Digest>::new();
         let mut tss_digest_list: TPML_DIGEST = Default::default();
         for i in 0..3 {
-            let mut tss_digest: TPM2B_DIGEST = Default::default();
-            tss_digest.size = 32;
+            let mut tss_digest = TPM2B_DIGEST {
+                size: 32,
+                ..Default::default()
+            };
             tss_digest.buffer[..32].copy_from_slice(&[i; 32]);
             expected_digests.push(Digest::try_from(tss_digest).unwrap());
             tss_digest_list.digests[i as usize] = tss_digest;
@@ -52,8 +54,10 @@ mod test_digest_list {
         // min limit only applies when the DigestList is used as
         // argument to policy_or.
         let mut tss_digest_list: TPML_DIGEST = Default::default();
-        let mut tss_digest: TPM2B_DIGEST = Default::default();
-        tss_digest.size = 32;
+        let mut tss_digest = TPM2B_DIGEST {
+            size: 32,
+            ..Default::default()
+        };
         tss_digest.buffer[..32].copy_from_slice(&[1; 32]);
         tss_digest_list.count = 1;
         tss_digest_list.digests[0] = tss_digest;
