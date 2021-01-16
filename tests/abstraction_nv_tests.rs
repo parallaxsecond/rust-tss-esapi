@@ -7,7 +7,7 @@ use tss_esapi::{
     constants::algorithm::HashingAlgorithm,
     handles::NvIndexTpmHandle,
     interface_types::resource_handles::NvAuth,
-    nv::storage::{NvIndexAttributes, NvPublicBuilder},
+    nv::storage::{NvIndexAttributesBuilder, NvPublicBuilder},
     structures::MaxNvBuffer,
 };
 
@@ -27,11 +27,13 @@ fn read_full() {
     let nv_index = NvIndexTpmHandle::new(0x01500015).unwrap();
 
     // Create owner nv public.
-    let mut owner_nv_index_attributes = NvIndexAttributes(0);
-    owner_nv_index_attributes.set_owner_write(true);
-    owner_nv_index_attributes.set_owner_read(true);
-    owner_nv_index_attributes.set_pp_read(true);
-    owner_nv_index_attributes.set_owner_read(true);
+    let owner_nv_index_attributes = NvIndexAttributesBuilder::new()
+        .with_owner_write(true)
+        .with_owner_read(true)
+        .with_pp_read(true)
+        .with_owner_read(true)
+        .build()
+        .expect("Failed to create owner nv index attributes");
 
     let owner_nv_public = NvPublicBuilder::new()
         .with_nv_index(nv_index)

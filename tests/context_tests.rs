@@ -49,7 +49,7 @@ use tss_esapi::{
         dynamic_handles::Persistent,
         resource_handles::{Hierarchy, NvAuth, Provision},
     },
-    nv::storage::{NvIndexAttributes, NvPublicBuilder},
+    nv::storage::{NvIndexAttributesBuilder, NvPublicBuilder},
     session::{Session, SessionAttributesBuilder},
     structures::{
         Auth, CapabilityData, Data, Digest, DigestList, DigestValues, MaxBuffer, MaxNvBuffer,
@@ -2544,9 +2544,11 @@ mod test_nv_define_space {
         let nv_index = NvIndexTpmHandle::new(0x01500015).unwrap();
 
         // Create owner nv public.
-        let mut owner_nv_index_attributes = NvIndexAttributes(0);
-        owner_nv_index_attributes.set_owner_write(true);
-        owner_nv_index_attributes.set_owner_read(true);
+        let owner_nv_index_attributes = NvIndexAttributesBuilder::new()
+            .with_owner_write(true)
+            .with_owner_read(true)
+            .build()
+            .expect("Failed to create owner nv index attributes");
 
         let owner_nv_public = NvPublicBuilder::new()
             .with_nv_index(nv_index)
@@ -2557,10 +2559,12 @@ mod test_nv_define_space {
             .unwrap();
 
         // Create platform nv public.
-        let mut platform_nv_index_attributes = NvIndexAttributes(0);
-        platform_nv_index_attributes.set_pp_write(true);
-        platform_nv_index_attributes.set_pp_read(true);
-        platform_nv_index_attributes.set_platform_create(true);
+        let platform_nv_index_attributes = NvIndexAttributesBuilder::new()
+            .with_pp_write(true)
+            .with_pp_read(true)
+            .with_platform_create(true)
+            .build()
+            .expect("Failed to create platform nv index attributes");
 
         let platform_nv_public = NvPublicBuilder::new()
             .with_nv_index(nv_index)
@@ -2587,9 +2591,11 @@ mod test_nv_define_space {
         let nv_index = NvIndexTpmHandle::new(0x01500016).unwrap();
 
         // Create owner nv public.
-        let mut owner_nv_index_attributes = NvIndexAttributes(0);
-        owner_nv_index_attributes.set_owner_write(true);
-        owner_nv_index_attributes.set_owner_read(true);
+        let owner_nv_index_attributes = NvIndexAttributesBuilder::new()
+            .with_owner_write(true)
+            .with_owner_read(true)
+            .build()
+            .expect("Failed to create owner nv index attributes");
 
         let owner_nv_public = NvPublicBuilder::new()
             .with_nv_index(nv_index)
@@ -2600,10 +2606,12 @@ mod test_nv_define_space {
             .unwrap();
 
         // Create platform nv public.
-        let mut platform_nv_index_attributes = NvIndexAttributes(0);
-        platform_nv_index_attributes.set_pp_write(true);
-        platform_nv_index_attributes.set_pp_read(true);
-        platform_nv_index_attributes.set_platform_create(true);
+        let platform_nv_index_attributes = NvIndexAttributesBuilder::new()
+            .with_pp_write(true)
+            .with_pp_read(true)
+            .with_platform_create(true)
+            .build()
+            .expect("Failed to create platform nv index attributes");
 
         let platform_nv_public = NvPublicBuilder::new()
             .with_nv_index(nv_index)
@@ -2644,9 +2652,11 @@ mod test_nv_undefine_space {
         let nv_index = NvIndexTpmHandle::new(0x01500017).unwrap();
 
         // Create owner nv public.
-        let mut owner_nv_index_attributes = NvIndexAttributes(0);
-        owner_nv_index_attributes.set_owner_write(true);
-        owner_nv_index_attributes.set_owner_read(true);
+        let owner_nv_index_attributes = NvIndexAttributesBuilder::new()
+            .with_owner_write(true)
+            .with_owner_read(true)
+            .build()
+            .expect("Failed to create owner nv index attributes");
 
         let owner_nv_public = NvPublicBuilder::new()
             .with_nv_index(nv_index)
@@ -2677,9 +2687,11 @@ mod test_nv_write {
         let nv_index = NvIndexTpmHandle::new(0x01500018).unwrap();
 
         // Create owner nv public.
-        let mut owner_nv_index_attributes = NvIndexAttributes(0);
-        owner_nv_index_attributes.set_owner_write(true);
-        owner_nv_index_attributes.set_owner_read(true);
+        let owner_nv_index_attributes = NvIndexAttributesBuilder::new()
+            .with_owner_write(true)
+            .with_owner_read(true)
+            .build()
+            .expect("Failed to create owner nv index attributes");
 
         let owner_nv_public = NvPublicBuilder::new()
             .with_nv_index(nv_index)
@@ -2720,9 +2732,11 @@ mod test_nv_read_public {
 
         let nv_index = NvIndexTpmHandle::new(0x01500019).unwrap();
 
-        let mut nv_index_attributes = NvIndexAttributes(0);
-        nv_index_attributes.set_owner_write(true);
-        nv_index_attributes.set_owner_read(true);
+        let nv_index_attributes = NvIndexAttributesBuilder::new()
+            .with_owner_write(true)
+            .with_owner_read(true)
+            .build()
+            .expect("Failed to create owner nv index attributes");
 
         let expected_nv_public = NvPublicBuilder::new()
             .with_nv_index(nv_index)
@@ -2763,9 +2777,11 @@ mod test_nv_read {
         let nv_index = NvIndexTpmHandle::new(0x01500020).unwrap();
 
         // Create owner nv public.
-        let mut owner_nv_index_attributes = NvIndexAttributes(0);
-        owner_nv_index_attributes.set_owner_write(true);
-        owner_nv_index_attributes.set_owner_read(true);
+        let owner_nv_index_attributes = NvIndexAttributesBuilder::new()
+            .with_owner_write(true)
+            .with_owner_read(true)
+            .build()
+            .expect("Failed to create owner nv index attributes");
 
         let owner_nv_public = NvPublicBuilder::new()
             .with_nv_index(nv_index)
@@ -2867,9 +2883,11 @@ mod test_tr_from_tpm_public {
         };
 
         // Create nv public.
-        let mut nv_index_attributes = NvIndexAttributes(0);
-        nv_index_attributes.set_owner_write(true);
-        nv_index_attributes.set_owner_read(true);
+        let nv_index_attributes = NvIndexAttributesBuilder::new()
+            .with_owner_write(true)
+            .with_owner_read(true)
+            .build()
+            .expect("Failed to create owner nv index attributes");
 
         let nv_public = NvPublicBuilder::new()
             .with_nv_index(nv_index_tpm_handle)
@@ -2944,9 +2962,11 @@ mod test_tr_from_tpm_public {
         };
 
         // Create nv public.
-        let mut nv_index_attributes = NvIndexAttributes(0);
-        nv_index_attributes.set_auth_write(true);
-        nv_index_attributes.set_auth_read(true);
+        let nv_index_attributes = NvIndexAttributesBuilder::new()
+            .with_auth_write(true)
+            .with_auth_read(true)
+            .build()
+            .expect("Failed to create auth nv index attributes");
 
         let nv_public = NvPublicBuilder::new()
             .with_nv_index(nv_index_tpm_handle)
@@ -3043,9 +3063,11 @@ mod test_tr_from_tpm_public {
         };
 
         // Create nv public. Only use auth for write.
-        let mut nv_index_attributes = NvIndexAttributes(0);
-        nv_index_attributes.set_auth_write(true);
-        nv_index_attributes.set_auth_read(true);
+        let nv_index_attributes = NvIndexAttributesBuilder::new()
+            .with_auth_write(true)
+            .with_auth_read(true)
+            .build()
+            .expect("Failed to create auth nv index attributes");
 
         let nv_public = NvPublicBuilder::new()
             .with_nv_index(nv_index_tpm_handle)
