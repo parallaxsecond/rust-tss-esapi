@@ -4,7 +4,7 @@ use crate::structures::Digest;
 use crate::tss2_esys::TPML_DIGEST;
 use crate::{Error, Result, WrapperErrorKind};
 use log::error;
-use std::convert::{TryFrom, TryInto};
+use std::convert::TryFrom;
 
 #[derive(Debug, Clone, Default)]
 pub struct DigestList {
@@ -79,7 +79,7 @@ impl TryFrom<DigestList> for TPML_DIGEST {
 
         let mut tss_digest_list: TPML_DIGEST = Default::default();
         for digest in digest_list.digests.iter() {
-            tss_digest_list.digests[tss_digest_list.count as usize] = digest.clone().try_into()?;
+            tss_digest_list.digests[tss_digest_list.count as usize] = digest.clone().into();
             tss_digest_list.count += 1;
         }
         Ok(tss_digest_list)

@@ -50,7 +50,7 @@ impl TryFrom<CreationData> for TPMS_CREATION_DATA {
     fn try_from(creation_data: CreationData) -> Result<Self> {
         Ok(TPMS_CREATION_DATA {
             pcrSelect: creation_data.pcr_select.into(),
-            pcrDigest: creation_data.pcr_digest.try_into()?,
+            pcrDigest: creation_data.pcr_digest.into(),
             locality: creation_data.locality,
             parentNameAlg: match creation_data.parent_name_alg {
                 None => TPM2_ALG_NULL,
@@ -58,7 +58,7 @@ impl TryFrom<CreationData> for TPMS_CREATION_DATA {
             },
             parentName: creation_data.parent_name.try_into()?,
             parentQualifiedName: creation_data.parent_qualified_name.try_into()?,
-            outsideInfo: creation_data.outside_info.try_into()?,
+            outsideInfo: creation_data.outside_info.into(),
         })
     }
 }
