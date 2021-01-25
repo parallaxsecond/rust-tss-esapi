@@ -4,7 +4,7 @@
 /// This module conatins code that deaals with non volatile storage
 /// in the TPM.
 ///
-pub use index::{NvIndexAttributes, NvIndexType};
+pub use index::{NvIndexAttributes, NvIndexAttributesBuilder, NvIndexType};
 pub use public::{NvPublic, NvPublicBuilder};
 
 mod index;
