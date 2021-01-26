@@ -1,6 +1,6 @@
-/target
+*target
 **/*.rs.bk
-Cargo.lock
+*Cargo.lock
 *.swp
 *DS_Store
 *.patch
