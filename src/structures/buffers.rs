@@ -77,7 +77,6 @@ macro_rules! named_field_buffer_type {
                     size: native.0.len() as u16,
                     ..Default::default()
                 };
-                buffer.size = native.0.len() as u16;
                 buffer.$buffer_field_name[..native.0.len()].copy_from_slice(&native.0);
                 buffer
             }
