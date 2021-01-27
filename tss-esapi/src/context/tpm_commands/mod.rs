@@ -22,4 +22,5 @@ mod session_commands;
 mod signing_and_signature_verification;
 mod startup;
 mod symmetric_primitives;
+mod testing;
 mod vendor_specific;
