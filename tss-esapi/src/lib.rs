@@ -99,25 +99,7 @@ pub use context::Context;
 pub use error::{Error, Result, WrapperErrorKind};
 pub use tcti::Tcti;
 
-#[allow(
-    non_snake_case,
-    non_camel_case_types,
-    non_upper_case_globals,
-    clippy::unseparated_literal_suffix,
-    // There is an issue where long double become u128 in extern blocks. Check this issue:
-    // https://github.com/rust-lang/rust-bindgen/issues/1549
-    improper_ctypes,
-    missing_debug_implementations,
-    trivial_casts,
-    clippy::all,
-)]
-pub mod tss2_esys {
-    #[cfg(not(feature = "docs"))]
-    include!(concat!(env!("OUT_DIR"), "/tss2_esys_bindings.rs"));
-
-    #[cfg(feature = "docs")]
-    include!(concat!(env!("CARGO_MANIFEST_DIR"), "/doc_bindings.rs"));
-}
+pub use tss_esapi_sys as tss2_esys;
 pub mod abstraction;
 pub mod constants;
 mod context;

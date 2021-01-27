@@ -6,14 +6,26 @@ use crate::tss2_esys::{TPMT_HA, TPMU_HA};
 use crate::{Error, Result, WrapperErrorKind};
 use std::convert::{TryFrom, TryInto};
 
-impl TryFrom<(HashingAlgorithm, Digest)> for TPMT_HA {
+#[derive(Debug)]
+pub struct HashAgile {
+    algorithm: HashingAlgorithm,
+    digest: Digest,
+}
+
+impl HashAgile {
+    pub fn new(algorithm: HashingAlgorithm, digest: Digest) -> Self {
+        HashAgile { algorithm, digest }
+    }
+}
+
+impl TryFrom<HashAgile> for TPMT_HA {
     type Error = Error;
-    fn try_from(digest: (HashingAlgorithm, Digest)) -> Result<Self> {
-        let algid: crate::tss2_esys::TPM2_ALG_ID = digest.0.into();
-        let digest_val = digest.1;
+    fn try_from(ha: HashAgile) -> Result<Self> {
+        let algid: crate::tss2_esys::TPM2_ALG_ID = ha.algorithm.into();
+        let digest_val = ha.digest;
         Ok(TPMT_HA {
             hashAlg: algid,
-            digest: match digest.0 {
+            digest: match ha.algorithm {
                 HashingAlgorithm::Sha1 => TPMU_HA {
                     sha1: digest_val.try_into()?,
                 },

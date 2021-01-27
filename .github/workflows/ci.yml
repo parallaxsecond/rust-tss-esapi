@@ -7,9 +7,9 @@ jobs:
     name: Check formatting
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-    - name: Check formatting
-      run: cargo fmt --all -- --check
+      - uses: actions/checkout@v2
+      - name: Check formatting
+        run: cargo fmt --all -- --check
 
   # All in one job as I think it is a big overhead to build and run the Docker
   # container?
@@ -17,19 +17,19 @@ jobs:
     name: Ubuntu tests
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-    - name: Build the container
-      run: docker build -t ubuntucontainer tests/ --file tests/Dockerfile-ubuntu
-    - name: Run the container
-      run: docker run -v $(pwd):/tmp/rust-tss-esapi -w /tmp/rust-tss-esapi ubuntucontainer /tmp/rust-tss-esapi/tests/all-ubuntu.sh
+      - uses: actions/checkout@v2
+      - name: Build the container
+        run: docker build -t ubuntucontainer tss-esapi/tests/ --file tss-esapi/tests/Dockerfile-ubuntu
+      - name: Run the container
+        run: docker run -v $(pwd):/tmp/rust-tss-esapi -w /tmp/rust-tss-esapi/tss-esapi ubuntucontainer /tmp/rust-tss-esapi/tss-esapi/tests/all-ubuntu.sh
 
   tests-fedora:
     name: Fedora tests
     # We just build a container... GitHub doesn't like Fedora :(
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-    - name: Build the container
-      run: docker build -t fedoracontainer tests/ --file tests/Dockerfile-fedora
-    - name: Run the tests
-      run: docker run -v $(pwd):/tmp/rust-tss-esapi -w /tmp/rust-tss-esapi fedoracontainer dbus-run-session -- /tmp/rust-tss-esapi/tests/all-fedora.sh
+      - uses: actions/checkout@v2
+      - name: Build the container
+        run: docker build -t fedoracontainer tss-esapi/tests/ --file tss-esapi/tests/Dockerfile-fedora
+      - name: Run the tests
+        run: docker run -v $(pwd):/tmp/rust-tss-esapi -w /tmp/rust-tss-esapi/tss-esapi fedoracontainer dbus-run-session -- /tmp/rust-tss-esapi/tss-esapi/tests/all-fedora.sh
