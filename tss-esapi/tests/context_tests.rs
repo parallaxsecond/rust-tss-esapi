@@ -498,6 +498,14 @@ mod test_startup {
         let mut context = create_ctx_without_session();
         context.startup(StartupType::Clear).unwrap();
     }
+
+    #[test]
+    fn test_shutdown() {
+        let mut context = create_ctx_without_session();
+        context.shutdown(StartupType::Clear).unwrap();
+        // Re-start the TPM so our tests won't fail
+        context.startup(StartupType::Clear).unwrap();
+    }
 }
 
 mod test_pcr_extend_reset {
