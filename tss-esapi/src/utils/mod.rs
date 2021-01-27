@@ -11,7 +11,7 @@
 use crate::constants::algorithm::{Cipher, EllipticCurve, HashingAlgorithm};
 use crate::constants::tags::PropertyTag;
 use crate::constants::tss::*;
-use crate::structures::{Digest, PcrSlot};
+use crate::structures::{Digest, KeyedHashParms, PcrSlot};
 use crate::tss2_esys::*;
 use crate::{Context, Error, Result, WrapperErrorKind};
 use bitfield::bitfield;
@@ -149,6 +149,44 @@ impl Tpm2BPublicBuilder {
 
                 if let Some(PublicIdUnion::Ecc(rsa_unique)) = self.unique {
                     unique = TPMU_PUBLIC_ID { ecc: *rsa_unique };
+                } else if self.unique.is_none() {
+                    unique = Default::default();
+                } else {
+                    return Err(Error::local_error(WrapperErrorKind::InconsistentParams));
+                }
+
+                Ok(TPM2B_PUBLIC {
+                    size: std::mem::size_of::<TPMT_PUBLIC>()
+                        .try_into()
+                        .expect("Failed to convert usize to u16"), // should not fail on valid targets
+                    publicArea: TPMT_PUBLIC {
+                        type_: self.type_.unwrap(), // cannot fail given that this is inside a match on `type_`
+                        nameAlg: self.name_alg,
+                        objectAttributes: self.object_attributes.0,
+                        authPolicy: self.auth_policy,
+                        parameters,
+                        unique,
+                    },
+                })
+            }
+            Some(TPM2_ALG_KEYEDHASH) => {
+                // KeyedHash
+                let parameters;
+                let unique;
+                if let Some(PublicParmsUnion::KeyedHashDetail(parms)) = self.parameters {
+                    parameters = TPMU_PUBLIC_PARMS {
+                        keyedHashDetail: parms.try_into()?,
+                    };
+                } else if self.parameters.is_none() {
+                    return Err(Error::local_error(WrapperErrorKind::ParamsMissing));
+                } else {
+                    return Err(Error::local_error(WrapperErrorKind::InconsistentParams));
+                }
+
+                if let Some(PublicIdUnion::KeyedHash(hash_unique)) = self.unique {
+                    unique = TPMU_PUBLIC_ID {
+                        keyedHash: hash_unique,
+                    };
                 } else if self.unique.is_none() {
                     unique = Default::default();
                 } else {
@@ -614,7 +652,7 @@ impl PublicIdUnion {
 #[allow(clippy::pub_enum_variant_names)]
 #[derive(Copy, Clone)]
 pub enum PublicParmsUnion {
-    KeyedHashDetail(TPMS_KEYEDHASH_PARMS),
+    KeyedHashDetail(KeyedHashParms),
     SymDetail(Cipher),
     RsaDetail(TPMS_RSA_PARMS),
     EccDetail(TPMS_ECC_PARMS),
@@ -634,24 +672,26 @@ impl PublicParmsUnion {
     }
 }
 
-impl From<PublicParmsUnion> for TPMU_PUBLIC_PARMS {
-    fn from(parms: PublicParmsUnion) -> Self {
+impl TryFrom<PublicParmsUnion> for TPMU_PUBLIC_PARMS {
+    type Error = Error;
+
+    fn try_from(parms: PublicParmsUnion) -> Result<Self> {
         match parms {
-            PublicParmsUnion::AsymDetail(tss_parms) => TPMU_PUBLIC_PARMS {
+            PublicParmsUnion::AsymDetail(tss_parms) => Ok(TPMU_PUBLIC_PARMS {
                 asymDetail: tss_parms,
-            },
-            PublicParmsUnion::EccDetail(tss_parms) => TPMU_PUBLIC_PARMS {
+            }),
+            PublicParmsUnion::EccDetail(tss_parms) => Ok(TPMU_PUBLIC_PARMS {
                 eccDetail: tss_parms,
-            },
-            PublicParmsUnion::RsaDetail(tss_parms) => TPMU_PUBLIC_PARMS {
+            }),
+            PublicParmsUnion::RsaDetail(tss_parms) => Ok(TPMU_PUBLIC_PARMS {
                 rsaDetail: tss_parms,
-            },
-            PublicParmsUnion::SymDetail(cipher) => TPMU_PUBLIC_PARMS {
+            }),
+            PublicParmsUnion::SymDetail(cipher) => Ok(TPMU_PUBLIC_PARMS {
                 symDetail: cipher.into(),
-            },
-            PublicParmsUnion::KeyedHashDetail(tss_parms) => TPMU_PUBLIC_PARMS {
-                keyedHashDetail: tss_parms,
-            },
+            }),
+            PublicParmsUnion::KeyedHashDetail(tss_parms) => Ok(TPMU_PUBLIC_PARMS {
+                keyedHashDetail: tss_parms.try_into()?,
+            }),
         }
     }
 }
