@@ -1577,7 +1577,7 @@ mod test_change_auth {
     }
 }
 
-mod test_get_random {
+mod test_random {
     use super::*;
 
     #[test]
@@ -1630,6 +1630,13 @@ mod test_get_random {
     fn test_get_0_rand() {
         let mut context = create_ctx_with_session();
         let _ = context.get_random(0);
+    }
+
+    #[test]
+    fn test_stir_random() {
+        let mut context = create_ctx_with_session();
+        let additional_data = SensitiveData::try_from(vec![1, 2, 3]).unwrap();
+        context.stir_random(additional_data).unwrap();
     }
 }
 
