@@ -1,5 +1,7 @@
 use crate::{
-    structures::Digest, tss2_esys::*, Context, Error, Result, WrapperErrorKind as ErrorKind,
+    structures::{Digest, SensitiveData},
+    tss2_esys::*,
+    Context, Error, Result, WrapperErrorKind as ErrorKind,
 };
 use log::error;
 use mbox::MBox;
@@ -38,5 +40,24 @@ impl Context {
         }
     }
 
-    // Missing function: StirRandom
+    /// Add additional information into the TPM RNG state
+    pub fn stir_random(&mut self, in_data: SensitiveData) -> Result<()> {
+        let ret = unsafe {
+            Esys_StirRandom(
+                self.mut_context(),
+                self.optional_session_1(),
+                self.optional_session_2(),
+                self.optional_session_3(),
+                &in_data.into(),
+            )
+        };
+        let ret = Error::from_tss_rc(ret);
+
+        if ret.is_success() {
+            Ok(())
+        } else {
+            error!("Error stirring random: {}", ret);
+            Err(ret)
+        }
+    }
 }
