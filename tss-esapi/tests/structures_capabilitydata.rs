@@ -14,7 +14,7 @@ mod test_capabs {
         let mut context = create_ctx_without_session();
 
         let (_capabs, _more) = context
-            .get_capabilities(CapabilityType::Algorithms, 0, 80)
+            .get_capability(CapabilityType::Algorithms, 0, 80)
             .unwrap();
     }
 
@@ -23,7 +23,7 @@ mod test_capabs {
         let mut context = create_ctx_without_session();
 
         let (_capabs, _more) = context
-            .get_capabilities(CapabilityType::Handles, 0, 80)
+            .get_capability(CapabilityType::Handles, 0, 80)
             .unwrap();
     }
 
@@ -32,7 +32,7 @@ mod test_capabs {
         let mut context = create_ctx_without_session();
 
         let (_capabs, _more) = context
-            .get_capabilities(CapabilityType::Command, 0, 80)
+            .get_capability(CapabilityType::Command, 0, 80)
             .unwrap();
     }
 
@@ -41,7 +41,7 @@ mod test_capabs {
         let mut context = create_ctx_without_session();
 
         let (_capabs, _more) = context
-            .get_capabilities(CapabilityType::PPCommands, 0, 80)
+            .get_capability(CapabilityType::PPCommands, 0, 80)
             .unwrap();
     }
 
@@ -50,7 +50,7 @@ mod test_capabs {
         let mut context = create_ctx_without_session();
 
         let (_capabs, _more) = context
-            .get_capabilities(CapabilityType::AuditCommands, 0, 80)
+            .get_capability(CapabilityType::AuditCommands, 0, 80)
             .unwrap();
     }
 
@@ -59,7 +59,7 @@ mod test_capabs {
         let mut context = create_ctx_without_session();
 
         let (_capabs, _more) = context
-            .get_capabilities(CapabilityType::AssignedPCR, 0, 80)
+            .get_capability(CapabilityType::AssignedPCR, 0, 80)
             .unwrap();
     }
 
@@ -68,7 +68,7 @@ mod test_capabs {
         let mut context = create_ctx_without_session();
 
         let (_capabs, _more) = context
-            .get_capabilities(CapabilityType::TPMProperties, 0, 80)
+            .get_capability(CapabilityType::TPMProperties, 0, 80)
             .unwrap();
     }
 
@@ -77,7 +77,7 @@ mod test_capabs {
         let mut context = create_ctx_without_session();
 
         let (_capabs, _more) = context
-            .get_capabilities(CapabilityType::PCRProperties, 0, 80)
+            .get_capability(CapabilityType::PCRProperties, 0, 80)
             .unwrap();
     }
 
@@ -86,7 +86,7 @@ mod test_capabs {
         let mut context = create_ctx_without_session();
 
         let (_capabs, _more) = context
-            .get_capabilities(CapabilityType::ECCCurves, 0, 80)
+            .get_capability(CapabilityType::ECCCurves, 0, 80)
             .unwrap();
     }
 }

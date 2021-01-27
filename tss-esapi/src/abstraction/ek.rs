@@ -115,7 +115,7 @@ pub fn create_ek_object(context: &mut Context, alg: AsymmetricAlgorithm) -> Resu
 
     Ok(context
         .execute_with_nullauth_session(|ctx| {
-            ctx.create_primary_key(Hierarchy::Endorsement, &ek_public, None, None, None, None)
+            ctx.create_primary(Hierarchy::Endorsement, &ek_public, None, None, None, None)
         })?
         .key_handle)
 }

@@ -9,7 +9,7 @@ use std::ptr::null_mut;
 
 impl Context {
     /// Get current capability information about the TPM.
-    pub fn get_capabilities(
+    pub fn get_capability(
         &mut self,
         capability: CapabilityType,
         property: u32,

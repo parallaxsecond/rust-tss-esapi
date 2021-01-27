@@ -92,7 +92,7 @@ impl TransientKeyContext {
     /// * if the key_params is not for an RSA key, `InvalidParam` is returned
     /// * if the key_params does not have an `AnySig` scheme, `InvalidParam` is returned
     /// * errors are returned if any method calls return an error: `Context::get_random`,
-    /// `TransientKeyContext::set_session_attrs`, `Context::create_key`, `Context::load`,
+    /// `TransientKeyContext::set_session_attrs`, `Context::create`, `Context::load`,
     /// `Context::context_save`, `Context::context_flush`
     pub fn create_key(
         &mut self,
@@ -115,7 +115,7 @@ impl TransientKeyContext {
             out_private,
             out_public,
             ..
-        } = self.context.create_key(
+        } = self.context.create(
             self.root_key_handle,
             &self.get_public_from_params(key_params)?,
             key_auth.as_ref(),
@@ -647,7 +647,7 @@ impl TransientKeyContextBuilder {
     ///
     /// # Errors
     /// * errors are returned if any method calls return an error: `Context::get_random`,
-    /// `Context::start_auth_session`, `Context::create_primary_key`, `Context::flush_context`,
+    /// `Context::start_auth_session`, `Context::create_primary`, `Context::flush_context`,
     /// `Context::set_handle_auth`
     /// * if the root key authentication size is given greater than 32 or if the root key size is
     /// not 1024, 2048, 3072 or 4096, a `WrongParamSize` wrapper error is returned
@@ -700,7 +700,7 @@ impl TransientKeyContextBuilder {
         context.set_sessions((Some(session), None, None));
 
         let root_key_handle = context
-            .create_primary_key(
+            .create_primary(
                 self.hierarchy,
                 &create_restricted_decryption_rsa_public(
                     self.default_context_cipher,

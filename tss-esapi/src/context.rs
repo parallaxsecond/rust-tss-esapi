@@ -332,7 +332,7 @@ impl Context {
         }
 
         let (capabs, _) = self.execute_without_session(|ctx| {
-            ctx.get_capabilities(CapabilityType::TPMProperties, property.into(), 4)
+            ctx.get_capability(CapabilityType::TPMProperties, property.into(), 4)
         })?;
         let props = match capabs {
             CapabilityData::TPMProperties(props) => props,

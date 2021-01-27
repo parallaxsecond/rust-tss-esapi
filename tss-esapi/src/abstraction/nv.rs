@@ -42,7 +42,7 @@ pub fn read_full(
 /// Lists all the currently defined NV Indexes' names and public components
 pub fn list(context: &mut Context) -> Result<Vec<(NvPublic, Name)>> {
     context.execute_without_session(|ctx| {
-        let (handles, _) = ctx.get_capabilities(
+        let (handles, _) = ctx.get_capability(
             CapabilityType::Handles,
             TPM2_NV_INDEX_FIRST,
             TPM2_PT_NV_INDEX_MAX,
