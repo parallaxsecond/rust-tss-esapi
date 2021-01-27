@@ -94,6 +94,82 @@ impl Context {
         }
     }
 
-    // Missing function: HMAC
+    /// Asks the TPM to compute an HMAC over buffer with the specified key
+    ///
+    /// # Example
+    ///
+    /// ```rust, no_run
+    /// # use tss_esapi::{
+    /// #     structures::{MaxBuffer, Ticket, KeyedHashParms},
+    /// #     constants::algorithm::HashingAlgorithm,
+    /// #     interface_types::resource_handles::Hierarchy,
+    /// #     constants::tss::{TPM2_ALG_KEYEDHASH, TPM2_ALG_SHA256},
+    /// #     utils::{ObjectAttributes, Tpm2BPublicBuilder, PublicParmsUnion},
+    /// #     Context, Tcti,
+    /// # };
+    /// # use std::convert::TryFrom;
+    ///
+    /// # // Create context that uses Device TCTI.
+    /// # let mut context = unsafe {
+    /// #     Context::new(Tcti::Device(Default::default())).expect("Failed to create Context")
+    /// # };
+    /// // Create a key
+    /// let mut object_attributes = ObjectAttributes(0);
+    /// object_attributes.set_sign_encrypt(true);
+    /// object_attributes.set_sensitive_data_origin(true);
+    /// object_attributes.set_user_with_auth(true);
+    /// let key_pub = Tpm2BPublicBuilder::new()
+    ///     .with_type(TPM2_ALG_KEYEDHASH)
+    ///     .with_name_alg(TPM2_ALG_SHA256)
+    ///     .with_parms(PublicParmsUnion::KeyedHashDetail(KeyedHashParms::HMAC {
+    ///         hash_alg: HashingAlgorithm::Sha256,
+    ///     }))
+    ///     .build()
+    ///     .unwrap();
+    /// let key = context
+    ///     .create_primary(Hierarchy::Owner, &key_pub, None, None, None, None)
+    ///     .unwrap();
+    ///
+    /// let input_data = MaxBuffer::try_from("There is no spoon".as_bytes().to_vec())
+    ///     .expect("Failed to create buffer for input data.");
+    /// let hmac = context
+    ///     .hmac(key.key_handle.into(), &input_data, HashingAlgorithm::Sha256)
+    ///     .unwrap();
+    /// ```
+    ///
+    /// # Errors
+    /// * if any of the public parameters is not compatible with the TPM,
+    /// an `Err` containing the specific unmarshalling error will be returned.
+    pub fn hmac(
+        &mut self,
+        handle: ObjectHandle,
+        buffer: &MaxBuffer,
+        alg_hash: HashingAlgorithm,
+    ) -> Result<Digest> {
+        let mut out_digest = null_mut();
+
+        let ret = unsafe {
+            Esys_HMAC(
+                self.mut_context(),
+                handle.into(),
+                self.required_session_1()?,
+                self.optional_session_2(),
+                self.optional_session_3(),
+                &buffer.clone().into(),
+                alg_hash.into(),
+                &mut out_digest,
+            )
+        };
+        let ret = Error::from_tss_rc(ret);
+
+        if ret.is_success() {
+            let out_digest = unsafe { MBox::from_raw(out_digest) };
+            Ok(Digest::try_from(*out_digest)?)
+        } else {
+            error!("Error in hmac: {}", ret);
+            Err(ret)
+        }
+    }
+
     // Missing function: MAC
 }

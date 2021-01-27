@@ -52,8 +52,8 @@ use tss_esapi::{
     nv::storage::{NvIndexAttributesBuilder, NvPublicBuilder},
     session::{Session, SessionAttributesBuilder},
     structures::{
-        Auth, CapabilityData, Data, Digest, DigestList, DigestValues, MaxBuffer, MaxNvBuffer,
-        Nonce, PcrSelectionListBuilder, PcrSlot, PublicKeyRSA, SensitiveData, Ticket,
+        Auth, CapabilityData, Data, Digest, DigestList, DigestValues, KeyedHashParms, MaxBuffer,
+        MaxNvBuffer, Nonce, PcrSelectionListBuilder, PcrSlot, PublicKeyRSA, SensitiveData, Ticket,
     },
     tss2_esys::*,
     utils::{
@@ -918,6 +918,41 @@ fn get_pcr_policy_digest(context: &mut Context, mangle: bool, do_trial: bool) ->
         context.set_sessions(old_ses);
 
         (digest, pcr_session)
+    }
+}
+
+mod test_hmac {
+    use super::*;
+
+    #[test]
+    fn test_hmac() {
+        let mut context = create_ctx_with_session();
+
+        let mut object_attributes = ObjectAttributes(0);
+        object_attributes.set_sign_encrypt(true);
+        object_attributes.set_sensitive_data_origin(true);
+        object_attributes.set_user_with_auth(true);
+
+        let key_pub = Tpm2BPublicBuilder::new()
+            .with_type(TPM2_ALG_KEYEDHASH)
+            .with_name_alg(TPM2_ALG_SHA256)
+            .with_parms(PublicParmsUnion::KeyedHashDetail(KeyedHashParms::HMAC {
+                hash_alg: HashingAlgorithm::Sha256,
+            }))
+            .with_object_attributes(object_attributes)
+            .build()
+            .unwrap();
+
+        let key = context
+            .create_primary(Hierarchy::Owner, &key_pub, None, None, None, None)
+            .unwrap();
+
+        let data = vec![1, 2, 3, 4];
+
+        let buf = MaxBuffer::try_from(data).unwrap();
+        context
+            .hmac(key.key_handle.into(), &buf, HashingAlgorithm::Sha256)
+            .unwrap();
     }
 }
 
