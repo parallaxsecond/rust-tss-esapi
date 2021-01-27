@@ -956,6 +956,17 @@ mod test_hmac {
     }
 }
 
+mod test_self_test {
+    use super::*;
+
+    #[test]
+    fn test_self_test() {
+        let mut context = create_ctx_without_session();
+        context.self_test(false).unwrap();
+        context.self_test(true).unwrap();
+    }
+}
+
 mod test_policies {
     use super::*;
 
