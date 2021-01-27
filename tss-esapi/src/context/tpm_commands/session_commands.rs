@@ -98,5 +98,24 @@ impl Context {
         }
     }
 
-    // Missing function: policy_restart
+    /// Restart the TPM Policy
+    pub fn policy_restart(&mut self, policy_session: Session) -> Result<()> {
+        let ret = unsafe {
+            Esys_PolicyRestart(
+                self.mut_context(),
+                policy_session.handle().into(),
+                self.optional_session_1(),
+                self.optional_session_2(),
+                self.optional_session_3(),
+            )
+        };
+        let ret = Error::from_tss_rc(ret);
+
+        if ret.is_success() {
+            Ok(())
+        } else {
+            error!("Error restarting policy: {}", ret);
+            Err(ret)
+        }
+    }
 }
