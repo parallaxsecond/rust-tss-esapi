@@ -965,6 +965,13 @@ mod test_self_test {
         context.self_test(false).unwrap();
         context.self_test(true).unwrap();
     }
+
+    #[test]
+    fn test_get_test_result() {
+        let mut context = create_ctx_without_session();
+        let (_, rc) = context.get_test_result().unwrap();
+        rc.unwrap();
+    }
 }
 
 mod test_policies {
