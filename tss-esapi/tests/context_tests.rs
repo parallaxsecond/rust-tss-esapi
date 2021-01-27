@@ -114,7 +114,7 @@ fn comprehensive_test() {
     let key_auth = Auth::try_from(random_digest.value().to_vec()).unwrap();
 
     let prim_key_handle = context
-        .create_primary_key(
+        .create_primary(
             Hierarchy::Owner,
             &decryption_key_pub(),
             Some(&key_auth),
@@ -149,7 +149,7 @@ fn comprehensive_test() {
     context.set_sessions((new_session, None, None));
 
     let result = context
-        .create_key(
+        .create(
             prim_key_handle,
             &signing_key_pub(),
             Some(&key_auth),
@@ -240,7 +240,7 @@ mod test_start_sess {
     fn test_bound_sess() {
         let mut context = create_ctx_with_session();
         let prim_key_handle = context
-            .create_primary_key(
+            .create_primary(
                 Hierarchy::Owner,
                 &decryption_key_pub(),
                 None,
@@ -335,7 +335,7 @@ mod test_get_capability {
     fn test_get_capability() {
         let mut context = create_ctx_without_session();
         let (res, _more) = context
-            .get_capabilities(CapabilityType::TPMProperties, TPM2_PT_VENDOR_STRING_1, 4)
+            .get_capability(CapabilityType::TPMProperties, TPM2_PT_VENDOR_STRING_1, 4)
             .unwrap();
         match res {
             CapabilityData::TPMProperties(props) => {
@@ -371,7 +371,7 @@ mod make_active_credential {
         let mut context = create_ctx_with_session();
 
         let key_handle = context
-            .create_primary_key(
+            .create_primary(
                 Hierarchy::Owner,
                 &decryption_key_pub(),
                 None,
@@ -435,7 +435,7 @@ mod make_active_credential {
             .unwrap();
 
         let key_handle = context
-            .create_primary_key(
+            .create_primary(
                 Hierarchy::Owner,
                 &decryption_key_pub(),
                 None,
@@ -712,7 +712,7 @@ mod test_unseal {
         let mut context = create_ctx_with_session();
 
         let key_handle_seal = context
-            .create_primary_key(
+            .create_primary(
                 Hierarchy::Owner,
                 &decryption_key_pub(),
                 None,
@@ -723,7 +723,7 @@ mod test_unseal {
             .unwrap()
             .key_handle;
         let key_handle_unseal = context
-            .create_primary_key(
+            .create_primary(
                 Hierarchy::Owner,
                 &decryption_key_pub(),
                 None,
@@ -736,7 +736,7 @@ mod test_unseal {
 
         let key_pub = create_public_sealed_object();
         let result = context
-            .create_key(
+            .create(
                 key_handle_seal,
                 &key_pub,
                 None,
@@ -772,7 +772,7 @@ mod test_quote {
         let qualifying_data = vec![0xff; 16];
 
         let key_handle = context
-            .create_primary_key(Hierarchy::Owner, &signing_key_pub(), None, None, None, None)
+            .create_primary(Hierarchy::Owner, &signing_key_pub(), None, None, None, None)
             .unwrap()
             .key_handle;
 
@@ -921,7 +921,7 @@ mod test_policies {
         let mut context = create_ctx_with_session();
 
         let key_handle = context
-            .create_primary_key(Hierarchy::Owner, &signing_key_pub(), None, None, None, None)
+            .create_primary(Hierarchy::Owner, &signing_key_pub(), None, None, None, None)
             .unwrap()
             .key_handle;
 
@@ -1021,7 +1021,7 @@ mod test_policies {
         let key_auth = Auth::try_from(random_digest.value().to_vec()).unwrap();
 
         let key_handle = context
-            .create_primary_key(
+            .create_primary(
                 Hierarchy::Owner,
                 &signing_key_pub(),
                 Some(&key_auth),
@@ -1461,7 +1461,7 @@ mod test_change_auth {
         let mut context = create_ctx_with_session();
 
         let prim_key_handle = context
-            .create_primary_key(
+            .create_primary(
                 Hierarchy::Owner,
                 &decryption_key_pub(),
                 None,
@@ -1472,7 +1472,7 @@ mod test_change_auth {
             .unwrap()
             .key_handle;
         let keyresult = context
-            .create_key(
+            .create(
                 prim_key_handle,
                 &decryption_key_pub(),
                 None,
@@ -1582,7 +1582,7 @@ mod test_create_primary {
         let key_auth = Auth::try_from(random_digest.value().to_vec()).unwrap();
 
         let key_handle = context
-            .create_primary_key(
+            .create_primary(
                 Hierarchy::Owner,
                 &decryption_key_pub(),
                 Some(&key_auth),
@@ -1606,7 +1606,7 @@ mod test_create {
         let key_auth = Auth::try_from(random_digest.value().to_vec()).unwrap();
 
         let prim_key_handle = context
-            .create_primary_key(
+            .create_primary(
                 Hierarchy::Owner,
                 &decryption_key_pub(),
                 Some(&key_auth),
@@ -1618,7 +1618,7 @@ mod test_create {
             .key_handle;
 
         let _ = context
-            .create_key(
+            .create(
                 prim_key_handle,
                 &decryption_key_pub(),
                 Some(&key_auth),
@@ -1640,7 +1640,7 @@ mod test_load {
         let key_auth = Auth::try_from(random_digest.value().to_vec()).unwrap();
 
         let prim_key_handle = context
-            .create_primary_key(
+            .create_primary(
                 Hierarchy::Owner,
                 &decryption_key_pub(),
                 Some(&key_auth),
@@ -1652,7 +1652,7 @@ mod test_load {
             .key_handle;
 
         let result = context
-            .create_key(
+            .create(
                 prim_key_handle,
                 &signing_key_pub(),
                 Some(&key_auth),
@@ -1678,7 +1678,7 @@ mod test_sign {
         let key_auth = Auth::try_from(random_digest.value().to_vec()).unwrap();
 
         let key_handle = context
-            .create_primary_key(
+            .create_primary(
                 Hierarchy::Owner,
                 &signing_key_pub(),
                 Some(&key_auth),
@@ -1715,7 +1715,7 @@ mod test_sign {
         let key_auth = Auth::try_from(random_digest.value().to_vec()).unwrap();
 
         let key_handle = context
-            .create_primary_key(
+            .create_primary(
                 Hierarchy::Owner,
                 &signing_key_pub(),
                 Some(&key_auth),
@@ -1752,7 +1752,7 @@ mod test_sign {
         let key_auth = Auth::try_from(random_digest.value().to_vec()).unwrap();
 
         let key_handle = context
-            .create_primary_key(
+            .create_primary(
                 Hierarchy::Owner,
                 &signing_key_pub(),
                 Some(&key_auth),
@@ -1793,7 +1793,7 @@ mod test_rsa_encrypt_decrypt {
         let key_auth = Auth::try_from(random_digest.value().to_vec()).unwrap();
 
         let key_handle = context
-            .create_primary_key(
+            .create_primary(
                 Hierarchy::Owner,
                 &encryption_decryption_key_pub(),
                 Some(&key_auth),
@@ -1834,7 +1834,7 @@ mod test_verify_sig {
         let key_auth = Auth::try_from(random_digest.value().to_vec()).unwrap();
 
         let key_handle = context
-            .create_primary_key(
+            .create_primary(
                 Hierarchy::Owner,
                 &signing_key_pub(),
                 Some(&key_auth),
@@ -1879,7 +1879,7 @@ mod test_verify_sig {
         let key_auth = Auth::try_from(random_digest.value().to_vec()).unwrap();
 
         let key_handle = context
-            .create_primary_key(
+            .create_primary(
                 Hierarchy::Owner,
                 &signing_key_pub(),
                 Some(&key_auth),
@@ -1927,7 +1927,7 @@ mod test_verify_sig {
         let key_auth = Auth::try_from(random_digest.value().to_vec()).unwrap();
 
         let key_handle = context
-            .create_primary_key(
+            .create_primary(
                 Hierarchy::Owner,
                 &signing_key_pub(),
                 Some(&key_auth),
@@ -1958,7 +1958,7 @@ mod test_verify_sig {
         let key_auth = Auth::try_from(random_digest.value().to_vec()).unwrap();
 
         let key_handle = context
-            .create_primary_key(
+            .create_primary(
                 Hierarchy::Owner,
                 &signing_key_pub(),
                 Some(&key_auth),
@@ -2034,7 +2034,7 @@ mod test_read_pub {
         let key_auth = Auth::try_from(random_digest.value().to_vec()).unwrap();
 
         let key_handle = context
-            .create_primary_key(
+            .create_primary(
                 Hierarchy::Owner,
                 &signing_key_pub(),
                 Some(&key_auth),
@@ -2058,7 +2058,7 @@ mod test_flush_context {
         let key_auth = Auth::try_from(random_digest.value().to_vec()).unwrap();
 
         let key_handle = context
-            .create_primary_key(
+            .create_primary(
                 Hierarchy::Owner,
                 &signing_key_pub(),
                 Some(&key_auth),
@@ -2079,7 +2079,7 @@ mod test_flush_context {
         let key_auth = Auth::try_from(random_digest.value().to_vec()).unwrap();
 
         let prim_key_handle = context
-            .create_primary_key(
+            .create_primary(
                 Hierarchy::Owner,
                 &decryption_key_pub(),
                 Some(&key_auth),
@@ -2091,7 +2091,7 @@ mod test_flush_context {
             .key_handle;
 
         let result = context
-            .create_key(
+            .create(
                 prim_key_handle,
                 &signing_key_pub(),
                 Some(&key_auth),
@@ -2119,7 +2119,7 @@ mod test_ctx_save {
         let key_auth = Auth::try_from(random_digest.value().to_vec()).unwrap();
 
         let key_handle = context
-            .create_primary_key(
+            .create_primary(
                 Hierarchy::Owner,
                 &signing_key_pub(),
                 Some(&key_auth),
@@ -2139,7 +2139,7 @@ mod test_ctx_save {
         let key_auth = Auth::try_from(random_digest.value().to_vec()).unwrap();
 
         let prim_key_handle = context
-            .create_primary_key(
+            .create_primary(
                 Hierarchy::Owner,
                 &decryption_key_pub(),
                 Some(&key_auth),
@@ -2151,7 +2151,7 @@ mod test_ctx_save {
             .key_handle;
 
         let result = context
-            .create_key(
+            .create(
                 prim_key_handle,
                 &signing_key_pub(),
                 Some(&key_auth),
@@ -2178,7 +2178,7 @@ mod test_ctx_load {
         let key_auth = context.get_random(16).unwrap();
 
         let prim_key_handle = context
-            .create_primary_key(
+            .create_primary(
                 Hierarchy::Owner,
                 &decryption_key_pub(),
                 Some(Auth::try_from(key_auth.value().to_vec()).unwrap()).as_ref(),
@@ -2190,7 +2190,7 @@ mod test_ctx_load {
             .key_handle;
 
         let result = context
-            .create_key(
+            .create(
                 prim_key_handle,
                 &signing_key_pub(),
                 Some(Auth::try_from(key_auth.value().to_vec()).unwrap()).as_ref(),
@@ -2218,7 +2218,7 @@ mod test_evict_control {
         let mut context = create_ctx_without_session();
         let mut property = TPM2_PERSISTENT_FIRST;
         while let Ok((capability_data, more_data_available)) =
-            context.get_capabilities(CapabilityType::Handles, property, 1)
+            context.get_capability(CapabilityType::Handles, property, 1)
         {
             if let CapabilityData::Handles(persistent_handles) = capability_data {
                 if let Some(&retrieved_persistent_handle) = persistent_handles.first() {
@@ -2270,7 +2270,7 @@ mod test_evict_control {
         let auth_value_primary = Auth::try_from(vec![1, 2, 3, 4, 5])
             .expect("Failed to crate auth value for primary key");
         let primary_key_handle = context
-            .create_primary_key(
+            .create_primary(
                 Hierarchy::Owner,
                 &decryption_key_pub(),
                 Some(auth_value_primary).as_ref(),
@@ -2324,7 +2324,7 @@ mod test_handle_auth {
         let random_digest = context.get_random(16).unwrap();
         let key_auth = Auth::try_from(random_digest.value().to_vec()).unwrap();
         let prim_key_handle = context
-            .create_primary_key(
+            .create_primary(
                 Hierarchy::Owner,
                 &signing_key_pub(),
                 Some(&key_auth),
@@ -2835,7 +2835,7 @@ mod test_tr_from_tpm_public {
         let mut property = TPM2_NV_INDEX_FIRST;
         println!("KALLEE");
         while let Ok((capability_data, more_data_available)) =
-            context.get_capabilities(CapabilityType::Handles, property, 1)
+            context.get_capability(CapabilityType::Handles, property, 1)
         {
             if let CapabilityData::Handles(nv_index_handles) = capability_data {
                 if let Some(&retrieved_nv_index_tpm_handle) = nv_index_handles.first() {

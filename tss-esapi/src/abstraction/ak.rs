@@ -175,7 +175,7 @@ pub fn create_ak(
         })?;
 
         ctx.execute_with_session(Some(session), |ctx| {
-            ctx.create_key(parent, &ak_pub, ak_auth_value, None, None, None)
+            ctx.create(parent, &ak_pub, ak_auth_value, None, None, None)
         })
     })
 }

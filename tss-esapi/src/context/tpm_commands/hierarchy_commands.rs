@@ -25,7 +25,7 @@ impl Context {
     /// `WrongParamSize` wrapper error is returned
     // TODO: Fix when compacting the arguments into a struct
     #[allow(clippy::too_many_arguments)]
-    pub fn create_primary_key(
+    pub fn create_primary(
         &mut self,
         primary_handle: Hierarchy,
         public: &TPM2B_PUBLIC,

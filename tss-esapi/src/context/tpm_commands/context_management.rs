@@ -116,7 +116,7 @@ impl Context {
     ///     let key_auth = Auth::try_from(random_digest.value().to_vec())
     ///         .expect("Failed to create Auth");
     ///     let key_handle = ctx
-    ///         .create_primary_key(
+    ///         .create_primary(
     ///             Hierarchy::Owner,
     ///             &public_area,
     ///             Some(&key_auth),
