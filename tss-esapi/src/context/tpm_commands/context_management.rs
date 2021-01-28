@@ -147,13 +147,263 @@ impl Context {
     /// Evicts persistent objects or allows certain transient objects
     /// to be made peristent.
     ///
-    /// # Returns
-    /// If the input object_handle was transient object then it will be made
-    /// persistent and the returned ObjectHandle will refer to this object.
+    /// # Details
+    /// In order to be able to perform this action an authorization
+    /// session is required.
     ///
-    /// If the input object_handle refers to a presistent object the returned
-    /// value will be ObjectHandle::None and the input object_handle will not
+    /// # Arguments
+    /// * `auth` - An a handle used for authorization that is limited to the ones
+    ///            specified in [Provision].
+    /// * `object_handle` - The handle of a loaded object.
+    /// * `persistant` - If the `object_handle` is transient object then this
+    ///                  then this will become the persistant handle of that
+    ///                  object. If the `object_handle` refers to a persistant
+    ///                  object then this shall be the persistant handle of that
+    ///                  object.
+    ///
+    /// # Returns
+    /// If the input `object_handle` was transient object then it will be made
+    /// persistent and the returned [ObjectHandle] will refer to the persistent
+    /// object.
+    ///
+    /// If the input `object_handle` refers to a presistent object the returned
+    /// value will be ObjectHandle::None and the input `object_handle` will not
     /// be valid after this call is made.
+    ///
+    /// # Example
+    ///
+    /// Make transient object peristent:
+    /// ```rust
+    /// # use tss_esapi::{
+    /// #     Context, Tcti, Result,
+    /// #     constants::{
+    /// #         algorithm::Cipher,
+    /// #         types::{session::SessionType, capability::CapabilityType},
+    /// #         tss::TPM2_PERSISTENT_FIRST,
+    /// #     },
+    /// #     handles::PcrHandle,
+    /// #     structures::{Digest, CapabilityData, Auth},
+    /// #     interface_types::{
+    /// #       resource_handles::Hierarchy,
+    /// #     },
+    /// #     handles::{ObjectHandle, TpmHandle, PersistentTpmHandle},
+    /// #     utils::create_restricted_decryption_rsa_public,
+    /// #     tss2_esys::TPM2_HANDLE,
+    /// # };
+    /// # use std::{env, str::FromStr, convert::TryFrom};
+    /// # // Create TCTI that uses the correct software for testing
+    /// # let tcti = env::var("TEST_TCTI")
+    /// #   .map(|env_tcti_str| Tcti::from_str(&env_tcti_str).expect("Error parsing TEST_TCTI"))
+    /// #   .unwrap_or_else(|_| Tcti::Mssim(Default::default()));
+    /// # // Create context
+    /// # let mut context = unsafe {
+    /// #     Context::new(tcti).expect("Failed to create context")
+    /// # };
+    /// # // Create persistent TPM handle with
+    /// # let persistent_tpm_handle =
+    /// #    PersistentTpmHandle::new(u32::from_be_bytes([0x81, 0x00, 0x00, 0x01]))
+    /// #        .expect("Failed to create Persistant TPM handle");
+    /// # // -----> REMOVE ANY PREVIOUS HANDLES <---------------
+    /// # let mut property = TPM2_PERSISTENT_FIRST;
+    /// # while let Ok((capability_data, more_data_available)) =
+    /// #     context.get_capability(CapabilityType::Handles, property, 1)
+    /// # {
+    /// #     if let CapabilityData::Handles(persistent_handles) = capability_data {
+    /// #         if let Some(&retrieved_persistent_handle) = persistent_handles.first() {
+    /// #             if retrieved_persistent_handle == persistent_tpm_handle.into() {
+    /// #                 let handle = context
+    /// #                     .tr_from_tpm_public(TpmHandle::Persistent(persistent_tpm_handle))
+    /// #                     .expect("Failed to retrieve handle from TPM");
+    /// #                 context.execute_with_session(Some(tss_esapi::session::Session::Password), |ctx| {
+    /// #                     ctx
+    /// #                           .evict_control(
+    /// #                               tss_esapi::interface_types::resource_handles::Provision::Owner,
+    /// #                               handle,
+    /// #                               tss_esapi::interface_types::dynamic_handles::Persistent::Persistent(persistent_tpm_handle),
+    /// #                           )
+    /// #                           .expect("Failed to evict persitent handle")
+    /// #                 });
+    /// #                 break;
+    /// #             }
+    /// #             if more_data_available {
+    /// #                 property = TPM2_HANDLE::from(retrieved_persistent_handle) + 1;
+    /// #             }
+    /// #         }
+    /// #     }
+    /// #     if !more_data_available {
+    /// #         break;
+    /// #     }
+    /// # }
+    /// # let transient_object_handle = context.execute_with_session(Some(Session::Password), |ctx| {
+    /// #    // Create primary key handle
+    /// #    let auth_value_primary = Auth::try_from(vec![1, 2, 3, 4, 5])
+    /// #        .expect("Failed to crate auth value for primary key");
+    /// #    ctx
+    /// #        .create_primary(
+    /// #            Hierarchy::Owner,
+    /// #            &create_restricted_decryption_rsa_public(Cipher::aes_256_cfb(), 2048, 0)
+    /// #               .expect("Failed to Public structure for key"),
+    /// #            Some(auth_value_primary).as_ref(),
+    /// #            None,
+    /// #            None,
+    /// #            None,
+    /// #        )
+    /// #        .map(|v| ObjectHandle::from(v.key_handle))
+    /// #        .expect("Failed to create primary key")
+    /// # });
+    /// use tss_esapi::{
+    ///     interface_types::{resource_handles::Provision, dynamic_handles::Persistent},
+    ///     session::Session,
+    /// };
+    /// // Create interface type Persistent by using the persistent tpm handle.
+    /// let persistent = Persistent::Persistent(persistent_tpm_handle);
+    /// // Make transient_object_handle persistent.
+    /// // An authorization session is required!
+    /// let mut persistent_object_handle = context.execute_with_session(Some(Session::Password), |ctx| {
+    ///     ctx
+    ///         .evict_control(Provision::Owner, transient_object_handle.into(), persistent)
+    ///         .expect("Failed to make the transient_object_handle handle persistent")
+    /// });
+    /// # assert_ne!(persistent_object_handle, ObjectHandle::Null);
+    /// # assert_ne!(persistent_object_handle, ObjectHandle::None);
+    /// # // Flush out the transient_object_handle
+    /// # context
+    /// #     .flush_context(ObjectHandle::from(transient_object_handle))
+    /// #     .expect("Failed to flush context");
+    /// # // Close the persistant_handle returned by evict_control
+    /// # context
+    /// #     .tr_close(&mut persistent_object_handle)
+    /// #     .expect("Failed to close persistant handle");
+    /// # // Retrieve the handle from the tpm again.
+    /// # let retireved_persistant_handle = context.execute_without_session(|ctx| {
+    /// #     ctx.tr_from_tpm_public(TpmHandle::Persistent(persistent_tpm_handle))
+    /// #         .expect("Failed to load the persistant handle")
+    /// # });
+    /// # // Evict the persitent handle from the tpm
+    /// # let _ = context.execute_with_session(Some(Session::Password), |ctx| {
+    /// #   ctx
+    /// #       .evict_control(Provision::Owner, retireved_persistant_handle, persistent)
+    /// #       .expect("Failed to evict persistent handle")
+    /// # });
+    /// # assert_ne!(retireved_persistant_handle, ObjectHandle::None);
+    /// ```
+    ///
+    /// Make persistent object transient
+    /// ```rust
+    /// # use tss_esapi::{
+    /// #     Context, Tcti, Result,
+    /// #     constants::{
+    /// #         algorithm::Cipher,
+    /// #         types::{session::SessionType, capability::CapabilityType},
+    /// #         tss::TPM2_PERSISTENT_FIRST,
+    /// #     },
+    /// #     handles::PcrHandle,
+    /// #     structures::{Digest, CapabilityData, Auth},
+    /// #     interface_types::{
+    /// #       resource_handles::Hierarchy,
+    /// #     },
+    /// #     handles::{ObjectHandle, TpmHandle, PersistentTpmHandle},
+    /// #     utils::create_restricted_decryption_rsa_public,
+    /// #     tss2_esys::TPM2_HANDLE,
+    /// # };
+    /// # use std::{env, str::FromStr, convert::TryFrom};
+    /// # // Create TCTI that uses the correct software for testing
+    /// # let tcti = env::var("TEST_TCTI")
+    /// #   .map(|env_tcti_str| Tcti::from_str(&env_tcti_str).expect("Error parsing TEST_TCTI"))
+    /// #   .unwrap_or_else(|_| Tcti::Mssim(Default::default()));
+    /// # // Create context
+    /// # let mut context = unsafe {
+    /// #     Context::new(tcti).expect("Failed to create context")
+    /// # };
+    /// # // Create persistent TPM handle with
+    /// # let persistent_tpm_handle =
+    /// #    PersistentTpmHandle::new(u32::from_be_bytes([0x81, 0x00, 0x00, 0x01]))
+    /// #        .expect("Failed to create Persistant TPM handle");
+    /// # // -----> REMOVE ANY PREVIOUS HANDLES <---------------
+    /// # let mut property = TPM2_PERSISTENT_FIRST;
+    /// # while let Ok((capability_data, more_data_available)) =
+    /// #     context.get_capability(CapabilityType::Handles, property, 1)
+    /// # {
+    /// #     if let CapabilityData::Handles(persistent_handles) = capability_data {
+    /// #         if let Some(&retrieved_persistent_handle) = persistent_handles.first() {
+    /// #             if retrieved_persistent_handle == persistent_tpm_handle.into() {
+    /// #                 let handle = context
+    /// #                     .tr_from_tpm_public(TpmHandle::Persistent(persistent_tpm_handle))
+    /// #                     .expect("Failed to retrieve handle from TPM");
+    /// #                 context.execute_with_session(Some(tss_esapi::session::Session::Password), |ctx| {
+    /// #                     ctx
+    /// #                           .evict_control(
+    /// #                               tss_esapi::interface_types::resource_handles::Provision::Owner,
+    /// #                               handle,
+    /// #                               tss_esapi::interface_types::dynamic_handles::Persistent::Persistent(persistent_tpm_handle),
+    /// #                           )
+    /// #                           .expect("Failed to evict persitent handle")
+    /// #                 });
+    /// #                 break;
+    /// #             }
+    /// #             if more_data_available {
+    /// #                 property = TPM2_HANDLE::from(retrieved_persistent_handle) + 1;
+    /// #             }
+    /// #         }
+    /// #     }
+    /// #     if !more_data_available {
+    /// #         break;
+    /// #     }
+    /// # }
+    /// # let transient_object_handle = context.execute_with_session(Some(Session::Password), |ctx| {
+    /// #    // Create primary key handle
+    /// #    let auth_value_primary = Auth::try_from(vec![1, 2, 3, 4, 5])
+    /// #        .expect("Failed to crate auth value for primary key");
+    /// #    ctx
+    /// #        .create_primary(
+    /// #            Hierarchy::Owner,
+    /// #            &create_restricted_decryption_rsa_public(Cipher::aes_256_cfb(), 2048, 0)
+    /// #               .expect("Failed to Public structure for key"),
+    /// #            Some(auth_value_primary).as_ref(),
+    /// #            None,
+    /// #            None,
+    /// #            None,
+    /// #        )
+    /// #        .map(|v| ObjectHandle::from(v.key_handle))
+    /// #        .expect("Failed to create primary key")
+    /// # });
+    /// use tss_esapi::{
+    ///     interface_types::{resource_handles::Provision, dynamic_handles::Persistent},
+    ///     session::Session,
+    /// };
+    /// // Create interface type Persistent by using the persistent tpm handle.
+    /// let persistent = Persistent::Persistent(persistent_tpm_handle);
+    /// # // Evict control to make transient_object_handle persistent.
+    /// # // An authorization session is required!
+    /// # let mut persistent_object_handle = context.execute_with_session(Some(Session::Password), |ctx| {
+    /// #   ctx
+    /// #       .evict_control(Provision::Owner, transient_object_handle.into(), persistent)
+    /// #       .expect("Failed to make the transient_object_handle handle persistent")
+    /// # });
+    /// # assert_ne!(persistent_object_handle, ObjectHandle::Null);
+    /// # assert_ne!(persistent_object_handle, ObjectHandle::None);
+    /// # // Flush out the transient_object_handle
+    /// # context
+    /// #     .flush_context(ObjectHandle::from(transient_object_handle))
+    /// #     .expect("Failed to flush context");
+    /// # // Close the persistant_handle returned by evict_control
+    /// # context
+    /// #     .tr_close(&mut persistent_object_handle)
+    /// #     .expect("Failed to close persistant handle");
+    /// # // Retrieve the handle from the tpm again.
+    /// # let retireved_persistant_handle = context.execute_without_session(|ctx| {
+    /// #     ctx.tr_from_tpm_public(TpmHandle::Persistent(persistent_tpm_handle))
+    /// #         .expect("Failed to load the persistant handle")
+    /// # });
+    /// // Evict the persitent handle from the tpm
+    /// // An authorization session is required!
+    /// let _ = context.execute_with_session(Some(Session::Password), |ctx| {
+    ///     ctx
+    ///         .evict_control(Provision::Owner, retireved_persistant_handle, persistent)
+    ///         .expect("Failed to evict persistent handle")
+    /// });
+    /// # assert_ne!(retireved_persistant_handle, ObjectHandle::None);
+    /// ```
     pub fn evict_control(
         &mut self,
         auth: Provision,
