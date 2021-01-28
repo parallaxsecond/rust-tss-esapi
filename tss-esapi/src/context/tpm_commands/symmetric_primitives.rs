@@ -24,18 +24,19 @@ impl Context {
     ///
     /// # Example
     ///
-    /// ```rust, no_run
-    /// use tss_esapi::{Context, Tcti,
-    ///     structures::{MaxBuffer, Ticket},
-    ///     constants::algorithm::HashingAlgorithm,
-    ///     interface_types::resource_handles::Hierarchy,
-    /// };
-    /// use std::convert::TryFrom;
-    ///
-    /// // Create context that uses Device TCTI.
-    /// let mut context = unsafe {
-    ///     Context::new(Tcti::Device(Default::default())).expect("Failed to create Context")
-    /// };
+    /// ```rust
+    /// # use tss_esapi::{Context, Tcti,
+    /// #     structures::{MaxBuffer, Ticket},
+    /// #     constants::algorithm::HashingAlgorithm,
+    /// #     interface_types::resource_handles::Hierarchy,
+    /// # };
+    /// # use std::convert::TryFrom;
+    /// # // Create context
+    /// # let mut context = unsafe {
+    /// #     Context::new(
+    /// #         Tcti::from_environment_variable().expect("Failed to get TCTI"),
+    /// #     ).expect("Failed to create Context")
+    /// # };
     /// let input_data = MaxBuffer::try_from("There is no spoon".as_bytes().to_vec())
     ///     .expect("Failed to create buffer for input data.");
     /// let expected_hashed_data: [u8; 32] = [

@@ -62,25 +62,26 @@ impl Context {
     ///
     /// # Example
     ///
-    /// ```rust, no_run
-    /// use tss_esapi::{
-    ///     Context, Tcti, structures::Auth,
-    ///     constants::{
-    ///         algorithm::{Cipher, HashingAlgorithm},
-    ///         tss::{TPMA_SESSION_DECRYPT, TPMA_SESSION_ENCRYPT},
-    ///         types::session::SessionType,
-    ///     },
-    ///     interface_types::resource_handles::Hierarchy,
-    ///     utils::{create_unrestricted_signing_rsa_public, AsymSchemeUnion},
-    ///     session::SessionAttributesBuilder,
-    /// };
-    /// use std::convert::TryFrom;
-    /// use std::str::FromStr;
-    ///
-    /// // Create context that uses Device TCTI.
-    /// let mut context = unsafe {
-    ///     Context::new(Tcti::Device(Default::default())).expect("Failed to create Context")
-    /// };
+    /// ```rust
+    /// # use tss_esapi::{
+    /// #     Context, Tcti, structures::Auth,
+    /// #     constants::{
+    /// #         algorithm::{Cipher, HashingAlgorithm},
+    /// #         tss::{TPMA_SESSION_DECRYPT, TPMA_SESSION_ENCRYPT},
+    /// #         types::session::SessionType,
+    /// #     },
+    /// #     interface_types::resource_handles::Hierarchy,
+    /// #     utils::{create_unrestricted_signing_rsa_public, AsymSchemeUnion},
+    /// #     session::SessionAttributesBuilder,
+    /// # };
+    /// # use std::convert::TryFrom;
+    /// # use std::str::FromStr;
+    /// # // Create context
+    /// # let mut context = unsafe {
+    /// #     Context::new(
+    /// #         Tcti::from_environment_variable().expect("Failed to get TCTI"),
+    /// #     ).expect("Failed to create Context")
+    /// # };
     ///
     /// // Create session for a key
     /// let session = context

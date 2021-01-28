@@ -35,13 +35,11 @@ impl Context {
     /// #     structures::Digest,
     /// # };
     /// # use std::{env, str::FromStr};
-    /// # // Create TCTI that uses the correct software for testing
-    /// # let tcti = env::var("TEST_TCTI")
-    /// #   .map(|env_tcti_str| Tcti::from_str(&env_tcti_str).expect("Failed to parse TCTI string."))
-    /// #   .unwrap_or_else(|_| Tcti::Mssim(Default::default()));
     /// # // Create context
     /// # let mut context = unsafe {
-    /// #     Context::new(tcti).expect("Failed to create Context")
+    /// #     Context::new(
+    /// #         Tcti::from_environment_variable().expect("Failed to get TCTI"),
+    /// #     ).expect("Failed to create Context")
     /// # };
     /// # // Create session for a pcr
     /// # let pcr_session = context
@@ -135,16 +133,14 @@ impl Context {
     ///
     /// # Example
     ///
-    /// ```rust,
+    /// ```rust
     /// # use tss_esapi::{Context, Tcti};
     /// # use std::{env, str::FromStr};
-    /// # // Create TCTI that uses the correct software for testing
-    /// # let tcti = env::var("TEST_TCTI")
-    /// #   .map(|env_tcti_str| Tcti::from_str(&env_tcti_str).expect("Failed to parse TCTI string."))
-    /// #   .unwrap_or_else(|_| Tcti::Mssim(Default::default()));
     /// # // Create context
     /// # let mut context = unsafe {
-    /// #     Context::new(tcti).expect("Failed to create Context")
+    /// #     Context::new(
+    /// #         Tcti::from_environment_variable().expect("Failed to get TCTI"),
+    /// #     ).expect("Failed to create Context")
     /// # };
     /// use tss_esapi::{
     ///     constants::algorithm::HashingAlgorithm,
@@ -222,13 +218,11 @@ impl Context {
     /// #     session::SessionAttributesBuilder,
     /// # };
     /// # use std::{env, str::FromStr};
-    /// # // Create TCTI that uses the correct software for testing
-    /// # let tcti = env::var("TEST_TCTI")
-    /// #   .map(|env_tcti_str| Tcti::from_str(&env_tcti_str).expect("Failed to parse TCTI string."))
-    /// #   .unwrap_or_else(|_| Tcti::Mssim(Default::default()));
     /// # // Create context
     /// # let mut context = unsafe {
-    /// #     Context::new(tcti).expect("Failed to create Context")
+    /// #     Context::new(
+    /// #         Tcti::from_environment_variable().expect("Failed to get TCTI"),
+    /// #     ).expect("Failed to create Context")
     /// # };
     /// # // Create session for a pcr
     /// # let pcr_session = context
