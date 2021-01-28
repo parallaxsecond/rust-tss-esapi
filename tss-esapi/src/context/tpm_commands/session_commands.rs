@@ -22,18 +22,19 @@ impl Context {
     ///
     /// # Example
     ///
-    /// ```rust, no_run
-    /// use tss_esapi::{Context, Tcti,
-    ///     constants::{
-    ///         algorithm::{Cipher, HashingAlgorithm},
-    ///         types::session::SessionType,
-    ///     },
-    /// };
-    /// // Create context that uses Device TCTI.
-    /// let mut context = unsafe {
-    ///     Context::new(Tcti::Device(Default::default())).expect("Failed to create Context")
-    /// };
-    ///
+    /// ```rust
+    /// # use tss_esapi::{Context, Tcti,
+    /// #     constants::{
+    /// #         algorithm::{Cipher, HashingAlgorithm},
+    /// #         types::session::SessionType,
+    /// #     },
+    /// # };
+    /// # // Create context
+    /// # let mut context = unsafe {
+    /// #     Context::new(
+    /// #         Tcti::from_environment_variable().expect("Failed to get TCTI"),
+    /// #     ).expect("Failed to create Context")
+    /// # };
     /// // Create auth session without key_handle, bind_handle
     /// // and Nonce
     /// let session = context

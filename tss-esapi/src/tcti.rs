@@ -3,6 +3,7 @@
 use crate::{Error, WrapperErrorKind};
 use regex::Regex;
 use std::convert::TryFrom;
+use std::env;
 use std::ffi::CString;
 use std::net::IpAddr;
 use std::path::PathBuf;
@@ -34,6 +35,30 @@ pub enum Tcti {
     ///
     /// For more information about configuration, see [this page](https://www.mankier.com/3/Tss2_Tcti_Tabrmd_Init)
     Tabrmd(TabrmdConfig),
+}
+
+impl Tcti {
+    /// Gets a TCTI from the following environment variables, in order:
+    /// - TPM2TOOLS_TCTI
+    /// - TCTI
+    /// - TEST_TCTI
+    ///
+    /// # Examples
+    /// ```
+    /// # use tss_esapi::{Context, Tcti};
+    /// // Create context
+    /// let mut context = unsafe {
+    ///     Context::new(
+    ///         Tcti::from_environment_variable().expect("Failed to get TCTI"),
+    ///     ).expect("Failed to create Context")
+    /// };
+    pub fn from_environment_variable() -> Result<Self, Error> {
+        env::var("TPM2TOOLS_TCTI")
+            .or_else(|_| env::var("TCTI"))
+            .or_else(|_| env::var("TEST_TCTI"))
+            .map_err(|_| Error::WrapperError(WrapperErrorKind::ParamsMissing))
+            .and_then(|val| Tcti::from_str(&val))
+    }
 }
 
 impl TryFrom<Tcti> for CString {

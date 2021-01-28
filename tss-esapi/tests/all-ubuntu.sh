@@ -30,4 +30,4 @@ RUST_BACKTRACE=1 cargo build
 #################
 # Run the tests #
 #################
-RUST_BACKTRACE=1 RUST_LOG=info cargo test -- --test-threads=1 --nocapture
+TEST_TCTI=mssim: RUST_BACKTRACE=1 RUST_LOG=info cargo test -- --test-threads=1 --nocapture

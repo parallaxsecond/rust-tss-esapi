@@ -123,18 +123,19 @@ impl Context {
     ///
     /// # Example
     ///
-    /// ```rust, no_run
-    /// use tss_esapi::{Context, Tcti,
-    ///     constants::{
-    ///         algorithm::{Cipher, HashingAlgorithm},
-    ///         types::session::SessionType,
-    ///     },
-    /// };
-    /// // Create context that uses Device TCTI.
-    /// let mut context = unsafe {
-    ///     Context::new(Tcti::Device(Default::default())).expect("Failed to create Context")
-    /// };
-    ///
+    /// ```rust
+    /// # use tss_esapi::{Context, Tcti,
+    /// #     constants::{
+    /// #         algorithm::{Cipher, HashingAlgorithm},
+    /// #         types::session::SessionType,
+    /// #     },
+    /// # };
+    /// # // Create context
+    /// # let mut context = unsafe {
+    /// #     Context::new(
+    /// #        Tcti::from_environment_variable().expect("Failed to get TCTI"),
+    /// #     ).expect("Failed to create Context")
+    /// # };
     /// // Create auth session without key_handle, bind_handle
     /// // and Nonce
     /// let auth_session = context
@@ -167,14 +168,14 @@ impl Context {
     ///
     /// # Example
     ///
-    /// ```rust, no_run
-    /// use tss_esapi::{Context, Tcti, session::Session};
-    ///
-    /// // Create context that uses Device TCTI.
-    /// let mut context = unsafe {
-    ///     Context::new(Tcti::Device(Default::default())).expect("Failed to create Context")
-    /// };
-    ///
+    /// ```rust
+    /// # use tss_esapi::{Context, Tcti, session::Session};
+    /// # // Create context
+    /// # let mut context = unsafe {
+    /// #     Context::new(
+    /// #         Tcti::from_environment_variable().expect("Failed to get TCTI"),
+    /// #     ).expect("Failed to create Context")
+    /// # };
     /// // Use password session for auth
     /// context.set_sessions((Some(Session::Password), None, None));
     ///
@@ -189,14 +190,14 @@ impl Context {
     ///
     /// # Example
     ///
-    /// ```rust, no_run
-    /// use tss_esapi::{Context, Tcti, session::Session};
-    ///
-    /// // Create context that uses Device TCTI.
-    /// let mut context = unsafe {
-    ///     Context::new(Tcti::Device(Default::default())).expect("Failed to create Context")
-    /// };
-    ///
+    /// ```rust
+    /// # use tss_esapi::{Context, Tcti, session::Session};
+    /// # // Create context
+    /// # let mut context = unsafe {
+    /// #     Context::new(
+    /// #         Tcti::from_environment_variable().expect("Failed to get TCTI"),
+    /// #     ).expect("Failed to create Context")
+    /// # };
     /// // Use password session for auth
     /// context.set_sessions((Some(Session::Password), None, None));
     ///
@@ -311,15 +312,15 @@ impl Context {
     ///
     /// # Example
     ///
-    /// ```rust, no_run
-    /// use tss_esapi::{Context, Tcti, constants::tags::PropertyTag};
-    /// use std::str::FromStr;
-    ///
-    /// // Create context that uses Device TCTI.
-    /// let mut context = unsafe {
-    ///     Context::new(Tcti::Device(Default::default())).expect("Failed to create Context")
-    /// };
-    ///
+    /// ```rust
+    /// # use tss_esapi::{Context, Tcti, constants::tags::PropertyTag};
+    /// # use std::str::FromStr;
+    /// # // Create context
+    /// # let mut context = unsafe {
+    /// #     Context::new(
+    /// #         Tcti::from_environment_variable().expect("Failed to get TCTI"),
+    /// #     ).expect("Failed to create Context")
+    /// # };
     /// let rev = context
     ///     .get_tpm_property(PropertyTag::Revision)
     ///     .expect("Wrong value from TPM")
