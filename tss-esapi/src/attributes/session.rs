@@ -1,6 +1,5 @@
 use crate::tss2_esys::TPMA_SESSION;
 use bitfield::bitfield;
-use std::convert::From;
 
 // SESSION ATTRIBUTES
 

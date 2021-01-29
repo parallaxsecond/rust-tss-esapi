@@ -1,5 +1,6 @@
 use crate::{
-    session::{Session, SessionAttributes, SessionAttributesMask},
+    attributes::{SessionAttributes, SessionAttributesMask},
+    session::Session,
     tss2_esys::{Esys_TRSess_GetAttributes, Esys_TRSess_SetAttributes, TPMA_SESSION},
     Context, Error, Result,
 };

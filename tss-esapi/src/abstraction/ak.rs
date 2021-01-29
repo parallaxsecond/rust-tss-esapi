@@ -2,20 +2,20 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use crate::{
+    attributes::{ObjectAttributesBuilder, SessionAttributesBuilder},
     constants::{
         algorithm::{AsymmetricAlgorithm, Cipher, HashingAlgorithm, SignatureScheme},
         tss::*,
-        types::session::SessionType,
+        SessionType,
     },
     handles::{AuthHandle, KeyHandle},
-    session::SessionAttributesBuilder,
     structures::{Auth, CreateKeyResult, Private},
     tss2_esys::{
         TPM2B_PUBLIC, TPMS_ECC_PARMS, TPMS_RSA_PARMS, TPMS_SCHEME_HASH, TPMT_ECC_SCHEME,
         TPMT_KDF_SCHEME, TPMT_RSA_SCHEME, TPMT_SYM_DEF_OBJECT, TPMU_ASYM_SCHEME, TPMU_SYM_KEY_BITS,
         TPMU_SYM_MODE,
     },
-    utils::{ObjectAttributes, PublicIdUnion, PublicParmsUnion, Tpm2BPublicBuilder},
+    utils::{PublicIdUnion, PublicParmsUnion, Tpm2BPublicBuilder},
     Context, Error, Result, WrapperErrorKind,
 };
 
@@ -24,14 +24,15 @@ fn create_ak_public(
     hash_alg: HashingAlgorithm,
     sign_alg: SignatureScheme,
 ) -> Result<TPM2B_PUBLIC> {
-    let mut obj_attrs = ObjectAttributes(0);
-    obj_attrs.set_restricted(true);
-    obj_attrs.set_user_with_auth(true);
-    obj_attrs.set_sign_encrypt(true);
-    obj_attrs.set_decrypt(false);
-    obj_attrs.set_fixed_tpm(true);
-    obj_attrs.set_fixed_parent(true);
-    obj_attrs.set_sensitive_data_origin(true);
+    let obj_attrs = ObjectAttributesBuilder::new()
+        .with_restricted(true)
+        .with_user_with_auth(true)
+        .with_sign_encrypt(true)
+        .with_decrypt(false)
+        .with_fixed_tpm(true)
+        .with_fixed_parent(true)
+        .with_sensitive_data_origin(true)
+        .build()?;
 
     match key_alg {
         AsymmetricAlgorithm::Rsa => Tpm2BPublicBuilder::new()

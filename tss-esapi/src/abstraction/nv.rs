@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use crate::{
-    constants::{tags::PropertyTag, tss::*, types::capability::CapabilityType},
+    constants::{tss::*, CapabilityType, PropertyTag},
     handles::{NvIndexHandle, NvIndexTpmHandle, ObjectHandle, TpmHandle},
     interface_types::resource_handles::NvAuth,
     nv::storage::NvPublic,

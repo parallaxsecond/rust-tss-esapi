@@ -13,21 +13,20 @@
 //!
 //! Object contexts thus act as an opaque handle that can, however, be used by the client to seralize
 //! and persist the underlying data.
+use crate::attributes::{ObjectAttributesBuilder, SessionAttributesBuilder};
 use crate::constants::algorithm::{Cipher, EllipticCurve, HashingAlgorithm};
 use crate::constants::tss::*;
-use crate::constants::types::session::SessionType;
+use crate::constants::SessionType;
 use crate::handles::KeyHandle;
 use crate::interface_types::resource_handles::Hierarchy;
-use crate::session::SessionAttributesBuilder;
 use crate::structures::{Auth, CreateKeyResult, Data, Digest, PublicKeyRSA, VerifiedTicket};
 use crate::tcti::Tcti;
 use crate::tss2_esys::*;
 use crate::utils::{
     self, create_restricted_decryption_rsa_public,
     create_unrestricted_encryption_decryption_rsa_public, create_unrestricted_signing_ecc_public,
-    create_unrestricted_signing_rsa_public, AsymSchemeUnion, ObjectAttributes, PublicIdUnion,
-    PublicKey, PublicParmsUnion, Tpm2BPublicBuilder, TpmsContext, TpmsRsaParmsBuilder,
-    RSA_KEY_SIZES,
+    create_unrestricted_signing_rsa_public, AsymSchemeUnion, PublicIdUnion, PublicKey,
+    PublicParmsUnion, Tpm2BPublicBuilder, TpmsContext, TpmsRsaParmsBuilder, RSA_KEY_SIZES,
 };
 use crate::Context;
 use crate::{Error, Result, WrapperErrorKind as ErrorKind};
@@ -259,11 +258,12 @@ impl TransientKeyContext {
         };
         let pub_id_union = PublicIdUnion::Rsa(Box::from(pub_buffer));
 
-        let mut object_attributes = ObjectAttributes(0);
-        object_attributes.set_user_with_auth(true);
-        object_attributes.set_decrypt(false);
-        object_attributes.set_sign_encrypt(true);
-        object_attributes.set_restricted(false);
+        let object_attributes = ObjectAttributesBuilder::new()
+            .with_user_with_auth(true)
+            .with_decrypt(false)
+            .with_sign_encrypt(true)
+            .with_restricted(false)
+            .build()?;
 
         let rsa_parms = TpmsRsaParmsBuilder::new_unrestricted_signing_key(
             AsymSchemeUnion::RSASSA(HashingAlgorithm::Sha256),

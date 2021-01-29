@@ -1,7 +1,7 @@
 use crate::{
     constants::{
         algorithm::{Cipher, HashingAlgorithm},
-        types::session::SessionType,
+        SessionType,
     },
     context::handle_manager::HandleDropAction,
     handles::{KeyHandle, ObjectHandle, SessionHandle},
@@ -26,7 +26,7 @@ impl Context {
     /// # use tss_esapi::{Context, Tcti,
     /// #     constants::{
     /// #         algorithm::{Cipher, HashingAlgorithm},
-    /// #         types::session::SessionType,
+    /// #         SessionType,
     /// #     },
     /// # };
     /// # // Create context

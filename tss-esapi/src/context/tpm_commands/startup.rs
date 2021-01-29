@@ -1,5 +1,5 @@
 use crate::{
-    constants::types::startup::StartupType,
+    constants::StartupType,
     tss2_esys::{Esys_Shutdown, Esys_Startup},
     Context, Error, Result,
 };

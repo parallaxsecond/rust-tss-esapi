@@ -64,15 +64,15 @@ impl Context {
     ///
     /// ```rust
     /// # use tss_esapi::{
-    /// #     Context, Tcti, structures::Auth,
-    /// #     constants::{
-    /// #         algorithm::{Cipher, HashingAlgorithm},
-    /// #         tss::{TPMA_SESSION_DECRYPT, TPMA_SESSION_ENCRYPT},
-    /// #         types::session::SessionType,
-    /// #     },
-    /// #     interface_types::resource_handles::Hierarchy,
-    /// #     utils::{create_unrestricted_signing_rsa_public, AsymSchemeUnion},
-    /// #     session::SessionAttributesBuilder,
+    /// #    Context, Tcti, structures::Auth,
+    /// #    constants::{
+    /// #        algorithm::{Cipher, HashingAlgorithm},
+    /// #        tss::{TPMA_SESSION_DECRYPT, TPMA_SESSION_ENCRYPT},
+    /// #        SessionType,
+    /// #    },
+    /// #    interface_types::resource_handles::Hierarchy,
+    /// #    utils::{create_unrestricted_signing_rsa_public, AsymSchemeUnion},
+    /// #    attributes::SessionAttributesBuilder,
     /// # };
     /// # use std::convert::TryFrom;
     /// # use std::str::FromStr;
@@ -178,8 +178,7 @@ impl Context {
     /// # use tss_esapi::{
     /// #     Context, Tcti, Result,
     /// #     constants::{
-    /// #         algorithm::Cipher,
-    /// #         types::{session::SessionType, capability::CapabilityType},
+    /// #         algorithm::Cipher, SessionType, CapabilityType,
     /// #         tss::TPM2_PERSISTENT_FIRST,
     /// #     },
     /// #     handles::PcrHandle,
@@ -192,13 +191,11 @@ impl Context {
     /// #     tss2_esys::TPM2_HANDLE,
     /// # };
     /// # use std::{env, str::FromStr, convert::TryFrom};
-    /// # // Create TCTI that uses the correct software for testing
-    /// # let tcti = env::var("TEST_TCTI")
-    /// #   .map(|env_tcti_str| Tcti::from_str(&env_tcti_str).expect("Error parsing TEST_TCTI"))
-    /// #   .unwrap_or_else(|_| Tcti::Mssim(Default::default()));
     /// # // Create context
     /// # let mut context = unsafe {
-    /// #     Context::new(tcti).expect("Failed to create context")
+    /// #     Context::new(
+    /// #         Tcti::from_environment_variable().expect("Failed to get TCTI"),
+    /// #     ).expect("Failed to create Context")
     /// # };
     /// # // Create persistent TPM handle with
     /// # let persistent_tpm_handle =
@@ -294,8 +291,7 @@ impl Context {
     /// # use tss_esapi::{
     /// #     Context, Tcti, Result,
     /// #     constants::{
-    /// #         algorithm::Cipher,
-    /// #         types::{session::SessionType, capability::CapabilityType},
+    /// #         algorithm::Cipher, SessionType, CapabilityType,
     /// #         tss::TPM2_PERSISTENT_FIRST,
     /// #     },
     /// #     handles::PcrHandle,
@@ -308,13 +304,11 @@ impl Context {
     /// #     tss2_esys::TPM2_HANDLE,
     /// # };
     /// # use std::{env, str::FromStr, convert::TryFrom};
-    /// # // Create TCTI that uses the correct software for testing
-    /// # let tcti = env::var("TEST_TCTI")
-    /// #   .map(|env_tcti_str| Tcti::from_str(&env_tcti_str).expect("Error parsing TEST_TCTI"))
-    /// #   .unwrap_or_else(|_| Tcti::Mssim(Default::default()));
     /// # // Create context
     /// # let mut context = unsafe {
-    /// #     Context::new(tcti).expect("Failed to create context")
+    /// #     Context::new(
+    /// #         Tcti::from_environment_variable().expect("Failed to get TCTI"),
+    /// #     ).expect("Failed to create Context")
     /// # };
     /// # // Create persistent TPM handle with
     /// # let persistent_tpm_handle =

@@ -1,12 +1,10 @@
-mod attributes;
 mod specific;
 
 use crate::{
-    constants::{algorithm::HashingAlgorithm, types::session::SessionType},
+    constants::{algorithm::HashingAlgorithm, SessionType},
     handles::SessionHandle,
 };
 
-pub use attributes::{SessionAttributes, SessionAttributesBuilder, SessionAttributesMask};
 pub use specific::{HmacSession, PolicySession, TrialSession};
 
 /// Enum representing the different types of sessions.

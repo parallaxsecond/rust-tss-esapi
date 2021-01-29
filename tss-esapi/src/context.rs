@@ -2,17 +2,16 @@
 // SPDX-License-Identifier: Apache-2.0
 mod handle_manager;
 use crate::{
+    attributes::SessionAttributesBuilder,
     constants::{
         algorithm::{Cipher, HashingAlgorithm},
-        tags::PropertyTag,
-        types::{capability::CapabilityType, session::SessionType},
+        CapabilityType, PropertyTag, SessionType,
     },
     handles::ObjectHandle,
-    session::{Session, SessionAttributesBuilder},
+    session::Session,
     structures::CapabilityData,
-    tcti::Tcti,
     tss2_esys::*,
-    Error, Result, WrapperErrorKind as ErrorKind,
+    Error, Result, Tcti, WrapperErrorKind as ErrorKind,
 };
 use handle_manager::HandleManager;
 use log::{error, info};
@@ -131,7 +130,7 @@ impl Context {
     /// # use tss_esapi::{Context, Tcti,
     /// #     constants::{
     /// #         algorithm::{Cipher, HashingAlgorithm},
-    /// #         types::session::SessionType,
+    /// #         SessionType,
     /// #     },
     /// # };
     /// # // Create context
@@ -317,7 +316,7 @@ impl Context {
     /// # Example
     ///
     /// ```rust
-    /// # use tss_esapi::{Context, Tcti, constants::tags::PropertyTag};
+    /// # use tss_esapi::{Context, Tcti, constants::PropertyTag};
     /// # use std::str::FromStr;
     /// # // Create context
     /// # let mut context = unsafe {

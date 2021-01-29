@@ -5,15 +5,15 @@ use std::convert::{TryFrom, TryInto};
 
 use tss_esapi::{
     abstraction::{ak, ek},
+    attributes::SessionAttributesBuilder,
     constants::{
         algorithm::{
             AsymmetricAlgorithm, Cipher, EccSignatureScheme, HashingAlgorithm, RsaSignatureScheme,
             SignatureScheme,
         },
-        types::session::SessionType,
+        SessionType,
     },
     handles::AuthHandle,
-    session::SessionAttributesBuilder,
     structures::{Auth, Digest},
 };
 

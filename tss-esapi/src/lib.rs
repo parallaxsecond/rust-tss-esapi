@@ -101,6 +101,7 @@ pub use tcti::Tcti;
 
 pub use tss_esapi_sys as tss2_esys;
 pub mod abstraction;
+pub mod attributes;
 pub mod constants;
 mod context;
 mod error;

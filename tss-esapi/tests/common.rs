@@ -3,11 +3,11 @@
 use std::{env, str::FromStr, sync::Once};
 
 use tss_esapi::{
+    attributes::SessionAttributesBuilder,
     constants::{
         algorithm::{Cipher, HashingAlgorithm},
-        types::session::SessionType,
+        SessionType,
     },
-    session::SessionAttributesBuilder,
     Context, Tcti,
 };
 

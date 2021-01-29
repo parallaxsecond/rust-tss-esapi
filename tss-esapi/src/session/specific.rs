@@ -1,6 +1,6 @@
 /// Macro for implementing specific session types
 use crate::{
-    constants::{algorithm::HashingAlgorithm, types::session::SessionType},
+    constants::{algorithm::HashingAlgorithm, SessionType},
     handles::SessionHandle,
     session::Session,
     Error, Result, WrapperErrorKind,

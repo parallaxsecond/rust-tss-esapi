@@ -35,11 +35,11 @@ const KEY: [u8; 512] = [
 use std::convert::{TryFrom, TryInto};
 use std::time::Duration;
 use tss_esapi::{
+    attributes::{NvIndexAttributesBuilder, ObjectAttributesBuilder, SessionAttributesBuilder},
     constants::{
         algorithm::{Cipher, HashingAlgorithm},
-        tags::PropertyTag,
         tss::*,
-        types::{capability::CapabilityType, session::SessionType, startup::StartupType},
+        CapabilityType, PropertyTag, SessionType, StartupType,
     },
     handles::{
         AuthHandle, KeyHandle, NvIndexHandle, NvIndexTpmHandle, ObjectHandle, PcrHandle,
@@ -49,16 +49,16 @@ use tss_esapi::{
         dynamic_handles::Persistent,
         resource_handles::{Hierarchy, NvAuth, Provision},
     },
-    nv::storage::{NvIndexAttributesBuilder, NvPublicBuilder},
-    session::{Session, SessionAttributesBuilder},
+    nv::storage::NvPublicBuilder,
+    session::Session,
     structures::{
         Auth, CapabilityData, Data, Digest, DigestList, DigestValues, KeyedHashParms, MaxBuffer,
         MaxNvBuffer, Nonce, PcrSelectionListBuilder, PcrSlot, PublicKeyRSA, SensitiveData, Ticket,
     },
     tss2_esys::*,
     utils::{
-        self, AsymSchemeUnion, ObjectAttributes, PublicIdUnion, PublicParmsUnion, Signature,
-        SignatureData, Tpm2BPublicBuilder, TpmsRsaParmsBuilder,
+        self, AsymSchemeUnion, PublicIdUnion, PublicParmsUnion, Signature, SignatureData,
+        Tpm2BPublicBuilder, TpmsRsaParmsBuilder,
     },
     Context,
 };
@@ -67,12 +67,14 @@ mod common;
 use common::{create_ctx_with_session, create_ctx_without_session};
 
 fn create_public_sealed_object() -> tss_esapi::tss2_esys::TPM2B_PUBLIC {
-    let mut object_attributes = utils::ObjectAttributes(0);
-    object_attributes.set_fixed_tpm(true);
-    object_attributes.set_fixed_parent(true);
-    object_attributes.set_no_da(true);
-    object_attributes.set_admin_with_policy(true);
-    object_attributes.set_user_with_auth(true);
+    let object_attributes = ObjectAttributesBuilder::new()
+        .with_fixed_tpm(true)
+        .with_fixed_parent(true)
+        .with_no_da(true)
+        .with_admin_with_policy(true)
+        .with_user_with_auth(true)
+        .build()
+        .expect("Failed to bu8ild object attributes");
 
     let mut params: TPMU_PUBLIC_PARMS = Default::default();
     params.keyedHashDetail.scheme.scheme = tss_esapi::constants::tss::TPM2_ALG_NULL;
@@ -928,10 +930,12 @@ mod test_hmac {
     fn test_hmac() {
         let mut context = create_ctx_with_session();
 
-        let mut object_attributes = ObjectAttributes(0);
-        object_attributes.set_sign_encrypt(true);
-        object_attributes.set_sensitive_data_origin(true);
-        object_attributes.set_user_with_auth(true);
+        let object_attributes = ObjectAttributesBuilder::new()
+            .with_sign_encrypt(true)
+            .with_sensitive_data_origin(true)
+            .with_user_with_auth(true)
+            .build()
+            .expect("Failed to build object attributes");
 
         let key_pub = Tpm2BPublicBuilder::new()
             .with_type(TPM2_ALG_KEYEDHASH)
@@ -2118,12 +2122,15 @@ mod test_load_ext {
         let scheme = AsymSchemeUnion::RSASSA(HashingAlgorithm::Sha256);
         let rsa_parms = TpmsRsaParmsBuilder::new_unrestricted_signing_key(scheme, 2048, 0)
             .build()
-            .unwrap(); // should not fail as we control the params
-        let mut object_attributes = ObjectAttributes(0);
-        object_attributes.set_user_with_auth(true);
-        object_attributes.set_decrypt(false);
-        object_attributes.set_sign_encrypt(true);
-        object_attributes.set_restricted(false);
+            .unwrap();
+
+        let object_attributes = ObjectAttributesBuilder::new()
+            .with_user_with_auth(true)
+            .with_decrypt(false)
+            .with_sign_encrypt(true)
+            .with_restricted(false)
+            .build()
+            .expect("Failed to build object attributes");
 
         let pub_buffer = TPM2B_PUBLIC_KEY_RSA {
             size: 256,
@@ -2846,7 +2853,7 @@ mod test_nv_write {
             .unwrap();
 
         if let Err(e) = write_result {
-            assert!(false, "Failed to perform nv write: {}", e);
+            panic!("Failed to perform nv write: {}", e);
         }
     }
 }
@@ -2886,7 +2893,7 @@ mod test_nv_read_public {
 
         // Report error
         if let Err(e) = read_public_result {
-            assert!(false, "Failed to read public of nv index: {}", e);
+            panic!("Failed to read public of nv index: {}", e);
         }
 
         // Check result.
@@ -2938,10 +2945,10 @@ mod test_nv_read {
 
         // Report error
         if let Err(e) = write_result {
-            assert!(false, "Failed to perform nv write: {}", e);
+            panic!("Failed to perform nv write: {}", e);
         }
         if let Err(e) = read_result {
-            assert!(false, "Failed to read public of nv index: {}", e);
+            panic!("Failed to read public of nv index: {}", e);
         }
 
         // Check result.

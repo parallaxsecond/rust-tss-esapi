@@ -101,11 +101,12 @@ impl Context {
     ///
     /// ```rust, no_run
     /// # use tss_esapi::{
+    /// #     attributes::ObjectAttributesBuilder,
     /// #     structures::{MaxBuffer, Ticket, KeyedHashParms},
     /// #     constants::algorithm::HashingAlgorithm,
     /// #     interface_types::resource_handles::Hierarchy,
     /// #     constants::tss::{TPM2_ALG_KEYEDHASH, TPM2_ALG_SHA256},
-    /// #     utils::{ObjectAttributes, Tpm2BPublicBuilder, PublicParmsUnion},
+    /// #     utils::{Tpm2BPublicBuilder, PublicParmsUnion},
     /// #     Context, Tcti,
     /// # };
     /// # use std::convert::TryFrom;
@@ -115,10 +116,12 @@ impl Context {
     /// #     Context::new(Tcti::Device(Default::default())).expect("Failed to create Context")
     /// # };
     /// // Create a key
-    /// let mut object_attributes = ObjectAttributes(0);
-    /// object_attributes.set_sign_encrypt(true);
-    /// object_attributes.set_sensitive_data_origin(true);
-    /// object_attributes.set_user_with_auth(true);
+    /// let object_attributes = ObjectAttributesBuilder::new()
+    ///     .with_sign_encrypt(true)
+    ///     .with_sensitive_data_origin(true)
+    ///     .with_user_with_auth(true)
+    ///     .build()
+    ///     .expect("Failed to build object attributes");
     /// let key_pub = Tpm2BPublicBuilder::new()
     ///     .with_type(TPM2_ALG_KEYEDHASH)
     ///     .with_name_alg(TPM2_ALG_SHA256)

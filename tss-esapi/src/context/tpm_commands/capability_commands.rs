@@ -1,6 +1,6 @@
 use crate::{
-    constants::types::capability::CapabilityType, structures::CapabilityData, tss2_esys::*,
-    utils::PublicParmsUnion, Context, Error, Result, WrapperErrorKind as ErrorKind,
+    constants::CapabilityType, structures::CapabilityData, tss2_esys::*, utils::PublicParmsUnion,
+    Context, Error, Result, WrapperErrorKind as ErrorKind,
 };
 use log::error;
 use mbox::MBox;

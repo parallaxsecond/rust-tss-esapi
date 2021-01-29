@@ -16,15 +16,40 @@ pub mod algorithm;
     dead_code,
     clippy::all
 )]
+/// Exposes the constants form the TSS header.
 pub mod tss;
 
-/// Representation of the different tag constants.
-/// Constants -> TPM_ST, TPM_PT, TPM_PCR_PT
-pub mod tags;
+/// Representation of the constants defined in the
+/// Constants -> TPM_ST section of the specfication
+pub mod structure_tags;
+
+/// Representation of the constants defined in the
+/// Constants -> TPM_PT section of the specfication
+pub mod property_tag;
+
+/// Representation of the constants defined in the
+/// Constants -> TPM_SU section of the specfication
+pub mod startup_type;
+
+/// Representation of the constants defined in the
+/// Constants -> TPM_SE section of the specfication
+pub mod session_type;
+
+/// Representation of the constants defined in the
+/// Constants -> TPM_CAP section of the specfication
+pub mod capabilities;
 
 /// Representation of the return code TSS2_RC (TPM_RC)
 pub mod response_code;
 
-/// Representation of the different type constants
-/// Constants -> TPM_SU, TPM_SE
-pub mod types;
+/// Representation of the constants defined in the
+/// NV Storage -> TPM_NT section of the specfication
+pub mod nv_index_type;
+
+pub use capabilities::CapabilityType;
+pub use nv_index_type::NvIndexType;
+pub use property_tag::PropertyTag;
+pub use response_code::{ResponseCode, Tss2ResponseCode, Tss2ResponseCodeKind};
+pub use session_type::SessionType;
+pub use startup_type::StartupType;
+pub use structure_tags::StructureTag;
