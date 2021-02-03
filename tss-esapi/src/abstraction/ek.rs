@@ -4,8 +4,8 @@
 use crate::{
     abstraction::nv,
     constants::{algorithm::AsymmetricAlgorithm, tss::*},
-    handles::{AuthHandle, KeyHandle, NvIndexTpmHandle, TpmHandle},
-    interface_types::resource_handles::Hierarchy,
+    handles::{KeyHandle, NvIndexTpmHandle, TpmHandle},
+    interface_types::resource_handles::{Hierarchy, NvAuth},
     tss2_esys::{
         TPM2B_ECC_PARAMETER, TPM2B_PUBLIC, TPM2B_PUBLIC_KEY_RSA, TPMS_ECC_PARMS, TPMS_ECC_POINT,
         TPMS_RSA_PARMS, TPMS_SCHEME_HASH, TPMT_ECC_SCHEME, TPMT_KDF_SCHEME, TPMT_RSA_SCHEME,
@@ -130,9 +130,10 @@ pub fn retrieve_ek_pubcert(context: &mut Context, alg: AsymmetricAlgorithm) -> R
     let nv_idx = NvIndexTpmHandle::new(nv_idx).unwrap();
 
     let nv_auth_handle = TpmHandle::NvIndex(nv_idx);
-    let nv_auth_handle =
-        context.execute_without_session(|ctx| ctx.tr_from_tpm_public(nv_auth_handle))?;
-    let nv_auth_handle: AuthHandle = nv_auth_handle.into();
+    let nv_auth_handle = context.execute_without_session(|ctx| {
+        ctx.tr_from_tpm_public(nv_auth_handle)
+            .map(|v| NvAuth::NvIndex(v.into()))
+    })?;
 
     context.execute_with_nullauth_session(|ctx| nv::read_full(ctx, nv_auth_handle, nv_idx))
 }
