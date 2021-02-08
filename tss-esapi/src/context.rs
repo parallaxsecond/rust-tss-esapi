@@ -7,21 +7,20 @@ use crate::{
         tags::PropertyTag,
         types::{capability::CapabilityType, session::SessionType},
     },
-    handles::{handle_conversion::TryIntoNotNone, ObjectHandle, TpmHandle},
-    session::{Session, SessionAttributes, SessionAttributesBuilder, SessionAttributesMask},
-    structures::{Auth, CapabilityData, Name},
+    handles::ObjectHandle,
+    session::{Session, SessionAttributesBuilder},
+    structures::CapabilityData,
     tcti::Tcti,
     tss2_esys::*,
     Error, Result, WrapperErrorKind as ErrorKind,
 };
-use handle_manager::{HandleDropAction, HandleManager};
+use handle_manager::HandleManager;
 use log::{error, info};
 use mbox::MBox;
 use std::collections::HashMap;
 use std::convert::TryFrom;
 use std::ffi::CString;
 use std::ptr::null_mut;
-use zeroize::Zeroize;
 
 /// Safe abstraction over an ESYS_CONTEXT.
 ///
@@ -67,6 +66,11 @@ pub struct Context {
 
 // Implementation of the TPM commands
 mod tpm_commands;
+// Implementation of the ESAPI session administration
+// functions.
+mod session_administration;
+// Implementation of the general ESAPI ESYS_TR functions
+mod general_esys_tr;
 
 impl Context {
     /// Create a new ESYS context based on the desired TCTI
@@ -350,125 +354,6 @@ impl Context {
             return Ok(Some(*val));
         }
         Ok(None)
-    }
-
-    // ////////////////////////////////////////////////////////////////////////
-    // TPM Resource Section
-    // ////////////////////////////////////////////////////////////////////////
-
-    /// Set the authentication value for a given object handle in the ESYS context.
-    pub fn tr_set_auth(&mut self, object_handle: ObjectHandle, auth: &Auth) -> Result<()> {
-        let mut tss_auth = auth.clone().into();
-        let ret = unsafe { Esys_TR_SetAuth(self.mut_context(), object_handle.into(), &tss_auth) };
-        tss_auth.buffer.zeroize();
-        let ret = Error::from_tss_rc(ret);
-        if ret.is_success() {
-            Ok(())
-        } else {
-            error!("Error when setting authentication value: {}", ret);
-            Err(ret)
-        }
-    }
-
-    /// Retrieve the name of an object from the object handle
-    pub fn tr_get_name(&mut self, object_handle: ObjectHandle) -> Result<Name> {
-        let mut name = null_mut();
-        let ret = unsafe { Esys_TR_GetName(self.mut_context(), object_handle.into(), &mut name) };
-        let ret = Error::from_tss_rc(ret);
-        if ret.is_success() {
-            let tss_name = unsafe { MBox::<TPM2B_NAME>::from_raw(name) };
-            Ok(Name::try_from(*tss_name)?)
-        } else {
-            error!("Error in getting name: {}", ret);
-            Err(ret)
-        }
-    }
-
-    /// Set the given attributes on a given session.
-    pub fn tr_sess_set_attributes(
-        &mut self,
-        session: Session,
-        attributes: SessionAttributes,
-        mask: SessionAttributesMask,
-    ) -> Result<()> {
-        let ret = unsafe {
-            Esys_TRSess_SetAttributes(
-                self.mut_context(),
-                session.handle().into(),
-                attributes.into(),
-                mask.into(),
-            )
-        };
-        let ret = Error::from_tss_rc(ret);
-        if ret.is_success() {
-            Ok(())
-        } else {
-            error!("Error when setting session attributes: {}", ret);
-            Err(ret)
-        }
-    }
-
-    /// Get session attribute flags.
-    pub fn tr_sess_get_attributes(&mut self, session: Session) -> Result<SessionAttributes> {
-        let mut flags: TPMA_SESSION = 0;
-        let ret = unsafe {
-            Esys_TRSess_GetAttributes(self.mut_context(), session.handle().into(), &mut flags)
-        };
-        let ret = Error::from_tss_rc(ret);
-        if ret.is_success() {
-            Ok(SessionAttributes(flags))
-        } else {
-            error!("Error when getting session attributes: {}", ret);
-            Err(ret)
-        }
-    }
-
-    /// Used to construct an esys object from the resources inside the TPM.
-    pub fn tr_from_tpm_public(&mut self, tpm_handle: TpmHandle) -> Result<ObjectHandle> {
-        let mut esys_object_handle: ESYS_TR = ESYS_TR_NONE;
-        let ret = unsafe {
-            Esys_TR_FromTPMPublic(
-                self.mut_context(),
-                tpm_handle.into(),
-                self.optional_session_1(),
-                self.optional_session_2(),
-                self.optional_session_3(),
-                &mut esys_object_handle,
-            )
-        };
-        let ret = Error::from_tss_rc(ret);
-        if ret.is_success() {
-            let object_handle = ObjectHandle::from(esys_object_handle);
-            self.handle_manager.add_handle(
-                object_handle,
-                if tpm_handle.may_be_flushed() {
-                    HandleDropAction::Flush
-                } else {
-                    HandleDropAction::Close
-                },
-            )?;
-            Ok(object_handle)
-        } else {
-            error!("Error when getting ESYS handle from TPM handle: {}", ret);
-            Err(ret)
-        }
-    }
-
-    /// Instructs the ESAPI to release the metadata and resources allocated for a specific ObjectHandle.
-    ///
-    /// This is useful for cleaning up handles for which the context cannot be flushed.
-    pub fn tr_close(&mut self, object_handle: &mut ObjectHandle) -> Result<()> {
-        let mut tss_esys_object_handle = object_handle.try_into_not_none()?;
-        let ret = unsafe { Esys_TR_Close(self.mut_context(), &mut tss_esys_object_handle) };
-        let ret = Error::from_tss_rc(ret);
-        if ret.is_success() {
-            self.handle_manager.set_as_closed(*object_handle)?;
-            *object_handle = ObjectHandle::from(tss_esys_object_handle);
-            Ok(())
-        } else {
-            error!("Error when closing an ESYS handle: {}", ret);
-            Err(ret)
-        }
     }
 
     // ////////////////////////////////////////////////////////////////////////
