@@ -454,6 +454,71 @@ impl Context {
         }
     }
 
-    // Missing function: PolicyTemplate
+    /// Bind policy to a specific creation template.
+    ///
+    /// # Arguments
+    /// * `policy_session` - The policy session being extended.
+    /// * `template_hash` - The digest to be added to the policy.
+    ///
+    /// # Example
+    /// ```rust
+    /// # use tss_esapi::{
+    /// #   constants::{SessionType, algorithm::{Cipher, HashingAlgorithm}},
+    /// #   Context, Tcti, structures::Digest,
+    /// # };
+    /// # use std::convert::TryFrom;
+    /// // Create context that uses Device TCTI.
+    /// # let mut context = unsafe {
+    /// #     Context::new(
+    /// #        Tcti::from_environment_variable().expect("Failed to get TCTI"),
+    /// #     ).expect("Failed to create Context")
+    /// # };
+    /// #
+    /// # // Create session for a key
+    /// # let trial_session = context
+    /// #     .start_auth_session(
+    /// #         None,
+    /// #         None,
+    /// #         None,
+    /// #         SessionType::Trial,
+    /// #         Cipher::aes_128_cfb(),
+    /// #         HashingAlgorithm::Sha1,
+    /// #     )
+    /// #     .expect("Failed to create session")
+    /// #     .expect("Recived invalid handle");
+    /// # let template_hash = Digest::try_from(vec![
+    /// #     1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
+    /// #     11, 12, 13, 14, 15, 16, 17, 18, 19, 20
+    /// # ]).expect("Failed to create template hash");
+    /// // Result should be checked because the TPM might not support this.
+    /// let _ = context.policy_template(trial_session, &template_hash)
+    ///     .expect("Call to policy_template failed");
+    /// ```
+    pub fn policy_template(
+        &mut self,
+        policy_session: Session,
+        template_hash: &Digest,
+    ) -> Result<()> {
+        let ret = unsafe {
+            Esys_PolicyTemplate(
+                self.mut_context(),
+                policy_session.handle().into(),
+                self.optional_session_1(),
+                self.optional_session_2(),
+                self.optional_session_3(),
+                &template_hash.clone().into(),
+            )
+        };
+        let ret = Error::from_tss_rc(ret);
+        if ret.is_success() {
+            Ok(())
+        } else {
+            error!(
+                "Failed to bind template has to a specific creation template: {}",
+                ret
+            );
+            Err(ret)
+        }
+    }
     // Missing function: PolicyAuthorizeNV
 }
