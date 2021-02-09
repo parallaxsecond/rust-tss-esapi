@@ -1,7 +1,7 @@
 use crate::{
     context::handle_manager::HandleDropAction,
     handles::{AuthHandle, NvIndexHandle},
-    interface_types::resource_handles::NvAuth,
+    interface_types::resource_handles::{NvAuth, Provision},
     nv::storage::NvPublic,
     structures::{Auth, MaxNvBuffer, Name},
     tss2_esys::*,
@@ -18,9 +18,14 @@ impl Context {
     /// # Details
     /// This method will instruct the TPM to reserve space for an NV index
     /// with the attributes defined in the provided parameters.
+    ///
+    /// # Arguments
+    /// * `nv_auth` - The [Provision] used for authorization.
+    /// * `auth` - The authorization value.
+    /// * `public_info` - The public parameters of the NV area.
     pub fn nv_define_space(
         &mut self,
-        nv_auth: NvAuth,
+        nv_auth: Provision,
         auth: Option<&Auth>,
         public_info: &NvPublic,
     ) -> Result<NvIndexHandle> {
@@ -53,9 +58,14 @@ impl Context {
     /// # Details
     /// The method will instruct the TPM to remove a
     /// nv index.
+    ///
+    /// # Arguments
+    /// * `nv_auth` - The [Provision] used for authorization.
+    /// * `nv_index_handle`- The [NvIndexHandle] associated with
+    ///                      the nv area that is to be removed.
     pub fn nv_undefine_space(
         &mut self,
-        nv_auth: NvAuth,
+        nv_auth: Provision,
         nv_index_handle: NvIndexHandle,
     ) -> Result<()> {
         let ret = unsafe {
@@ -121,7 +131,7 @@ impl Context {
     /// the nv memory in the TPM.
     pub fn nv_write(
         &mut self,
-        auth_handle: AuthHandle,
+        auth_handle: NvAuth,
         nv_index_handle: NvIndexHandle,
         data: &MaxNvBuffer,
         offset: u16,
@@ -129,7 +139,7 @@ impl Context {
         let ret = unsafe {
             Esys_NV_Write(
                 self.mut_context(),
-                auth_handle.into(),
+                AuthHandle::from(auth_handle).into(),
                 nv_index_handle.into(),
                 self.optional_session_1(),
                 self.optional_session_2(),
@@ -160,7 +170,7 @@ impl Context {
     /// NV memory of the TPM.
     pub fn nv_read(
         &mut self,
-        auth_handle: AuthHandle,
+        auth_handle: NvAuth,
         nv_index_handle: NvIndexHandle,
         size: u16,
         offset: u16,
@@ -169,7 +179,7 @@ impl Context {
         let ret = unsafe {
             Esys_NV_Read(
                 self.mut_context(),
-                auth_handle.into(),
+                AuthHandle::from(auth_handle).into(),
                 nv_index_handle.into(),
                 self.optional_session_1(),
                 self.optional_session_2(),

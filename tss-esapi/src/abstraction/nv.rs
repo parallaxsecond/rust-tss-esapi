@@ -3,7 +3,8 @@
 
 use crate::{
     constants::{tags::PropertyTag, tss::*, types::capability::CapabilityType},
-    handles::{AuthHandle, NvIndexHandle, NvIndexTpmHandle, ObjectHandle, TpmHandle},
+    handles::{NvIndexHandle, NvIndexTpmHandle, ObjectHandle, TpmHandle},
+    interface_types::resource_handles::NvAuth,
     nv::storage::NvPublic,
     structures::{CapabilityData, Name},
     Context, Error, Result, WrapperErrorKind,
@@ -12,7 +13,7 @@ use crate::{
 /// Allows reading an NV Index completely, regardless of the max TPM NV buffer size
 pub fn read_full(
     context: &mut Context,
-    auth_handle: AuthHandle,
+    auth_handle: NvAuth,
     nv_index_handle: NvIndexTpmHandle,
 ) -> Result<Vec<u8>> {
     let maxsize = context

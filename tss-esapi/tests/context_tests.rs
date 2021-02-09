@@ -2704,11 +2704,11 @@ mod test_nv_define_space {
 
         // Failes because attributes dont match hierarchy auth.
         let _ = context
-            .nv_define_space(NvAuth::Platform, None, &owner_nv_public)
+            .nv_define_space(Provision::Platform, None, &owner_nv_public)
             .unwrap_err();
 
         let _ = context
-            .nv_define_space(NvAuth::Owner, None, &platform_nv_public)
+            .nv_define_space(Provision::Owner, None, &platform_nv_public)
             .unwrap_err();
     }
 
@@ -2750,22 +2750,22 @@ mod test_nv_define_space {
             .unwrap();
 
         let owner_nv_index_handle = context
-            .nv_define_space(NvAuth::Owner, None, &owner_nv_public)
+            .nv_define_space(Provision::Owner, None, &owner_nv_public)
             .unwrap();
 
         let _ = context
-            .nv_undefine_space(NvAuth::Owner, owner_nv_index_handle)
+            .nv_undefine_space(Provision::Owner, owner_nv_index_handle)
             .unwrap();
 
         // If you see this line fail, you are likely running it against a live TPM.
         // On many TPMs, you will get error 0x00000185, indicating the Platform hierarchy to
         // be unavailable (because the system went to operating system)
         let platform_nv_index_handle = context
-            .nv_define_space(NvAuth::Platform, None, &platform_nv_public)
+            .nv_define_space(Provision::Platform, None, &platform_nv_public)
             .unwrap();
 
         let _ = context
-            .nv_undefine_space(NvAuth::Platform, platform_nv_index_handle)
+            .nv_undefine_space(Provision::Platform, platform_nv_index_handle)
             .unwrap();
     }
 }
@@ -2795,12 +2795,12 @@ mod test_nv_undefine_space {
             .unwrap();
 
         let owner_nv_index_handle = context
-            .nv_define_space(NvAuth::Owner, None, &owner_nv_public)
+            .nv_define_space(Provision::Owner, None, &owner_nv_public)
             .unwrap();
 
         // Succedes
         let _ = context
-            .nv_undefine_space(NvAuth::Owner, owner_nv_index_handle)
+            .nv_undefine_space(Provision::Owner, owner_nv_index_handle)
             .unwrap();
     }
 }
@@ -2830,19 +2830,19 @@ mod test_nv_write {
             .unwrap();
 
         let owner_nv_index_handle = context
-            .nv_define_space(NvAuth::Owner, None, &owner_nv_public)
+            .nv_define_space(Provision::Owner, None, &owner_nv_public)
             .unwrap();
 
         // Use owner authorization
         let write_result = context.nv_write(
-            NvAuth::Owner.into(),
+            NvAuth::Owner,
             owner_nv_index_handle,
             &MaxNvBuffer::try_from([1, 2, 3, 4, 5, 6, 7].to_vec()).unwrap(),
             0,
         );
 
         let _ = context
-            .nv_undefine_space(NvAuth::Owner, owner_nv_index_handle)
+            .nv_undefine_space(Provision::Owner, owner_nv_index_handle)
             .unwrap();
 
         if let Err(e) = write_result {
@@ -2875,13 +2875,13 @@ mod test_nv_read_public {
             .unwrap();
 
         let nv_index_handle = context
-            .nv_define_space(NvAuth::Owner, None, &expected_nv_public)
+            .nv_define_space(Provision::Owner, None, &expected_nv_public)
             .unwrap();
 
         let read_public_result = context.nv_read_public(nv_index_handle);
 
         let _ = context
-            .nv_undefine_space(NvAuth::Owner, nv_index_handle)
+            .nv_undefine_space(Provision::Owner, nv_index_handle)
             .unwrap();
 
         // Report error
@@ -2920,7 +2920,7 @@ mod test_nv_read {
             .unwrap();
 
         let owner_nv_index_handle = context
-            .nv_define_space(NvAuth::Owner, None, &owner_nv_public)
+            .nv_define_space(Provision::Owner, None, &owner_nv_public)
             .unwrap();
 
         let value = [1, 2, 3, 4, 5, 6, 7];
@@ -2928,16 +2928,12 @@ mod test_nv_read {
 
         // Write the data using Owner authorization
         let write_result =
-            context.nv_write(AuthHandle::Owner, owner_nv_index_handle, &expected_data, 0);
+            context.nv_write(NvAuth::Owner, owner_nv_index_handle, &expected_data, 0);
         // read data using owner authorization
-        let read_result = context.nv_read(
-            AuthHandle::Owner,
-            owner_nv_index_handle,
-            value.len() as u16,
-            0,
-        );
+        let read_result =
+            context.nv_read(NvAuth::Owner, owner_nv_index_handle, value.len() as u16, 0);
         let _ = context
-            .nv_undefine_space(NvAuth::Owner, owner_nv_index_handle)
+            .nv_undefine_space(Provision::Owner, owner_nv_index_handle)
             .unwrap();
 
         // Report error
@@ -2958,7 +2954,7 @@ mod test_tr_from_tpm_public {
     use super::*;
     use tss_esapi::constants::tss::TPM2_NV_INDEX_FIRST;
 
-    fn remove_nv_index_handle_from_tpm(nv_index_tpm_handle: NvIndexTpmHandle, nv_auth: NvAuth) {
+    fn remove_nv_index_handle_from_tpm(nv_index_tpm_handle: NvIndexTpmHandle, nv_auth: Provision) {
         let mut context = create_ctx_without_session();
         let mut property = TPM2_NV_INDEX_FIRST;
         println!("KALLEE");
@@ -3006,7 +3002,7 @@ mod test_tr_from_tpm_public {
                        fn_name: &str|
          -> tss_esapi::Error {
             // Set password authorization
-            let _ = context.nv_undefine_space(NvAuth::Owner, handle).unwrap();
+            let _ = context.nv_undefine_space(Provision::Owner, handle).unwrap();
             panic!("{} failed: {}", fn_name, e);
         };
 
@@ -3026,7 +3022,7 @@ mod test_tr_from_tpm_public {
             .unwrap();
 
         let initial_nv_index_handle = context
-            .nv_define_space(NvAuth::Owner, None, &nv_public)
+            .nv_define_space(Provision::Owner, None, &nv_public)
             .unwrap();
         ///////////////////////////////////////////
         // Read the name from the tpm
@@ -3057,7 +3053,7 @@ mod test_tr_from_tpm_public {
         //////////////////////////////////////////////
         // Remove undefine the space
         let _ = context
-            .nv_undefine_space(NvAuth::Owner, new_nv_index_handle.into())
+            .nv_undefine_space(Provision::Owner, new_nv_index_handle.into())
             .unwrap();
 
         assert_eq!(expected_name, actual_name);
@@ -3066,7 +3062,7 @@ mod test_tr_from_tpm_public {
     #[test]
     fn test_tr_from_tpm_public_password_auth() {
         let nv_index_tpm_handle = NvIndexTpmHandle::new(0x01500022).unwrap();
-        remove_nv_index_handle_from_tpm(nv_index_tpm_handle, NvAuth::Owner);
+        remove_nv_index_handle_from_tpm(nv_index_tpm_handle, Provision::Owner);
 
         let mut context = create_ctx_without_session();
 
@@ -3084,7 +3080,7 @@ mod test_tr_from_tpm_public {
             // Set password authorization
             context.set_sessions((Some(Session::Password), None, None));
             let _ = context
-                .nv_undefine_space(NvAuth::Owner, handle)
+                .nv_undefine_space(Provision::Owner, handle)
                 .expect("Failed to call nv_undefine_space");
             panic!("{} failed: {}", fn_name, e);
         };
@@ -3109,7 +3105,7 @@ mod test_tr_from_tpm_public {
         // Set password authorization when creating the space.
         context.set_sessions((Some(Session::Password), None, None));
         let initial_nv_index_handle = context
-            .nv_define_space(NvAuth::Owner, Some(&auth), &nv_public)
+            .nv_define_space(Provision::Owner, Some(&auth), &nv_public)
             .expect("Failed to call nv_define_space");
         ///////////////////////////////////////////////////////////////
         // Read the name from the tpm
@@ -3157,7 +3153,7 @@ mod test_tr_from_tpm_public {
         // Set password authorization
         context.set_sessions((Some(Session::Password), None, None));
         let _ = context
-            .nv_undefine_space(NvAuth::Owner, new_nv_index_handle.into())
+            .nv_undefine_space(Provision::Owner, new_nv_index_handle.into())
             .expect("Failed to call nv_undefine_space");
         ///////////////////////////////////////////////////////////////
         // Check that we got the correct name
@@ -3169,7 +3165,7 @@ mod test_tr_from_tpm_public {
     fn read_from_retrieved_handle_using_password_authorization() {
         let nv_index_tpm_handle = NvIndexTpmHandle::new(0x01500023).unwrap();
 
-        remove_nv_index_handle_from_tpm(nv_index_tpm_handle, NvAuth::Owner);
+        remove_nv_index_handle_from_tpm(nv_index_tpm_handle, Provision::Owner);
 
         let mut context = create_ctx_without_session();
 
@@ -3186,7 +3182,7 @@ mod test_tr_from_tpm_public {
          -> tss_esapi::Error {
             // Set password authorization
             context.set_sessions((Some(Session::Password), None, None));
-            let _ = context.nv_undefine_space(NvAuth::Owner, handle).unwrap();
+            let _ = context.nv_undefine_space(Provision::Owner, handle).unwrap();
             panic!("{} failed: {}", fn_name, e);
         };
 
@@ -3210,7 +3206,7 @@ mod test_tr_from_tpm_public {
         // Set password authorization when creating the space.
         context.set_sessions((Some(Session::Password), None, None));
         let initial_nv_index_handle = context
-            .nv_define_space(NvAuth::Owner, Some(&auth), &nv_public)
+            .nv_define_space(Provision::Owner, Some(&auth), &nv_public)
             .unwrap();
         ///////////////////////////////////////////////////////////////
         // Read the name from the tpm
@@ -3234,7 +3230,7 @@ mod test_tr_from_tpm_public {
         context.set_sessions((Some(Session::Password), None, None));
         context
             .nv_write(
-                initial_nv_index_handle.into(),
+                NvAuth::NvIndex(initial_nv_index_handle),
                 initial_nv_index_handle,
                 &expected_data,
                 0,
@@ -3271,16 +3267,14 @@ mod test_tr_from_tpm_public {
         // possible to remove the defined space.
         let new_nv_index_handle = context
             .tr_from_tpm_public(nv_index_tpm_handle.into())
-            .map_err(|e| -> tss_esapi::Result<ObjectHandle> {
-                panic!("tr_from_tpm_public failed: {}", e);
-            })
-            .unwrap();
+            .map(NvIndexHandle::from)
+            .expect("tr_from_tpm_public failed: {}");
         ///////////////////////////////////////////////////////////////
         // Get name of the object using the new handle
         //
         let actual_name = context
-            .tr_get_name(new_nv_index_handle)
-            .map_err(|e| cleanup(&mut context, e, new_nv_index_handle.into(), "tr_get_name"))
+            .tr_get_name(new_nv_index_handle.into())
+            .map_err(|e| cleanup(&mut context, e, new_nv_index_handle, "tr_get_name"))
             .unwrap();
         ///////////////////////////////////////////////////////////////
         // Call nv_read to get data from nv_index.
@@ -3288,19 +3282,19 @@ mod test_tr_from_tpm_public {
 
         // Set authorization for the retrieved handle
         context
-            .tr_set_auth(new_nv_index_handle, &auth)
-            .map_err(|e| cleanup(&mut context, e, new_nv_index_handle.into(), "tr_set_auth"))
+            .tr_set_auth(new_nv_index_handle.into(), &auth)
+            .map_err(|e| cleanup(&mut context, e, new_nv_index_handle, "tr_set_auth"))
             .unwrap();
         // read the data
         context.set_sessions((Some(Session::Password), None, None));
         let actual_data = context
             .nv_read(
-                new_nv_index_handle.into(),
-                new_nv_index_handle.into(),
+                NvAuth::NvIndex(new_nv_index_handle),
+                new_nv_index_handle,
                 32,
                 0,
             )
-            .map_err(|e| cleanup(&mut context, e, new_nv_index_handle.into(), "nv_read"))
+            .map_err(|e| cleanup(&mut context, e, new_nv_index_handle, "nv_read"))
             .unwrap();
         ///////////////////////////////////////////////////////////////
         // Remove undefine the space
@@ -3308,7 +3302,7 @@ mod test_tr_from_tpm_public {
         // Set password authorization
         context.set_sessions((Some(Session::Password), None, None));
         let _ = context
-            .nv_undefine_space(NvAuth::Owner, new_nv_index_handle.into())
+            .nv_undefine_space(Provision::Owner, new_nv_index_handle)
             .unwrap();
         ///////////////////////////////////////////////////////////////
         // The name will have changed
