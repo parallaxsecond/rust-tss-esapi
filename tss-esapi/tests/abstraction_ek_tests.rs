@@ -1,10 +1,12 @@
 // Copyright 2020 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
 
-use tss_esapi::abstraction::ek;
-use tss_esapi::constants::algorithm::AsymmetricAlgorithm;
-use tss_esapi::constants::response_code::{FormatOneResponseCode, Tss2ResponseCode};
-use tss_esapi::Error;
+use tss_esapi::{
+    abstraction::ek,
+    constants::response_code::{FormatOneResponseCode, Tss2ResponseCode},
+    interface_types::algorithm::AsymmetricAlgorithm,
+    Error,
+};
 
 mod common;
 use common::create_ctx_without_session;

@@ -1,6 +1,6 @@
 // Copyright 2020 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
-use crate::constants::algorithm::HashingAlgorithm;
+use crate::interface_types::algorithm::HashingAlgorithm;
 use crate::structures::{PcrSelectSize, PcrSlot};
 use crate::tss2_esys::TPMS_PCR_SELECTION;
 use crate::{Error, Result, WrapperErrorKind};

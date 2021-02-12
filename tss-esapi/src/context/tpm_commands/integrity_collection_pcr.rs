@@ -26,13 +26,11 @@ impl Context {
     /// ```rust
     /// # use tss_esapi::{
     /// #     Context, Tcti,
-    /// #     constants::{
-    /// #         algorithm::Cipher,
-    /// #         SessionType,
-    /// #     },
+    /// #     constants::SessionType,
     /// #     attributes::SessionAttributesBuilder,
     /// #     handles::PcrHandle,
     /// #     structures::Digest,
+    /// #     abstraction::cipher::Cipher,
     /// # };
     /// # use std::{env, str::FromStr};
     /// # // Create context
@@ -49,7 +47,7 @@ impl Context {
     /// #         None,
     /// #         SessionType::Hmac,
     /// #         Cipher::aes_256_cfb(),
-    /// #         tss_esapi::constants::algorithm::HashingAlgorithm::Sha256,
+    /// #         tss_esapi::interface_types::algorithm::HashingAlgorithm::Sha256,
     /// #     )
     /// #     .expect("Failed to create session")
     /// #     .expect("Recived invalid handle");
@@ -72,7 +70,7 @@ impl Context {
     /// use std::convert::TryFrom;
     /// use tss_esapi::{
     ///     structures::{DigestValues},
-    ///     constants::algorithm::HashingAlgorithm,
+    ///     interface_types::algorithm::HashingAlgorithm,
     /// };
     /// // Extend both sha256 and sha1
     /// let mut vals = DigestValues::new();
@@ -143,7 +141,7 @@ impl Context {
     /// #     ).expect("Failed to create Context")
     /// # };
     /// use tss_esapi::{
-    ///     constants::algorithm::HashingAlgorithm,
+    ///     interface_types::algorithm::HashingAlgorithm,
     ///     structures::{PcrSelectionListBuilder, PcrSlot},
     /// };
     /// // Create PCR selection list with slots in a bank
@@ -211,11 +209,10 @@ impl Context {
     /// ```rust
     /// # use tss_esapi::{
     /// #     Context, Tcti,
-    /// #     constants::{
-    /// #         algorithm::{HashingAlgorithm, Cipher},
-    /// #         SessionType,
-    /// #     },
+    /// #     constants::SessionType,
     /// #     attributes::SessionAttributesBuilder,
+    /// #     interface_types::algorithm::HashingAlgorithm,
+    /// #     abstraction::cipher::Cipher,
     /// # };
     /// # use std::{env, str::FromStr};
     /// # // Create context

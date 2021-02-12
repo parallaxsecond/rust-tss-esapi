@@ -9,9 +9,9 @@
 //! type name. Unions are converted to Rust `enum`s by dropping the `TPMU` qualifier and appending
 //! `Union`.
 use crate::attributes::{ObjectAttributes, ObjectAttributesBuilder};
-use crate::constants::algorithm::{Cipher, EllipticCurve, HashingAlgorithm};
 use crate::constants::tss::*;
 use crate::constants::PropertyTag;
+use crate::interface_types::{algorithm::HashingAlgorithm, ecc::EllipticCurve};
 use crate::structures::{Digest, KeyedHashParms, PcrSlot};
 use crate::tss2_esys::*;
 use crate::{Context, Error, Result, WrapperErrorKind};
@@ -175,7 +175,7 @@ impl Tpm2BPublicBuilder {
                 let unique;
                 if let Some(PublicParmsUnion::KeyedHashDetail(parms)) = self.parameters {
                     parameters = TPMU_PUBLIC_PARMS {
-                        keyedHashDetail: parms.try_into()?,
+                        keyedHashDetail: parms.into(),
                     };
                 } else if self.parameters.is_none() {
                     return Err(Error::local_error(WrapperErrorKind::ParamsMissing));
@@ -347,7 +347,7 @@ pub const RSA_KEY_SIZES: [u16; 4] = [1024, 2048, 3072, 4096];
 #[derive(Copy, Clone, Debug)]
 pub struct TpmsEccParmsBuilder {
     /// Symmetric cipher to be used in conjuction with the key
-    pub symmetric: Option<Cipher>,
+    pub symmetric: Option<crate::abstraction::cipher::Cipher>,
     /// Asymmetric scheme to be used for key operations
     pub scheme: AsymSchemeUnion,
     /// Curve to be used with the key
@@ -362,7 +362,10 @@ pub struct TpmsEccParmsBuilder {
 
 impl TpmsEccParmsBuilder {
     /// Create parameters for a restricted decryption key (i.e. a storage key)
-    pub fn new_restricted_decryption_key(symmetric: Cipher, curve: EllipticCurve) -> Self {
+    pub fn new_restricted_decryption_key(
+        symmetric: crate::abstraction::cipher::Cipher,
+        curve: EllipticCurve,
+    ) -> Self {
         TpmsEccParmsBuilder {
             symmetric: Some(symmetric),
             scheme: AsymSchemeUnion::AnySig(None),
@@ -612,7 +615,7 @@ impl PublicIdUnion {
 #[derive(Copy, Clone)]
 pub enum PublicParmsUnion {
     KeyedHashDetail(KeyedHashParms),
-    SymDetail(Cipher),
+    SymDetail(crate::abstraction::cipher::Cipher),
     RsaDetail(TPMS_RSA_PARMS),
     EccDetail(TPMS_ECC_PARMS),
     AsymDetail(TPMS_ASYM_PARMS),
@@ -631,26 +634,24 @@ impl PublicParmsUnion {
     }
 }
 
-impl TryFrom<PublicParmsUnion> for TPMU_PUBLIC_PARMS {
-    type Error = Error;
-
-    fn try_from(parms: PublicParmsUnion) -> Result<Self> {
+impl From<PublicParmsUnion> for TPMU_PUBLIC_PARMS {
+    fn from(parms: PublicParmsUnion) -> Self {
         match parms {
-            PublicParmsUnion::AsymDetail(tss_parms) => Ok(TPMU_PUBLIC_PARMS {
+            PublicParmsUnion::AsymDetail(tss_parms) => TPMU_PUBLIC_PARMS {
                 asymDetail: tss_parms,
-            }),
-            PublicParmsUnion::EccDetail(tss_parms) => Ok(TPMU_PUBLIC_PARMS {
+            },
+            PublicParmsUnion::EccDetail(tss_parms) => TPMU_PUBLIC_PARMS {
                 eccDetail: tss_parms,
-            }),
-            PublicParmsUnion::RsaDetail(tss_parms) => Ok(TPMU_PUBLIC_PARMS {
+            },
+            PublicParmsUnion::RsaDetail(tss_parms) => TPMU_PUBLIC_PARMS {
                 rsaDetail: tss_parms,
-            }),
-            PublicParmsUnion::SymDetail(cipher) => Ok(TPMU_PUBLIC_PARMS {
+            },
+            PublicParmsUnion::SymDetail(cipher) => TPMU_PUBLIC_PARMS {
                 symDetail: cipher.into(),
-            }),
-            PublicParmsUnion::KeyedHashDetail(tss_parms) => Ok(TPMU_PUBLIC_PARMS {
-                keyedHashDetail: tss_parms.try_into()?,
-            }),
+            },
+            PublicParmsUnion::KeyedHashDetail(tss_parms) => TPMU_PUBLIC_PARMS {
+                keyedHashDetail: tss_parms.into(),
+            },
         }
     }
 }
@@ -1108,7 +1109,7 @@ impl TryFrom<TpmsContext> for TPMS_CONTEXT {
 /// * `key_bits` - Size in bits of the decryption key
 /// * `pub_exponent` - Public exponent of the RSA key. A value of 0 defaults to 2^16 + 1
 pub fn create_restricted_decryption_rsa_public(
-    symmetric: Cipher,
+    symmetric: crate::abstraction::cipher::Cipher,
     key_bits: u16,
     pub_exponent: u32,
 ) -> Result<TPM2B_PUBLIC> {

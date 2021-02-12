@@ -1,10 +1,9 @@
 use crate::{
-    constants::{
-        algorithm::{Cipher, HashingAlgorithm},
-        SessionType,
-    },
+    abstraction::cipher::Cipher,
+    constants::SessionType,
     context::handle_manager::HandleDropAction,
     handles::{KeyHandle, ObjectHandle, SessionHandle},
+    interface_types::algorithm::HashingAlgorithm,
     session::Session,
     structures::Nonce,
     tss2_esys::*,
@@ -24,10 +23,9 @@ impl Context {
     ///
     /// ```rust
     /// # use tss_esapi::{Context, Tcti,
-    /// #     constants::{
-    /// #         algorithm::{Cipher, HashingAlgorithm},
-    /// #         SessionType,
-    /// #     },
+    /// #     constants::SessionType,
+    /// #     interface_types::algorithm::HashingAlgorithm,
+    /// #     abstraction::cipher::Cipher,
     /// # };
     /// # // Create context
     /// # let mut context = unsafe {

@@ -4,11 +4,8 @@ mod test_verify_signature {
     use crate::common::{create_ctx_with_session, signing_key_pub, HASH};
     use std::convert::{TryFrom, TryInto};
     use tss_esapi::{
-        constants::{
-            algorithm::HashingAlgorithm,
-            tss::{TPM2_ALG_NULL, TPM2_RH_NULL, TPM2_ST_HASHCHECK},
-        },
-        interface_types::resource_handles::Hierarchy,
+        constants::tss::{TPM2_ALG_NULL, TPM2_RH_NULL, TPM2_ST_HASHCHECK},
+        interface_types::{algorithm::HashingAlgorithm, resource_handles::Hierarchy},
         structures::{Auth, Digest},
         tss2_esys::{TPMT_SIG_SCHEME, TPMT_TK_HASHCHECK},
         utils::{AsymSchemeUnion, Signature, SignatureData},

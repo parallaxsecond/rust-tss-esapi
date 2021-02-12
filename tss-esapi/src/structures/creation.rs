@@ -2,7 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use crate::{
-    constants::{algorithm::HashingAlgorithm, tss::TPM2_ALG_NULL},
+    constants::Algorithm,
+    interface_types::algorithm::HashingAlgorithm,
     structures::{Data, Digest, Name, PcrSelectionList},
     tss2_esys::{TPM2B_CREATION_DATA, TPMA_LOCALITY, TPMS_CREATION_DATA},
     Error, Result,
@@ -27,9 +28,9 @@ impl TryFrom<TPMS_CREATION_DATA> for CreationData {
             pcr_select: tss_creation_data.pcrSelect.try_into()?,
             pcr_digest: tss_creation_data.pcrDigest.try_into()?,
             locality: tss_creation_data.locality,
-            parent_name_alg: match tss_creation_data.parentNameAlg {
-                TPM2_ALG_NULL => None,
-                alg => Some(alg.try_into()?),
+            parent_name_alg: match Algorithm::try_from(tss_creation_data.parentNameAlg)? {
+                Algorithm::Null => None,
+                alg => Some(HashingAlgorithm::try_from(alg)?),
             },
             parent_name: tss_creation_data.parentName.try_into()?,
             parent_qualified_name: tss_creation_data.parentQualifiedName.try_into()?,
@@ -53,7 +54,7 @@ impl TryFrom<CreationData> for TPMS_CREATION_DATA {
             pcrDigest: creation_data.pcr_digest.into(),
             locality: creation_data.locality,
             parentNameAlg: match creation_data.parent_name_alg {
-                None => TPM2_ALG_NULL,
+                None => Algorithm::Null.into(),
                 Some(alg) => alg.into(),
             },
             parentName: creation_data.parent_name.try_into()?,

@@ -1,7 +1,6 @@
 use crate::{
-    constants::algorithm::HashingAlgorithm,
     handles::{ObjectHandle, TpmHandle},
-    interface_types::resource_handles::Hierarchy,
+    interface_types::{algorithm::HashingAlgorithm, resource_handles::Hierarchy},
     structures::{Digest, HashcheckTicket, MaxBuffer},
     tss2_esys::*,
     Context, Error, Result,
@@ -27,8 +26,7 @@ impl Context {
     /// ```rust
     /// # use tss_esapi::{Context, Tcti,
     /// #     structures::{MaxBuffer, Ticket},
-    /// #     constants::algorithm::HashingAlgorithm,
-    /// #     interface_types::resource_handles::Hierarchy,
+    /// #     interface_types::{algorithm::HashingAlgorithm, resource_handles::Hierarchy},
     /// # };
     /// # use std::convert::TryFrom;
     /// # // Create context
@@ -102,9 +100,8 @@ impl Context {
     /// ```rust
     /// # use tss_esapi::{
     /// #     attributes::ObjectAttributesBuilder,
-    /// #     structures::{MaxBuffer, Ticket, KeyedHashParms},
-    /// #     constants::algorithm::HashingAlgorithm,
-    /// #     interface_types::resource_handles::Hierarchy,
+    /// #     structures::{MaxBuffer, Ticket, KeyedHashParms, HmacScheme, KeyedHashScheme},
+    /// #     interface_types::{resource_handles::Hierarchy, algorithm::HashingAlgorithm},
     /// #     constants::tss::{TPM2_ALG_KEYEDHASH, TPM2_ALG_SHA256},
     /// #     utils::{Tpm2BPublicBuilder, PublicParmsUnion},
     /// #     Context, Tcti,
@@ -126,9 +123,9 @@ impl Context {
     /// let key_pub = Tpm2BPublicBuilder::new()
     ///     .with_type(TPM2_ALG_KEYEDHASH)
     ///     .with_name_alg(TPM2_ALG_SHA256)
-    ///     .with_parms(PublicParmsUnion::KeyedHashDetail(KeyedHashParms::HMAC {
-    ///         hash_alg: HashingAlgorithm::Sha256,
-    ///     }))
+    ///     .with_parms(PublicParmsUnion::KeyedHashDetail(KeyedHashParms::new(
+    ///         KeyedHashScheme::HMAC_SHA_256,
+    ///     )))
     ///     .with_object_attributes(object_attributes)
     ///     .build()
     ///     .unwrap();

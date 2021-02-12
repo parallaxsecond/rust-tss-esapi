@@ -4,8 +4,7 @@ mod test_rsa_encrypt_decrypt {
     use crate::common::{create_ctx_with_session, encryption_decryption_key_pub};
     use std::convert::TryFrom;
     use tss_esapi::{
-        constants::algorithm::HashingAlgorithm,
-        interface_types::resource_handles::Hierarchy,
+        interface_types::{algorithm::HashingAlgorithm, resource_handles::Hierarchy},
         structures::{Auth, Data, PublicKeyRSA},
         utils::AsymSchemeUnion,
     };

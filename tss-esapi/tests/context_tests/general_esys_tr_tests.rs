@@ -2,9 +2,12 @@ mod test_tr_from_tpm_public {
     use crate::common::create_ctx_without_session;
     use tss_esapi::{
         attributes::NvIndexAttributesBuilder,
-        constants::{algorithm::HashingAlgorithm, tss::TPM2_NV_INDEX_FIRST, CapabilityType},
+        constants::{tss::TPM2_NV_INDEX_FIRST, CapabilityType},
         handles::{NvIndexHandle, NvIndexTpmHandle, ObjectHandle},
-        interface_types::resource_handles::{NvAuth, Provision},
+        interface_types::{
+            algorithm::HashingAlgorithm,
+            resource_handles::{NvAuth, Provision},
+        },
         nv::storage::NvPublicBuilder,
         session::Session,
         structures::{Auth, CapabilityData, MaxNvBuffer},

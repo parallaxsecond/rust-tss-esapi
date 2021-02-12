@@ -13,12 +13,14 @@
 //!
 //! Object contexts thus act as an opaque handle that can, however, be used by the client to seralize
 //! and persist the underlying data.
+use crate::abstraction::cipher::Cipher;
 use crate::attributes::{ObjectAttributesBuilder, SessionAttributesBuilder};
-use crate::constants::algorithm::{Cipher, EllipticCurve, HashingAlgorithm};
 use crate::constants::tss::*;
 use crate::constants::SessionType;
 use crate::handles::KeyHandle;
-use crate::interface_types::resource_handles::Hierarchy;
+use crate::interface_types::{
+    algorithm::HashingAlgorithm, ecc::EllipticCurve, resource_handles::Hierarchy,
+};
 use crate::structures::{Auth, CreateKeyResult, Data, Digest, PublicKeyRSA, VerifiedTicket};
 use crate::tcti::Tcti;
 use crate::tss2_esys::*;

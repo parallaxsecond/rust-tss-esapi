@@ -2,13 +2,11 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use crate::{
+    abstraction::cipher::Cipher,
     attributes::{ObjectAttributesBuilder, SessionAttributesBuilder},
-    constants::{
-        algorithm::{AsymmetricAlgorithm, Cipher, HashingAlgorithm, SignatureScheme},
-        tss::*,
-        SessionType,
-    },
+    constants::{tss::*, SessionType},
     handles::{AuthHandle, KeyHandle},
+    interface_types::algorithm::{AsymmetricAlgorithm, HashingAlgorithm, SignatureScheme},
     structures::{Auth, CreateKeyResult, Private},
     tss2_esys::{
         TPM2B_PUBLIC, TPMS_ECC_PARMS, TPMS_RSA_PARMS, TPMS_SCHEME_HASH, TPMT_ECC_SCHEME,
@@ -18,6 +16,8 @@ use crate::{
     utils::{PublicIdUnion, PublicParmsUnion, Tpm2BPublicBuilder},
     Context, Error, Result, WrapperErrorKind,
 };
+use log::error;
+use std::convert::TryFrom;
 
 fn create_ak_public(
     key_alg: AsymmetricAlgorithm,
@@ -82,6 +82,10 @@ fn create_ak_public(
                 },
             }))
             .with_unique(PublicIdUnion::Ecc(Box::new(Default::default()))),
+        AsymmetricAlgorithm::Null => {
+            // TDOD: Figure out what to with Null.
+            return Err(Error::local_error(WrapperErrorKind::UnsupportedParam));
+        }
     }
     .build()
 }
@@ -142,7 +146,11 @@ pub fn create_ak(
     sign_alg: SignatureScheme,
     ak_auth_value: Option<&Auth>,
 ) -> Result<CreateKeyResult> {
-    let key_alg = sign_alg.get_key_alg();
+    let key_alg = AsymmetricAlgorithm::try_from(sign_alg).map_err(|e| {
+        // sign_alg is either HMAC or Null.
+        error!("Could not retrieve asymmetric algorithm for provided signature scheme");
+        e
+    })?;
 
     let ak_pub = create_ak_public(key_alg, hash_alg, sign_alg)?;
 

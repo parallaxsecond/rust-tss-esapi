@@ -3,12 +3,10 @@
 use std::{convert::TryFrom, env, str::FromStr, sync::Once};
 
 use tss_esapi::{
+    abstraction::cipher::Cipher,
     attributes::{ObjectAttributesBuilder, SessionAttributesBuilder},
-    constants::{
-        algorithm::{Cipher, HashingAlgorithm},
-        SessionType,
-    },
-    interface_types::resource_handles::Hierarchy,
+    constants::SessionType,
+    interface_types::{algorithm::HashingAlgorithm, resource_handles::Hierarchy},
     session::Session,
     structures::{Digest, MaxBuffer, PcrSelectionListBuilder, PcrSlot},
     tss2_esys::{TPM2B_PUBLIC, TPMU_PUBLIC_PARMS},

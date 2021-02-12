@@ -4,12 +4,10 @@ mod test_start_auth_session {
     use crate::common::{create_ctx_with_session, create_ctx_without_session, decryption_key_pub};
     use std::convert::TryFrom;
     use tss_esapi::{
+        abstraction::cipher::Cipher,
         attributes::SessionAttributesBuilder,
-        constants::{
-            algorithm::{Cipher, HashingAlgorithm},
-            SessionType,
-        },
-        interface_types::resource_handles::Hierarchy,
+        constants::SessionType,
+        interface_types::{algorithm::HashingAlgorithm, resource_handles::Hierarchy},
         structures::Nonce,
     };
 
@@ -148,11 +146,10 @@ mod test_policy_restart {
     use crate::common::{create_ctx_without_session, get_pcr_policy_digest};
     use std::convert::TryFrom;
     use tss_esapi::{
+        abstraction::cipher::Cipher,
         attributes::SessionAttributesBuilder,
-        constants::{
-            algorithm::{Cipher, HashingAlgorithm},
-            SessionType,
-        },
+        constants::SessionType,
+        interface_types::algorithm::HashingAlgorithm,
         structures::{Digest, DigestList},
     };
     #[test]

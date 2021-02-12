@@ -2,12 +2,14 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use std::convert::TryFrom;
-use tss_esapi::abstraction::nv;
 use tss_esapi::{
+    abstraction::nv,
     attributes::NvIndexAttributesBuilder,
-    constants::algorithm::HashingAlgorithm,
     handles::NvIndexTpmHandle,
-    interface_types::resource_handles::{NvAuth, Provision},
+    interface_types::{
+        algorithm::HashingAlgorithm,
+        resource_handles::{NvAuth, Provision},
+    },
     nv::storage::NvPublicBuilder,
     structures::MaxNvBuffer,
 };

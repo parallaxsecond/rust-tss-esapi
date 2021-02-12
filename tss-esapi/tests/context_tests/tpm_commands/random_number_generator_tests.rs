@@ -4,12 +4,8 @@ mod test_random {
     use crate::common::create_ctx_with_session;
     use std::convert::TryFrom;
     use tss_esapi::{
-        attributes::SessionAttributesBuilder,
-        constants::{
-            algorithm::{Cipher, HashingAlgorithm},
-            SessionType,
-        },
-        structures::SensitiveData,
+        abstraction::cipher::Cipher, attributes::SessionAttributesBuilder, constants::SessionType,
+        interface_types::algorithm::HashingAlgorithm, structures::SensitiveData,
     };
 
     #[test]

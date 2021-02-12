@@ -4,7 +4,7 @@ use crate::{
 };
 use log::error;
 use mbox::MBox;
-use std::convert::{TryFrom, TryInto};
+use std::convert::TryFrom;
 use std::ptr::null_mut;
 
 impl Context {
@@ -58,7 +58,7 @@ impl Context {
     pub fn test_parms(&mut self, parms: PublicParmsUnion) -> Result<()> {
         let public_parms = TPMT_PUBLIC_PARMS {
             type_: parms.object_type(),
-            parameters: parms.try_into()?,
+            parameters: parms.into(),
         };
         let ret = unsafe {
             Esys_TestParms(

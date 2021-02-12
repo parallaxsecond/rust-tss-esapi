@@ -115,3 +115,9 @@ pub use tickets::CreationTicket;
 pub use tickets::HashcheckTicket;
 pub use tickets::Ticket;
 pub use tickets::VerifiedTicket;
+
+mod schemes;
+pub use schemes::{HashScheme, HmacScheme, XorScheme};
+
+mod tagged;
+pub use tagged::schemes::KeyedHashScheme;

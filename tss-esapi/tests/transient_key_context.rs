@@ -1,17 +1,13 @@
 // Copyright 2020 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
 use std::convert::TryFrom;
-use tss_esapi::constants::{
-    algorithm::{EllipticCurve, HashingAlgorithm},
-    response_code::Tss2ResponseCodeKind,
-};
-use tss_esapi::{Error, WrapperErrorKind as ErrorKind};
-
-use tss_esapi::structures::{Auth, Digest, PublicKeyRSA};
-use tss_esapi::utils::{AsymSchemeUnion, PublicKey, Signature, SignatureData};
 use tss_esapi::{
     abstraction::transient::{KeyParams, RsaExponent, TransientKeyContextBuilder},
-    TransientKeyContext,
+    constants::response_code::Tss2ResponseCodeKind,
+    interface_types::{algorithm::HashingAlgorithm, ecc::EllipticCurve},
+    structures::{Auth, Digest, PublicKeyRSA},
+    utils::{AsymSchemeUnion, PublicKey, Signature, SignatureData},
+    Error, TransientKeyContext, WrapperErrorKind as ErrorKind,
 };
 
 mod common;

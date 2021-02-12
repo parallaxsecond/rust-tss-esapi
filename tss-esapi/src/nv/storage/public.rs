@@ -3,8 +3,8 @@
 
 use crate::{
     attributes::NvIndexAttributes,
-    constants::algorithm::HashingAlgorithm,
     handles::NvIndexTpmHandle,
+    interface_types::algorithm::HashingAlgorithm,
     structures::Digest,
     tss2_esys::{TPM2B_NV_PUBLIC, TPMS_NV_PUBLIC},
     Error, Result, WrapperErrorKind,

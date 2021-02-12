@@ -7,12 +7,10 @@ mod test_policy_signed {
         time::Duration,
     };
     use tss_esapi::{
+        abstraction::cipher::Cipher,
         attributes::SessionAttributesBuilder,
-        constants::{
-            algorithm::{Cipher, HashingAlgorithm},
-            SessionType,
-        },
-        interface_types::resource_handles::Hierarchy,
+        constants::SessionType,
+        interface_types::{algorithm::HashingAlgorithm, resource_handles::Hierarchy},
         structures::{Digest, Nonce},
         utils::{AsymSchemeUnion, Signature, SignatureData},
     };
@@ -76,12 +74,11 @@ mod test_policy_secret {
     use crate::common::create_ctx_with_session;
     use std::{convert::TryFrom, time::Duration};
     use tss_esapi::{
+        abstraction::cipher::Cipher,
         attributes::SessionAttributesBuilder,
-        constants::{
-            algorithm::{Cipher, HashingAlgorithm},
-            SessionType,
-        },
+        constants::SessionType,
         handles::AuthHandle,
+        interface_types::algorithm::HashingAlgorithm,
         structures::{Digest, Nonce},
     };
     #[test]
@@ -132,12 +129,8 @@ mod test_policy_secret {
 mod test_policy_or {
     use crate::common::{create_ctx_without_session, get_pcr_policy_digest};
     use tss_esapi::{
-        attributes::SessionAttributesBuilder,
-        constants::{
-            algorithm::{Cipher, HashingAlgorithm},
-            SessionType,
-        },
-        structures::DigestList,
+        abstraction::cipher::Cipher, attributes::SessionAttributesBuilder, constants::SessionType,
+        interface_types::algorithm::HashingAlgorithm, structures::DigestList,
     };
     #[test]
     fn test_policy_or() {
@@ -183,12 +176,10 @@ mod test_policy_pcr {
     use crate::common::create_ctx_without_session;
     use std::convert::TryFrom;
     use tss_esapi::{
+        abstraction::cipher::Cipher,
         attributes::SessionAttributesBuilder,
-        constants::{
-            algorithm::{Cipher, HashingAlgorithm},
-            SessionType,
-        },
-        interface_types::resource_handles::Hierarchy,
+        constants::SessionType,
+        interface_types::{algorithm::HashingAlgorithm, resource_handles::Hierarchy},
         structures::{MaxBuffer, PcrSelectionListBuilder, PcrSlot},
     };
 
@@ -272,11 +263,8 @@ mod test_policy_pcr {
 mod test_policy_locality {
     use crate::common::create_ctx_without_session;
     use tss_esapi::{
-        attributes::SessionAttributesBuilder,
-        constants::{
-            algorithm::{Cipher, HashingAlgorithm},
-            SessionType,
-        },
+        abstraction::cipher::Cipher, attributes::SessionAttributesBuilder, constants::SessionType,
+        interface_types::algorithm::HashingAlgorithm,
     };
     #[test]
     fn test_policy_locality() {
@@ -313,12 +301,10 @@ mod test_policy_locality {
 mod test_policy_command_code {
     use crate::common::create_ctx_without_session;
     use tss_esapi::{
+        abstraction::cipher::Cipher,
         attributes::SessionAttributesBuilder,
-        constants::{
-            algorithm::{Cipher, HashingAlgorithm},
-            tss::TPM2_CC_Unseal,
-            SessionType,
-        },
+        constants::{tss::TPM2_CC_Unseal, SessionType},
+        interface_types::algorithm::HashingAlgorithm,
     };
     #[test]
     fn test_policy_command_code() {
@@ -357,11 +343,8 @@ mod test_policy_command_code {
 mod test_policy_physical_presence {
     use crate::common::create_ctx_without_session;
     use tss_esapi::{
-        attributes::SessionAttributesBuilder,
-        constants::{
-            algorithm::{Cipher, HashingAlgorithm},
-            SessionType,
-        },
+        abstraction::cipher::Cipher, attributes::SessionAttributesBuilder, constants::SessionType,
+        interface_types::algorithm::HashingAlgorithm,
     };
     #[test]
     fn test_policy_physical_presence() {
@@ -399,12 +382,8 @@ mod test_policy_cp_hash {
     use crate::common::create_ctx_without_session;
     use std::convert::TryFrom;
     use tss_esapi::{
-        attributes::SessionAttributesBuilder,
-        constants::{
-            algorithm::{Cipher, HashingAlgorithm},
-            SessionType,
-        },
-        structures::Digest,
+        abstraction::cipher::Cipher, attributes::SessionAttributesBuilder, constants::SessionType,
+        interface_types::algorithm::HashingAlgorithm, structures::Digest,
     };
     #[test]
     fn test_policy_cp_hash() {
@@ -448,12 +427,8 @@ mod test_policy_name_hash {
     use crate::common::create_ctx_without_session;
     use std::convert::TryFrom;
     use tss_esapi::{
-        attributes::SessionAttributesBuilder,
-        constants::{
-            algorithm::{Cipher, HashingAlgorithm},
-            SessionType,
-        },
-        structures::Digest,
+        abstraction::cipher::Cipher, attributes::SessionAttributesBuilder, constants::SessionType,
+        interface_types::algorithm::HashingAlgorithm, structures::Digest,
     };
     #[test]
     fn test_policy_name_hash() {
@@ -497,11 +472,8 @@ mod test_policy_authorize {
     use crate::common::{create_ctx_with_session, get_pcr_policy_digest, signing_key_pub};
     use std::convert::{TryFrom, TryInto};
     use tss_esapi::{
-        constants::{
-            algorithm::HashingAlgorithm,
-            tss::{TPM2_ALG_NULL, TPM2_RH_NULL, TPM2_ST_HASHCHECK},
-        },
-        interface_types::resource_handles::Hierarchy,
+        constants::tss::{TPM2_ALG_NULL, TPM2_RH_NULL, TPM2_ST_HASHCHECK},
+        interface_types::{algorithm::HashingAlgorithm, resource_handles::Hierarchy},
         structures::{Auth, MaxBuffer, Nonce},
         tss2_esys::{TPM2B_NONCE, TPMT_SIG_SCHEME, TPMT_TK_HASHCHECK},
     };
@@ -570,11 +542,8 @@ mod test_policy_authorize {
 mod test_policy_auth_value {
     use crate::common::create_ctx_without_session;
     use tss_esapi::{
-        attributes::SessionAttributesBuilder,
-        constants::{
-            algorithm::{Cipher, HashingAlgorithm},
-            SessionType,
-        },
+        abstraction::cipher::Cipher, attributes::SessionAttributesBuilder, constants::SessionType,
+        interface_types::algorithm::HashingAlgorithm,
     };
     #[test]
     fn test_policy_auth_value() {
@@ -611,11 +580,8 @@ mod test_policy_auth_value {
 mod test_policy_password {
     use crate::common::create_ctx_without_session;
     use tss_esapi::{
-        attributes::SessionAttributesBuilder,
-        constants::{
-            algorithm::{Cipher, HashingAlgorithm},
-            SessionType,
-        },
+        abstraction::cipher::Cipher, attributes::SessionAttributesBuilder, constants::SessionType,
+        interface_types::algorithm::HashingAlgorithm,
     };
     #[test]
     fn test_policy_password() {
@@ -653,12 +619,10 @@ mod test_policy_get_digest {
     use crate::common::create_ctx_without_session;
     use std::convert::TryFrom;
     use tss_esapi::{
+        abstraction::cipher::Cipher,
         attributes::SessionAttributesBuilder,
-        constants::{
-            algorithm::{Cipher, HashingAlgorithm},
-            SessionType,
-        },
-        interface_types::resource_handles::Hierarchy,
+        constants::SessionType,
+        interface_types::{algorithm::HashingAlgorithm, resource_handles::Hierarchy},
         structures::{MaxBuffer, PcrSelectionListBuilder, PcrSlot},
     };
     #[test]
@@ -747,11 +711,8 @@ mod test_policy_get_digest {
 mod test_policy_nv_written {
     use crate::common::create_ctx_without_session;
     use tss_esapi::{
-        attributes::SessionAttributesBuilder,
-        constants::{
-            algorithm::{Cipher, HashingAlgorithm},
-            SessionType,
-        },
+        abstraction::cipher::Cipher, attributes::SessionAttributesBuilder, constants::SessionType,
+        interface_types::algorithm::HashingAlgorithm,
     };
     #[test]
     fn test_policy_nv_written() {
@@ -789,10 +750,9 @@ mod test_policy_template {
     use crate::common::create_ctx_without_session;
     use std::convert::TryFrom;
     use tss_esapi::{
-        constants::{
-            algorithm::{Cipher, HashingAlgorithm},
-            SessionType,
-        },
+        abstraction::cipher::Cipher,
+        constants::SessionType,
+        interface_types::algorithm::HashingAlgorithm,
         structures::{Digest, Nonce},
     };
     #[test]

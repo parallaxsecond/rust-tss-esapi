@@ -4,16 +4,19 @@
 use crate::{
     abstraction::nv,
     attributes::ObjectAttributesBuilder,
-    constants::{algorithm::AsymmetricAlgorithm, tss::*},
+    constants::tss::*,
     handles::{KeyHandle, NvIndexTpmHandle, TpmHandle},
-    interface_types::resource_handles::{Hierarchy, NvAuth},
+    interface_types::{
+        algorithm::AsymmetricAlgorithm,
+        resource_handles::{Hierarchy, NvAuth},
+    },
     tss2_esys::{
         TPM2B_ECC_PARAMETER, TPM2B_PUBLIC, TPM2B_PUBLIC_KEY_RSA, TPMS_ECC_PARMS, TPMS_ECC_POINT,
         TPMS_RSA_PARMS, TPMS_SCHEME_HASH, TPMT_ECC_SCHEME, TPMT_KDF_SCHEME, TPMT_RSA_SCHEME,
         TPMT_SYM_DEF_OBJECT, TPMU_ASYM_SCHEME, TPMU_SYM_KEY_BITS, TPMU_SYM_MODE,
     },
     utils::{PublicIdUnion, PublicParmsUnion, Tpm2BPublicBuilder},
-    Context, Result,
+    Context, Error, Result, WrapperErrorKind,
 };
 
 // Source: TCG EK Credential Profile for TPM Family 2.0; Level 0 Version 2.3 Revision 2
@@ -108,6 +111,10 @@ fn create_ek_public_from_default_template(alg: AsymmetricAlgorithm) -> Result<TP
                 },
             })))
             .build(),
+        AsymmetricAlgorithm::Null => {
+            // TDOD: Figure out what to with Null.
+            Err(Error::local_error(WrapperErrorKind::UnsupportedParam))
+        }
     }
 }
 
@@ -127,6 +134,10 @@ pub fn retrieve_ek_pubcert(context: &mut Context, alg: AsymmetricAlgorithm) -> R
     let nv_idx = match alg {
         AsymmetricAlgorithm::Rsa => RSA_2048_EK_CERTIFICATE_NV_INDEX,
         AsymmetricAlgorithm::Ecc => ECC_P256_EK_CERTIFICATE_NV_INDEX,
+        AsymmetricAlgorithm::Null => {
+            // TDOD: Figure out what to with Null.
+            return Err(Error::local_error(WrapperErrorKind::UnsupportedParam));
+        }
     };
 
     let nv_idx = NvIndexTpmHandle::new(nv_idx).unwrap();
