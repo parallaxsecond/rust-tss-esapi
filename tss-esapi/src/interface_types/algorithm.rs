@@ -1,7 +1,7 @@
 // Copyright 2021 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
 use crate::{
-    constants::Algorithm,
+    constants::AlgorithmIdentifier,
     tss2_esys::{
         TPMI_ALG_ASYM, TPMI_ALG_HASH, TPMI_ALG_KDF, TPMI_ALG_KEYEDHASH_SCHEME, TPMI_ALG_SIG_SCHEME,
         TPMI_ALG_SYM, TPMI_ALG_SYM_MODE, TPMI_ALG_SYM_OBJECT,
@@ -26,36 +26,36 @@ pub enum HashingAlgorithm {
     Null,
 }
 
-impl From<HashingAlgorithm> for Algorithm {
+impl From<HashingAlgorithm> for AlgorithmIdentifier {
     fn from(hashing_algorithm: HashingAlgorithm) -> Self {
         match hashing_algorithm {
-            HashingAlgorithm::Sha1 => Algorithm::Sha1,
-            HashingAlgorithm::Sha256 => Algorithm::Sha256,
-            HashingAlgorithm::Sha384 => Algorithm::Sha384,
-            HashingAlgorithm::Sha512 => Algorithm::Sha512,
-            HashingAlgorithm::Sm3_256 => Algorithm::Sm3_256,
-            HashingAlgorithm::Sha3_256 => Algorithm::Sha3_256,
-            HashingAlgorithm::Sha3_384 => Algorithm::Sha3_384,
-            HashingAlgorithm::Sha3_512 => Algorithm::Sha3_512,
-            HashingAlgorithm::Null => Algorithm::Null,
+            HashingAlgorithm::Sha1 => AlgorithmIdentifier::Sha1,
+            HashingAlgorithm::Sha256 => AlgorithmIdentifier::Sha256,
+            HashingAlgorithm::Sha384 => AlgorithmIdentifier::Sha384,
+            HashingAlgorithm::Sha512 => AlgorithmIdentifier::Sha512,
+            HashingAlgorithm::Sm3_256 => AlgorithmIdentifier::Sm3_256,
+            HashingAlgorithm::Sha3_256 => AlgorithmIdentifier::Sha3_256,
+            HashingAlgorithm::Sha3_384 => AlgorithmIdentifier::Sha3_384,
+            HashingAlgorithm::Sha3_512 => AlgorithmIdentifier::Sha3_512,
+            HashingAlgorithm::Null => AlgorithmIdentifier::Null,
         }
     }
 }
 
-impl TryFrom<Algorithm> for HashingAlgorithm {
+impl TryFrom<AlgorithmIdentifier> for HashingAlgorithm {
     type Error = Error;
 
-    fn try_from(algorithm: Algorithm) -> Result<Self> {
-        match algorithm {
-            Algorithm::Sha1 => Ok(HashingAlgorithm::Sha1),
-            Algorithm::Sha256 => Ok(HashingAlgorithm::Sha256),
-            Algorithm::Sha384 => Ok(HashingAlgorithm::Sha384),
-            Algorithm::Sha512 => Ok(HashingAlgorithm::Sha512),
-            Algorithm::Sm3_256 => Ok(HashingAlgorithm::Sm3_256),
-            Algorithm::Sha3_256 => Ok(HashingAlgorithm::Sha3_256),
-            Algorithm::Sha3_384 => Ok(HashingAlgorithm::Sha3_384),
-            Algorithm::Sha3_512 => Ok(HashingAlgorithm::Sha3_512),
-            Algorithm::Null => Ok(HashingAlgorithm::Null),
+    fn try_from(algorithm_identifier: AlgorithmIdentifier) -> Result<Self> {
+        match algorithm_identifier {
+            AlgorithmIdentifier::Sha1 => Ok(HashingAlgorithm::Sha1),
+            AlgorithmIdentifier::Sha256 => Ok(HashingAlgorithm::Sha256),
+            AlgorithmIdentifier::Sha384 => Ok(HashingAlgorithm::Sha384),
+            AlgorithmIdentifier::Sha512 => Ok(HashingAlgorithm::Sha512),
+            AlgorithmIdentifier::Sm3_256 => Ok(HashingAlgorithm::Sm3_256),
+            AlgorithmIdentifier::Sha3_256 => Ok(HashingAlgorithm::Sha3_256),
+            AlgorithmIdentifier::Sha3_384 => Ok(HashingAlgorithm::Sha3_384),
+            AlgorithmIdentifier::Sha3_512 => Ok(HashingAlgorithm::Sha3_512),
+            AlgorithmIdentifier::Null => Ok(HashingAlgorithm::Null),
             _ => Err(Error::local_error(WrapperErrorKind::InvalidParam)),
         }
     }
@@ -63,7 +63,7 @@ impl TryFrom<Algorithm> for HashingAlgorithm {
 
 impl From<HashingAlgorithm> for TPMI_ALG_HASH {
     fn from(hashing_algorithm: HashingAlgorithm) -> Self {
-        Algorithm::from(hashing_algorithm).into()
+        AlgorithmIdentifier::from(hashing_algorithm).into()
     }
 }
 
@@ -71,7 +71,7 @@ impl TryFrom<TPMI_ALG_HASH> for HashingAlgorithm {
     type Error = Error;
 
     fn try_from(tpmi_alg_hash: TPMI_ALG_HASH) -> Result<Self> {
-        HashingAlgorithm::try_from(Algorithm::try_from(tpmi_alg_hash)?)
+        HashingAlgorithm::try_from(AlgorithmIdentifier::try_from(tpmi_alg_hash)?)
     }
 }
 
@@ -86,23 +86,23 @@ pub enum KeyedHashSchemeAlgorithm {
     Null,
 }
 
-impl From<KeyedHashSchemeAlgorithm> for Algorithm {
+impl From<KeyedHashSchemeAlgorithm> for AlgorithmIdentifier {
     fn from(keyed_hash_scheme: KeyedHashSchemeAlgorithm) -> Self {
         match keyed_hash_scheme {
-            KeyedHashSchemeAlgorithm::Hmac => Algorithm::Hmac,
-            KeyedHashSchemeAlgorithm::Xor => Algorithm::Xor,
-            KeyedHashSchemeAlgorithm::Null => Algorithm::Null,
+            KeyedHashSchemeAlgorithm::Hmac => AlgorithmIdentifier::Hmac,
+            KeyedHashSchemeAlgorithm::Xor => AlgorithmIdentifier::Xor,
+            KeyedHashSchemeAlgorithm::Null => AlgorithmIdentifier::Null,
         }
     }
 }
 
-impl TryFrom<Algorithm> for KeyedHashSchemeAlgorithm {
+impl TryFrom<AlgorithmIdentifier> for KeyedHashSchemeAlgorithm {
     type Error = Error;
-    fn try_from(algorithm: Algorithm) -> Result<Self> {
-        match algorithm {
-            Algorithm::Hmac => Ok(KeyedHashSchemeAlgorithm::Hmac),
-            Algorithm::Xor => Ok(KeyedHashSchemeAlgorithm::Xor),
-            Algorithm::Null => Ok(KeyedHashSchemeAlgorithm::Null),
+    fn try_from(algorithm_identifier: AlgorithmIdentifier) -> Result<Self> {
+        match algorithm_identifier {
+            AlgorithmIdentifier::Hmac => Ok(KeyedHashSchemeAlgorithm::Hmac),
+            AlgorithmIdentifier::Xor => Ok(KeyedHashSchemeAlgorithm::Xor),
+            AlgorithmIdentifier::Null => Ok(KeyedHashSchemeAlgorithm::Null),
             _ => Err(Error::local_error(WrapperErrorKind::InvalidParam)),
         }
     }
@@ -110,14 +110,16 @@ impl TryFrom<Algorithm> for KeyedHashSchemeAlgorithm {
 
 impl From<KeyedHashSchemeAlgorithm> for TPMI_ALG_KEYEDHASH_SCHEME {
     fn from(keyed_hash_scheme: KeyedHashSchemeAlgorithm) -> Self {
-        Algorithm::from(keyed_hash_scheme).into()
+        AlgorithmIdentifier::from(keyed_hash_scheme).into()
     }
 }
 
 impl TryFrom<TPMI_ALG_KEYEDHASH_SCHEME> for KeyedHashSchemeAlgorithm {
     type Error = Error;
     fn try_from(tpmi_alg_keyed_hash_scheme: TPMI_ALG_KEYEDHASH_SCHEME) -> Result<Self> {
-        KeyedHashSchemeAlgorithm::try_from(Algorithm::try_from(tpmi_alg_keyed_hash_scheme)?)
+        KeyedHashSchemeAlgorithm::try_from(AlgorithmIdentifier::try_from(
+            tpmi_alg_keyed_hash_scheme,
+        )?)
     }
 }
 
@@ -132,26 +134,26 @@ pub enum KeyDerivationFunction {
     EcMqv,
 }
 
-impl From<KeyDerivationFunction> for Algorithm {
+impl From<KeyDerivationFunction> for AlgorithmIdentifier {
     fn from(key_derivation_function: KeyDerivationFunction) -> Self {
         match key_derivation_function {
-            KeyDerivationFunction::Kdf1Sp800_56a => Algorithm::Kdf1Sp800_56a,
-            KeyDerivationFunction::Kdf2 => Algorithm::Kdf2,
-            KeyDerivationFunction::Kdf1Sp800_108 => Algorithm::Kdf1Sp800_108,
-            KeyDerivationFunction::EcMqv => Algorithm::EcMqv,
+            KeyDerivationFunction::Kdf1Sp800_56a => AlgorithmIdentifier::Kdf1Sp800_56a,
+            KeyDerivationFunction::Kdf2 => AlgorithmIdentifier::Kdf2,
+            KeyDerivationFunction::Kdf1Sp800_108 => AlgorithmIdentifier::Kdf1Sp800_108,
+            KeyDerivationFunction::EcMqv => AlgorithmIdentifier::EcMqv,
         }
     }
 }
 
-impl TryFrom<Algorithm> for KeyDerivationFunction {
+impl TryFrom<AlgorithmIdentifier> for KeyDerivationFunction {
     type Error = Error;
 
-    fn try_from(algorithm_id: Algorithm) -> Result<Self> {
-        match algorithm_id {
-            Algorithm::Kdf1Sp800_56a => Ok(KeyDerivationFunction::Kdf1Sp800_56a),
-            Algorithm::Kdf2 => Ok(KeyDerivationFunction::Kdf2),
-            Algorithm::Kdf1Sp800_108 => Ok(KeyDerivationFunction::Kdf1Sp800_108),
-            Algorithm::EcMqv => Ok(KeyDerivationFunction::EcMqv),
+    fn try_from(algorithm_identifier: AlgorithmIdentifier) -> Result<Self> {
+        match algorithm_identifier {
+            AlgorithmIdentifier::Kdf1Sp800_56a => Ok(KeyDerivationFunction::Kdf1Sp800_56a),
+            AlgorithmIdentifier::Kdf2 => Ok(KeyDerivationFunction::Kdf2),
+            AlgorithmIdentifier::Kdf1Sp800_108 => Ok(KeyDerivationFunction::Kdf1Sp800_108),
+            AlgorithmIdentifier::EcMqv => Ok(KeyDerivationFunction::EcMqv),
             _ => Err(Error::local_error(WrapperErrorKind::InvalidParam)),
         }
     }
@@ -159,7 +161,7 @@ impl TryFrom<Algorithm> for KeyDerivationFunction {
 
 impl From<KeyDerivationFunction> for TPMI_ALG_KDF {
     fn from(key_derivation_function: KeyDerivationFunction) -> Self {
-        Algorithm::from(key_derivation_function).into()
+        AlgorithmIdentifier::from(key_derivation_function).into()
     }
 }
 
@@ -167,7 +169,7 @@ impl TryFrom<TPMI_ALG_KDF> for KeyDerivationFunction {
     type Error = Error;
 
     fn try_from(tpmi_alg_kdf: TPMI_ALG_KDF) -> Result<Self> {
-        KeyDerivationFunction::try_from(Algorithm::try_from(tpmi_alg_kdf)?)
+        KeyDerivationFunction::try_from(AlgorithmIdentifier::try_from(tpmi_alg_kdf)?)
     }
 }
 
@@ -185,29 +187,29 @@ pub enum SymmetricAlgorithm {
     Null,
 }
 
-impl From<SymmetricAlgorithm> for Algorithm {
+impl From<SymmetricAlgorithm> for AlgorithmIdentifier {
     fn from(symmetric_algorithm: SymmetricAlgorithm) -> Self {
         match symmetric_algorithm {
-            SymmetricAlgorithm::Tdes => Algorithm::Tdes,
-            SymmetricAlgorithm::Aes => Algorithm::Aes,
-            SymmetricAlgorithm::Sm4 => Algorithm::Sm4,
-            SymmetricAlgorithm::Camellia => Algorithm::Camellia,
-            SymmetricAlgorithm::Xor => Algorithm::Xor,
-            SymmetricAlgorithm::Null => Algorithm::Null,
+            SymmetricAlgorithm::Tdes => AlgorithmIdentifier::Tdes,
+            SymmetricAlgorithm::Aes => AlgorithmIdentifier::Aes,
+            SymmetricAlgorithm::Sm4 => AlgorithmIdentifier::Sm4,
+            SymmetricAlgorithm::Camellia => AlgorithmIdentifier::Camellia,
+            SymmetricAlgorithm::Xor => AlgorithmIdentifier::Xor,
+            SymmetricAlgorithm::Null => AlgorithmIdentifier::Null,
         }
     }
 }
 
-impl TryFrom<Algorithm> for SymmetricAlgorithm {
+impl TryFrom<AlgorithmIdentifier> for SymmetricAlgorithm {
     type Error = Error;
-    fn try_from(algorithm: Algorithm) -> Result<Self> {
-        match algorithm {
-            Algorithm::Tdes => Ok(SymmetricAlgorithm::Tdes),
-            Algorithm::Aes => Ok(SymmetricAlgorithm::Aes),
-            Algorithm::Sm4 => Ok(SymmetricAlgorithm::Sm4),
-            Algorithm::Camellia => Ok(SymmetricAlgorithm::Camellia),
-            Algorithm::Xor => Ok(SymmetricAlgorithm::Xor),
-            Algorithm::Null => Ok(SymmetricAlgorithm::Null),
+    fn try_from(algorithm_identifier: AlgorithmIdentifier) -> Result<Self> {
+        match algorithm_identifier {
+            AlgorithmIdentifier::Tdes => Ok(SymmetricAlgorithm::Tdes),
+            AlgorithmIdentifier::Aes => Ok(SymmetricAlgorithm::Aes),
+            AlgorithmIdentifier::Sm4 => Ok(SymmetricAlgorithm::Sm4),
+            AlgorithmIdentifier::Camellia => Ok(SymmetricAlgorithm::Camellia),
+            AlgorithmIdentifier::Xor => Ok(SymmetricAlgorithm::Xor),
+            AlgorithmIdentifier::Null => Ok(SymmetricAlgorithm::Null),
             _ => Err(Error::local_error(WrapperErrorKind::InvalidParam)),
         }
     }
@@ -215,7 +217,7 @@ impl TryFrom<Algorithm> for SymmetricAlgorithm {
 
 impl From<SymmetricAlgorithm> for TPMI_ALG_SYM {
     fn from(symmetric_algorithm: SymmetricAlgorithm) -> Self {
-        Algorithm::from(symmetric_algorithm).into()
+        AlgorithmIdentifier::from(symmetric_algorithm).into()
     }
 }
 
@@ -223,7 +225,7 @@ impl TryFrom<TPMI_ALG_SYM> for SymmetricAlgorithm {
     type Error = Error;
 
     fn try_from(tpmi_alg_sym: TPMI_ALG_SYM) -> Result<Self> {
-        SymmetricAlgorithm::try_from(Algorithm::try_from(tpmi_alg_sym)?)
+        SymmetricAlgorithm::try_from(AlgorithmIdentifier::try_from(tpmi_alg_sym)?)
     }
 }
 
@@ -240,27 +242,27 @@ pub enum SymmetricMode {
     Null,
 }
 
-impl From<SymmetricMode> for Algorithm {
+impl From<SymmetricMode> for AlgorithmIdentifier {
     fn from(symmetric_mode: SymmetricMode) -> Self {
         match symmetric_mode {
-            SymmetricMode::Ctr => Algorithm::Ctr,
-            SymmetricMode::Ofb => Algorithm::Ofb,
-            SymmetricMode::Cfb => Algorithm::Cfb,
-            SymmetricMode::Ecb => Algorithm::Ecb,
-            SymmetricMode::Null => Algorithm::Null,
+            SymmetricMode::Ctr => AlgorithmIdentifier::Ctr,
+            SymmetricMode::Ofb => AlgorithmIdentifier::Ofb,
+            SymmetricMode::Cfb => AlgorithmIdentifier::Cfb,
+            SymmetricMode::Ecb => AlgorithmIdentifier::Ecb,
+            SymmetricMode::Null => AlgorithmIdentifier::Null,
         }
     }
 }
 
-impl TryFrom<Algorithm> for SymmetricMode {
+impl TryFrom<AlgorithmIdentifier> for SymmetricMode {
     type Error = Error;
-    fn try_from(algorithm: Algorithm) -> Result<SymmetricMode> {
-        match algorithm {
-            Algorithm::Ctr => Ok(SymmetricMode::Ctr),
-            Algorithm::Ofb => Ok(SymmetricMode::Ofb),
-            Algorithm::Cfb => Ok(SymmetricMode::Cfb),
-            Algorithm::Ecb => Ok(SymmetricMode::Ecb),
-            Algorithm::Null => Ok(SymmetricMode::Null),
+    fn try_from(algorithm_identifier: AlgorithmIdentifier) -> Result<SymmetricMode> {
+        match algorithm_identifier {
+            AlgorithmIdentifier::Ctr => Ok(SymmetricMode::Ctr),
+            AlgorithmIdentifier::Ofb => Ok(SymmetricMode::Ofb),
+            AlgorithmIdentifier::Cfb => Ok(SymmetricMode::Cfb),
+            AlgorithmIdentifier::Ecb => Ok(SymmetricMode::Ecb),
+            AlgorithmIdentifier::Null => Ok(SymmetricMode::Null),
             _ => Err(Error::local_error(WrapperErrorKind::InvalidParam)),
         }
     }
@@ -268,7 +270,7 @@ impl TryFrom<Algorithm> for SymmetricMode {
 
 impl From<SymmetricMode> for TPMI_ALG_SYM_MODE {
     fn from(symmetric_mode: SymmetricMode) -> Self {
-        Algorithm::from(symmetric_mode).into()
+        AlgorithmIdentifier::from(symmetric_mode).into()
     }
 }
 
@@ -276,7 +278,7 @@ impl TryFrom<TPMI_ALG_SYM_MODE> for SymmetricMode {
     type Error = Error;
 
     fn try_from(tpmi_alg_sym_mode: TPMI_ALG_SYM_MODE) -> Result<Self> {
-        SymmetricMode::try_from(Algorithm::try_from(tpmi_alg_sym_mode)?)
+        SymmetricMode::try_from(AlgorithmIdentifier::try_from(tpmi_alg_sym_mode)?)
     }
 }
 
@@ -291,23 +293,23 @@ pub enum AsymmetricAlgorithm {
     Null,
 }
 
-impl From<AsymmetricAlgorithm> for Algorithm {
+impl From<AsymmetricAlgorithm> for AlgorithmIdentifier {
     fn from(asymmetric_algorithm: AsymmetricAlgorithm) -> Self {
         match asymmetric_algorithm {
-            AsymmetricAlgorithm::Rsa => Algorithm::Rsa,
-            AsymmetricAlgorithm::Ecc => Algorithm::Ecc,
-            AsymmetricAlgorithm::Null => Algorithm::Null,
+            AsymmetricAlgorithm::Rsa => AlgorithmIdentifier::Rsa,
+            AsymmetricAlgorithm::Ecc => AlgorithmIdentifier::Ecc,
+            AsymmetricAlgorithm::Null => AlgorithmIdentifier::Null,
         }
     }
 }
 
-impl TryFrom<Algorithm> for AsymmetricAlgorithm {
+impl TryFrom<AlgorithmIdentifier> for AsymmetricAlgorithm {
     type Error = Error;
-    fn try_from(algorithm: Algorithm) -> Result<Self> {
-        match algorithm {
-            Algorithm::Rsa => Ok(AsymmetricAlgorithm::Rsa),
-            Algorithm::Ecc => Ok(AsymmetricAlgorithm::Ecc),
-            Algorithm::Null => Ok(AsymmetricAlgorithm::Null),
+    fn try_from(algorithm_identifier: AlgorithmIdentifier) -> Result<Self> {
+        match algorithm_identifier {
+            AlgorithmIdentifier::Rsa => Ok(AsymmetricAlgorithm::Rsa),
+            AlgorithmIdentifier::Ecc => Ok(AsymmetricAlgorithm::Ecc),
+            AlgorithmIdentifier::Null => Ok(AsymmetricAlgorithm::Null),
             _ => Err(Error::local_error(WrapperErrorKind::InvalidParam)),
         }
     }
@@ -315,14 +317,14 @@ impl TryFrom<Algorithm> for AsymmetricAlgorithm {
 
 impl From<AsymmetricAlgorithm> for TPMI_ALG_ASYM {
     fn from(asymmetric_algorithm: AsymmetricAlgorithm) -> Self {
-        Algorithm::from(asymmetric_algorithm).into()
+        AlgorithmIdentifier::from(asymmetric_algorithm).into()
     }
 }
 
 impl TryFrom<TPMI_ALG_ASYM> for AsymmetricAlgorithm {
     type Error = Error;
     fn try_from(tpmi_alg_sym: TPMI_ALG_ASYM) -> Result<Self> {
-        AsymmetricAlgorithm::try_from(Algorithm::try_from(tpmi_alg_sym)?)
+        AsymmetricAlgorithm::try_from(AlgorithmIdentifier::try_from(tpmi_alg_sym)?)
     }
 }
 
@@ -342,33 +344,33 @@ pub enum SignatureScheme {
     Null,
 }
 
-impl From<SignatureScheme> for Algorithm {
+impl From<SignatureScheme> for AlgorithmIdentifier {
     fn from(signature_scheme: SignatureScheme) -> Self {
         match signature_scheme {
-            SignatureScheme::RsaSsa => Algorithm::RsaSsa,
-            SignatureScheme::RsaPss => Algorithm::RsaPss,
-            SignatureScheme::EcDsa => Algorithm::EcDsa,
-            SignatureScheme::EcDaa => Algorithm::EcDaa,
-            SignatureScheme::Sm2 => Algorithm::Sm2,
-            SignatureScheme::EcSchnorr => Algorithm::EcSchnorr,
-            SignatureScheme::Hmac => Algorithm::Hmac,
-            SignatureScheme::Null => Algorithm::Null,
+            SignatureScheme::RsaSsa => AlgorithmIdentifier::RsaSsa,
+            SignatureScheme::RsaPss => AlgorithmIdentifier::RsaPss,
+            SignatureScheme::EcDsa => AlgorithmIdentifier::EcDsa,
+            SignatureScheme::EcDaa => AlgorithmIdentifier::EcDaa,
+            SignatureScheme::Sm2 => AlgorithmIdentifier::Sm2,
+            SignatureScheme::EcSchnorr => AlgorithmIdentifier::EcSchnorr,
+            SignatureScheme::Hmac => AlgorithmIdentifier::Hmac,
+            SignatureScheme::Null => AlgorithmIdentifier::Null,
         }
     }
 }
 
-impl TryFrom<Algorithm> for SignatureScheme {
+impl TryFrom<AlgorithmIdentifier> for SignatureScheme {
     type Error = Error;
-    fn try_from(algorithm: Algorithm) -> Result<Self> {
-        match algorithm {
-            Algorithm::RsaSsa => Ok(SignatureScheme::RsaSsa),
-            Algorithm::RsaPss => Ok(SignatureScheme::RsaPss),
-            Algorithm::EcDsa => Ok(SignatureScheme::EcDsa),
-            Algorithm::EcDaa => Ok(SignatureScheme::EcDaa),
-            Algorithm::Sm2 => Ok(SignatureScheme::Sm2),
-            Algorithm::EcSchnorr => Ok(SignatureScheme::EcSchnorr),
-            Algorithm::Hmac => Ok(SignatureScheme::Hmac),
-            Algorithm::Null => Ok(SignatureScheme::Null),
+    fn try_from(algorithm_identifier: AlgorithmIdentifier) -> Result<Self> {
+        match algorithm_identifier {
+            AlgorithmIdentifier::RsaSsa => Ok(SignatureScheme::RsaSsa),
+            AlgorithmIdentifier::RsaPss => Ok(SignatureScheme::RsaPss),
+            AlgorithmIdentifier::EcDsa => Ok(SignatureScheme::EcDsa),
+            AlgorithmIdentifier::EcDaa => Ok(SignatureScheme::EcDaa),
+            AlgorithmIdentifier::Sm2 => Ok(SignatureScheme::Sm2),
+            AlgorithmIdentifier::EcSchnorr => Ok(SignatureScheme::EcSchnorr),
+            AlgorithmIdentifier::Hmac => Ok(SignatureScheme::Hmac),
+            AlgorithmIdentifier::Null => Ok(SignatureScheme::Null),
             _ => Err(Error::local_error(WrapperErrorKind::InvalidParam)),
         }
     }
@@ -376,14 +378,14 @@ impl TryFrom<Algorithm> for SignatureScheme {
 
 impl From<SignatureScheme> for TPMI_ALG_SIG_SCHEME {
     fn from(signature_scheme: SignatureScheme) -> Self {
-        Algorithm::from(signature_scheme).into()
+        AlgorithmIdentifier::from(signature_scheme).into()
     }
 }
 
 impl TryFrom<TPMI_ALG_SIG_SCHEME> for SignatureScheme {
     type Error = Error;
     fn try_from(tpmi_alg_sym_scheme: TPMI_ALG_SIG_SCHEME) -> Result<Self> {
-        SignatureScheme::try_from(Algorithm::try_from(tpmi_alg_sym_scheme)?)
+        SignatureScheme::try_from(AlgorithmIdentifier::try_from(tpmi_alg_sym_scheme)?)
     }
 }
 
@@ -423,27 +425,27 @@ pub enum SymmetricObject {
     Null,
 }
 
-impl From<SymmetricObject> for Algorithm {
+impl From<SymmetricObject> for AlgorithmIdentifier {
     fn from(symmetric_object: SymmetricObject) -> Self {
         match symmetric_object {
-            SymmetricObject::Tdes => Algorithm::Tdes,
-            SymmetricObject::Aes => Algorithm::Aes,
-            SymmetricObject::Sm4 => Algorithm::Sm4,
-            SymmetricObject::Camellia => Algorithm::Camellia,
-            SymmetricObject::Null => Algorithm::Null,
+            SymmetricObject::Tdes => AlgorithmIdentifier::Tdes,
+            SymmetricObject::Aes => AlgorithmIdentifier::Aes,
+            SymmetricObject::Sm4 => AlgorithmIdentifier::Sm4,
+            SymmetricObject::Camellia => AlgorithmIdentifier::Camellia,
+            SymmetricObject::Null => AlgorithmIdentifier::Null,
         }
     }
 }
 
-impl TryFrom<Algorithm> for SymmetricObject {
+impl TryFrom<AlgorithmIdentifier> for SymmetricObject {
     type Error = Error;
-    fn try_from(algorithm: Algorithm) -> Result<Self> {
-        match algorithm {
-            Algorithm::Tdes => Ok(SymmetricObject::Tdes),
-            Algorithm::Aes => Ok(SymmetricObject::Aes),
-            Algorithm::Sm4 => Ok(SymmetricObject::Sm4),
-            Algorithm::Camellia => Ok(SymmetricObject::Camellia),
-            Algorithm::Null => Ok(SymmetricObject::Null),
+    fn try_from(algorithm_identifier: AlgorithmIdentifier) -> Result<Self> {
+        match algorithm_identifier {
+            AlgorithmIdentifier::Tdes => Ok(SymmetricObject::Tdes),
+            AlgorithmIdentifier::Aes => Ok(SymmetricObject::Aes),
+            AlgorithmIdentifier::Sm4 => Ok(SymmetricObject::Sm4),
+            AlgorithmIdentifier::Camellia => Ok(SymmetricObject::Camellia),
+            AlgorithmIdentifier::Null => Ok(SymmetricObject::Null),
             _ => Err(Error::local_error(WrapperErrorKind::InvalidParam)),
         }
     }
@@ -451,7 +453,7 @@ impl TryFrom<Algorithm> for SymmetricObject {
 
 impl From<SymmetricObject> for TPMI_ALG_SYM_OBJECT {
     fn from(symmetric_object: SymmetricObject) -> Self {
-        Algorithm::from(symmetric_object).into()
+        AlgorithmIdentifier::from(symmetric_object).into()
     }
 }
 
@@ -459,6 +461,6 @@ impl TryFrom<TPMI_ALG_SYM_OBJECT> for SymmetricObject {
     type Error = Error;
 
     fn try_from(tpmi_alg_sym_object: TPMI_ALG_SYM_OBJECT) -> Result<Self> {
-        SymmetricObject::try_from(Algorithm::try_from(tpmi_alg_sym_object)?)
+        SymmetricObject::try_from(AlgorithmIdentifier::try_from(tpmi_alg_sym_object)?)
     }
 }

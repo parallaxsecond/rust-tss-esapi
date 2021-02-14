@@ -9,9 +9,8 @@
 //! type name. Unions are converted to Rust `enum`s by dropping the `TPMU` qualifier and appending
 //! `Union`.
 use crate::attributes::{ObjectAttributes, ObjectAttributesBuilder};
-use crate::constants::tss::*;
-use crate::constants::PropertyTag;
-use crate::interface_types::{algorithm::HashingAlgorithm, ecc::EllipticCurve};
+use crate::constants::{tss::*, PropertyTag};
+use crate::interface_types::{algorithm::HashingAlgorithm, ecc::EccCurve};
 use crate::structures::{
     Digest, KeyedHashParameters, PcrSlot, SymmetricCipherParameters, SymmetricDefinitionObject,
 };
@@ -353,7 +352,7 @@ pub struct TpmsEccParmsBuilder {
     /// Asymmetric scheme to be used for key operations
     pub scheme: AsymSchemeUnion,
     /// Curve to be used with the key
-    pub curve: EllipticCurve,
+    pub curve: EccCurve,
     /// Flag indicating whether the key shall be used for signing
     pub for_signing: bool,
     /// Flag indicating whether the key shall be used for decryption
@@ -366,7 +365,7 @@ impl TpmsEccParmsBuilder {
     /// Create parameters for a restricted decryption key (i.e. a storage key)
     pub fn new_restricted_decryption_key(
         symmetric: crate::abstraction::cipher::Cipher,
-        curve: EllipticCurve,
+        curve: EccCurve,
     ) -> Self {
         TpmsEccParmsBuilder {
             symmetric: Some(symmetric),
@@ -379,7 +378,7 @@ impl TpmsEccParmsBuilder {
     }
 
     /// Create parameters for an unrestricted signing key
-    pub fn new_unrestricted_signing_key(scheme: AsymSchemeUnion, curve: EllipticCurve) -> Self {
+    pub fn new_unrestricted_signing_key(scheme: AsymSchemeUnion, curve: EccCurve) -> Self {
         TpmsEccParmsBuilder {
             symmetric: None,
             scheme,
@@ -430,7 +429,7 @@ impl TpmsEccParmsBuilder {
             return Err(Error::local_error(WrapperErrorKind::InconsistentParams));
         }
 
-        if (self.curve == EllipticCurve::BnP256 || self.curve == EllipticCurve::BnP638)
+        if (self.curve == EccCurve::BnP256 || self.curve == EccCurve::BnP638)
             && scheme.scheme != TPM2_ALG_ECDAA
         {
             return Err(Error::local_error(WrapperErrorKind::InconsistentParams));
@@ -1092,7 +1091,7 @@ pub fn create_unrestricted_signing_rsa_public(
 /// * `curve` - identifier of the precise curve to be used with the key
 pub fn create_unrestricted_signing_ecc_public(
     scheme: AsymSchemeUnion,
-    curve: EllipticCurve,
+    curve: EccCurve,
 ) -> Result<TPM2B_PUBLIC> {
     let ecc_parms = TpmsEccParmsBuilder::new_unrestricted_signing_key(scheme, curve).build()?;
 

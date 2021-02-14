@@ -19,7 +19,7 @@ use crate::constants::tss::*;
 use crate::constants::SessionType;
 use crate::handles::KeyHandle;
 use crate::interface_types::{
-    algorithm::HashingAlgorithm, ecc::EllipticCurve, resource_handles::Hierarchy,
+    algorithm::HashingAlgorithm, ecc::EccCurve, resource_handles::Hierarchy,
 };
 use crate::structures::{Auth, CreateKeyResult, Data, Digest, PublicKeyRSA, VerifiedTicket};
 use crate::tcti::Tcti;
@@ -777,7 +777,7 @@ pub enum KeyParams {
     },
     Ecc {
         /// Curve that the key will be based on
-        curve: EllipticCurve,
+        curve: EccCurve,
         /// Asymmetric scheme to be used with the key
         ///
         /// *Must* be an ECC scheme

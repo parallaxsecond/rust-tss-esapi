@@ -1,3 +1,5 @@
+// Copyright 2021 Contributors to the Parsec project.
+// SPDX-License-Identifier: Apache-2.0
 use crate::{
     interface_types::algorithm::{HashingAlgorithm, KeyDerivationFunction},
     tss2_esys::{TPMS_SCHEME_HASH, TPMS_SCHEME_HMAC, TPMS_SCHEME_XOR},

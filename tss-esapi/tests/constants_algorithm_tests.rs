@@ -12,14 +12,14 @@ mod test_algorithm {
             TPM2_ALG_SHA512, TPM2_ALG_SM2, TPM2_ALG_SM3_256, TPM2_ALG_SM4, TPM2_ALG_SYMCIPHER,
             TPM2_ALG_TDES, TPM2_ALG_XOR,
         },
-        Algorithm,
+        AlgorithmIdentifier,
     };
     macro_rules! test_conversion {
         ($tpm_alg_id:ident, $algorithm:ident) => {
-            assert_eq!($tpm_alg_id, Algorithm::$algorithm.into());
+            assert_eq!($tpm_alg_id, AlgorithmIdentifier::$algorithm.into());
             assert_eq!(
-                Algorithm::$algorithm,
-                Algorithm::try_from($tpm_alg_id).expect(&format!(
+                AlgorithmIdentifier::$algorithm,
+                AlgorithmIdentifier::try_from($tpm_alg_id).expect(&format!(
                     "Failed to convert tpm_alg_id for {}",
                     stringify!($tpm_alg_id)
                 ))

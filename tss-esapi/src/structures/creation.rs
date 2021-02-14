@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use crate::{
-    constants::Algorithm,
+    constants::AlgorithmIdentifier,
     interface_types::algorithm::HashingAlgorithm,
     structures::{Data, Digest, Name, PcrSelectionList},
     tss2_esys::{TPM2B_CREATION_DATA, TPMA_LOCALITY, TPMS_CREATION_DATA},
@@ -28,8 +28,8 @@ impl TryFrom<TPMS_CREATION_DATA> for CreationData {
             pcr_select: tss_creation_data.pcrSelect.try_into()?,
             pcr_digest: tss_creation_data.pcrDigest.try_into()?,
             locality: tss_creation_data.locality,
-            parent_name_alg: match Algorithm::try_from(tss_creation_data.parentNameAlg)? {
-                Algorithm::Null => None,
+            parent_name_alg: match AlgorithmIdentifier::try_from(tss_creation_data.parentNameAlg)? {
+                AlgorithmIdentifier::Null => None,
                 alg => Some(HashingAlgorithm::try_from(alg)?),
             },
             parent_name: tss_creation_data.parentName.try_into()?,
@@ -54,7 +54,7 @@ impl TryFrom<CreationData> for TPMS_CREATION_DATA {
             pcrDigest: creation_data.pcr_digest.into(),
             locality: creation_data.locality,
             parentNameAlg: match creation_data.parent_name_alg {
-                None => Algorithm::Null.into(),
+                None => AlgorithmIdentifier::Null.into(),
                 Some(alg) => alg.into(),
             },
             parentName: creation_data.parent_name.try_into()?,

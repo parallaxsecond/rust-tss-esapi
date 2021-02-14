@@ -1,7 +1,7 @@
 // Copyright 2019 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
 use crate::{
-    constants::Algorithm,
+    constants::AlgorithmIdentifier,
     interface_types::{
         algorithm::{HashingAlgorithm, SymmetricAlgorithm, SymmetricMode, SymmetricObject},
         key_bits::{AesKeyBits, CamelliaKeyBits, Sm4KeyBits},
@@ -96,8 +96,8 @@ impl Cipher {
     }
 
     /// Get general object type for symmetric ciphers.
-    pub fn object_type() -> Algorithm {
-        Algorithm::SymCipher
+    pub fn object_type() -> AlgorithmIdentifier {
+        AlgorithmIdentifier::SymCipher
     }
 
     /// Get the cipher key length.
@@ -196,7 +196,7 @@ impl TryFrom<Cipher> for SymmetricDefinition {
 impl TryFrom<Cipher> for SymmetricDefinitionObject {
     type Error = Error;
     fn try_from(cipher: Cipher) -> Result<Self> {
-        match SymmetricObject::try_from(Algorithm::from(cipher.algorithm))? {
+        match SymmetricObject::try_from(AlgorithmIdentifier::from(cipher.algorithm))? {
             SymmetricObject::Aes => Ok(SymmetricDefinitionObject::Aes {
                 key_bits: cipher
                     .key_bits

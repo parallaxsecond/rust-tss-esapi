@@ -5,11 +5,11 @@ use std::convert::TryFrom;
 macro_rules! test_conversion {
     ($tpm_alg_id:ident, $interface_type:ident::$interface_type_item:ident) => {
         assert_eq!(
-            Algorithm::$interface_type_item,
+            AlgorithmIdentifier::$interface_type_item,
             $interface_type::$interface_type_item.into()
         );
         assert_eq!(
-            $interface_type::try_from(Algorithm::$interface_type_item).expect(&format!(
+            $interface_type::try_from(AlgorithmIdentifier::$interface_type_item).expect(&format!(
                 "Failed to parse from Algorithm for {}",
                 stringify!($interface_type_item)
             )),
@@ -17,7 +17,7 @@ macro_rules! test_conversion {
         );
         assert_eq!(
             $tpm_alg_id,
-            Algorithm::from($interface_type::$interface_type_item).into()
+            AlgorithmIdentifier::from($interface_type::$interface_type_item).into()
         );
         assert_eq!($tpm_alg_id, $interface_type::$interface_type_item.into());
         assert_eq!(
@@ -38,7 +38,7 @@ mod test_hashing_algorithm_interface_type {
                 TPM2_ALG_SHA1, TPM2_ALG_SHA256, TPM2_ALG_SHA384, TPM2_ALG_SHA3_256,
                 TPM2_ALG_SHA3_384, TPM2_ALG_SHA3_512, TPM2_ALG_SHA512, TPM2_ALG_SM3_256,
             },
-            Algorithm,
+            AlgorithmIdentifier,
         },
         interface_types::algorithm::HashingAlgorithm,
     };
@@ -60,7 +60,7 @@ mod test_keyed_hash_scheme_interface_type {
     use tss_esapi::{
         constants::{
             tss::{TPM2_ALG_HMAC, TPM2_ALG_NULL, TPM2_ALG_XOR},
-            Algorithm,
+            AlgorithmIdentifier,
         },
         interface_types::algorithm::KeyedHashSchemeAlgorithm,
     };
@@ -79,7 +79,7 @@ mod test_key_derivation_function_interface_type {
             tss::{
                 TPM2_ALG_ECMQV, TPM2_ALG_KDF1_SP800_108, TPM2_ALG_KDF1_SP800_56A, TPM2_ALG_KDF2,
             },
-            Algorithm,
+            AlgorithmIdentifier,
         },
         interface_types::algorithm::KeyDerivationFunction,
     };
@@ -106,7 +106,7 @@ mod test_symmetric_algorithm_interface_type {
                 TPM2_ALG_AES, TPM2_ALG_CAMELLIA, TPM2_ALG_NULL, TPM2_ALG_SM4, TPM2_ALG_TDES,
                 TPM2_ALG_XOR,
             },
-            Algorithm,
+            AlgorithmIdentifier,
         },
         interface_types::algorithm::SymmetricAlgorithm,
     };
@@ -126,7 +126,7 @@ mod test_symmetric_mode_interface_type {
     use tss_esapi::{
         constants::{
             tss::{TPM2_ALG_CFB, TPM2_ALG_CTR, TPM2_ALG_ECB, TPM2_ALG_NULL, TPM2_ALG_OFB},
-            Algorithm,
+            AlgorithmIdentifier,
         },
         interface_types::algorithm::SymmetricMode,
     };
@@ -145,7 +145,7 @@ mod test_asymmetric_algorithm_interface_type {
     use tss_esapi::{
         constants::{
             tss::{TPM2_ALG_ECC, TPM2_ALG_NULL, TPM2_ALG_RSA},
-            Algorithm,
+            AlgorithmIdentifier,
         },
         interface_types::algorithm::AsymmetricAlgorithm,
     };
@@ -167,7 +167,7 @@ mod test_signature_scheme_interface_type {
                 TPM2_ALG_ECDAA, TPM2_ALG_ECDSA, TPM2_ALG_ECSCHNORR, TPM2_ALG_HMAC, TPM2_ALG_NULL,
                 TPM2_ALG_RSAPSS, TPM2_ALG_RSASSA, TPM2_ALG_SM2,
             },
-            Algorithm,
+            AlgorithmIdentifier,
         },
         interface_types::algorithm::{AsymmetricAlgorithm, SignatureScheme},
     };
@@ -233,7 +233,7 @@ mod test_symmetric_object_interface_type {
     use tss_esapi::{
         constants::{
             tss::{TPM2_ALG_AES, TPM2_ALG_CAMELLIA, TPM2_ALG_NULL, TPM2_ALG_SM4, TPM2_ALG_TDES},
-            Algorithm,
+            AlgorithmIdentifier,
         },
         interface_types::algorithm::SymmetricObject,
     };

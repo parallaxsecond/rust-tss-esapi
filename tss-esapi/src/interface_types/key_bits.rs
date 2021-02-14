@@ -1,7 +1,7 @@
 // Copyright 2021 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
 use crate::{
-    tss2_esys::{TPMI_AES_KEY_BITS, TPMI_CAMELLIA_KEY_BITS, TPMI_SM4_KEY_BITS},
+    tss2_esys::{TPM2_KEY_BITS, TPMI_AES_KEY_BITS, TPMI_SM4_KEY_BITS},
     Error, Result, WrapperErrorKind,
 };
 use std::convert::TryFrom;
@@ -69,6 +69,13 @@ impl TryFrom<TPMI_SM4_KEY_BITS> for Sm4KeyBits {
 ///
 /// # Details
 /// This corresponds to TPMI_CAMELLIA_KEY_BITS
+// This should convert to and from TPMI_CAMELLIA_KEY_BITS
+// but in version 2.3.X version of tpm2-tss
+// lib this type had the wrong name so instead
+// it converts to and from TPM2_KEY_BITS.
+// This is an acceptable compromise because
+// the interface type defined as
+// pub type TPMI_CAMELLIA_KEY_BITS = TPM2_KEY_BITS
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
 pub enum CamelliaKeyBits {
     Camellia128,
@@ -76,8 +83,8 @@ pub enum CamelliaKeyBits {
     Camellia256,
 }
 
-impl From<CamelliaKeyBits> for TPMI_CAMELLIA_KEY_BITS {
-    fn from(camellia_key_bits: CamelliaKeyBits) -> TPMI_CAMELLIA_KEY_BITS {
+impl From<CamelliaKeyBits> for TPM2_KEY_BITS {
+    fn from(camellia_key_bits: CamelliaKeyBits) -> TPM2_KEY_BITS {
         match camellia_key_bits {
             CamelliaKeyBits::Camellia128 => 128,
             CamelliaKeyBits::Camellia192 => 192,
@@ -86,9 +93,9 @@ impl From<CamelliaKeyBits> for TPMI_CAMELLIA_KEY_BITS {
     }
 }
 
-impl TryFrom<TPMI_CAMELLIA_KEY_BITS> for CamelliaKeyBits {
+impl TryFrom<TPM2_KEY_BITS> for CamelliaKeyBits {
     type Error = Error;
-    fn try_from(tpmi_camellia_key_bits: TPMI_CAMELLIA_KEY_BITS) -> Result<CamelliaKeyBits> {
+    fn try_from(tpmi_camellia_key_bits: TPM2_KEY_BITS) -> Result<CamelliaKeyBits> {
         match tpmi_camellia_key_bits {
             128 => Ok(CamelliaKeyBits::Camellia128),
             192 => Ok(CamelliaKeyBits::Camellia192),
