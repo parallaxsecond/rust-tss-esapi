@@ -39,7 +39,7 @@ mod test_hmac {
         attributes::ObjectAttributesBuilder,
         constants::tss::{TPM2_ALG_KEYEDHASH, TPM2_ALG_SHA256},
         interface_types::{algorithm::HashingAlgorithm, resource_handles::Hierarchy},
-        structures::{KeyedHashParms, KeyedHashScheme, MaxBuffer},
+        structures::{KeyedHashParameters, KeyedHashScheme, MaxBuffer},
         utils::{PublicParmsUnion, Tpm2BPublicBuilder},
     };
 
@@ -57,7 +57,7 @@ mod test_hmac {
         let key_pub = Tpm2BPublicBuilder::new()
             .with_type(TPM2_ALG_KEYEDHASH)
             .with_name_alg(TPM2_ALG_SHA256)
-            .with_parms(PublicParmsUnion::KeyedHashDetail(KeyedHashParms::new(
+            .with_parms(PublicParmsUnion::KeyedHashDetail(KeyedHashParameters::new(
                 KeyedHashScheme::HMAC_SHA_256,
             )))
             .with_object_attributes(object_attributes)

@@ -7,11 +7,10 @@ mod test_policy_signed {
         time::Duration,
     };
     use tss_esapi::{
-        abstraction::cipher::Cipher,
         attributes::SessionAttributesBuilder,
         constants::SessionType,
         interface_types::{algorithm::HashingAlgorithm, resource_handles::Hierarchy},
-        structures::{Digest, Nonce},
+        structures::{Digest, Nonce, SymmetricDefinition},
         utils::{AsymSchemeUnion, Signature, SignatureData},
     };
     #[test]
@@ -29,7 +28,7 @@ mod test_policy_signed {
                 None,
                 None,
                 SessionType::Trial,
-                Cipher::aes_256_cfb(),
+                SymmetricDefinition::AES_256_CFB,
                 HashingAlgorithm::Sha256,
             )
             .expect("Start auth session failed")
@@ -74,12 +73,11 @@ mod test_policy_secret {
     use crate::common::create_ctx_with_session;
     use std::{convert::TryFrom, time::Duration};
     use tss_esapi::{
-        abstraction::cipher::Cipher,
         attributes::SessionAttributesBuilder,
         constants::SessionType,
         handles::AuthHandle,
         interface_types::algorithm::HashingAlgorithm,
-        structures::{Digest, Nonce},
+        structures::{Digest, Nonce, SymmetricDefinition},
     };
     #[test]
     fn test_policy_secret() {
@@ -91,7 +89,7 @@ mod test_policy_secret {
                 None,
                 None,
                 SessionType::Trial,
-                Cipher::aes_256_cfb(),
+                SymmetricDefinition::AES_256_CFB,
                 HashingAlgorithm::Sha256,
             )
             .expect("Start auth session failed")
@@ -129,8 +127,10 @@ mod test_policy_secret {
 mod test_policy_or {
     use crate::common::{create_ctx_without_session, get_pcr_policy_digest};
     use tss_esapi::{
-        abstraction::cipher::Cipher, attributes::SessionAttributesBuilder, constants::SessionType,
-        interface_types::algorithm::HashingAlgorithm, structures::DigestList,
+        attributes::SessionAttributesBuilder,
+        constants::SessionType,
+        interface_types::algorithm::HashingAlgorithm,
+        structures::{DigestList, SymmetricDefinition},
     };
     #[test]
     fn test_policy_or() {
@@ -141,7 +141,7 @@ mod test_policy_or {
                 None,
                 None,
                 SessionType::Trial,
-                Cipher::aes_256_cfb(),
+                SymmetricDefinition::AES_256_CFB,
                 HashingAlgorithm::Sha256,
             )
             .expect("Start auth session failed")
@@ -176,11 +176,10 @@ mod test_policy_pcr {
     use crate::common::create_ctx_without_session;
     use std::convert::TryFrom;
     use tss_esapi::{
-        abstraction::cipher::Cipher,
         attributes::SessionAttributesBuilder,
         constants::SessionType,
         interface_types::{algorithm::HashingAlgorithm, resource_handles::Hierarchy},
-        structures::{MaxBuffer, PcrSelectionListBuilder, PcrSlot},
+        structures::{MaxBuffer, PcrSelectionListBuilder, PcrSlot, SymmetricDefinition},
     };
 
     #[test]
@@ -192,7 +191,7 @@ mod test_policy_pcr {
                 None,
                 None,
                 SessionType::Trial,
-                Cipher::aes_256_cfb(),
+                SymmetricDefinition::AES_256_CFB,
                 HashingAlgorithm::Sha256,
             )
             .expect("Start auth session failed")
@@ -263,8 +262,8 @@ mod test_policy_pcr {
 mod test_policy_locality {
     use crate::common::create_ctx_without_session;
     use tss_esapi::{
-        abstraction::cipher::Cipher, attributes::SessionAttributesBuilder, constants::SessionType,
-        interface_types::algorithm::HashingAlgorithm,
+        attributes::SessionAttributesBuilder, constants::SessionType,
+        interface_types::algorithm::HashingAlgorithm, structures::SymmetricDefinition,
     };
     #[test]
     fn test_policy_locality() {
@@ -275,7 +274,7 @@ mod test_policy_locality {
                 None,
                 None,
                 SessionType::Trial,
-                Cipher::aes_256_cfb(),
+                SymmetricDefinition::AES_256_CFB,
                 HashingAlgorithm::Sha256,
             )
             .expect("Start auth session failed")
@@ -301,10 +300,10 @@ mod test_policy_locality {
 mod test_policy_command_code {
     use crate::common::create_ctx_without_session;
     use tss_esapi::{
-        abstraction::cipher::Cipher,
         attributes::SessionAttributesBuilder,
         constants::{tss::TPM2_CC_Unseal, SessionType},
         interface_types::algorithm::HashingAlgorithm,
+        structures::SymmetricDefinition,
     };
     #[test]
     fn test_policy_command_code() {
@@ -315,7 +314,7 @@ mod test_policy_command_code {
                 None,
                 None,
                 SessionType::Trial,
-                Cipher::aes_256_cfb(),
+                SymmetricDefinition::AES_256_CFB,
                 HashingAlgorithm::Sha256,
             )
             .expect("Start auth session failed")
@@ -343,8 +342,8 @@ mod test_policy_command_code {
 mod test_policy_physical_presence {
     use crate::common::create_ctx_without_session;
     use tss_esapi::{
-        abstraction::cipher::Cipher, attributes::SessionAttributesBuilder, constants::SessionType,
-        interface_types::algorithm::HashingAlgorithm,
+        attributes::SessionAttributesBuilder, constants::SessionType,
+        interface_types::algorithm::HashingAlgorithm, structures::SymmetricDefinition,
     };
     #[test]
     fn test_policy_physical_presence() {
@@ -355,7 +354,7 @@ mod test_policy_physical_presence {
                 None,
                 None,
                 SessionType::Trial,
-                Cipher::aes_256_cfb(),
+                SymmetricDefinition::AES_256_CFB,
                 HashingAlgorithm::Sha256,
             )
             .expect("Start auth session failed")
@@ -382,8 +381,10 @@ mod test_policy_cp_hash {
     use crate::common::create_ctx_without_session;
     use std::convert::TryFrom;
     use tss_esapi::{
-        abstraction::cipher::Cipher, attributes::SessionAttributesBuilder, constants::SessionType,
-        interface_types::algorithm::HashingAlgorithm, structures::Digest,
+        attributes::SessionAttributesBuilder,
+        constants::SessionType,
+        interface_types::algorithm::HashingAlgorithm,
+        structures::{Digest, SymmetricDefinition},
     };
     #[test]
     fn test_policy_cp_hash() {
@@ -394,7 +395,7 @@ mod test_policy_cp_hash {
                 None,
                 None,
                 SessionType::Trial,
-                Cipher::aes_256_cfb(),
+                SymmetricDefinition::AES_256_CFB,
                 HashingAlgorithm::Sha256,
             )
             .expect("Start auth session failed")
@@ -427,8 +428,10 @@ mod test_policy_name_hash {
     use crate::common::create_ctx_without_session;
     use std::convert::TryFrom;
     use tss_esapi::{
-        abstraction::cipher::Cipher, attributes::SessionAttributesBuilder, constants::SessionType,
-        interface_types::algorithm::HashingAlgorithm, structures::Digest,
+        attributes::SessionAttributesBuilder,
+        constants::SessionType,
+        interface_types::algorithm::HashingAlgorithm,
+        structures::{Digest, SymmetricDefinition},
     };
     #[test]
     fn test_policy_name_hash() {
@@ -439,7 +442,7 @@ mod test_policy_name_hash {
                 None,
                 None,
                 SessionType::Trial,
-                Cipher::aes_256_cfb(),
+                SymmetricDefinition::AES_256_CFB,
                 HashingAlgorithm::Sha256,
             )
             .expect("Start auth session failed")
@@ -542,8 +545,8 @@ mod test_policy_authorize {
 mod test_policy_auth_value {
     use crate::common::create_ctx_without_session;
     use tss_esapi::{
-        abstraction::cipher::Cipher, attributes::SessionAttributesBuilder, constants::SessionType,
-        interface_types::algorithm::HashingAlgorithm,
+        attributes::SessionAttributesBuilder, constants::SessionType,
+        interface_types::algorithm::HashingAlgorithm, structures::SymmetricDefinition,
     };
     #[test]
     fn test_policy_auth_value() {
@@ -554,7 +557,7 @@ mod test_policy_auth_value {
                 None,
                 None,
                 SessionType::Trial,
-                Cipher::aes_256_cfb(),
+                SymmetricDefinition::AES_256_CFB,
                 HashingAlgorithm::Sha256,
             )
             .expect("Start auth session failed")
@@ -580,8 +583,8 @@ mod test_policy_auth_value {
 mod test_policy_password {
     use crate::common::create_ctx_without_session;
     use tss_esapi::{
-        abstraction::cipher::Cipher, attributes::SessionAttributesBuilder, constants::SessionType,
-        interface_types::algorithm::HashingAlgorithm,
+        attributes::SessionAttributesBuilder, constants::SessionType,
+        interface_types::algorithm::HashingAlgorithm, structures::SymmetricDefinition,
     };
     #[test]
     fn test_policy_password() {
@@ -592,7 +595,7 @@ mod test_policy_password {
                 None,
                 None,
                 SessionType::Trial,
-                Cipher::aes_256_cfb(),
+                SymmetricDefinition::AES_256_CFB,
                 HashingAlgorithm::Sha256,
             )
             .expect("Start auth session failed")
@@ -619,11 +622,10 @@ mod test_policy_get_digest {
     use crate::common::create_ctx_without_session;
     use std::convert::TryFrom;
     use tss_esapi::{
-        abstraction::cipher::Cipher,
         attributes::SessionAttributesBuilder,
         constants::SessionType,
         interface_types::{algorithm::HashingAlgorithm, resource_handles::Hierarchy},
-        structures::{MaxBuffer, PcrSelectionListBuilder, PcrSlot},
+        structures::{MaxBuffer, PcrSelectionListBuilder, PcrSlot, SymmetricDefinition},
     };
     #[test]
     fn get_policy_digest() {
@@ -634,7 +636,7 @@ mod test_policy_get_digest {
                 None,
                 None,
                 SessionType::Trial,
-                Cipher::aes_256_cfb(),
+                SymmetricDefinition::AES_256_CFB,
                 HashingAlgorithm::Sha256,
             )
             .expect("Start auth session failed")
@@ -711,8 +713,8 @@ mod test_policy_get_digest {
 mod test_policy_nv_written {
     use crate::common::create_ctx_without_session;
     use tss_esapi::{
-        abstraction::cipher::Cipher, attributes::SessionAttributesBuilder, constants::SessionType,
-        interface_types::algorithm::HashingAlgorithm,
+        attributes::SessionAttributesBuilder, constants::SessionType,
+        interface_types::algorithm::HashingAlgorithm, structures::SymmetricDefinition,
     };
     #[test]
     fn test_policy_nv_written() {
@@ -723,7 +725,7 @@ mod test_policy_nv_written {
                 None,
                 None,
                 SessionType::Trial,
-                Cipher::aes_256_cfb(),
+                SymmetricDefinition::AES_256_CFB,
                 HashingAlgorithm::Sha256,
             )
             .expect("Start auth session failed")
@@ -750,10 +752,9 @@ mod test_policy_template {
     use crate::common::create_ctx_without_session;
     use std::convert::TryFrom;
     use tss_esapi::{
-        abstraction::cipher::Cipher,
         constants::SessionType,
         interface_types::algorithm::HashingAlgorithm,
-        structures::{Digest, Nonce},
+        structures::{Digest, Nonce, SymmetricDefinition},
     };
     #[test]
     fn basic_policy_template_test() {
@@ -770,7 +771,7 @@ mod test_policy_template {
                 None,
                 Some(&trial_session_nonce),
                 SessionType::Trial,
-                Cipher::aes_128_cfb(),
+                SymmetricDefinition::AES_128_CFB,
                 HashingAlgorithm::Sha1,
             )
             .expect("Call to start_auth_session failed")

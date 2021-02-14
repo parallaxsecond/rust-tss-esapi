@@ -12,7 +12,9 @@ use crate::attributes::{ObjectAttributes, ObjectAttributesBuilder};
 use crate::constants::tss::*;
 use crate::constants::PropertyTag;
 use crate::interface_types::{algorithm::HashingAlgorithm, ecc::EllipticCurve};
-use crate::structures::{Digest, KeyedHashParms, PcrSlot};
+use crate::structures::{
+    Digest, KeyedHashParameters, PcrSlot, SymmetricCipherParameters, SymmetricDefinitionObject,
+};
 use crate::tss2_esys::*;
 use crate::{Context, Error, Result, WrapperErrorKind};
 use enumflags2::BitFlags;
@@ -435,15 +437,12 @@ impl TpmsEccParmsBuilder {
         }
 
         let symmetric = match self.symmetric {
-            Some(symmetric) => symmetric.into(),
-            None => TPMT_SYM_DEF_OBJECT {
-                algorithm: TPM2_ALG_NULL,
-                ..Default::default()
-            },
+            Some(symmetric) => symmetric.try_into()?,
+            None => SymmetricDefinitionObject::Null,
         };
 
         Ok(TPMS_ECC_PARMS {
-            symmetric,
+            symmetric: symmetric.into(),
             scheme,
             curveID: self.curve.into(),
             kdf: TPMT_KDF_SCHEME {
@@ -451,129 +450,6 @@ impl TpmsEccParmsBuilder {
                 details: Default::default(),
             },
         })
-    }
-}
-
-/// Builder for `TPMT_SYM_DEF` objects.
-#[derive(Copy, Clone, Debug)]
-pub struct TpmtSymDefBuilder {
-    algorithm: Option<TPM2_ALG_ID>,
-    key_bits: u16,
-    mode: TPM2_ALG_ID,
-}
-
-impl TpmtSymDefBuilder {
-    /// Create a new builder with default (i.e. empty or null) placeholder values.
-    pub fn new() -> Self {
-        TpmtSymDefBuilder {
-            algorithm: None,
-            key_bits: 0,
-            mode: TPM2_ALG_NULL,
-        }
-    }
-
-    /// Set the symmetric algorithm.
-    pub fn with_algorithm(mut self, algorithm: TPM2_ALG_ID) -> Self {
-        self.algorithm = Some(algorithm);
-        self
-    }
-
-    /// Set the key length.
-    pub fn with_key_bits(mut self, key_bits: TPM2_KEY_BITS) -> Self {
-        self.key_bits = key_bits;
-        self
-    }
-
-    /// Set the hash algorithm (applies when the symmetric algorithm is XOR).
-    pub fn with_hash(mut self, hash: TPM2_ALG_ID) -> Self {
-        self.key_bits = hash;
-        self
-    }
-
-    /// Set the mode of the symmetric algorithm.
-    pub fn with_mode(mut self, mode: TPM2_ALG_ID) -> Self {
-        self.mode = mode;
-        self
-    }
-
-    /// Build a TPMT_SYM_DEF given the previously provided parameters.
-    ///
-    /// # Errors
-    /// * if an unrecognized symmetric algorithm type was set, `UnsupportedParam` wrapper error
-    /// is returned.
-    /// * if an algorithm is not explicitly set, `ParamsMissing` is returned
-    pub fn build(self) -> Result<TPMT_SYM_DEF> {
-        let (key_bits, mode) = self.bits_and_mode()?;
-
-        Ok(TPMT_SYM_DEF {
-            algorithm: self.algorithm.unwrap(), // bits_and_mode would return an Err if algorithm was missing
-            keyBits: key_bits,
-            mode,
-        })
-    }
-
-    /// Build a TPMT_SYM_DEF_OBJECT given the previously provided parameters.
-    ///
-    /// # Errors
-    /// * if an unrecognized symmetric algorithm type was set, `UnsupportedParam` wrapper error
-    /// is returned.
-    /// * if an algorithm is not explicitly set, `ParamsMissing` is returned
-    pub fn build_object(self) -> Result<TPMT_SYM_DEF_OBJECT> {
-        let (key_bits, mode) = self.bits_and_mode()?;
-
-        Ok(TPMT_SYM_DEF_OBJECT {
-            algorithm: self.algorithm.unwrap(), // bits_and_mode would return an Err if algorithm was missing
-            keyBits: key_bits,
-            mode,
-        })
-    }
-
-    fn bits_and_mode(self) -> Result<(TPMU_SYM_KEY_BITS, TPMU_SYM_MODE)> {
-        let key_bits;
-        let mode;
-        match self.algorithm {
-            Some(TPM2_ALG_XOR) => {
-                // Exclusive OR
-                key_bits = TPMU_SYM_KEY_BITS {
-                    exclusiveOr: self.key_bits,
-                };
-                mode = Default::default(); // NULL
-            }
-            Some(TPM2_ALG_AES) => {
-                // AES
-                key_bits = TPMU_SYM_KEY_BITS { aes: self.key_bits };
-                mode = TPMU_SYM_MODE { aes: self.mode };
-            }
-            Some(TPM2_ALG_SM4) => {
-                // SM4
-                key_bits = TPMU_SYM_KEY_BITS { sm4: self.key_bits };
-                mode = TPMU_SYM_MODE { sm4: self.mode };
-            }
-            Some(TPM2_ALG_CAMELLIA) => {
-                // CAMELLIA
-                key_bits = TPMU_SYM_KEY_BITS {
-                    camellia: self.key_bits,
-                };
-                mode = TPMU_SYM_MODE {
-                    camellia: self.mode,
-                };
-            }
-            Some(TPM2_ALG_NULL) => {
-                // NULL
-                key_bits = Default::default();
-                mode = Default::default();
-            }
-            None => return Err(Error::local_error(WrapperErrorKind::ParamsMissing)),
-            _ => return Err(Error::local_error(WrapperErrorKind::UnsupportedParam)),
-        }
-
-        Ok((key_bits, mode))
-    }
-}
-
-impl Default for TpmtSymDefBuilder {
-    fn default() -> Self {
-        TpmtSymDefBuilder::new()
     }
 }
 
@@ -614,7 +490,7 @@ impl PublicIdUnion {
 #[allow(clippy::pub_enum_variant_names)]
 #[derive(Copy, Clone)]
 pub enum PublicParmsUnion {
-    KeyedHashDetail(KeyedHashParms),
+    KeyedHashDetail(KeyedHashParameters),
     SymDetail(crate::abstraction::cipher::Cipher),
     RsaDetail(TPMS_RSA_PARMS),
     EccDetail(TPMS_ECC_PARMS),
@@ -634,24 +510,25 @@ impl PublicParmsUnion {
     }
 }
 
-impl From<PublicParmsUnion> for TPMU_PUBLIC_PARMS {
-    fn from(parms: PublicParmsUnion) -> Self {
+impl TryFrom<PublicParmsUnion> for TPMU_PUBLIC_PARMS {
+    type Error = Error;
+    fn try_from(parms: PublicParmsUnion) -> Result<Self> {
         match parms {
-            PublicParmsUnion::AsymDetail(tss_parms) => TPMU_PUBLIC_PARMS {
+            PublicParmsUnion::AsymDetail(tss_parms) => Ok(TPMU_PUBLIC_PARMS {
                 asymDetail: tss_parms,
-            },
-            PublicParmsUnion::EccDetail(tss_parms) => TPMU_PUBLIC_PARMS {
+            }),
+            PublicParmsUnion::EccDetail(tss_parms) => Ok(TPMU_PUBLIC_PARMS {
                 eccDetail: tss_parms,
-            },
-            PublicParmsUnion::RsaDetail(tss_parms) => TPMU_PUBLIC_PARMS {
+            }),
+            PublicParmsUnion::RsaDetail(tss_parms) => Ok(TPMU_PUBLIC_PARMS {
                 rsaDetail: tss_parms,
-            },
-            PublicParmsUnion::SymDetail(cipher) => TPMU_PUBLIC_PARMS {
-                symDetail: cipher.into(),
-            },
-            PublicParmsUnion::KeyedHashDetail(tss_parms) => TPMU_PUBLIC_PARMS {
+            }),
+            PublicParmsUnion::SymDetail(cipher) => Ok(TPMU_PUBLIC_PARMS {
+                symDetail: SymmetricCipherParameters::try_from(cipher)?.into(),
+            }),
+            PublicParmsUnion::KeyedHashDetail(tss_parms) => Ok(TPMU_PUBLIC_PARMS {
                 keyedHashDetail: tss_parms.into(),
-            },
+            }),
         }
     }
 }
@@ -1114,7 +991,7 @@ pub fn create_restricted_decryption_rsa_public(
     pub_exponent: u32,
 ) -> Result<TPM2B_PUBLIC> {
     let rsa_parms = TpmsRsaParmsBuilder::new_restricted_decryption_key(
-        symmetric.into(),
+        SymmetricDefinitionObject::try_from(symmetric)?.into(),
         key_bits,
         pub_exponent,
     )

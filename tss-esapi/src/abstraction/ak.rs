@@ -17,7 +17,7 @@ use crate::{
     Context, Error, Result, WrapperErrorKind,
 };
 use log::error;
-use std::convert::TryFrom;
+use std::convert::{TryFrom, TryInto};
 
 fn create_ak_public(
     key_alg: AsymmetricAlgorithm,
@@ -103,7 +103,7 @@ pub fn load_ak(
         None,
         None,
         SessionType::Policy,
-        Cipher::aes_128_cfb(),
+        Cipher::aes_128_cfb().try_into()?,
         HashingAlgorithm::Sha256,
     )? {
         Some(ses) => ses,
@@ -159,7 +159,7 @@ pub fn create_ak(
         None,
         None,
         SessionType::Policy,
-        Cipher::aes_128_cfb(),
+        Cipher::aes_128_cfb().try_into()?,
         HashingAlgorithm::Sha256,
     )? {
         Some(ses) => ses,

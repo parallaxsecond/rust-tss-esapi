@@ -4,8 +4,10 @@ mod test_random {
     use crate::common::create_ctx_with_session;
     use std::convert::TryFrom;
     use tss_esapi::{
-        abstraction::cipher::Cipher, attributes::SessionAttributesBuilder, constants::SessionType,
-        interface_types::algorithm::HashingAlgorithm, structures::SensitiveData,
+        attributes::SessionAttributesBuilder,
+        constants::SessionType,
+        interface_types::algorithm::HashingAlgorithm,
+        structures::{SensitiveData, SymmetricDefinition},
     };
 
     #[test]
@@ -17,7 +19,7 @@ mod test_random {
                 None,
                 None,
                 SessionType::Hmac,
-                Cipher::aes_256_cfb(),
+                SymmetricDefinition::AES_256_CFB,
                 HashingAlgorithm::Sha256,
             )
             .expect("Start auth session failed")
@@ -44,7 +46,7 @@ mod test_random {
                 None,
                 None,
                 SessionType::Hmac,
-                Cipher::aes_256_cfb(),
+                SymmetricDefinition::AES_256_CFB,
                 HashingAlgorithm::Sha256,
             )
             .expect("Start auth session failed")

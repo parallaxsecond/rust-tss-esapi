@@ -4,12 +4,12 @@
 use std::convert::{TryFrom, TryInto};
 
 use tss_esapi::{
-    abstraction::{ak, cipher::Cipher, ek},
+    abstraction::{ak, ek},
     attributes::SessionAttributesBuilder,
     constants::SessionType,
     handles::AuthHandle,
     interface_types::algorithm::{AsymmetricAlgorithm, HashingAlgorithm, SignatureScheme},
-    structures::{Auth, Digest},
+    structures::{Auth, Digest, SymmetricDefinition},
 };
 
 mod common;
@@ -84,7 +84,7 @@ fn test_create_and_use_ak() {
             None,
             None,
             SessionType::Hmac,
-            Cipher::aes_256_cfb(),
+            SymmetricDefinition::AES_256_CFB,
             HashingAlgorithm::Sha256,
         )
         .unwrap();
@@ -101,7 +101,7 @@ fn test_create_and_use_ak() {
             None,
             None,
             SessionType::Policy,
-            Cipher::aes_256_cfb(),
+            SymmetricDefinition::AES_256_CFB,
             HashingAlgorithm::Sha256,
         )
         .unwrap();

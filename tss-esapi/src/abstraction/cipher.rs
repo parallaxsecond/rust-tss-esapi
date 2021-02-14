@@ -2,11 +2,14 @@
 // SPDX-License-Identifier: Apache-2.0
 use crate::{
     constants::Algorithm,
-    interface_types::algorithm::{HashingAlgorithm, SymmetricAlgorithm, SymmetricMode},
-    tss2_esys::{TPMS_SYMCIPHER_PARMS, TPMT_SYM_DEF, TPMT_SYM_DEF_OBJECT},
-    utils::TpmtSymDefBuilder,
+    interface_types::{
+        algorithm::{HashingAlgorithm, SymmetricAlgorithm, SymmetricMode, SymmetricObject},
+        key_bits::{AesKeyBits, CamelliaKeyBits, Sm4KeyBits},
+    },
+    structures::{SymmetricCipherParameters, SymmetricDefinition, SymmetricDefinitionObject},
     Error, Result, WrapperErrorKind,
 };
+use std::convert::{TryFrom, TryInto};
 /// Block cipher identifiers
 ///
 /// Structure useful for handling an abstract representation of ciphers. Ciphers are
@@ -116,10 +119,6 @@ impl Cipher {
     pub fn algorithm(&self) -> SymmetricAlgorithm {
         self.algorithm
     }
-    // /// Get the TSS algorithm ID.
-    // pub fn algorithm_id(self) -> TPM2_ALG_ID {
-    //     self.algorithm.into()
-    // }
 
     /// Constructor for 128 bit AES in CFB mode.
     pub fn aes_128_cfb() -> Self {
@@ -142,58 +141,101 @@ impl Cipher {
     }
 }
 
-impl From<Cipher> for TPMT_SYM_DEF {
-    fn from(cipher: Cipher) -> Self {
-        let key_bits = if let Some(bits) = cipher.key_bits {
-            bits
-        } else if let Some(hash) = cipher.hash {
-            hash.into()
-        } else {
-            Algorithm::Null.into()
-        };
-
-        let mode = if let Some(mode) = cipher.mode {
-            mode.into()
-        } else {
-            Algorithm::Null.into()
-        };
-
-        TpmtSymDefBuilder::new()
-            .with_algorithm(Algorithm::from(cipher.algorithm()).into())
-            .with_key_bits(key_bits)
-            .with_mode(mode)
-            .build()
-            .unwrap() // all params are strictly controlled, should not fail
+impl TryFrom<Cipher> for SymmetricDefinition {
+    type Error = Error;
+    fn try_from(cipher: Cipher) -> Result<Self> {
+        match cipher.algorithm {
+            SymmetricAlgorithm::Aes => Ok(SymmetricDefinition::Aes {
+                key_bits: cipher
+                    .key_bits
+                    .ok_or_else(|| Error::local_error(WrapperErrorKind::ParamsMissing))
+                    .and_then(AesKeyBits::try_from)?,
+                mode: cipher
+                    .mode
+                    .ok_or_else(|| Error::local_error(WrapperErrorKind::ParamsMissing))?,
+            }),
+            SymmetricAlgorithm::Sm4 => Ok(SymmetricDefinition::Sm4 {
+                key_bits: cipher
+                    .key_bits
+                    .ok_or_else(|| Error::local_error(WrapperErrorKind::ParamsMissing))
+                    .and_then(Sm4KeyBits::try_from)?,
+                mode: cipher
+                    .mode
+                    .ok_or_else(|| Error::local_error(WrapperErrorKind::ParamsMissing))?,
+            }),
+            SymmetricAlgorithm::Camellia => Ok(SymmetricDefinition::Camellia {
+                key_bits: cipher
+                    .key_bits
+                    .ok_or_else(|| Error::local_error(WrapperErrorKind::ParamsMissing))
+                    .and_then(CamelliaKeyBits::try_from)?,
+                mode: cipher
+                    .mode
+                    .ok_or_else(|| Error::local_error(WrapperErrorKind::ParamsMissing))?,
+            }),
+            SymmetricAlgorithm::Xor => Ok(SymmetricDefinition::Xor {
+                hashing_algorithm: cipher
+                    .hash
+                    .ok_or_else(|| Error::local_error(WrapperErrorKind::ParamsMissing))
+                    .and_then(|ha| {
+                        if ha != HashingAlgorithm::Null {
+                            Ok(ha)
+                        } else {
+                            Err(Error::local_error(WrapperErrorKind::InvalidParam))
+                        }
+                    })?,
+            }),
+            SymmetricAlgorithm::Null => Ok(SymmetricDefinition::Null),
+            SymmetricAlgorithm::Tdes => {
+                // TODO: Investigate
+                Err(Error::local_error(WrapperErrorKind::UnsupportedParam))
+            }
+        }
     }
 }
 
-impl From<Cipher> for TPMT_SYM_DEF_OBJECT {
-    fn from(cipher: Cipher) -> Self {
-        let key_bits = if let Some(bits) = cipher.key_bits {
-            bits
-        } else if let Some(hash) = cipher.hash {
-            hash.into()
-        } else {
-            Algorithm::Null.into()
-        };
-
-        let mode = if let Some(mode) = cipher.mode {
-            mode.into()
-        } else {
-            Algorithm::Null.into()
-        };
-
-        TpmtSymDefBuilder::new()
-            .with_algorithm(Algorithm::from(cipher.algorithm()).into())
-            .with_key_bits(key_bits)
-            .with_mode(mode)
-            .build_object()
-            .unwrap() // all params are strictly controlled, should not fail
+impl TryFrom<Cipher> for SymmetricDefinitionObject {
+    type Error = Error;
+    fn try_from(cipher: Cipher) -> Result<Self> {
+        match SymmetricObject::try_from(Algorithm::from(cipher.algorithm))? {
+            SymmetricObject::Aes => Ok(SymmetricDefinitionObject::Aes {
+                key_bits: cipher
+                    .key_bits
+                    .ok_or_else(|| Error::local_error(WrapperErrorKind::ParamsMissing))
+                    .and_then(AesKeyBits::try_from)?,
+                mode: cipher
+                    .mode
+                    .ok_or_else(|| Error::local_error(WrapperErrorKind::ParamsMissing))?,
+            }),
+            SymmetricObject::Sm4 => Ok(SymmetricDefinitionObject::Sm4 {
+                key_bits: cipher
+                    .key_bits
+                    .ok_or_else(|| Error::local_error(WrapperErrorKind::ParamsMissing))
+                    .and_then(Sm4KeyBits::try_from)?,
+                mode: cipher
+                    .mode
+                    .ok_or_else(|| Error::local_error(WrapperErrorKind::ParamsMissing))?,
+            }),
+            SymmetricObject::Camellia => Ok(SymmetricDefinitionObject::Camellia {
+                key_bits: cipher
+                    .key_bits
+                    .ok_or_else(|| Error::local_error(WrapperErrorKind::ParamsMissing))
+                    .and_then(CamelliaKeyBits::try_from)?,
+                mode: cipher
+                    .mode
+                    .ok_or_else(|| Error::local_error(WrapperErrorKind::ParamsMissing))?,
+            }),
+            SymmetricObject::Null => Ok(SymmetricDefinitionObject::Null),
+            SymmetricObject::Tdes => {
+                // TODO investigate
+                Err(Error::local_error(WrapperErrorKind::UnsupportedParam))
+            }
+        }
     }
 }
 
-impl From<Cipher> for TPMS_SYMCIPHER_PARMS {
-    fn from(cipher: Cipher) -> Self {
-        TPMS_SYMCIPHER_PARMS { sym: cipher.into() }
+impl TryFrom<Cipher> for SymmetricCipherParameters {
+    type Error = Error;
+    fn try_from(cipher: Cipher) -> Result<Self> {
+        Ok(SymmetricCipherParameters::new(cipher.try_into()?))
     }
 }

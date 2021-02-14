@@ -685,7 +685,7 @@ impl TransientKeyContextBuilder {
                 None,
                 None,
                 SessionType::Hmac,
-                self.default_context_cipher,
+                self.default_context_cipher.try_into()?,
                 self.session_hash_alg,
             )
             .and_then(|session| {
@@ -722,7 +722,7 @@ impl TransientKeyContextBuilder {
                 None,
                 None,
                 SessionType::Hmac,
-                self.default_context_cipher,
+                self.default_context_cipher.try_into()?,
                 self.session_hash_alg,
             )
             .and_then(|session| {

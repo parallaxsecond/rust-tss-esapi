@@ -64,15 +64,15 @@ impl Context {
     ///
     /// ```rust
     /// # use tss_esapi::{
-    /// #    Context, Tcti, structures::Auth,
-    /// #    constants::{
-    /// #        tss::{TPMA_SESSION_DECRYPT, TPMA_SESSION_ENCRYPT},
-    /// #        SessionType,
-    /// #    },
-    /// #    interface_types::{resource_handles::Hierarchy, algorithm::HashingAlgorithm},
-    /// #    utils::{create_unrestricted_signing_rsa_public, AsymSchemeUnion},
-    /// #    attributes::SessionAttributesBuilder,
-    /// #    abstraction::cipher::Cipher,
+    /// #     Context, Tcti, structures::Auth,
+    /// #     constants::{
+    /// #         tss::{TPMA_SESSION_DECRYPT, TPMA_SESSION_ENCRYPT},
+    /// #         SessionType,
+    /// #     },
+    /// #     interface_types::{resource_handles::Hierarchy, algorithm::HashingAlgorithm},
+    /// #     utils::{create_unrestricted_signing_rsa_public, AsymSchemeUnion},
+    /// #     attributes::SessionAttributesBuilder,
+    /// #     structures::SymmetricDefinition,
     /// # };
     /// # use std::convert::TryFrom;
     /// # use std::str::FromStr;
@@ -90,7 +90,7 @@ impl Context {
     ///         None,
     ///         None,
     ///         SessionType::Hmac,
-    ///         Cipher::aes_256_cfb(),
+    ///         SymmetricDefinition::AES_256_CFB,
     ///         HashingAlgorithm::Sha256,
     ///     )
     ///     .expect("Failed to create session")
@@ -188,7 +188,8 @@ impl Context {
     /// #     },
     /// #     handles::{ObjectHandle, TpmHandle, PersistentTpmHandle},
     /// #     utils::create_restricted_decryption_rsa_public,
-    /// #     tss2_esys::TPM2_HANDLE, abstraction::cipher::Cipher,
+    /// #     tss2_esys::TPM2_HANDLE,
+    /// #     abstraction::cipher::Cipher,
     /// # };
     /// # use std::{env, str::FromStr, convert::TryFrom};
     /// # // Create context
@@ -301,7 +302,8 @@ impl Context {
     /// #     },
     /// #     handles::{ObjectHandle, TpmHandle, PersistentTpmHandle},
     /// #     utils::create_restricted_decryption_rsa_public,
-    /// #     tss2_esys::TPM2_HANDLE, abstraction::cipher::Cipher,
+    /// #     tss2_esys::TPM2_HANDLE,
+    /// #     abstraction::cipher::Cipher,
     /// # };
     /// # use std::{env, str::FromStr, convert::TryFrom};
     /// # // Create context

@@ -1,17 +1,16 @@
 use crate::{
-    abstraction::cipher::Cipher,
     constants::SessionType,
     context::handle_manager::HandleDropAction,
     handles::{KeyHandle, ObjectHandle, SessionHandle},
     interface_types::algorithm::HashingAlgorithm,
     session::Session,
-    structures::Nonce,
+    structures::{Nonce, SymmetricDefinition},
     tss2_esys::*,
     Context, Error, Result,
 };
 use log::error;
+use std::convert::TryInto;
 use std::ptr::null;
-
 impl Context {
     /// Start new authentication session and return the Session object
     /// associated with the session.
@@ -25,7 +24,7 @@ impl Context {
     /// # use tss_esapi::{Context, Tcti,
     /// #     constants::SessionType,
     /// #     interface_types::algorithm::HashingAlgorithm,
-    /// #     abstraction::cipher::Cipher,
+    /// #     structures::SymmetricDefinition,
     /// # };
     /// # // Create context
     /// # let mut context = unsafe {
@@ -41,7 +40,7 @@ impl Context {
     ///         None,
     ///         None,
     ///         SessionType::Hmac,
-    ///         Cipher::aes_256_cfb(),
+    ///         SymmetricDefinition::AES_256_CFB,
     ///         HashingAlgorithm::Sha256,
     ///     )
     ///     .expect("Failed to create session")
@@ -54,7 +53,7 @@ impl Context {
         bind: Option<ObjectHandle>,
         nonce: Option<&Nonce>,
         session_type: SessionType,
-        symmetric: Cipher,
+        symmetric: SymmetricDefinition,
         auth_hash: HashingAlgorithm,
     ) -> Result<Option<Session>> {
         let nonce_ptr: *const TPM2B_NONCE = match nonce {
@@ -74,7 +73,7 @@ impl Context {
                 self.optional_session_3(),
                 nonce_ptr,
                 session_type.into(),
-                &symmetric.into(),
+                &symmetric.try_into()?,
                 auth_hash.into(),
                 &mut esys_session_handle,
             )

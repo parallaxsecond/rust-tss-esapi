@@ -227,3 +227,22 @@ mod test_signature_scheme_interface_type {
         }
     }
 }
+
+mod test_symmetric_object_interface_type {
+    use super::*;
+    use tss_esapi::{
+        constants::{
+            tss::{TPM2_ALG_AES, TPM2_ALG_CAMELLIA, TPM2_ALG_NULL, TPM2_ALG_SM4, TPM2_ALG_TDES},
+            Algorithm,
+        },
+        interface_types::algorithm::SymmetricObject,
+    };
+    #[test]
+    fn test_symmetric_object_conversion() {
+        test_conversion!(TPM2_ALG_TDES, SymmetricObject::Tdes);
+        test_conversion!(TPM2_ALG_AES, SymmetricObject::Aes);
+        test_conversion!(TPM2_ALG_SM4, SymmetricObject::Sm4);
+        test_conversion!(TPM2_ALG_CAMELLIA, SymmetricObject::Camellia);
+        test_conversion!(TPM2_ALG_NULL, SymmetricObject::Null);
+    }
+}

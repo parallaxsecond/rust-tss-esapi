@@ -1,3 +1,5 @@
+// Copyright 2021 Contributors to the Parsec project.
+// SPDX-License-Identifier: Apache-2.0
 use crate::{
     constants::tss::{
         TPM2_ECC_BN_P256, TPM2_ECC_BN_P638, TPM2_ECC_NIST_P192, TPM2_ECC_NIST_P224,

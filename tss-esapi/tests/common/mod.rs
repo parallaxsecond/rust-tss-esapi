@@ -8,7 +8,7 @@ use tss_esapi::{
     constants::SessionType,
     interface_types::{algorithm::HashingAlgorithm, resource_handles::Hierarchy},
     session::Session,
-    structures::{Digest, MaxBuffer, PcrSelectionListBuilder, PcrSlot},
+    structures::{Digest, MaxBuffer, PcrSelectionListBuilder, PcrSlot, SymmetricDefinition},
     tss2_esys::{TPM2B_PUBLIC, TPMU_PUBLIC_PARMS},
     utils, Context, Tcti,
 };
@@ -79,7 +79,7 @@ pub fn create_ctx_with_session() -> Context {
             None,
             None,
             SessionType::Hmac,
-            Cipher::aes_256_cfb(),
+            SymmetricDefinition::AES_256_CFB,
             HashingAlgorithm::Sha256,
         )
         .unwrap();
@@ -178,7 +178,7 @@ pub fn get_pcr_policy_digest(
                 None,
                 None,
                 SessionType::Trial,
-                Cipher::aes_256_cfb(),
+                SymmetricDefinition::AES_256_CFB,
                 HashingAlgorithm::Sha256,
             )
             .expect("Start auth session failed")
@@ -215,7 +215,7 @@ pub fn get_pcr_policy_digest(
                 None,
                 None,
                 SessionType::Policy,
-                Cipher::aes_256_cfb(),
+                SymmetricDefinition::AES_256_CFB,
                 HashingAlgorithm::Sha256,
             )
             .expect("Start auth session failed")

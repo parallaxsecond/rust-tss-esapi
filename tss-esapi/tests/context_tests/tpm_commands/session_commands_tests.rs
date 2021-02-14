@@ -4,11 +4,10 @@ mod test_start_auth_session {
     use crate::common::{create_ctx_with_session, create_ctx_without_session, decryption_key_pub};
     use std::convert::TryFrom;
     use tss_esapi::{
-        abstraction::cipher::Cipher,
         attributes::SessionAttributesBuilder,
         constants::SessionType,
         interface_types::{algorithm::HashingAlgorithm, resource_handles::Hierarchy},
-        structures::Nonce,
+        structures::{Nonce, SymmetricDefinition},
     };
 
     #[test]
@@ -20,7 +19,7 @@ mod test_start_auth_session {
                 None,
                 None,
                 SessionType::Hmac,
-                Cipher::aes_256_cfb(),
+                SymmetricDefinition::AES_256_CFB,
                 HashingAlgorithm::Sha256,
             )
             .unwrap();
@@ -44,7 +43,7 @@ mod test_start_auth_session {
                 )
                 .as_ref(),
                 SessionType::Hmac,
-                Cipher::aes_256_cfb(),
+                SymmetricDefinition::AES_256_CFB,
                 HashingAlgorithm::Sha256,
             )
             .unwrap();
@@ -71,7 +70,7 @@ mod test_start_auth_session {
                 Some(prim_key_handle.into()),
                 None,
                 SessionType::Hmac,
-                Cipher::aes_256_cfb(),
+                SymmetricDefinition::AES_256_CFB,
                 HashingAlgorithm::Sha256,
             )
             .unwrap();
@@ -86,7 +85,7 @@ mod test_start_auth_session {
                 None,
                 None,
                 SessionType::Hmac,
-                Cipher::aes_256_cfb(),
+                SymmetricDefinition::AES_256_CFB,
                 HashingAlgorithm::Sha256,
             )
             .unwrap();
@@ -108,7 +107,7 @@ mod test_start_auth_session {
                 None,
                 None,
                 SessionType::Hmac,
-                Cipher::aes_256_cfb(),
+                SymmetricDefinition::AES_256_CFB,
                 HashingAlgorithm::Sha256,
             )
             .unwrap();
@@ -123,7 +122,7 @@ mod test_start_auth_session {
                 None,
                 None,
                 SessionType::Hmac,
-                Cipher::aes_256_cfb(),
+                SymmetricDefinition::AES_256_CFB,
                 HashingAlgorithm::Sha256,
             )
             .unwrap();
@@ -134,7 +133,7 @@ mod test_start_auth_session {
                 None,
                 None,
                 SessionType::Hmac,
-                Cipher::aes_256_cfb(),
+                SymmetricDefinition::AES_256_CFB,
                 HashingAlgorithm::Sha256,
             )
             .unwrap_err();
@@ -146,11 +145,10 @@ mod test_policy_restart {
     use crate::common::{create_ctx_without_session, get_pcr_policy_digest};
     use std::convert::TryFrom;
     use tss_esapi::{
-        abstraction::cipher::Cipher,
         attributes::SessionAttributesBuilder,
         constants::SessionType,
         interface_types::algorithm::HashingAlgorithm,
-        structures::{Digest, DigestList},
+        structures::{Digest, DigestList, SymmetricDefinition},
     };
     #[test]
     fn test_policy_restart() {
@@ -162,7 +160,7 @@ mod test_policy_restart {
                 None,
                 None,
                 SessionType::Trial,
-                Cipher::aes_256_cfb(),
+                SymmetricDefinition::AES_256_CFB,
                 HashingAlgorithm::Sha256,
             )
             .expect("Start auth session failed")

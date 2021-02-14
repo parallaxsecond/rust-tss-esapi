@@ -193,11 +193,10 @@ mod test_activate_credential {
     use crate::common::{create_ctx_with_session, decryption_key_pub};
     use std::convert::{TryFrom, TryInto};
     use tss_esapi::{
-        abstraction::cipher::Cipher,
         attributes::SessionAttributesBuilder,
         constants::SessionType,
         interface_types::{algorithm::HashingAlgorithm, resource_handles::Hierarchy},
-        structures::Digest,
+        structures::{Digest, SymmetricDefinition},
     };
     #[test]
     fn test_make_activate_credential() {
@@ -211,7 +210,7 @@ mod test_activate_credential {
                 None,
                 None,
                 SessionType::Hmac,
-                Cipher::aes_256_cfb(),
+                SymmetricDefinition::AES_256_CFB,
                 HashingAlgorithm::Sha256,
             )
             .unwrap();
@@ -228,7 +227,7 @@ mod test_activate_credential {
                 None,
                 None,
                 SessionType::Hmac,
-                Cipher::aes_256_cfb(),
+                SymmetricDefinition::AES_256_CFB,
                 HashingAlgorithm::Sha256,
             )
             .unwrap();

@@ -1,3 +1,5 @@
+// Copyright 2021 Contributors to the Parsec project.
+// SPDX-License-Identifier: Apache-2.0
 use crate::{
     handles::{ObjectHandle, TpmHandle},
     interface_types::{algorithm::HashingAlgorithm, resource_handles::Hierarchy},
@@ -100,8 +102,11 @@ impl Context {
     /// ```rust
     /// # use tss_esapi::{
     /// #     attributes::ObjectAttributesBuilder,
-    /// #     structures::{MaxBuffer, Ticket, KeyedHashParms, HmacScheme, KeyedHashScheme},
-    /// #     interface_types::{resource_handles::Hierarchy, algorithm::HashingAlgorithm},
+    /// #     structures::{MaxBuffer, Ticket, KeyedHashParameters, KeyedHashScheme, HmacScheme},
+    /// #     interface_types::{
+    /// #           resource_handles::Hierarchy,
+    /// #           algorithm::HashingAlgorithm,
+    /// #     },
     /// #     constants::tss::{TPM2_ALG_KEYEDHASH, TPM2_ALG_SHA256},
     /// #     utils::{Tpm2BPublicBuilder, PublicParmsUnion},
     /// #     Context, Tcti,
@@ -123,7 +128,7 @@ impl Context {
     /// let key_pub = Tpm2BPublicBuilder::new()
     ///     .with_type(TPM2_ALG_KEYEDHASH)
     ///     .with_name_alg(TPM2_ALG_SHA256)
-    ///     .with_parms(PublicParmsUnion::KeyedHashDetail(KeyedHashParms::new(
+    ///     .with_parms(PublicParmsUnion::KeyedHashDetail(KeyedHashParameters::new(
     ///         KeyedHashScheme::HMAC_SHA_256,
     ///     )))
     ///     .with_object_attributes(object_attributes)

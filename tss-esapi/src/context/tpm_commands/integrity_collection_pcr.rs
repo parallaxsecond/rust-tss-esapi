@@ -29,8 +29,7 @@ impl Context {
     /// #     constants::SessionType,
     /// #     attributes::SessionAttributesBuilder,
     /// #     handles::PcrHandle,
-    /// #     structures::Digest,
-    /// #     abstraction::cipher::Cipher,
+    /// #     structures::{Digest, SymmetricDefinition},
     /// # };
     /// # use std::{env, str::FromStr};
     /// # // Create context
@@ -46,7 +45,7 @@ impl Context {
     /// #         None,
     /// #         None,
     /// #         SessionType::Hmac,
-    /// #         Cipher::aes_256_cfb(),
+    /// #         SymmetricDefinition::AES_256_CFB,
     /// #         tss_esapi::interface_types::algorithm::HashingAlgorithm::Sha256,
     /// #     )
     /// #     .expect("Failed to create session")
@@ -211,8 +210,8 @@ impl Context {
     /// #     Context, Tcti,
     /// #     constants::SessionType,
     /// #     attributes::SessionAttributesBuilder,
+    /// #     structures::SymmetricDefinition,
     /// #     interface_types::algorithm::HashingAlgorithm,
-    /// #     abstraction::cipher::Cipher,
     /// # };
     /// # use std::{env, str::FromStr};
     /// # // Create context
@@ -228,7 +227,7 @@ impl Context {
     /// #         None,
     /// #         None,
     /// #         SessionType::Hmac,
-    /// #         Cipher::aes_256_cfb(),
+    /// #         SymmetricDefinition::AES_256_CFB,
     /// #         HashingAlgorithm::Sha256,
     /// #     )
     /// #     .expect("Failed to create session")

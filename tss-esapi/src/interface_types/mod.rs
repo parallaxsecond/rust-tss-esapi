@@ -7,3 +7,4 @@ pub mod algorithm;
 pub mod dynamic_handles;
 pub mod ecc;
 pub mod resource_handles;
+pub mod key_bits;

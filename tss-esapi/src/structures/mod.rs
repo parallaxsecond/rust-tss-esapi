@@ -105,7 +105,7 @@ pub mod pcr_selection_list {
 /// The parameters section
 /////////////////////////////////////////////////////////
 mod parameters;
-pub use self::parameters::KeyedHashParms;
+pub use self::parameters::{KeyedHashParameters, SymmetricCipherParameters};
 /////////////////////////////////////////////////////////
 /// The tickets section
 /////////////////////////////////////////////////////////
@@ -120,4 +120,7 @@ mod schemes;
 pub use schemes::{HashScheme, HmacScheme, XorScheme};
 
 mod tagged;
-pub use tagged::schemes::KeyedHashScheme;
+pub use tagged::{
+    schemes::KeyedHashScheme,
+    symmetric::{SymmetricDefinition, SymmetricDefinitionObject},
+};

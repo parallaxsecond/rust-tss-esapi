@@ -1,8 +1,10 @@
+// Copyright 2021 Contributors to the Parsec project.
+// SPDX-License-Identifier: Apache-2.0
 use crate::{
     constants::Algorithm,
     tss2_esys::{
         TPMI_ALG_ASYM, TPMI_ALG_HASH, TPMI_ALG_KDF, TPMI_ALG_KEYEDHASH_SCHEME, TPMI_ALG_SIG_SCHEME,
-        TPMI_ALG_SYM, TPMI_ALG_SYM_MODE,
+        TPMI_ALG_SYM, TPMI_ALG_SYM_MODE, TPMI_ALG_SYM_OBJECT,
     },
     Error, Result, WrapperErrorKind,
 };
@@ -21,6 +23,7 @@ pub enum HashingAlgorithm {
     Sha3_256,
     Sha3_384,
     Sha3_512,
+    Null,
 }
 
 impl From<HashingAlgorithm> for Algorithm {
@@ -34,6 +37,7 @@ impl From<HashingAlgorithm> for Algorithm {
             HashingAlgorithm::Sha3_256 => Algorithm::Sha3_256,
             HashingAlgorithm::Sha3_384 => Algorithm::Sha3_384,
             HashingAlgorithm::Sha3_512 => Algorithm::Sha3_512,
+            HashingAlgorithm::Null => Algorithm::Null,
         }
     }
 }
@@ -51,6 +55,7 @@ impl TryFrom<Algorithm> for HashingAlgorithm {
             Algorithm::Sha3_256 => Ok(HashingAlgorithm::Sha3_256),
             Algorithm::Sha3_384 => Ok(HashingAlgorithm::Sha3_384),
             Algorithm::Sha3_512 => Ok(HashingAlgorithm::Sha3_512),
+            Algorithm::Null => Ok(HashingAlgorithm::Null),
             _ => Err(Error::local_error(WrapperErrorKind::InvalidParam)),
         }
     }
@@ -402,5 +407,58 @@ impl TryFrom<SignatureScheme> for AsymmetricAlgorithm {
                 Err(Error::local_error(WrapperErrorKind::InvalidParam))
             }
         }
+    }
+}
+
+/// Enum repsenting the symmetric object inetrface type.
+///
+/// # Details
+/// This corresponds to TPMI_ALG_SYM_OBJECT
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
+pub enum SymmetricObject {
+    Tdes,
+    Aes,
+    Sm4,
+    Camellia,
+    Null,
+}
+
+impl From<SymmetricObject> for Algorithm {
+    fn from(symmetric_object: SymmetricObject) -> Self {
+        match symmetric_object {
+            SymmetricObject::Tdes => Algorithm::Tdes,
+            SymmetricObject::Aes => Algorithm::Aes,
+            SymmetricObject::Sm4 => Algorithm::Sm4,
+            SymmetricObject::Camellia => Algorithm::Camellia,
+            SymmetricObject::Null => Algorithm::Null,
+        }
+    }
+}
+
+impl TryFrom<Algorithm> for SymmetricObject {
+    type Error = Error;
+    fn try_from(algorithm: Algorithm) -> Result<Self> {
+        match algorithm {
+            Algorithm::Tdes => Ok(SymmetricObject::Tdes),
+            Algorithm::Aes => Ok(SymmetricObject::Aes),
+            Algorithm::Sm4 => Ok(SymmetricObject::Sm4),
+            Algorithm::Camellia => Ok(SymmetricObject::Camellia),
+            Algorithm::Null => Ok(SymmetricObject::Null),
+            _ => Err(Error::local_error(WrapperErrorKind::InvalidParam)),
+        }
+    }
+}
+
+impl From<SymmetricObject> for TPMI_ALG_SYM_OBJECT {
+    fn from(symmetric_object: SymmetricObject) -> Self {
+        Algorithm::from(symmetric_object).into()
+    }
+}
+
+impl TryFrom<TPMI_ALG_SYM_OBJECT> for SymmetricObject {
+    type Error = Error;
+
+    fn try_from(tpmi_alg_sym_object: TPMI_ALG_SYM_OBJECT) -> Result<Self> {
+        SymmetricObject::try_from(Algorithm::try_from(tpmi_alg_sym_object)?)
     }
 }
