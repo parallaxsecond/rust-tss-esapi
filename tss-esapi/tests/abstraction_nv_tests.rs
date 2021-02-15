@@ -4,10 +4,11 @@
 use std::convert::TryFrom;
 use tss_esapi::abstraction::nv;
 use tss_esapi::{
+    attributes::NvIndexAttributesBuilder,
     constants::algorithm::HashingAlgorithm,
     handles::NvIndexTpmHandle,
     interface_types::resource_handles::{NvAuth, Provision},
-    nv::storage::{NvIndexAttributesBuilder, NvPublicBuilder},
+    nv::storage::NvPublicBuilder,
     structures::MaxNvBuffer,
 };
 

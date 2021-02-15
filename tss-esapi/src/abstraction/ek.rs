@@ -3,6 +3,7 @@
 
 use crate::{
     abstraction::nv,
+    attributes::ObjectAttributesBuilder,
     constants::{algorithm::AsymmetricAlgorithm, tss::*},
     handles::{KeyHandle, NvIndexTpmHandle, TpmHandle},
     interface_types::resource_handles::{Hierarchy, NvAuth},
@@ -11,7 +12,7 @@ use crate::{
         TPMS_RSA_PARMS, TPMS_SCHEME_HASH, TPMT_ECC_SCHEME, TPMT_KDF_SCHEME, TPMT_RSA_SCHEME,
         TPMT_SYM_DEF_OBJECT, TPMU_ASYM_SCHEME, TPMU_SYM_KEY_BITS, TPMU_SYM_MODE,
     },
-    utils::{ObjectAttributes, PublicIdUnion, PublicParmsUnion, Tpm2BPublicBuilder},
+    utils::{PublicIdUnion, PublicParmsUnion, Tpm2BPublicBuilder},
     Context, Result,
 };
 
@@ -23,18 +24,19 @@ const ECC_P256_EK_CERTIFICATE_NV_INDEX: u32 = 0x01c0000a;
 // Source: TCG EK Credential Profile for TPM Family 2.0; Level 0 Version 2.3 Revision 2
 // Appendix B.3.3 and B.3.4
 fn create_ek_public_from_default_template(alg: AsymmetricAlgorithm) -> Result<TPM2B_PUBLIC> {
-    let mut obj_attrs = ObjectAttributes(0);
-    obj_attrs.set_fixed_tpm(true);
-    obj_attrs.set_st_clear(false);
-    obj_attrs.set_fixed_parent(true);
-    obj_attrs.set_sensitive_data_origin(true);
-    obj_attrs.set_user_with_auth(false);
-    obj_attrs.set_admin_with_policy(true);
-    obj_attrs.set_no_da(false);
-    obj_attrs.set_encrypted_duplication(false);
-    obj_attrs.set_restricted(true);
-    obj_attrs.set_decrypt(true);
-    obj_attrs.set_sign_encrypt(false);
+    let obj_attrs = ObjectAttributesBuilder::new()
+        .with_fixed_tpm(true)
+        .with_st_clear(false)
+        .with_fixed_parent(true)
+        .with_sensitive_data_origin(true)
+        .with_user_with_auth(false)
+        .with_admin_with_policy(true)
+        .with_no_da(false)
+        .with_encrypted_duplication(false)
+        .with_restricted(true)
+        .with_decrypt(true)
+        .with_sign_encrypt(false)
+        .build()?;
 
     // TPM2_PolicySecret(TPM_RH_ENDORSEMENT)
     // With 32 null-bytes attached, because of the type of with_auth_policy

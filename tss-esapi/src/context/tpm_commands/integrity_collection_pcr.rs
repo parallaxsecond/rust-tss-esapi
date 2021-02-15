@@ -28,9 +28,9 @@ impl Context {
     /// #     Context, Tcti,
     /// #     constants::{
     /// #         algorithm::Cipher,
-    /// #         types::session::SessionType,
+    /// #         SessionType,
     /// #     },
-    /// #     session::SessionAttributesBuilder,
+    /// #     attributes::SessionAttributesBuilder,
     /// #     handles::PcrHandle,
     /// #     structures::Digest,
     /// # };
@@ -213,9 +213,9 @@ impl Context {
     /// #     Context, Tcti,
     /// #     constants::{
     /// #         algorithm::{HashingAlgorithm, Cipher},
-    /// #         types::session::SessionType,
+    /// #         SessionType,
     /// #     },
-    /// #     session::SessionAttributesBuilder,
+    /// #     attributes::SessionAttributesBuilder,
     /// # };
     /// # use std::{env, str::FromStr};
     /// # // Create context

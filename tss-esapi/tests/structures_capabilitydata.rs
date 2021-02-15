@@ -1,7 +1,7 @@
 // Copyright 2020 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
 
-use tss_esapi::constants::types::capability::CapabilityType;
+use tss_esapi::constants::CapabilityType;
 
 mod common;
 use common::create_ctx_without_session;

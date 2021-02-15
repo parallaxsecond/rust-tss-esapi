@@ -1,7 +1,8 @@
 // Copyright 2020 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
 use tss_esapi::{
-    nv::storage::{NvIndexAttributes, NvIndexAttributesBuilder, NvIndexType},
+    attributes::{NvIndexAttributes, NvIndexAttributesBuilder},
+    constants::NvIndexType,
     Error, WrapperErrorKind,
 };
 

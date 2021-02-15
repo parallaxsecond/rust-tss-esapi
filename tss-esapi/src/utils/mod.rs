@@ -8,13 +8,13 @@
 //! guidelines to them. Structures that are meant to act as builders have `Builder` appended to
 //! type name. Unions are converted to Rust `enum`s by dropping the `TPMU` qualifier and appending
 //! `Union`.
+use crate::attributes::{ObjectAttributes, ObjectAttributesBuilder};
 use crate::constants::algorithm::{Cipher, EllipticCurve, HashingAlgorithm};
-use crate::constants::tags::PropertyTag;
 use crate::constants::tss::*;
+use crate::constants::PropertyTag;
 use crate::structures::{Digest, KeyedHashParms, PcrSlot};
 use crate::tss2_esys::*;
 use crate::{Context, Error, Result, WrapperErrorKind};
-use bitfield::bitfield;
 use enumflags2::BitFlags;
 use log::error;
 use zeroize::Zeroize;
@@ -574,47 +574,6 @@ impl Default for TpmtSymDefBuilder {
     }
 }
 
-bitfield! {
-    pub struct ObjectAttributes(TPMA_OBJECT);
-    impl Debug;
-    // Object attribute flags
-    pub fixed_tpm, set_fixed_tpm: 1;
-    pub st_clear, set_st_clear: 2;
-    pub fixed_parent, set_fixed_parent: 4;
-    pub sensitive_data_origin, set_sensitive_data_origin: 5;
-    pub user_with_auth, set_user_with_auth: 6;
-    pub admin_with_policy, set_admin_with_policy: 7;
-    pub no_da, set_no_da: 10;
-    pub encrypted_duplication, set_encrypted_duplication: 11;
-    pub restricted, set_restricted: 16;
-    pub decrypt, set_decrypt: 17;
-    pub sign_encrypt, set_sign_encrypt: 18;
-}
-
-impl ObjectAttributes {
-    pub fn new_fixed_parent_key() -> Self {
-        let mut attrs = ObjectAttributes(0);
-        attrs.set_fixed_tpm(true);
-        attrs.set_fixed_parent(true);
-        attrs.set_sensitive_data_origin(true);
-        attrs.set_user_with_auth(true);
-        attrs.set_decrypt(true);
-        attrs.set_restricted(true);
-        attrs
-    }
-
-    pub fn new_fixed_signing_key() -> Self {
-        let mut attrs = ObjectAttributes(0);
-        attrs.set_fixed_tpm(true);
-        attrs.set_fixed_parent(true);
-        attrs.set_sensitive_data_origin(true);
-        attrs.set_user_with_auth(true);
-        attrs.set_sign_encrypt(true);
-
-        attrs
-    }
-}
-
 /// Rust enum representation of `TPMU_PUBLIC_ID`.
 // Most of the field types are from bindgen which does not implement Debug on them.
 #[allow(missing_debug_implementations)]
@@ -1159,14 +1118,16 @@ pub fn create_restricted_decryption_rsa_public(
         pub_exponent,
     )
     .build()?;
-    let mut object_attributes = ObjectAttributes(0);
-    object_attributes.set_fixed_tpm(true);
-    object_attributes.set_fixed_parent(true);
-    object_attributes.set_sensitive_data_origin(true);
-    object_attributes.set_user_with_auth(true);
-    object_attributes.set_decrypt(true);
-    object_attributes.set_sign_encrypt(false);
-    object_attributes.set_restricted(true);
+
+    let object_attributes = ObjectAttributesBuilder::new()
+        .with_fixed_tpm(true)
+        .with_fixed_parent(true)
+        .with_sensitive_data_origin(true)
+        .with_user_with_auth(true)
+        .with_decrypt(true)
+        .with_sign_encrypt(false)
+        .with_restricted(true)
+        .build()?;
 
     Tpm2BPublicBuilder::new()
         .with_type(TPM2_ALG_RSA)
@@ -1196,14 +1157,16 @@ pub fn create_unrestricted_encryption_decryption_rsa_public(
     }
     .build()
     .unwrap();
-    let mut object_attributes = ObjectAttributes(0);
-    object_attributes.set_fixed_tpm(true);
-    object_attributes.set_fixed_parent(true);
-    object_attributes.set_sensitive_data_origin(true);
-    object_attributes.set_user_with_auth(true);
-    object_attributes.set_decrypt(true);
-    object_attributes.set_sign_encrypt(true);
-    object_attributes.set_restricted(false);
+
+    let object_attributes = ObjectAttributesBuilder::new()
+        .with_fixed_tpm(true)
+        .with_fixed_parent(true)
+        .with_sensitive_data_origin(true)
+        .with_user_with_auth(true)
+        .with_decrypt(true)
+        .with_sign_encrypt(true)
+        .with_restricted(false)
+        .build()?;
 
     Tpm2BPublicBuilder::new()
         .with_type(TPM2_ALG_RSA)
@@ -1226,14 +1189,16 @@ pub fn create_unrestricted_signing_rsa_public(
     let rsa_parms =
         TpmsRsaParmsBuilder::new_unrestricted_signing_key(scheme, key_bits, pub_exponent)
             .build()?;
-    let mut object_attributes = ObjectAttributes(0);
-    object_attributes.set_fixed_tpm(true);
-    object_attributes.set_fixed_parent(true);
-    object_attributes.set_sensitive_data_origin(true);
-    object_attributes.set_user_with_auth(true);
-    object_attributes.set_decrypt(false);
-    object_attributes.set_sign_encrypt(true);
-    object_attributes.set_restricted(false);
+
+    let object_attributes = ObjectAttributesBuilder::new()
+        .with_fixed_tpm(true)
+        .with_fixed_parent(true)
+        .with_sensitive_data_origin(true)
+        .with_user_with_auth(true)
+        .with_decrypt(false)
+        .with_sign_encrypt(true)
+        .with_restricted(false)
+        .build()?;
 
     Tpm2BPublicBuilder::new()
         .with_type(TPM2_ALG_RSA)
@@ -1252,14 +1217,16 @@ pub fn create_unrestricted_signing_ecc_public(
     curve: EllipticCurve,
 ) -> Result<TPM2B_PUBLIC> {
     let ecc_parms = TpmsEccParmsBuilder::new_unrestricted_signing_key(scheme, curve).build()?;
-    let mut object_attributes = ObjectAttributes(0);
-    object_attributes.set_fixed_tpm(true);
-    object_attributes.set_fixed_parent(true);
-    object_attributes.set_sensitive_data_origin(true);
-    object_attributes.set_user_with_auth(true);
-    object_attributes.set_decrypt(false);
-    object_attributes.set_sign_encrypt(true);
-    object_attributes.set_restricted(false);
+
+    let object_attributes = ObjectAttributesBuilder::new()
+        .with_fixed_tpm(true)
+        .with_fixed_parent(true)
+        .with_sensitive_data_origin(true)
+        .with_user_with_auth(true)
+        .with_decrypt(false)
+        .with_sign_encrypt(true)
+        .with_restricted(false)
+        .build()?;
 
     Tpm2BPublicBuilder::new()
         .with_type(TPM2_ALG_ECC)

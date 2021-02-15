@@ -1,7 +1,7 @@
 // Copyright 2020 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
 use crate::{
-    constants::tags::StructureTag,
+    constants::StructureTag,
     handles::TpmHandle,
     interface_types::resource_handles::Hierarchy,
     tss2_esys::{
