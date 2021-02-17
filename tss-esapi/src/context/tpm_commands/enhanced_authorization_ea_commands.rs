@@ -454,6 +454,36 @@ impl Context {
         }
     }
 
-    // Missing function: PolicyTemplate
+    /// Bind policy to a specific creation template.
+    ///
+    /// # Arguments
+    /// * `policy_session` - The policy [session][Session] being extended.
+    /// * `template_hash` - The [digest][Digest] to be added to the policy.
+    pub fn policy_template(
+        &mut self,
+        policy_session: Session,
+        template_hash: &Digest,
+    ) -> Result<()> {
+        let ret = unsafe {
+            Esys_PolicyTemplate(
+                self.mut_context(),
+                policy_session.handle().into(),
+                self.optional_session_1(),
+                self.optional_session_2(),
+                self.optional_session_3(),
+                &template_hash.clone().into(),
+            )
+        };
+        let ret = Error::from_tss_rc(ret);
+        if ret.is_success() {
+            Ok(())
+        } else {
+            error!(
+                "Failed to bind template to a specific creation template: {}",
+                ret
+            );
+            Err(ret)
+        }
+    }
     // Missing function: PolicyAuthorizeNV
 }

@@ -72,7 +72,7 @@ mod test_policy_signed {
     }
 }
 
-mod test_polic_secret {
+mod test_policy_secret {
     use crate::common::create_ctx_with_session;
     use std::{convert::TryFrom, time::Duration};
     use tss_esapi::{
@@ -782,5 +782,62 @@ mod test_policy_nv_written {
 
         // There should be no errors setting an Or for a TRIAL session
         context.policy_nv_written(trial_session, true).unwrap();
+    }
+}
+
+mod test_policy_template {
+    use crate::common::create_ctx_without_session;
+    use std::convert::TryFrom;
+    use tss_esapi::{
+        constants::{
+            algorithm::{Cipher, HashingAlgorithm},
+            SessionType,
+        },
+        structures::{Digest, Nonce},
+    };
+    #[test]
+    fn basic_policy_template_test() {
+        let trial_session_nonce = Nonce::try_from(vec![
+            11, 12, 13, 14, 15, 16, 17, 18, 19, 11, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30,
+        ])
+        .expect("Failed to create Nonce for trial session");
+
+        let mut context = create_ctx_without_session();
+
+        let trial_session = context
+            .start_auth_session(
+                None,
+                None,
+                Some(&trial_session_nonce),
+                SessionType::Trial,
+                Cipher::aes_128_cfb(),
+                HashingAlgorithm::Sha1,
+            )
+            .expect("Call to start_auth_session failed")
+            .expect("Failed to get proper session");
+
+        let template_hash = Digest::try_from(vec![
+            1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
+        ])
+        .expect("Failed to create template hash digest");
+
+        // TODO. DO not just panic but instead check error code
+        // to see if the command is supported by the TPM and if
+        // not log a warning but let the test pass.
+        context
+            .policy_template(trial_session, &template_hash)
+            .expect("Failed to call policy_template");
+
+        let expected_policy_template = Digest::try_from(vec![
+            0xf6, 0x6d, 0x2a, 0x9c, 0x6e, 0xa8, 0xdf, 0x1a, 0x49, 0x3c, 0x42, 0xcc, 0xac, 0x6e,
+            0x3d, 0x08, 0xc0, 0x84, 0xcf, 0x73,
+        ])
+        .expect("Failed to create the expected policy template digest");
+
+        let policy_digest = context
+            .policy_get_digest(trial_session)
+            .expect("Failed to get policy digest for trial session");
+
+        assert_eq!(expected_policy_template, policy_digest);
     }
 }
