@@ -17,7 +17,7 @@ use crate::abstraction::cipher::Cipher;
 use crate::attributes::{ObjectAttributesBuilder, SessionAttributesBuilder};
 use crate::constants::tss::*;
 use crate::constants::SessionType;
-use crate::handles::KeyHandle;
+use crate::handles::{KeyHandle, SessionHandle};
 use crate::interface_types::{
     algorithm::HashingAlgorithm, ecc::EccCurve, resource_handles::Hierarchy,
 };
@@ -736,7 +736,7 @@ impl TransientKeyContextBuilder {
         })?;
         if let (Some(old_session), _, _) = context.sessions() {
             context.set_sessions((Some(new_session), None, None));
-            context.flush_context(old_session.handle().into())?;
+            context.flush_context(SessionHandle::from(old_session).into())?;
         }
         Ok(TransientKeyContext {
             context,

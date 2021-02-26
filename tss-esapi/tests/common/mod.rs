@@ -6,8 +6,9 @@ use tss_esapi::{
     abstraction::cipher::Cipher,
     attributes::{ObjectAttributesBuilder, SessionAttributesBuilder},
     constants::SessionType,
-    interface_types::{algorithm::HashingAlgorithm, resource_handles::Hierarchy},
-    session::Session,
+    interface_types::{
+        algorithm::HashingAlgorithm, resource_handles::Hierarchy, session_handles::PolicySession,
+    },
     structures::{Digest, MaxBuffer, PcrSelectionListBuilder, PcrSlot, SymmetricDefinition},
     tss2_esys::{TPM2B_PUBLIC, TPMU_PUBLIC_PARMS},
     utils, Context, Tcti,
@@ -123,7 +124,7 @@ pub fn get_pcr_policy_digest(
     context: &mut Context,
     mangle: bool,
     do_trial: bool,
-) -> (Digest, Session) {
+) -> (Digest, PolicySession) {
     let old_ses = context.sessions();
     context.clear_sessions();
 
@@ -172,7 +173,9 @@ pub fn get_pcr_policy_digest(
         .unwrap();
 
     if do_trial {
-        let pcr_session = context
+        // Create a trial policy session to use in calls to the policy
+        // context methods.
+        let trial_policy_auth_session = context
             .start_auth_session(
                 None,
                 None,
@@ -184,32 +187,39 @@ pub fn get_pcr_policy_digest(
             .expect("Start auth session failed")
             .expect("Start auth session returned a NONE handle");
 
-        let (pcr_session_attributes, pcr_session_attributes_mask) = SessionAttributesBuilder::new()
-            .with_decrypt(true)
-            .with_encrypt(true)
-            .build();
+        let (trial_policy_auth_session_attributes, trial_policy_auth_session_attributes_mask) =
+            SessionAttributesBuilder::new()
+                .with_decrypt(true)
+                .with_encrypt(true)
+                .build();
         context
             .tr_sess_set_attributes(
-                pcr_session,
-                pcr_session_attributes,
-                pcr_session_attributes_mask,
+                trial_policy_auth_session,
+                trial_policy_auth_session_attributes,
+                trial_policy_auth_session_attributes_mask,
             )
             .expect("tr_sess_set_attributes call failed");
 
+        let trial_policy_session = PolicySession::try_from(trial_policy_auth_session)
+            .expect("Failed to convert auth session into policy session");
         // There should be no errors setting pcr policy for trial session.
         context
-            .policy_pcr(pcr_session, &hashed_data, pcr_selection_list)
-            .unwrap();
+            .policy_pcr(trial_policy_session, &hashed_data, pcr_selection_list)
+            .expect("Failed to call policy pcr");
 
         // There is now a policy digest that can be retrived and used.
-        let digest = context.policy_get_digest(pcr_session).unwrap();
+        let digest = context
+            .policy_get_digest(trial_policy_session)
+            .expect("Failed to call policy_get_digest");
 
         // Restore old sessions
         context.set_sessions(old_ses);
 
-        (digest, pcr_session)
+        (digest, trial_policy_session)
     } else {
-        let pcr_session = context
+        // Create a policy session to use in calls to the policy
+        // context methods.
+        let policy_auth_session = context
             .start_auth_session(
                 None,
                 None,
@@ -221,30 +231,35 @@ pub fn get_pcr_policy_digest(
             .expect("Start auth session failed")
             .expect("Start auth session returned a NONE handle");
 
-        let (pcr_session_attributes, pcr_session_attributes_mask) = SessionAttributesBuilder::new()
-            .with_decrypt(true)
-            .with_encrypt(true)
-            .build();
+        let (policy_auth_session_attributes, policy_auth_session_attributes_mask) =
+            SessionAttributesBuilder::new()
+                .with_decrypt(true)
+                .with_encrypt(true)
+                .build();
         context
             .tr_sess_set_attributes(
-                pcr_session,
-                pcr_session_attributes,
-                pcr_session_attributes_mask,
+                policy_auth_session,
+                policy_auth_session_attributes,
+                policy_auth_session_attributes_mask,
             )
             .expect("tr_sess_set_attributes call failed");
 
+        let policy_session = PolicySession::try_from(policy_auth_session)
+            .expect("Failed to convert auth session into policy session");
         // There should be no errors setting pcr policy for trial session.
         context
-            .policy_pcr(pcr_session, &hashed_data, pcr_selection_list)
-            .unwrap();
+            .policy_pcr(policy_session, &hashed_data, pcr_selection_list)
+            .expect("Failed to call policy_pcr");
 
         // There is now a policy digest that can be retrived and used.
-        let digest = context.policy_get_digest(pcr_session).unwrap();
+        let digest = context
+            .policy_get_digest(policy_session)
+            .expect("Failed to call policy_get_digest");
 
         // Restore old sessions
         context.set_sessions(old_ses);
 
-        (digest, pcr_session)
+        (digest, policy_session)
     }
 }
 

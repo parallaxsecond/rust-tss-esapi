@@ -9,7 +9,10 @@ mod test_policy_signed {
     use tss_esapi::{
         attributes::SessionAttributesBuilder,
         constants::SessionType,
-        interface_types::{algorithm::HashingAlgorithm, resource_handles::Hierarchy},
+        interface_types::{
+            algorithm::HashingAlgorithm, resource_handles::Hierarchy,
+            session_handles::PolicySession,
+        },
         structures::{Digest, Nonce, SymmetricDefinition},
         utils::{AsymSchemeUnion, Signature, SignatureData},
     };
@@ -22,7 +25,7 @@ mod test_policy_signed {
             .unwrap()
             .key_handle;
 
-        let trial_session = context
+        let trial_policy_auth_session = context
             .execute_without_session(|ctx| {
                 ctx.start_auth_session(
                     None,
@@ -35,16 +38,16 @@ mod test_policy_signed {
             })
             .expect("Start auth session failed")
             .expect("Start auth session returned a NONE handle");
-        let (trial_session_attributes, trial_session_attributes_mask) =
+        let (trial_policy_auth_session_attributes, trial_policy_auth_session_attributes_mask) =
             SessionAttributesBuilder::new()
                 .with_decrypt(true)
                 .with_encrypt(true)
                 .build();
         context
             .tr_sess_set_attributes(
-                trial_session,
-                trial_session_attributes,
-                trial_session_attributes_mask,
+                trial_policy_auth_session,
+                trial_policy_auth_session_attributes,
+                trial_policy_auth_session_attributes_mask,
             )
             .expect("tr_sess_set_attributes call failed");
 
@@ -57,9 +60,12 @@ mod test_policy_signed {
             signature: SignatureData::RsaSignature(vec![0xab; 32]),
         };
 
+        let trial_policy_session = PolicySession::try_from(trial_policy_auth_session)
+            .expect("Failed to convert auth session into policy session");
+
         context
             .policy_signed(
-                trial_session,
+                trial_policy_session,
                 key_handle.try_into().unwrap(),
                 nonce_tpm,
                 cp_hash_a,
@@ -78,14 +84,14 @@ mod test_policy_secret {
         attributes::SessionAttributesBuilder,
         constants::SessionType,
         handles::AuthHandle,
-        interface_types::algorithm::HashingAlgorithm,
+        interface_types::{algorithm::HashingAlgorithm, session_handles::PolicySession},
         structures::{Digest, Nonce, SymmetricDefinition},
     };
     #[test]
     fn test_policy_secret() {
         let mut context = create_ctx_with_session();
 
-        let trial_session = context
+        let trial_policy_auth_session = context
             .execute_without_session(|ctx| {
                 ctx.start_auth_session(
                     None,
@@ -98,16 +104,16 @@ mod test_policy_secret {
             })
             .expect("Start auth session failed")
             .expect("Start auth session returned a NONE handle");
-        let (trial_session_attributes, trial_session_attributes_mask) =
+        let (trial_policy_auth_session_attributes, trial_policy_auth_session_attributes_mask) =
             SessionAttributesBuilder::new()
                 .with_decrypt(true)
                 .with_encrypt(true)
                 .build();
         context
             .tr_sess_set_attributes(
-                trial_session,
-                trial_session_attributes,
-                trial_session_attributes_mask,
+                trial_policy_auth_session,
+                trial_policy_auth_session_attributes,
+                trial_policy_auth_session_attributes_mask,
             )
             .expect("tr_sess_set_attributes call failed");
 
@@ -115,9 +121,12 @@ mod test_policy_secret {
         let cp_hash_a = Digest::try_from(vec![1, 2, 3]).unwrap();
         let policy_ref = Nonce::try_from(vec![1, 2, 3]).unwrap();
 
+        let trial_policy_session = PolicySession::try_from(trial_policy_auth_session)
+            .expect("Failed to convert auth session into policy session");
+
         context
             .policy_secret(
-                trial_session,
+                trial_policy_session,
                 AuthHandle::Endorsement,
                 nonce_tpm,
                 cp_hash_a,
@@ -130,16 +139,17 @@ mod test_policy_secret {
 
 mod test_policy_or {
     use crate::common::{create_ctx_without_session, get_pcr_policy_digest};
+    use std::convert::TryFrom;
     use tss_esapi::{
         attributes::SessionAttributesBuilder,
         constants::SessionType,
-        interface_types::algorithm::HashingAlgorithm,
+        interface_types::{algorithm::HashingAlgorithm, session_handles::PolicySession},
         structures::{DigestList, SymmetricDefinition},
     };
     #[test]
     fn test_policy_or() {
         let mut context = create_ctx_without_session();
-        let trial_session = context
+        let trial_policy_auth_session = context
             .start_auth_session(
                 None,
                 None,
@@ -150,16 +160,16 @@ mod test_policy_or {
             )
             .expect("Start auth session failed")
             .expect("Start auth session returned a NONE handle");
-        let (trial_session_attributes, trial_session_attributes_mask) =
+        let (trial_policy_auth_session_attributes, trial_policy_auth_session_attributes_mask) =
             SessionAttributesBuilder::new()
                 .with_decrypt(true)
                 .with_encrypt(true)
                 .build();
         context
             .tr_sess_set_attributes(
-                trial_session,
-                trial_session_attributes,
-                trial_session_attributes_mask,
+                trial_policy_auth_session,
+                trial_policy_auth_session_attributes,
+                trial_policy_auth_session_attributes_mask,
             )
             .expect("tr_sess_set_attributes call failed");
 
@@ -170,9 +180,12 @@ mod test_policy_or {
         digest_list
             .add(get_pcr_policy_digest(&mut context, false, true).0)
             .unwrap();
-
+        let trial_policy_session = PolicySession::try_from(trial_policy_auth_session)
+            .expect("Failed to convert auth session into policy session");
         // There should be no errors setting an Or for a TRIAL session
-        context.policy_or(trial_session, digest_list).unwrap();
+        context
+            .policy_or(trial_policy_session, digest_list)
+            .unwrap();
     }
 }
 
@@ -182,14 +195,17 @@ mod test_policy_pcr {
     use tss_esapi::{
         attributes::SessionAttributesBuilder,
         constants::SessionType,
-        interface_types::{algorithm::HashingAlgorithm, resource_handles::Hierarchy},
+        interface_types::{
+            algorithm::HashingAlgorithm, resource_handles::Hierarchy,
+            session_handles::PolicySession,
+        },
         structures::{MaxBuffer, PcrSelectionListBuilder, PcrSlot, SymmetricDefinition},
     };
 
     #[test]
     fn test_policy_pcr_sha_256() {
         let mut context = create_ctx_without_session();
-        let trial_session = context
+        let trial_policy_auth_session = context
             .start_auth_session(
                 None,
                 None,
@@ -200,16 +216,16 @@ mod test_policy_pcr {
             )
             .expect("Start auth session failed")
             .expect("Start auth session returned a NONE handle");
-        let (trial_session_attributes, trial_session_attributes_mask) =
+        let (trial_policy_auth_session_attributes, trial_policy_auth_session_attributes_mask) =
             SessionAttributesBuilder::new()
                 .with_decrypt(true)
                 .with_encrypt(true)
                 .build();
         context
             .tr_sess_set_attributes(
-                trial_session,
-                trial_session_attributes,
-                trial_session_attributes_mask,
+                trial_policy_auth_session,
+                trial_policy_auth_session_attributes,
+                trial_policy_auth_session_attributes_mask,
             )
             .expect("tr_sess_set_attributes call failed");
 
@@ -218,8 +234,9 @@ mod test_policy_pcr {
             .with_selection(HashingAlgorithm::Sha256, &[PcrSlot::Slot0, PcrSlot::Slot1])
             .build();
 
-        let (_update_counter, pcr_selection_list_out, pcr_data) =
-            context.pcr_read(&pcr_selection_list).unwrap();
+        let (_update_counter, pcr_selection_list_out, pcr_data) = context
+            .pcr_read(&pcr_selection_list)
+            .expect("Failed to call policy_pcr");
 
         assert_eq!(pcr_selection_list, pcr_selection_list_out);
         // Run pcr_policy command.
@@ -255,24 +272,29 @@ mod test_policy_pcr {
                 HashingAlgorithm::Sha256,
                 Hierarchy::Owner,
             )
-            .unwrap();
+            .expect("Failed to call hash");
+        let trial_policy_session = PolicySession::try_from(trial_policy_auth_session)
+            .expect("Failed to convert auth session into policy session");
         // There should be no errors setting pcr policy for trial session.
         context
-            .policy_pcr(trial_session, &hashed_data, pcr_selection_list)
-            .unwrap();
+            .policy_pcr(trial_policy_session, &hashed_data, pcr_selection_list)
+            .expect("Failed to call policy_pcr");
     }
 }
 
 mod test_policy_locality {
     use crate::common::create_ctx_without_session;
+    use std::convert::TryFrom;
     use tss_esapi::{
-        attributes::SessionAttributesBuilder, constants::SessionType,
-        interface_types::algorithm::HashingAlgorithm, structures::SymmetricDefinition,
+        attributes::SessionAttributesBuilder,
+        constants::SessionType,
+        interface_types::{algorithm::HashingAlgorithm, session_handles::PolicySession},
+        structures::SymmetricDefinition,
     };
     #[test]
     fn test_policy_locality() {
         let mut context = create_ctx_without_session();
-        let trial_session = context
+        let trial_policy_auth_session = context
             .start_auth_session(
                 None,
                 None,
@@ -283,36 +305,38 @@ mod test_policy_locality {
             )
             .expect("Start auth session failed")
             .expect("Start auth session returned a NONE handle");
-        let (trial_session_attributes, trial_session_attributes_mask) =
+        let (trial_policy_auth_session_attributes, trial_policy_auth_session_attributes_mask) =
             SessionAttributesBuilder::new()
                 .with_decrypt(true)
                 .with_encrypt(true)
                 .build();
         context
             .tr_sess_set_attributes(
-                trial_session,
-                trial_session_attributes,
-                trial_session_attributes_mask,
+                trial_policy_auth_session,
+                trial_policy_auth_session_attributes,
+                trial_policy_auth_session_attributes_mask,
             )
             .expect("tr_sess_set_attributes call failed");
-
+        let trial_policy_session = PolicySession::try_from(trial_policy_auth_session)
+            .expect("Failed to convert auth session into policy session");
         // There should be no errors setting an Or for a TRIAL session
-        context.policy_locality(trial_session, 3).unwrap();
+        context.policy_locality(trial_policy_session, 3).unwrap();
     }
 }
 
 mod test_policy_command_code {
     use crate::common::create_ctx_without_session;
+    use std::convert::TryFrom;
     use tss_esapi::{
         attributes::SessionAttributesBuilder,
         constants::{tss::TPM2_CC_Unseal, SessionType},
-        interface_types::algorithm::HashingAlgorithm,
+        interface_types::{algorithm::HashingAlgorithm, session_handles::PolicySession},
         structures::SymmetricDefinition,
     };
     #[test]
     fn test_policy_command_code() {
         let mut context = create_ctx_without_session();
-        let trial_session = context
+        let trial_policy_auth_session = context
             .start_auth_session(
                 None,
                 None,
@@ -323,36 +347,40 @@ mod test_policy_command_code {
             )
             .expect("Start auth session failed")
             .expect("Start auth session returned a NONE handle");
-        let (trial_session_attributes, trial_session_attributes_mask) =
+        let (trial_policy_auth_session_attributes, trial_policy_auth_session_attributes_mask) =
             SessionAttributesBuilder::new()
                 .with_decrypt(true)
                 .with_encrypt(true)
                 .build();
         context
             .tr_sess_set_attributes(
-                trial_session,
-                trial_session_attributes,
-                trial_session_attributes_mask,
+                trial_policy_auth_session,
+                trial_policy_auth_session_attributes,
+                trial_policy_auth_session_attributes_mask,
             )
             .expect("tr_sess_set_attributes call failed");
-
+        let trial_policy_session = PolicySession::try_from(trial_policy_auth_session)
+            .expect("Failed to convert auth session into policy session");
         // There should be no errors setting an Or for a TRIAL session
         context
-            .policy_command_code(trial_session, TPM2_CC_Unseal)
+            .policy_command_code(trial_policy_session, TPM2_CC_Unseal)
             .unwrap();
     }
 }
 
 mod test_policy_physical_presence {
     use crate::common::create_ctx_without_session;
+    use std::convert::TryFrom;
     use tss_esapi::{
-        attributes::SessionAttributesBuilder, constants::SessionType,
-        interface_types::algorithm::HashingAlgorithm, structures::SymmetricDefinition,
+        attributes::SessionAttributesBuilder,
+        constants::SessionType,
+        interface_types::{algorithm::HashingAlgorithm, session_handles::PolicySession},
+        structures::SymmetricDefinition,
     };
     #[test]
     fn test_policy_physical_presence() {
         let mut context = create_ctx_without_session();
-        let trial_session = context
+        let trial_policy_auth_session = context
             .start_auth_session(
                 None,
                 None,
@@ -363,21 +391,24 @@ mod test_policy_physical_presence {
             )
             .expect("Start auth session failed")
             .expect("Start auth session returned a NONE handle");
-        let (trial_session_attributes, trial_session_attributes_mask) =
+        let (trial_policy_auth_session_attributes, trial_policy_auth_session_attributes_mask) =
             SessionAttributesBuilder::new()
                 .with_decrypt(true)
                 .with_encrypt(true)
                 .build();
         context
             .tr_sess_set_attributes(
-                trial_session,
-                trial_session_attributes,
-                trial_session_attributes_mask,
+                trial_policy_auth_session,
+                trial_policy_auth_session_attributes,
+                trial_policy_auth_session_attributes_mask,
             )
             .expect("tr_sess_set_attributes call failed");
-
+        let trial_policy_session = PolicySession::try_from(trial_policy_auth_session)
+            .expect("Failed to convert auth session into policy session");
         // There should be no errors setting an Or for a TRIAL session
-        context.policy_physical_presence(trial_session).unwrap();
+        context
+            .policy_physical_presence(trial_policy_session)
+            .unwrap();
     }
 }
 
@@ -387,13 +418,13 @@ mod test_policy_cp_hash {
     use tss_esapi::{
         attributes::SessionAttributesBuilder,
         constants::SessionType,
-        interface_types::algorithm::HashingAlgorithm,
+        interface_types::{algorithm::HashingAlgorithm, session_handles::PolicySession},
         structures::{Digest, SymmetricDefinition},
     };
     #[test]
     fn test_policy_cp_hash() {
         let mut context = create_ctx_without_session();
-        let trial_session = context
+        let trial_policy_auth_session = context
             .start_auth_session(
                 None,
                 None,
@@ -404,16 +435,16 @@ mod test_policy_cp_hash {
             )
             .expect("Start auth session failed")
             .expect("Start auth session returned a NONE handle");
-        let (trial_session_attributes, trial_session_attributes_mask) =
+        let (trial_policy_auth_session_attributes, trial_policy_auth_session_attributes_mask) =
             SessionAttributesBuilder::new()
                 .with_decrypt(true)
                 .with_encrypt(true)
                 .build();
         context
             .tr_sess_set_attributes(
-                trial_session,
-                trial_session_attributes,
-                trial_session_attributes_mask,
+                trial_policy_auth_session,
+                trial_policy_auth_session_attributes,
+                trial_policy_auth_session_attributes_mask,
             )
             .expect("tr_sess_set_attributes call failed");
 
@@ -421,10 +452,13 @@ mod test_policy_cp_hash {
             252, 200, 17, 232, 137, 217, 130, 51, 54, 22, 184, 131, 2, 134, 99, 130, 175, 216, 159,
             174, 203, 165, 35, 19, 187, 56, 167, 208, 3, 128, 11, 12,
         ])
-        .unwrap();
-
+        .expect("Failed to create digest from data");
+        let trial_policy_session = PolicySession::try_from(trial_policy_auth_session)
+            .expect("Failed to convert auth session into policy session");
         // There should be no errors setting an Or for a TRIAL session
-        context.policy_cp_hash(trial_session, &test_dig).unwrap();
+        context
+            .policy_cp_hash(trial_policy_session, &test_dig)
+            .unwrap();
     }
 }
 
@@ -434,13 +468,13 @@ mod test_policy_name_hash {
     use tss_esapi::{
         attributes::SessionAttributesBuilder,
         constants::SessionType,
-        interface_types::algorithm::HashingAlgorithm,
+        interface_types::{algorithm::HashingAlgorithm, session_handles::PolicySession},
         structures::{Digest, SymmetricDefinition},
     };
     #[test]
     fn test_policy_name_hash() {
         let mut context = create_ctx_without_session();
-        let trial_session = context
+        let trial_policy_auth_session = context
             .start_auth_session(
                 None,
                 None,
@@ -451,16 +485,16 @@ mod test_policy_name_hash {
             )
             .expect("Start auth session failed")
             .expect("Start auth session returned a NONE handle");
-        let (trial_session_attributes, trial_session_attributes_mask) =
+        let (trial_policy_auth_session_attributes, trial_policy_auth_session_attributes_mask) =
             SessionAttributesBuilder::new()
                 .with_decrypt(true)
                 .with_encrypt(true)
                 .build();
         context
             .tr_sess_set_attributes(
-                trial_session,
-                trial_session_attributes,
-                trial_session_attributes_mask,
+                trial_policy_auth_session,
+                trial_policy_auth_session_attributes,
+                trial_policy_auth_session_attributes_mask,
             )
             .expect("tr_sess_set_attributes call failed");
 
@@ -468,10 +502,13 @@ mod test_policy_name_hash {
             252, 200, 17, 232, 137, 217, 130, 51, 54, 22, 184, 131, 2, 134, 99, 130, 175, 216, 159,
             174, 203, 165, 35, 19, 187, 56, 167, 208, 3, 128, 11, 12,
         ])
-        .unwrap();
-
+        .expect("Failed to create digest from data");
+        let trial_policy_session = PolicySession::try_from(trial_policy_auth_session)
+            .expect("Failed to convert auth session into policy session");
         // There should be no errors setting an Or for a TRIAL session
-        context.policy_name_hash(trial_session, &test_dig).unwrap();
+        context
+            .policy_name_hash(trial_policy_session, &test_dig)
+            .expect("Call to policy_name_hash failed");
     }
 }
 
@@ -548,14 +585,17 @@ mod test_policy_authorize {
 
 mod test_policy_auth_value {
     use crate::common::create_ctx_without_session;
+    use std::convert::TryFrom;
     use tss_esapi::{
-        attributes::SessionAttributesBuilder, constants::SessionType,
-        interface_types::algorithm::HashingAlgorithm, structures::SymmetricDefinition,
+        attributes::SessionAttributesBuilder,
+        constants::SessionType,
+        interface_types::{algorithm::HashingAlgorithm, session_handles::PolicySession},
+        structures::SymmetricDefinition,
     };
     #[test]
     fn test_policy_auth_value() {
         let mut context = create_ctx_without_session();
-        let trial_session = context
+        let trial_policy_auth_session = context
             .start_auth_session(
                 None,
                 None,
@@ -566,34 +606,40 @@ mod test_policy_auth_value {
             )
             .expect("Start auth session failed")
             .expect("Start auth session returned a NONE handle");
-        let (trial_session_attributes, trial_session_attributes_mask) =
+        let (trial_policy_auth_session_attributes, trial_policy_auth_session_attributes_mask) =
             SessionAttributesBuilder::new()
                 .with_decrypt(true)
                 .with_encrypt(true)
                 .build();
         context
             .tr_sess_set_attributes(
-                trial_session,
-                trial_session_attributes,
-                trial_session_attributes_mask,
+                trial_policy_auth_session,
+                trial_policy_auth_session_attributes,
+                trial_policy_auth_session_attributes_mask,
             )
             .expect("tr_sess_set_attributes call failed");
-
+        let trial_policy_session = PolicySession::try_from(trial_policy_auth_session)
+            .expect("Failed to convert auth session into policy session");
         // There should be no errors setting an Or for a TRIAL session
-        context.policy_auth_value(trial_session).unwrap();
+        context
+            .policy_auth_value(trial_policy_session)
+            .expect("Failed to call policy auth value");
     }
 }
 
 mod test_policy_password {
     use crate::common::create_ctx_without_session;
+    use std::convert::TryFrom;
     use tss_esapi::{
-        attributes::SessionAttributesBuilder, constants::SessionType,
-        interface_types::algorithm::HashingAlgorithm, structures::SymmetricDefinition,
+        attributes::SessionAttributesBuilder,
+        constants::SessionType,
+        interface_types::{algorithm::HashingAlgorithm, session_handles::PolicySession},
+        structures::SymmetricDefinition,
     };
     #[test]
     fn test_policy_password() {
         let mut context = create_ctx_without_session();
-        let trial_session = context
+        let trial_policy_auth_session = context
             .start_auth_session(
                 None,
                 None,
@@ -604,21 +650,24 @@ mod test_policy_password {
             )
             .expect("Start auth session failed")
             .expect("Start auth session returned a NONE handle");
-        let (trial_session_attributes, trial_session_attributes_mask) =
+        let (trial_policy_auth_session_attributes, trial_policy_auth_session_attributes_mask) =
             SessionAttributesBuilder::new()
                 .with_decrypt(true)
                 .with_encrypt(true)
                 .build();
         context
             .tr_sess_set_attributes(
-                trial_session,
-                trial_session_attributes,
-                trial_session_attributes_mask,
+                trial_policy_auth_session,
+                trial_policy_auth_session_attributes,
+                trial_policy_auth_session_attributes_mask,
             )
             .expect("tr_sess_set_attributes call failed");
-
+        let trial_policy_session = PolicySession::try_from(trial_policy_auth_session)
+            .expect("Failed to convert auth session into policy session");
         // There should be no errors setting an Or for a TRIAL session
-        context.policy_password(trial_session).unwrap();
+        context
+            .policy_password(trial_policy_session)
+            .expect("Failed to call policy_password");
     }
 }
 
@@ -628,13 +677,16 @@ mod test_policy_get_digest {
     use tss_esapi::{
         attributes::SessionAttributesBuilder,
         constants::SessionType,
-        interface_types::{algorithm::HashingAlgorithm, resource_handles::Hierarchy},
+        interface_types::{
+            algorithm::HashingAlgorithm, resource_handles::Hierarchy,
+            session_handles::PolicySession,
+        },
         structures::{MaxBuffer, PcrSelectionListBuilder, PcrSlot, SymmetricDefinition},
     };
     #[test]
     fn get_policy_digest() {
         let mut context = create_ctx_without_session();
-        let trial_session = context
+        let trial_policy_auth_session = context
             .start_auth_session(
                 None,
                 None,
@@ -645,16 +697,16 @@ mod test_policy_get_digest {
             )
             .expect("Start auth session failed")
             .expect("Start auth session returned a NONE handle");
-        let (trial_session_attributes, trial_session_attributes_mask) =
+        let (trial_policy_auth_session_attributes, trial_policy_auth_session_attributes_mask) =
             SessionAttributesBuilder::new()
                 .with_decrypt(true)
                 .with_encrypt(true)
                 .build();
         context
             .tr_sess_set_attributes(
-                trial_session,
-                trial_session_attributes,
-                trial_session_attributes_mask,
+                trial_policy_auth_session,
+                trial_policy_auth_session_attributes,
+                trial_policy_auth_session_attributes_mask,
             )
             .expect("tr_sess_set_attributes call failed");
 
@@ -663,8 +715,11 @@ mod test_policy_get_digest {
             .with_selection(HashingAlgorithm::Sha256, &[PcrSlot::Slot0, PcrSlot::Slot1])
             .build();
 
-        let (_update_counter, pcr_selection_list_out, pcr_data) =
-            context.pcr_read(&pcr_selection_list).unwrap();
+        let trial_policy_session = PolicySession::try_from(trial_policy_auth_session)
+            .expect("Failed to convert auth session into policy session");
+        let (_update_counter, pcr_selection_list_out, pcr_data) = context
+            .pcr_read(&pcr_selection_list)
+            .expect("Failed to call pcr_read");
 
         assert_eq!(pcr_selection_list, pcr_selection_list_out);
         // Run pcr_policy command.
@@ -703,11 +758,11 @@ mod test_policy_get_digest {
             .unwrap();
         // There should be no errors setting pcr policy for trial session.
         context
-            .policy_pcr(trial_session, &hashed_data, pcr_selection_list)
+            .policy_pcr(trial_policy_session, &hashed_data, pcr_selection_list)
             .unwrap();
 
         // There is now a policy digest that can be retrived and used.
-        let retrieved_policy_digest = context.policy_get_digest(trial_session).unwrap();
+        let retrieved_policy_digest = context.policy_get_digest(trial_policy_session).unwrap();
 
         // The algorithm is SHA256 so the expected size of the digest should be 32.
         assert_eq!(retrieved_policy_digest.value().len(), 32);
@@ -716,14 +771,17 @@ mod test_policy_get_digest {
 
 mod test_policy_nv_written {
     use crate::common::create_ctx_without_session;
+    use std::convert::TryFrom;
     use tss_esapi::{
-        attributes::SessionAttributesBuilder, constants::SessionType,
-        interface_types::algorithm::HashingAlgorithm, structures::SymmetricDefinition,
+        attributes::SessionAttributesBuilder,
+        constants::SessionType,
+        interface_types::{algorithm::HashingAlgorithm, session_handles::PolicySession},
+        structures::SymmetricDefinition,
     };
     #[test]
     fn test_policy_nv_written() {
         let mut context = create_ctx_without_session();
-        let trial_session = context
+        let trial_policy_auth_session = context
             .start_auth_session(
                 None,
                 None,
@@ -734,21 +792,25 @@ mod test_policy_nv_written {
             )
             .expect("Start auth session failed")
             .expect("Start auth session returned a NONE handle");
-        let (trial_session_attributes, trial_session_attributes_mask) =
+        let (trial_policy_auth_session_attributes, trial_policy_auth_session_attributes_mask) =
             SessionAttributesBuilder::new()
                 .with_decrypt(true)
                 .with_encrypt(true)
                 .build();
         context
             .tr_sess_set_attributes(
-                trial_session,
-                trial_session_attributes,
-                trial_session_attributes_mask,
+                trial_policy_auth_session,
+                trial_policy_auth_session_attributes,
+                trial_policy_auth_session_attributes_mask,
             )
             .expect("tr_sess_set_attributes call failed");
 
+        let trial_policy_session = PolicySession::try_from(trial_policy_auth_session)
+            .expect("Failed to convert auth session into policy session");
         // There should be no errors setting an Or for a TRIAL session
-        context.policy_nv_written(trial_session, true).unwrap();
+        context
+            .policy_nv_written(trial_policy_session, true)
+            .unwrap();
     }
 }
 
@@ -757,7 +819,7 @@ mod test_policy_template {
     use std::convert::TryFrom;
     use tss_esapi::{
         constants::SessionType,
-        interface_types::algorithm::HashingAlgorithm,
+        interface_types::{algorithm::HashingAlgorithm, session_handles::PolicySession},
         structures::{Digest, Nonce, SymmetricDefinition},
     };
     #[test]
@@ -769,7 +831,7 @@ mod test_policy_template {
 
         let mut context = create_ctx_without_session();
 
-        let trial_session = context
+        let trial_policy_auth_session = context
             .start_auth_session(
                 None,
                 None,
@@ -786,11 +848,13 @@ mod test_policy_template {
         ])
         .expect("Failed to create template hash digest");
 
+        let trial_policy_session = PolicySession::try_from(trial_policy_auth_session)
+            .expect("Failed to convert auth session into policy session");
         // TODO. DO not just panic but instead check error code
         // to see if the command is supported by the TPM and if
         // not log a warning but let the test pass.
         context
-            .policy_template(trial_session, &template_hash)
+            .policy_template(trial_policy_session, &template_hash)
             .expect("Failed to call policy_template");
 
         let expected_policy_template = Digest::try_from(vec![
@@ -800,7 +864,7 @@ mod test_policy_template {
         .expect("Failed to create the expected policy template digest");
 
         let policy_digest = context
-            .policy_get_digest(trial_session)
+            .policy_get_digest(trial_policy_session)
             .expect("Failed to get policy digest for trial session");
 
         assert_eq!(expected_policy_template, policy_digest);

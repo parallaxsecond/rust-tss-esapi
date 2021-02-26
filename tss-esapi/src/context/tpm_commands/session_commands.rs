@@ -4,15 +4,16 @@ use crate::{
     constants::SessionType,
     context::handle_manager::HandleDropAction,
     handles::{KeyHandle, ObjectHandle, SessionHandle},
-    interface_types::algorithm::HashingAlgorithm,
-    session::Session,
+    interface_types::{
+        algorithm::HashingAlgorithm,
+        session_handles::{AuthSession, PolicySession},
+    },
     structures::{Nonce, SymmetricDefinition},
     tss2_esys::*,
     Context, Error, Result,
 };
 use log::error;
-use std::convert::TryInto;
-use std::ptr::null;
+use std::{convert::TryInto, ptr::null};
 impl Context {
     /// Start new authentication session and return the Session object
     /// associated with the session.
@@ -57,7 +58,7 @@ impl Context {
         session_type: SessionType,
         symmetric: SymmetricDefinition,
         auth_hash: HashingAlgorithm,
-    ) -> Result<Option<Session>> {
+    ) -> Result<Option<AuthSession>> {
         let nonce_ptr: *const TPM2B_NONCE = match nonce {
             Some(val) => &val.clone().into(),
             None => null(),
@@ -87,7 +88,7 @@ impl Context {
                 ObjectHandle::from(esys_session_handle),
                 HandleDropAction::Flush,
             )?;
-            Ok(Session::create(
+            Ok(AuthSession::create(
                 session_type,
                 SessionHandle::from(esys_session_handle),
                 auth_hash,
@@ -99,11 +100,11 @@ impl Context {
     }
 
     /// Restart the TPM Policy
-    pub fn policy_restart(&mut self, policy_session: Session) -> Result<()> {
+    pub fn policy_restart(&mut self, policy_session: PolicySession) -> Result<()> {
         let ret = unsafe {
             Esys_PolicyRestart(
                 self.mut_context(),
-                policy_session.handle().into(),
+                SessionHandle::from(policy_session).into(),
                 self.optional_session_1(),
                 self.optional_session_2(),
                 self.optional_session_3(),

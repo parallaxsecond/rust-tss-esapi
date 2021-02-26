@@ -5,8 +5,11 @@ use crate::{
     abstraction::{cipher::Cipher, IntoKeyCustomization, KeyCustomization},
     attributes::{ObjectAttributesBuilder, SessionAttributesBuilder},
     constants::{tss::*, SessionType},
-    handles::{AuthHandle, KeyHandle},
-    interface_types::algorithm::{AsymmetricAlgorithm, HashingAlgorithm, SignatureScheme},
+    handles::{AuthHandle, KeyHandle, SessionHandle},
+    interface_types::{
+        algorithm::{AsymmetricAlgorithm, HashingAlgorithm, SignatureScheme},
+        session_handles::PolicySession,
+    },
     structures::{Auth, CreateKeyResult, Private},
     tss2_esys::{
         TPM2B_PUBLIC, TPMS_ECC_PARMS, TPMS_RSA_PARMS, TPMS_SCHEME_HASH, TPMT_ECC_SCHEME,
@@ -114,38 +117,46 @@ pub fn load_ak(
     private: Private,
     public: TPM2B_PUBLIC,
 ) -> Result<KeyHandle> {
-    let session = match context.start_auth_session(
-        None,
-        None,
-        None,
-        SessionType::Policy,
-        Cipher::aes_128_cfb().try_into()?,
-        HashingAlgorithm::Sha256,
-    )? {
-        Some(ses) => ses,
-        None => return Err(Error::local_error(WrapperErrorKind::WrongValueFromTpm)),
-    };
+    let policy_auth_session = context
+        .start_auth_session(
+            None,
+            None,
+            None,
+            SessionType::Policy,
+            Cipher::aes_128_cfb().try_into()?,
+            HashingAlgorithm::Sha256,
+        )?
+        .ok_or_else(|| Error::local_error(WrapperErrorKind::WrongValueFromTpm))?;
 
     let (session_attributes, session_attributes_mask) = SessionAttributesBuilder::new()
         .with_decrypt(true)
         .with_encrypt(true)
         .build();
-    context.tr_sess_set_attributes(session, session_attributes, session_attributes_mask)?;
+    context.tr_sess_set_attributes(
+        policy_auth_session,
+        session_attributes,
+        session_attributes_mask,
+    )?;
 
-    let key_handle = context.execute_with_temporary_object(session.handle().into(), |ctx, _| {
-        let _ = ctx.execute_with_nullauth_session(|ctx| {
-            ctx.policy_secret(
-                session,
-                AuthHandle::Endorsement,
-                Default::default(),
-                Default::default(),
-                Default::default(),
-                None,
-            )
-        })?;
+    let key_handle = context.execute_with_temporary_object(
+        SessionHandle::from(policy_auth_session).into(),
+        |ctx, _| {
+            let _ = ctx.execute_with_nullauth_session(|ctx| {
+                ctx.policy_secret(
+                    PolicySession::try_from(policy_auth_session)?,
+                    AuthHandle::Endorsement,
+                    Default::default(),
+                    Default::default(),
+                    Default::default(),
+                    None,
+                )
+            })?;
 
-        ctx.execute_with_session(Some(session), |ctx| ctx.load(parent, private, public))
-    })?;
+            ctx.execute_with_session(Some(policy_auth_session), |ctx| {
+                ctx.load(parent, private, public)
+            })
+        },
+    )?;
 
     if let Some(ak_auth_value) = ak_auth_value {
         context.tr_set_auth(key_handle.into(), ak_auth_value)?;
@@ -171,37 +182,44 @@ pub fn create_ak<IKC: IntoKeyCustomization>(
 
     let ak_pub = create_ak_public(key_alg, hash_alg, sign_alg, key_customization)?;
 
-    let session = match context.start_auth_session(
-        None,
-        None,
-        None,
-        SessionType::Policy,
-        Cipher::aes_128_cfb().try_into()?,
-        HashingAlgorithm::Sha256,
-    )? {
-        Some(ses) => ses,
-        None => return Err(Error::local_error(WrapperErrorKind::WrongValueFromTpm)),
-    };
+    let policy_auth_session = context
+        .start_auth_session(
+            None,
+            None,
+            None,
+            SessionType::Policy,
+            Cipher::aes_128_cfb().try_into()?,
+            HashingAlgorithm::Sha256,
+        )?
+        .ok_or_else(|| Error::local_error(WrapperErrorKind::WrongValueFromTpm))?;
+
     let (session_attributes, session_attributes_mask) = SessionAttributesBuilder::new()
         .with_decrypt(true)
         .with_encrypt(true)
         .build();
-    context.tr_sess_set_attributes(session, session_attributes, session_attributes_mask)?;
+    context.tr_sess_set_attributes(
+        policy_auth_session,
+        session_attributes,
+        session_attributes_mask,
+    )?;
 
-    context.execute_with_temporary_object(session.handle().into(), |ctx, _| {
-        let _ = ctx.execute_with_nullauth_session(|ctx| {
-            ctx.policy_secret(
-                session,
-                AuthHandle::Endorsement,
-                Default::default(),
-                Default::default(),
-                Default::default(),
-                None,
-            )
-        })?;
+    context.execute_with_temporary_object(
+        SessionHandle::from(policy_auth_session).into(),
+        |ctx, _| {
+            let _ = ctx.execute_with_nullauth_session(|ctx| {
+                ctx.policy_secret(
+                    PolicySession::try_from(policy_auth_session)?,
+                    AuthHandle::Endorsement,
+                    Default::default(),
+                    Default::default(),
+                    Default::default(),
+                    None,
+                )
+            })?;
 
-        ctx.execute_with_session(Some(session), |ctx| {
-            ctx.create(parent, &ak_pub, ak_auth_value, None, None, None)
-        })
-    })
+            ctx.execute_with_session(Some(policy_auth_session), |ctx| {
+                ctx.create(parent, &ak_pub, ak_auth_value, None, None, None)
+            })
+        },
+    )
 }

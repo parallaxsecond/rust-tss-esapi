@@ -7,9 +7,9 @@ mod test_tr_from_tpm_public {
         interface_types::{
             algorithm::HashingAlgorithm,
             resource_handles::{NvAuth, Provision},
+            session_handles::AuthSession,
         },
         nv::storage::NvPublicBuilder,
-        session::Session,
         structures::{Auth, CapabilityData, MaxNvBuffer},
         tss2_esys::TPM2_HANDLE,
         Context,
@@ -20,7 +20,6 @@ mod test_tr_from_tpm_public {
     fn remove_nv_index_handle_from_tpm(nv_index_tpm_handle: NvIndexTpmHandle, nv_auth: Provision) {
         let mut context = create_ctx_without_session();
         let mut property = TPM2_NV_INDEX_FIRST;
-        println!("KALLEE");
         while let Ok((capability_data, more_data_available)) =
             context.get_capability(CapabilityType::Handles, property, 1)
         {
@@ -31,7 +30,7 @@ mod test_tr_from_tpm_public {
                             .tr_from_tpm_public(nv_index_tpm_handle.into())
                             .map(NvIndexHandle::from)
                             .expect("Failed to get nv index from tpm");
-                        context.execute_with_session(Some(Session::Password), |ctx| {
+                        context.execute_with_session(Some(AuthSession::Password), |ctx| {
                             ctx.nv_undefine_space(nv_auth, handle)
                                 .expect("Failed to undefine space");
                         });
@@ -141,7 +140,7 @@ mod test_tr_from_tpm_public {
                        fn_name: &str|
          -> tss_esapi::Error {
             // Set password authorization
-            context.set_sessions((Some(Session::Password), None, None));
+            context.set_sessions((Some(AuthSession::Password), None, None));
             let _ = context
                 .nv_undefine_space(Provision::Owner, handle)
                 .expect("Failed to call nv_undefine_space");
@@ -166,7 +165,7 @@ mod test_tr_from_tpm_public {
         // Define space
         //
         // Set password authorization when creating the space.
-        context.set_sessions((Some(Session::Password), None, None));
+        context.set_sessions((Some(AuthSession::Password), None, None));
         let initial_nv_index_handle = context
             .nv_define_space(Provision::Owner, Some(&auth), &nv_public)
             .expect("Failed to call nv_define_space");
@@ -214,7 +213,7 @@ mod test_tr_from_tpm_public {
         // Remove undefine the space
         //
         // Set password authorization
-        context.set_sessions((Some(Session::Password), None, None));
+        context.set_sessions((Some(AuthSession::Password), None, None));
         let _ = context
             .nv_undefine_space(Provision::Owner, new_nv_index_handle.into())
             .expect("Failed to call nv_undefine_space");
@@ -244,7 +243,7 @@ mod test_tr_from_tpm_public {
                        fn_name: &str|
          -> tss_esapi::Error {
             // Set password authorization
-            context.set_sessions((Some(Session::Password), None, None));
+            context.set_sessions((Some(AuthSession::Password), None, None));
             let _ = context.nv_undefine_space(Provision::Owner, handle).unwrap();
             panic!("{} failed: {}", fn_name, e);
         };
@@ -267,7 +266,7 @@ mod test_tr_from_tpm_public {
         // Define space
         //
         // Set password authorization when creating the space.
-        context.set_sessions((Some(Session::Password), None, None));
+        context.set_sessions((Some(AuthSession::Password), None, None));
         let initial_nv_index_handle = context
             .nv_define_space(Provision::Owner, Some(&auth), &nv_public)
             .unwrap();
@@ -290,7 +289,7 @@ mod test_tr_from_tpm_public {
             24, 25, 26, 27, 28, 29, 30, 31,
         ])
         .unwrap();
-        context.set_sessions((Some(Session::Password), None, None));
+        context.set_sessions((Some(AuthSession::Password), None, None));
         context
             .nv_write(
                 NvAuth::NvIndex(initial_nv_index_handle),
@@ -349,7 +348,7 @@ mod test_tr_from_tpm_public {
             .map_err(|e| cleanup(&mut context, e, new_nv_index_handle, "tr_set_auth"))
             .unwrap();
         // read the data
-        context.set_sessions((Some(Session::Password), None, None));
+        context.set_sessions((Some(AuthSession::Password), None, None));
         let actual_data = context
             .nv_read(
                 NvAuth::NvIndex(new_nv_index_handle),
@@ -363,7 +362,7 @@ mod test_tr_from_tpm_public {
         // Remove undefine the space
         //
         // Set password authorization
-        context.set_sessions((Some(Session::Password), None, None));
+        context.set_sessions((Some(AuthSession::Password), None, None));
         let _ = context
             .nv_undefine_space(Provision::Owner, new_nv_index_handle)
             .unwrap();

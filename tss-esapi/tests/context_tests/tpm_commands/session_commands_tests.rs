@@ -147,14 +147,14 @@ mod test_policy_restart {
     use tss_esapi::{
         attributes::SessionAttributesBuilder,
         constants::SessionType,
-        interface_types::algorithm::HashingAlgorithm,
+        interface_types::{algorithm::HashingAlgorithm, session_handles::PolicySession},
         structures::{Digest, DigestList, SymmetricDefinition},
     };
     #[test]
     fn test_policy_restart() {
         let mut context = create_ctx_without_session();
 
-        let trial_session = context
+        let trial_policy_auth_session = context
             .start_auth_session(
                 None,
                 None,
@@ -165,20 +165,22 @@ mod test_policy_restart {
             )
             .expect("Start auth session failed")
             .expect("Start auth session returned a NONE handle");
-        let (trial_session_attributes, trial_session_attributes_mask) =
+        let (trial_policy_auth_session_attributes, trial_policy_auth_session_attributes_mask) =
             SessionAttributesBuilder::new()
                 .with_decrypt(true)
                 .with_encrypt(true)
                 .build();
         context
             .tr_sess_set_attributes(
-                trial_session,
-                trial_session_attributes,
-                trial_session_attributes_mask,
+                trial_policy_auth_session,
+                trial_policy_auth_session_attributes,
+                trial_policy_auth_session_attributes_mask,
             )
             .expect("tr_sess_set_attributes call failed");
 
-        let dig = context.policy_get_digest(trial_session).unwrap();
+        let trial_policy_session = PolicySession::try_from(trial_policy_auth_session)
+            .expect("Failed to convert auth session into policy session");
+        let dig = context.policy_get_digest(trial_policy_session).unwrap();
         assert_eq!(
             dig,
             Digest::try_from(vec![
@@ -195,11 +197,13 @@ mod test_policy_restart {
         digest_list
             .add(get_pcr_policy_digest(&mut context, false, true).0)
             .unwrap();
-        context.policy_or(trial_session, digest_list).unwrap();
+        context
+            .policy_or(trial_policy_session, digest_list)
+            .unwrap();
 
-        context.policy_restart(trial_session).unwrap();
+        context.policy_restart(trial_policy_session).unwrap();
 
-        let dig = context.policy_get_digest(trial_session).unwrap();
+        let dig = context.policy_get_digest(trial_policy_session).unwrap();
         assert_eq!(
             dig,
             Digest::try_from(vec![

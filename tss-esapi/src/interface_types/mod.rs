@@ -8,3 +8,4 @@ pub mod dynamic_handles;
 pub mod ecc;
 pub mod key_bits;
 pub mod resource_handles;
+pub mod session_handles;
