@@ -6,7 +6,8 @@
 
 /// Representation of the constants defined in the
 /// Constants -> TPM_ALG_ID section of the specfication
-pub mod algorithm;
+mod algorithm;
+pub use algorithm::AlgorithmIdentifier;
 
 /// The contants defined in the TSS specification.
 #[allow(
@@ -53,3 +54,8 @@ pub use response_code::{ResponseCode, Tss2ResponseCode, Tss2ResponseCodeKind};
 pub use session_type::SessionType;
 pub use startup_type::StartupType;
 pub use structure_tags::StructureTag;
+
+/// Representation of the constants defined in
+/// Constants -> TPM_ECC_CURVE section of the specification.
+mod ecc;
+pub use ecc::EccCurveIdentifier;

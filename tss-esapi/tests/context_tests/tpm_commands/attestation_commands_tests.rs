@@ -4,8 +4,8 @@ mod test_quote {
     use crate::common::{create_ctx_with_session, signing_key_pub};
     use std::convert::TryFrom;
     use tss_esapi::{
-        constants::{algorithm::HashingAlgorithm, tss::TPM2_ALG_NULL},
-        interface_types::resource_handles::Hierarchy,
+        constants::tss::TPM2_ALG_NULL,
+        interface_types::{algorithm::HashingAlgorithm, resource_handles::Hierarchy},
         structures::{Data, PcrSelectionListBuilder, PcrSlot},
         tss2_esys::TPMT_SIG_SCHEME,
     };

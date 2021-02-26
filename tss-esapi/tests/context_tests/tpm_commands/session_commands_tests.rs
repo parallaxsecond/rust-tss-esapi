@@ -5,12 +5,9 @@ mod test_start_auth_session {
     use std::convert::TryFrom;
     use tss_esapi::{
         attributes::SessionAttributesBuilder,
-        constants::{
-            algorithm::{Cipher, HashingAlgorithm},
-            SessionType,
-        },
-        interface_types::resource_handles::Hierarchy,
-        structures::Nonce,
+        constants::SessionType,
+        interface_types::{algorithm::HashingAlgorithm, resource_handles::Hierarchy},
+        structures::{Nonce, SymmetricDefinition},
     };
 
     #[test]
@@ -22,7 +19,7 @@ mod test_start_auth_session {
                 None,
                 None,
                 SessionType::Hmac,
-                Cipher::aes_256_cfb(),
+                SymmetricDefinition::AES_256_CFB,
                 HashingAlgorithm::Sha256,
             )
             .unwrap();
@@ -46,7 +43,7 @@ mod test_start_auth_session {
                 )
                 .as_ref(),
                 SessionType::Hmac,
-                Cipher::aes_256_cfb(),
+                SymmetricDefinition::AES_256_CFB,
                 HashingAlgorithm::Sha256,
             )
             .unwrap();
@@ -73,7 +70,7 @@ mod test_start_auth_session {
                 Some(prim_key_handle.into()),
                 None,
                 SessionType::Hmac,
-                Cipher::aes_256_cfb(),
+                SymmetricDefinition::AES_256_CFB,
                 HashingAlgorithm::Sha256,
             )
             .unwrap();
@@ -88,7 +85,7 @@ mod test_start_auth_session {
                 None,
                 None,
                 SessionType::Hmac,
-                Cipher::aes_256_cfb(),
+                SymmetricDefinition::AES_256_CFB,
                 HashingAlgorithm::Sha256,
             )
             .unwrap();
@@ -110,7 +107,7 @@ mod test_start_auth_session {
                 None,
                 None,
                 SessionType::Hmac,
-                Cipher::aes_256_cfb(),
+                SymmetricDefinition::AES_256_CFB,
                 HashingAlgorithm::Sha256,
             )
             .unwrap();
@@ -125,7 +122,7 @@ mod test_start_auth_session {
                 None,
                 None,
                 SessionType::Hmac,
-                Cipher::aes_256_cfb(),
+                SymmetricDefinition::AES_256_CFB,
                 HashingAlgorithm::Sha256,
             )
             .unwrap();
@@ -136,7 +133,7 @@ mod test_start_auth_session {
                 None,
                 None,
                 SessionType::Hmac,
-                Cipher::aes_256_cfb(),
+                SymmetricDefinition::AES_256_CFB,
                 HashingAlgorithm::Sha256,
             )
             .unwrap_err();
@@ -149,11 +146,9 @@ mod test_policy_restart {
     use std::convert::TryFrom;
     use tss_esapi::{
         attributes::SessionAttributesBuilder,
-        constants::{
-            algorithm::{Cipher, HashingAlgorithm},
-            SessionType,
-        },
-        structures::{Digest, DigestList},
+        constants::SessionType,
+        interface_types::algorithm::HashingAlgorithm,
+        structures::{Digest, DigestList, SymmetricDefinition},
     };
     #[test]
     fn test_policy_restart() {
@@ -165,7 +160,7 @@ mod test_policy_restart {
                 None,
                 None,
                 SessionType::Trial,
-                Cipher::aes_256_cfb(),
+                SymmetricDefinition::AES_256_CFB,
                 HashingAlgorithm::Sha256,
             )
             .expect("Start auth session failed")

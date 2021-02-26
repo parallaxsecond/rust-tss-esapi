@@ -3,8 +3,9 @@
 mod test_nv_define_space {
     use crate::common::create_ctx_with_session;
     use tss_esapi::{
-        attributes::NvIndexAttributesBuilder, constants::algorithm::HashingAlgorithm,
-        handles::NvIndexTpmHandle, interface_types::resource_handles::Provision,
+        attributes::NvIndexAttributesBuilder,
+        handles::NvIndexTpmHandle,
+        interface_types::{algorithm::HashingAlgorithm, resource_handles::Provision},
         nv::storage::NvPublicBuilder,
     };
 
@@ -116,8 +117,9 @@ mod test_nv_define_space {
 mod test_nv_undefine_space {
     use crate::common::create_ctx_with_session;
     use tss_esapi::{
-        attributes::NvIndexAttributesBuilder, constants::algorithm::HashingAlgorithm,
-        handles::NvIndexTpmHandle, interface_types::resource_handles::Provision,
+        attributes::NvIndexAttributesBuilder,
+        handles::NvIndexTpmHandle,
+        interface_types::{algorithm::HashingAlgorithm, resource_handles::Provision},
         nv::storage::NvPublicBuilder,
     };
 
@@ -156,8 +158,9 @@ mod test_nv_undefine_space {
 mod test_nv_read_public {
     use crate::common::create_ctx_with_session;
     use tss_esapi::{
-        attributes::NvIndexAttributesBuilder, constants::algorithm::HashingAlgorithm,
-        handles::NvIndexTpmHandle, interface_types::resource_handles::Provision,
+        attributes::NvIndexAttributesBuilder,
+        handles::NvIndexTpmHandle,
+        interface_types::{algorithm::HashingAlgorithm, resource_handles::Provision},
         nv::storage::NvPublicBuilder,
     };
 
@@ -207,9 +210,11 @@ mod test_nv_write {
     use std::convert::TryFrom;
     use tss_esapi::{
         attributes::NvIndexAttributesBuilder,
-        constants::algorithm::HashingAlgorithm,
         handles::NvIndexTpmHandle,
-        interface_types::resource_handles::{NvAuth, Provision},
+        interface_types::{
+            algorithm::HashingAlgorithm,
+            resource_handles::{NvAuth, Provision},
+        },
         nv::storage::NvPublicBuilder,
         structures::MaxNvBuffer,
     };
@@ -261,9 +266,11 @@ mod test_nv_read {
     use std::convert::TryFrom;
     use tss_esapi::{
         attributes::NvIndexAttributesBuilder,
-        constants::algorithm::HashingAlgorithm,
         handles::NvIndexTpmHandle,
-        interface_types::resource_handles::{NvAuth, Provision},
+        interface_types::{
+            algorithm::HashingAlgorithm,
+            resource_handles::{NvAuth, Provision},
+        },
         nv::storage::NvPublicBuilder,
         structures::MaxNvBuffer,
     };

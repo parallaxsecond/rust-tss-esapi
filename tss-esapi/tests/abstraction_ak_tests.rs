@@ -6,15 +6,10 @@ use std::convert::{TryFrom, TryInto};
 use tss_esapi::{
     abstraction::{ak, ek},
     attributes::SessionAttributesBuilder,
-    constants::{
-        algorithm::{
-            AsymmetricAlgorithm, Cipher, EccSignatureScheme, HashingAlgorithm, RsaSignatureScheme,
-            SignatureScheme,
-        },
-        SessionType,
-    },
+    constants::SessionType,
     handles::AuthHandle,
-    structures::{Auth, Digest},
+    interface_types::algorithm::{AsymmetricAlgorithm, HashingAlgorithm, SignatureScheme},
+    structures::{Auth, Digest, SymmetricDefinition},
 };
 
 mod common;
@@ -29,7 +24,7 @@ fn test_create_ak_rsa_rsa() {
         &mut context,
         ek_rsa,
         HashingAlgorithm::Sha256,
-        SignatureScheme::Rsa(RsaSignatureScheme::RsaPss),
+        SignatureScheme::RsaPss,
         None,
     )
     .unwrap();
@@ -44,7 +39,7 @@ fn test_create_ak_rsa_ecc() {
         &mut context,
         ek_rsa,
         HashingAlgorithm::Sha256,
-        SignatureScheme::Ecc(EccSignatureScheme::Sm2),
+        SignatureScheme::Sm2,
         None,
     )
     .is_ok()
@@ -64,7 +59,7 @@ fn test_create_and_use_ak() {
         &mut context,
         ek_rsa,
         HashingAlgorithm::Sha256,
-        SignatureScheme::Rsa(RsaSignatureScheme::RsaPss),
+        SignatureScheme::RsaPss,
         Some(&ak_auth),
     )
     .unwrap();
@@ -89,7 +84,7 @@ fn test_create_and_use_ak() {
             None,
             None,
             SessionType::Hmac,
-            Cipher::aes_256_cfb(),
+            SymmetricDefinition::AES_256_CFB,
             HashingAlgorithm::Sha256,
         )
         .unwrap();
@@ -106,7 +101,7 @@ fn test_create_and_use_ak() {
             None,
             None,
             SessionType::Policy,
-            Cipher::aes_256_cfb(),
+            SymmetricDefinition::AES_256_CFB,
             HashingAlgorithm::Sha256,
         )
         .unwrap();

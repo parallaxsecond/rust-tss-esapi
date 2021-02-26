@@ -2,10 +2,12 @@
 // SPDX-License-Identifier: Apache-2.0
 use num_traits::ToPrimitive;
 use std::convert::TryFrom;
-use tss_esapi::constants::algorithm::HashingAlgorithm;
-use tss_esapi::constants::tss::TPM2_ALG_LAST;
-use tss_esapi::structures::{PcrSelectSize, PcrSelectionList, PcrSelectionListBuilder, PcrSlot};
-use tss_esapi::tss2_esys::{TPM2_ALG_ID, TPML_PCR_SELECTION};
+use tss_esapi::{
+    constants::tss::TPM2_ALG_LAST,
+    interface_types::algorithm::HashingAlgorithm,
+    structures::{PcrSelectSize, PcrSelectionList, PcrSelectionListBuilder, PcrSlot},
+    tss2_esys::{TPM2_ALG_ID, TPML_PCR_SELECTION},
+};
 
 mod test_pcr_selection_list_builder {
     use super::*;

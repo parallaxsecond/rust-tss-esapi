@@ -1,3 +1,5 @@
+// Copyright 2021 Contributors to the Parsec project.
+// SPDX-License-Identifier: Apache-2.0
 use crate::{
     structures::MaxBuffer,
     tss2_esys::{Esys_GetTestResult, Esys_SelfTest},

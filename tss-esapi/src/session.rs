@@ -1,8 +1,7 @@
 mod specific;
 
 use crate::{
-    constants::{algorithm::HashingAlgorithm, SessionType},
-    handles::SessionHandle,
+    constants::SessionType, handles::SessionHandle, interface_types::algorithm::HashingAlgorithm,
 };
 
 pub use specific::{HmacSession, PolicySession, TrialSession};

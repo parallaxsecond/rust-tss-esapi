@@ -2,67 +2,80 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use crate::{
-    constants::algorithm::{HashingAlgorithm, KeyDerivationFunction},
-    constants::tss::*,
-    tss2_esys::*,
-    Error, Result, WrapperErrorKind,
+    structures::{KeyedHashScheme, SymmetricDefinitionObject},
+    tss2_esys::{TPMS_KEYEDHASH_PARMS, TPMS_SYMCIPHER_PARMS},
+    Error, Result,
 };
 use std::convert::{TryFrom, TryInto};
 
+/// Keyed hash parameters
+///
+/// # Details
+/// Corresponds to TPMS_KEYEDHASH_PARMS
 #[derive(Clone, Copy, Debug)]
-pub enum KeyedHashParms {
-    XOR {
-        hash_alg: HashingAlgorithm,
-        kdf: KeyDerivationFunction,
-    },
-    HMAC {
-        hash_alg: HashingAlgorithm,
-    },
+pub struct KeyedHashParameters {
+    keyed_hash_scheme: KeyedHashScheme,
 }
 
-impl TryFrom<TPMS_KEYEDHASH_PARMS> for KeyedHashParms {
+impl KeyedHashParameters {
+    pub const fn new(keyed_hash_scheme: KeyedHashScheme) -> KeyedHashParameters {
+        KeyedHashParameters { keyed_hash_scheme }
+    }
+}
+
+impl TryFrom<TPMS_KEYEDHASH_PARMS> for KeyedHashParameters {
     type Error = Error;
 
-    fn try_from(parms: TPMS_KEYEDHASH_PARMS) -> Result<Self> {
-        match parms.scheme.scheme {
-            TPM2_ALG_HMAC => Ok(KeyedHashParms::HMAC {
-                hash_alg: unsafe { parms.scheme.details.hmac.hashAlg }.try_into()?,
-            }),
-            TPM2_ALG_XOR => Ok(KeyedHashParms::XOR {
-                hash_alg: unsafe { parms.scheme.details.exclusiveOr.hashAlg }.try_into()?,
-                kdf: unsafe { parms.scheme.details.exclusiveOr.kdf }.try_into()?,
-            }),
-            _ => Err(Error::local_error(WrapperErrorKind::InconsistentParams)),
+    fn try_from(tpms_keyed_hash_parms: TPMS_KEYEDHASH_PARMS) -> Result<Self> {
+        Ok(KeyedHashParameters {
+            keyed_hash_scheme: tpms_keyed_hash_parms.scheme.try_into()?,
+        })
+    }
+}
+
+impl From<KeyedHashParameters> for TPMS_KEYEDHASH_PARMS {
+    fn from(keyed_hash_prams: KeyedHashParameters) -> Self {
+        TPMS_KEYEDHASH_PARMS {
+            scheme: keyed_hash_prams.keyed_hash_scheme.into(),
         }
     }
 }
 
-impl TryFrom<KeyedHashParms> for TPMS_KEYEDHASH_PARMS {
-    type Error = Error;
+/// Symmetric cipher parameters
+///
+/// # Details
+/// Corresponds to TPMS_SYMCIPHER_PARMS
+#[derive(Clone, Debug, Copy)]
+pub struct SymmetricCipherParameters {
+    symmetric_definition_object: SymmetricDefinitionObject,
+}
 
-    fn try_from(parms: KeyedHashParms) -> Result<Self> {
-        match parms {
-            KeyedHashParms::HMAC { hash_alg } => Ok(TPMS_KEYEDHASH_PARMS {
-                scheme: TPMT_KEYEDHASH_SCHEME {
-                    scheme: TPM2_ALG_HMAC,
-                    details: TPMU_SCHEME_KEYEDHASH {
-                        hmac: TPMS_SCHEME_HMAC {
-                            hashAlg: hash_alg.into(),
-                        },
-                    },
-                },
-            }),
-            KeyedHashParms::XOR { hash_alg, kdf } => Ok(TPMS_KEYEDHASH_PARMS {
-                scheme: TPMT_KEYEDHASH_SCHEME {
-                    scheme: TPM2_ALG_XOR,
-                    details: TPMU_SCHEME_KEYEDHASH {
-                        exclusiveOr: TPMS_SCHEME_XOR {
-                            hashAlg: hash_alg.into(),
-                            kdf: kdf.into(),
-                        },
-                    },
-                },
-            }),
+impl SymmetricCipherParameters {
+    /// Creates a new [SymmetricDefinitionObject]
+    pub const fn new(
+        symmetric_definition_object: SymmetricDefinitionObject,
+    ) -> SymmetricCipherParameters {
+        SymmetricCipherParameters {
+            symmetric_definition_object,
+        }
+    }
+}
+
+impl TryFrom<TPMS_SYMCIPHER_PARMS> for SymmetricCipherParameters {
+    type Error = Error;
+    fn try_from(tpms_symcipher_params: TPMS_SYMCIPHER_PARMS) -> Result<SymmetricCipherParameters> {
+        Ok(SymmetricCipherParameters {
+            symmetric_definition_object: tpms_symcipher_params.sym.try_into()?,
+        })
+    }
+}
+
+impl From<SymmetricCipherParameters> for TPMS_SYMCIPHER_PARMS {
+    fn from(symmetric_cipher_parameters: SymmetricCipherParameters) -> TPMS_SYMCIPHER_PARMS {
+        TPMS_SYMCIPHER_PARMS {
+            sym: symmetric_cipher_parameters
+                .symmetric_definition_object
+                .into(),
         }
     }
 }

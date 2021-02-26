@@ -1,6 +1,6 @@
 // Copyright 2020 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
-use crate::constants::algorithm::HashingAlgorithm;
+use crate::interface_types::algorithm::HashingAlgorithm;
 use crate::structures::{PcrSelectSize, PcrSelection, PcrSlot};
 use crate::tss2_esys::TPML_PCR_SELECTION;
 use crate::{Error, Result, WrapperErrorKind};
@@ -60,7 +60,7 @@ impl PcrSelectionList {
     /// # Examples
     /// ```
     /// use tss_esapi::structures::{PcrSelectionListBuilder, PcrSlot};
-    /// use tss_esapi::constants::algorithm::HashingAlgorithm;
+    /// use tss_esapi::interface_types::algorithm::HashingAlgorithm;
     /// // pcr selections
     /// let mut pcr_selection_list = PcrSelectionListBuilder::new()
     ///     .with_size_of_select(Default::default())

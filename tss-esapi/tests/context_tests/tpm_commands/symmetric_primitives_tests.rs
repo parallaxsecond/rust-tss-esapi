@@ -4,8 +4,7 @@ mod test_hash {
     use crate::common::create_ctx_without_session;
     use std::convert::TryFrom;
     use tss_esapi::{
-        constants::algorithm::HashingAlgorithm,
-        interface_types::resource_handles::Hierarchy,
+        interface_types::{algorithm::HashingAlgorithm, resource_handles::Hierarchy},
         structures::{MaxBuffer, Ticket},
     };
 
@@ -38,12 +37,9 @@ mod test_hmac {
     use std::convert::TryFrom;
     use tss_esapi::{
         attributes::ObjectAttributesBuilder,
-        constants::{
-            algorithm::HashingAlgorithm,
-            tss::{TPM2_ALG_KEYEDHASH, TPM2_ALG_SHA256},
-        },
-        interface_types::resource_handles::Hierarchy,
-        structures::{KeyedHashParms, MaxBuffer},
+        constants::tss::{TPM2_ALG_KEYEDHASH, TPM2_ALG_SHA256},
+        interface_types::{algorithm::HashingAlgorithm, resource_handles::Hierarchy},
+        structures::{KeyedHashParameters, KeyedHashScheme, MaxBuffer},
         utils::{PublicParmsUnion, Tpm2BPublicBuilder},
     };
 
@@ -61,9 +57,9 @@ mod test_hmac {
         let key_pub = Tpm2BPublicBuilder::new()
             .with_type(TPM2_ALG_KEYEDHASH)
             .with_name_alg(TPM2_ALG_SHA256)
-            .with_parms(PublicParmsUnion::KeyedHashDetail(KeyedHashParms::HMAC {
-                hash_alg: HashingAlgorithm::Sha256,
-            }))
+            .with_parms(PublicParmsUnion::KeyedHashDetail(KeyedHashParameters::new(
+                KeyedHashScheme::HMAC_SHA_256,
+            )))
             .with_object_attributes(object_attributes)
             .build()
             .unwrap();

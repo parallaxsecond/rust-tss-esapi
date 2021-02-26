@@ -1,7 +1,9 @@
 // Copyright 2020 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
-use tss_esapi::constants::algorithm::HashingAlgorithm;
-use tss_esapi::structures::{PcrSelectSize, PcrSelectionListBuilder, PcrSlot};
+use tss_esapi::{
+    interface_types::algorithm::HashingAlgorithm,
+    structures::{PcrSelectSize, PcrSelectionListBuilder, PcrSlot},
+};
 
 mod test_pcr_selection_list {
     use super::*;

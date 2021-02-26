@@ -13,12 +13,14 @@
 //!
 //! Object contexts thus act as an opaque handle that can, however, be used by the client to seralize
 //! and persist the underlying data.
+use crate::abstraction::cipher::Cipher;
 use crate::attributes::{ObjectAttributesBuilder, SessionAttributesBuilder};
-use crate::constants::algorithm::{Cipher, EllipticCurve, HashingAlgorithm};
 use crate::constants::tss::*;
 use crate::constants::SessionType;
 use crate::handles::KeyHandle;
-use crate::interface_types::resource_handles::Hierarchy;
+use crate::interface_types::{
+    algorithm::HashingAlgorithm, ecc::EccCurve, resource_handles::Hierarchy,
+};
 use crate::structures::{Auth, CreateKeyResult, Data, Digest, PublicKeyRSA, VerifiedTicket};
 use crate::tcti::Tcti;
 use crate::tss2_esys::*;
@@ -683,7 +685,7 @@ impl TransientKeyContextBuilder {
                 None,
                 None,
                 SessionType::Hmac,
-                self.default_context_cipher,
+                self.default_context_cipher.try_into()?,
                 self.session_hash_alg,
             )
             .and_then(|session| {
@@ -720,7 +722,7 @@ impl TransientKeyContextBuilder {
                 None,
                 None,
                 SessionType::Hmac,
-                self.default_context_cipher,
+                self.default_context_cipher.try_into()?,
                 self.session_hash_alg,
             )
             .and_then(|session| {
@@ -775,7 +777,7 @@ pub enum KeyParams {
     },
     Ecc {
         /// Curve that the key will be based on
-        curve: EllipticCurve,
+        curve: EccCurve,
         /// Asymmetric scheme to be used with the key
         ///
         /// *Must* be an ECC scheme

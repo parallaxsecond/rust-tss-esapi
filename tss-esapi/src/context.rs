@@ -3,13 +3,11 @@
 mod handle_manager;
 use crate::{
     attributes::SessionAttributesBuilder,
-    constants::{
-        algorithm::{Cipher, HashingAlgorithm},
-        CapabilityType, PropertyTag, SessionType,
-    },
+    constants::{CapabilityType, PropertyTag, SessionType},
     handles::ObjectHandle,
+    interface_types::algorithm::HashingAlgorithm,
     session::Session,
-    structures::CapabilityData,
+    structures::{CapabilityData, SymmetricDefinition},
     tss2_esys::*,
     Error, Result, Tcti, WrapperErrorKind as ErrorKind,
 };
@@ -128,10 +126,9 @@ impl Context {
     ///
     /// ```rust
     /// # use tss_esapi::{Context, Tcti,
-    /// #     constants::{
-    /// #         algorithm::{Cipher, HashingAlgorithm},
-    /// #         SessionType,
-    /// #     },
+    /// #     constants::SessionType,
+    /// #     interface_types::algorithm::HashingAlgorithm,
+    /// #     structures::SymmetricDefinition,
     /// # };
     /// # // Create context
     /// # let mut context = unsafe {
@@ -147,7 +144,7 @@ impl Context {
     ///         None,
     ///         None,
     ///         SessionType::Hmac,
-    ///         Cipher::aes_256_cfb(),
+    ///         SymmetricDefinition::AES_256_CFB,
     ///         HashingAlgorithm::Sha256,
     ///     )
     ///     .expect("Failed to create session");
@@ -268,7 +265,7 @@ impl Context {
             None,
             None,
             SessionType::Hmac,
-            Cipher::aes_128_cfb(),
+            SymmetricDefinition::AES_128_CFB,
             HashingAlgorithm::Sha256,
         )? {
             Some(ses) => ses,

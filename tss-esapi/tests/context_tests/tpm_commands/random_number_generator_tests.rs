@@ -5,11 +5,9 @@ mod test_random {
     use std::convert::TryFrom;
     use tss_esapi::{
         attributes::SessionAttributesBuilder,
-        constants::{
-            algorithm::{Cipher, HashingAlgorithm},
-            SessionType,
-        },
-        structures::SensitiveData,
+        constants::SessionType,
+        interface_types::algorithm::HashingAlgorithm,
+        structures::{SensitiveData, SymmetricDefinition},
     };
 
     #[test]
@@ -21,7 +19,7 @@ mod test_random {
                 None,
                 None,
                 SessionType::Hmac,
-                Cipher::aes_256_cfb(),
+                SymmetricDefinition::AES_256_CFB,
                 HashingAlgorithm::Sha256,
             )
             .expect("Start auth session failed")
@@ -48,7 +46,7 @@ mod test_random {
                 None,
                 None,
                 SessionType::Hmac,
-                Cipher::aes_256_cfb(),
+                SymmetricDefinition::AES_256_CFB,
                 HashingAlgorithm::Sha256,
             )
             .expect("Start auth session failed")

@@ -80,11 +80,8 @@ mod test_load_external_public {
     use crate::common::{create_ctx_with_session, KEY};
     use tss_esapi::{
         attributes::ObjectAttributesBuilder,
-        constants::{
-            algorithm::HashingAlgorithm,
-            tss::{TPM2_ALG_RSA, TPM2_ALG_SHA256},
-        },
-        interface_types::resource_handles::Hierarchy,
+        constants::tss::{TPM2_ALG_RSA, TPM2_ALG_SHA256},
+        interface_types::{algorithm::HashingAlgorithm, resource_handles::Hierarchy},
         tss2_esys::{TPM2B_PUBLIC, TPM2B_PUBLIC_KEY_RSA},
         utils::{
             AsymSchemeUnion, PublicIdUnion, PublicParmsUnion, Tpm2BPublicBuilder,
@@ -197,12 +194,9 @@ mod test_activate_credential {
     use std::convert::{TryFrom, TryInto};
     use tss_esapi::{
         attributes::SessionAttributesBuilder,
-        constants::{
-            algorithm::{Cipher, HashingAlgorithm},
-            SessionType,
-        },
-        interface_types::resource_handles::Hierarchy,
-        structures::Digest,
+        constants::SessionType,
+        interface_types::{algorithm::HashingAlgorithm, resource_handles::Hierarchy},
+        structures::{Digest, SymmetricDefinition},
     };
     #[test]
     fn test_make_activate_credential() {
@@ -216,7 +210,7 @@ mod test_activate_credential {
                 None,
                 None,
                 SessionType::Hmac,
-                Cipher::aes_256_cfb(),
+                SymmetricDefinition::AES_256_CFB,
                 HashingAlgorithm::Sha256,
             )
             .unwrap();
@@ -233,7 +227,7 @@ mod test_activate_credential {
                 None,
                 None,
                 SessionType::Hmac,
-                Cipher::aes_256_cfb(),
+                SymmetricDefinition::AES_256_CFB,
                 HashingAlgorithm::Sha256,
             )
             .unwrap();

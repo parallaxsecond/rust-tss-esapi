@@ -1,17 +1,13 @@
 // Copyright 2020 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
 use std::convert::TryFrom;
-use tss_esapi::constants::{
-    algorithm::{EllipticCurve, HashingAlgorithm},
-    response_code::Tss2ResponseCodeKind,
-};
-use tss_esapi::{Error, WrapperErrorKind as ErrorKind};
-
-use tss_esapi::structures::{Auth, Digest, PublicKeyRSA};
-use tss_esapi::utils::{AsymSchemeUnion, PublicKey, Signature, SignatureData};
 use tss_esapi::{
     abstraction::transient::{KeyParams, RsaExponent, TransientKeyContextBuilder},
-    TransientKeyContext,
+    constants::response_code::Tss2ResponseCodeKind,
+    interface_types::{algorithm::HashingAlgorithm, ecc::EccCurve},
+    structures::{Auth, Digest, PublicKeyRSA},
+    utils::{AsymSchemeUnion, PublicKey, Signature, SignatureData},
+    Error, TransientKeyContext, WrapperErrorKind as ErrorKind,
 };
 
 mod common;
@@ -426,7 +422,7 @@ fn create_ecc_key() {
     let _ = ctx
         .create_key(
             KeyParams::Ecc {
-                curve: EllipticCurve::NistP256,
+                curve: EccCurve::NistP256,
                 scheme: AsymSchemeUnion::ECDSA(HashingAlgorithm::Sha256),
             },
             16,
@@ -440,7 +436,7 @@ fn create_ecc_key_rsa_scheme() {
     let _ = ctx
         .create_key(
             KeyParams::Ecc {
-                curve: EllipticCurve::NistP256,
+                curve: EccCurve::NistP256,
                 scheme: AsymSchemeUnion::RSASSA(HashingAlgorithm::Sha256),
             },
             16,
@@ -454,7 +450,7 @@ fn create_ecc_key_decryption_scheme() {
     let _ = ctx
         .create_key(
             KeyParams::Ecc {
-                curve: EllipticCurve::NistP256,
+                curve: EccCurve::NistP256,
                 scheme: AsymSchemeUnion::ECDH(HashingAlgorithm::Sha256),
             },
             16,
@@ -469,7 +465,7 @@ fn full_ecc_test() {
         let (key, auth) = ctx
             .create_key(
                 KeyParams::Ecc {
-                    curve: EllipticCurve::NistP256,
+                    curve: EccCurve::NistP256,
                     scheme: AsymSchemeUnion::ECDSA(HashingAlgorithm::Sha256),
                 },
                 16,

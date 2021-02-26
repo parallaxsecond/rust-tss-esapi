@@ -4,8 +4,8 @@ mod test_pcr_extend_reset {
     use crate::common::create_ctx_with_session;
     use std::convert::TryFrom;
     use tss_esapi::{
-        constants::algorithm::HashingAlgorithm,
         handles::PcrHandle,
+        interface_types::algorithm::HashingAlgorithm,
         structures::{Digest, DigestValues, PcrSelectionListBuilder, PcrSlot},
     };
     #[test]
@@ -116,7 +116,7 @@ mod test_pcr_extend_reset {
 mod test_pcr_read {
     use crate::common::create_ctx_without_session;
     use tss_esapi::{
-        constants::algorithm::HashingAlgorithm,
+        interface_types::algorithm::HashingAlgorithm,
         structures::{PcrSelectionListBuilder, PcrSlot},
         tss2_esys::{TPM2_ALG_ID, TPM2_SHA256_DIGEST_SIZE, TPML_PCR_SELECTION},
     };

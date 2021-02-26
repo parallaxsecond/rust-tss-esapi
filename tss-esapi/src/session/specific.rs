@@ -1,9 +1,7 @@
 /// Macro for implementing specific session types
 use crate::{
-    constants::{algorithm::HashingAlgorithm, SessionType},
-    handles::SessionHandle,
-    session::Session,
-    Error, Result, WrapperErrorKind,
+    constants::SessionType, handles::SessionHandle, interface_types::algorithm::HashingAlgorithm,
+    session::Session, Error, Result, WrapperErrorKind,
 };
 use log::error;
 use std::convert::{From, TryFrom};

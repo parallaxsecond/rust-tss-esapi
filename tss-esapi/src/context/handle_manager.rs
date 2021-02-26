@@ -1,3 +1,5 @@
+// Copyright 2020 Contributors to the Parsec project.
+// SPDX-License-Identifier: Apache-2.0
 use crate::{handles::ObjectHandle, tss2_esys::ESYS_TR, Error, Result, WrapperErrorKind};
 use log::error;
 use std::collections::HashMap;

@@ -9,10 +9,11 @@
 //! type name. Unions are converted to Rust `enum`s by dropping the `TPMU` qualifier and appending
 //! `Union`.
 use crate::attributes::{ObjectAttributes, ObjectAttributesBuilder};
-use crate::constants::algorithm::{Cipher, EllipticCurve, HashingAlgorithm};
-use crate::constants::tss::*;
-use crate::constants::PropertyTag;
-use crate::structures::{Digest, KeyedHashParms, PcrSlot};
+use crate::constants::{tss::*, PropertyTag};
+use crate::interface_types::{algorithm::HashingAlgorithm, ecc::EccCurve};
+use crate::structures::{
+    Digest, KeyedHashParameters, PcrSlot, SymmetricCipherParameters, SymmetricDefinitionObject,
+};
 use crate::tss2_esys::*;
 use crate::{Context, Error, Result, WrapperErrorKind};
 use enumflags2::BitFlags;
@@ -175,7 +176,7 @@ impl Tpm2BPublicBuilder {
                 let unique;
                 if let Some(PublicParmsUnion::KeyedHashDetail(parms)) = self.parameters {
                     parameters = TPMU_PUBLIC_PARMS {
-                        keyedHashDetail: parms.try_into()?,
+                        keyedHashDetail: parms.into(),
                     };
                 } else if self.parameters.is_none() {
                     return Err(Error::local_error(WrapperErrorKind::ParamsMissing));
@@ -347,11 +348,11 @@ pub const RSA_KEY_SIZES: [u16; 4] = [1024, 2048, 3072, 4096];
 #[derive(Copy, Clone, Debug)]
 pub struct TpmsEccParmsBuilder {
     /// Symmetric cipher to be used in conjuction with the key
-    pub symmetric: Option<Cipher>,
+    pub symmetric: Option<crate::abstraction::cipher::Cipher>,
     /// Asymmetric scheme to be used for key operations
     pub scheme: AsymSchemeUnion,
     /// Curve to be used with the key
-    pub curve: EllipticCurve,
+    pub curve: EccCurve,
     /// Flag indicating whether the key shall be used for signing
     pub for_signing: bool,
     /// Flag indicating whether the key shall be used for decryption
@@ -362,7 +363,10 @@ pub struct TpmsEccParmsBuilder {
 
 impl TpmsEccParmsBuilder {
     /// Create parameters for a restricted decryption key (i.e. a storage key)
-    pub fn new_restricted_decryption_key(symmetric: Cipher, curve: EllipticCurve) -> Self {
+    pub fn new_restricted_decryption_key(
+        symmetric: crate::abstraction::cipher::Cipher,
+        curve: EccCurve,
+    ) -> Self {
         TpmsEccParmsBuilder {
             symmetric: Some(symmetric),
             scheme: AsymSchemeUnion::AnySig(None),
@@ -374,7 +378,7 @@ impl TpmsEccParmsBuilder {
     }
 
     /// Create parameters for an unrestricted signing key
-    pub fn new_unrestricted_signing_key(scheme: AsymSchemeUnion, curve: EllipticCurve) -> Self {
+    pub fn new_unrestricted_signing_key(scheme: AsymSchemeUnion, curve: EccCurve) -> Self {
         TpmsEccParmsBuilder {
             symmetric: None,
             scheme,
@@ -425,22 +429,19 @@ impl TpmsEccParmsBuilder {
             return Err(Error::local_error(WrapperErrorKind::InconsistentParams));
         }
 
-        if (self.curve == EllipticCurve::BnP256 || self.curve == EllipticCurve::BnP638)
+        if (self.curve == EccCurve::BnP256 || self.curve == EccCurve::BnP638)
             && scheme.scheme != TPM2_ALG_ECDAA
         {
             return Err(Error::local_error(WrapperErrorKind::InconsistentParams));
         }
 
         let symmetric = match self.symmetric {
-            Some(symmetric) => symmetric.into(),
-            None => TPMT_SYM_DEF_OBJECT {
-                algorithm: TPM2_ALG_NULL,
-                ..Default::default()
-            },
+            Some(symmetric) => symmetric.try_into()?,
+            None => SymmetricDefinitionObject::Null,
         };
 
         Ok(TPMS_ECC_PARMS {
-            symmetric,
+            symmetric: symmetric.into(),
             scheme,
             curveID: self.curve.into(),
             kdf: TPMT_KDF_SCHEME {
@@ -448,129 +449,6 @@ impl TpmsEccParmsBuilder {
                 details: Default::default(),
             },
         })
-    }
-}
-
-/// Builder for `TPMT_SYM_DEF` objects.
-#[derive(Copy, Clone, Debug)]
-pub struct TpmtSymDefBuilder {
-    algorithm: Option<TPM2_ALG_ID>,
-    key_bits: u16,
-    mode: TPM2_ALG_ID,
-}
-
-impl TpmtSymDefBuilder {
-    /// Create a new builder with default (i.e. empty or null) placeholder values.
-    pub fn new() -> Self {
-        TpmtSymDefBuilder {
-            algorithm: None,
-            key_bits: 0,
-            mode: TPM2_ALG_NULL,
-        }
-    }
-
-    /// Set the symmetric algorithm.
-    pub fn with_algorithm(mut self, algorithm: TPM2_ALG_ID) -> Self {
-        self.algorithm = Some(algorithm);
-        self
-    }
-
-    /// Set the key length.
-    pub fn with_key_bits(mut self, key_bits: TPM2_KEY_BITS) -> Self {
-        self.key_bits = key_bits;
-        self
-    }
-
-    /// Set the hash algorithm (applies when the symmetric algorithm is XOR).
-    pub fn with_hash(mut self, hash: TPM2_ALG_ID) -> Self {
-        self.key_bits = hash;
-        self
-    }
-
-    /// Set the mode of the symmetric algorithm.
-    pub fn with_mode(mut self, mode: TPM2_ALG_ID) -> Self {
-        self.mode = mode;
-        self
-    }
-
-    /// Build a TPMT_SYM_DEF given the previously provided parameters.
-    ///
-    /// # Errors
-    /// * if an unrecognized symmetric algorithm type was set, `UnsupportedParam` wrapper error
-    /// is returned.
-    /// * if an algorithm is not explicitly set, `ParamsMissing` is returned
-    pub fn build(self) -> Result<TPMT_SYM_DEF> {
-        let (key_bits, mode) = self.bits_and_mode()?;
-
-        Ok(TPMT_SYM_DEF {
-            algorithm: self.algorithm.unwrap(), // bits_and_mode would return an Err if algorithm was missing
-            keyBits: key_bits,
-            mode,
-        })
-    }
-
-    /// Build a TPMT_SYM_DEF_OBJECT given the previously provided parameters.
-    ///
-    /// # Errors
-    /// * if an unrecognized symmetric algorithm type was set, `UnsupportedParam` wrapper error
-    /// is returned.
-    /// * if an algorithm is not explicitly set, `ParamsMissing` is returned
-    pub fn build_object(self) -> Result<TPMT_SYM_DEF_OBJECT> {
-        let (key_bits, mode) = self.bits_and_mode()?;
-
-        Ok(TPMT_SYM_DEF_OBJECT {
-            algorithm: self.algorithm.unwrap(), // bits_and_mode would return an Err if algorithm was missing
-            keyBits: key_bits,
-            mode,
-        })
-    }
-
-    fn bits_and_mode(self) -> Result<(TPMU_SYM_KEY_BITS, TPMU_SYM_MODE)> {
-        let key_bits;
-        let mode;
-        match self.algorithm {
-            Some(TPM2_ALG_XOR) => {
-                // Exclusive OR
-                key_bits = TPMU_SYM_KEY_BITS {
-                    exclusiveOr: self.key_bits,
-                };
-                mode = Default::default(); // NULL
-            }
-            Some(TPM2_ALG_AES) => {
-                // AES
-                key_bits = TPMU_SYM_KEY_BITS { aes: self.key_bits };
-                mode = TPMU_SYM_MODE { aes: self.mode };
-            }
-            Some(TPM2_ALG_SM4) => {
-                // SM4
-                key_bits = TPMU_SYM_KEY_BITS { sm4: self.key_bits };
-                mode = TPMU_SYM_MODE { sm4: self.mode };
-            }
-            Some(TPM2_ALG_CAMELLIA) => {
-                // CAMELLIA
-                key_bits = TPMU_SYM_KEY_BITS {
-                    camellia: self.key_bits,
-                };
-                mode = TPMU_SYM_MODE {
-                    camellia: self.mode,
-                };
-            }
-            Some(TPM2_ALG_NULL) => {
-                // NULL
-                key_bits = Default::default();
-                mode = Default::default();
-            }
-            None => return Err(Error::local_error(WrapperErrorKind::ParamsMissing)),
-            _ => return Err(Error::local_error(WrapperErrorKind::UnsupportedParam)),
-        }
-
-        Ok((key_bits, mode))
-    }
-}
-
-impl Default for TpmtSymDefBuilder {
-    fn default() -> Self {
-        TpmtSymDefBuilder::new()
     }
 }
 
@@ -611,8 +489,8 @@ impl PublicIdUnion {
 #[allow(clippy::pub_enum_variant_names)]
 #[derive(Copy, Clone)]
 pub enum PublicParmsUnion {
-    KeyedHashDetail(KeyedHashParms),
-    SymDetail(Cipher),
+    KeyedHashDetail(KeyedHashParameters),
+    SymDetail(crate::abstraction::cipher::Cipher),
     RsaDetail(TPMS_RSA_PARMS),
     EccDetail(TPMS_ECC_PARMS),
     AsymDetail(TPMS_ASYM_PARMS),
@@ -633,7 +511,6 @@ impl PublicParmsUnion {
 
 impl TryFrom<PublicParmsUnion> for TPMU_PUBLIC_PARMS {
     type Error = Error;
-
     fn try_from(parms: PublicParmsUnion) -> Result<Self> {
         match parms {
             PublicParmsUnion::AsymDetail(tss_parms) => Ok(TPMU_PUBLIC_PARMS {
@@ -646,10 +523,10 @@ impl TryFrom<PublicParmsUnion> for TPMU_PUBLIC_PARMS {
                 rsaDetail: tss_parms,
             }),
             PublicParmsUnion::SymDetail(cipher) => Ok(TPMU_PUBLIC_PARMS {
-                symDetail: cipher.into(),
+                symDetail: SymmetricCipherParameters::try_from(cipher)?.into(),
             }),
             PublicParmsUnion::KeyedHashDetail(tss_parms) => Ok(TPMU_PUBLIC_PARMS {
-                keyedHashDetail: tss_parms.try_into()?,
+                keyedHashDetail: tss_parms.into(),
             }),
         }
     }
@@ -1108,12 +985,12 @@ impl TryFrom<TpmsContext> for TPMS_CONTEXT {
 /// * `key_bits` - Size in bits of the decryption key
 /// * `pub_exponent` - Public exponent of the RSA key. A value of 0 defaults to 2^16 + 1
 pub fn create_restricted_decryption_rsa_public(
-    symmetric: Cipher,
+    symmetric: crate::abstraction::cipher::Cipher,
     key_bits: u16,
     pub_exponent: u32,
 ) -> Result<TPM2B_PUBLIC> {
     let rsa_parms = TpmsRsaParmsBuilder::new_restricted_decryption_key(
-        symmetric.into(),
+        SymmetricDefinitionObject::try_from(symmetric)?.into(),
         key_bits,
         pub_exponent,
     )
@@ -1214,7 +1091,7 @@ pub fn create_unrestricted_signing_rsa_public(
 /// * `curve` - identifier of the precise curve to be used with the key
 pub fn create_unrestricted_signing_ecc_public(
     scheme: AsymSchemeUnion,
-    curve: EllipticCurve,
+    curve: EccCurve,
 ) -> Result<TPM2B_PUBLIC> {
     let ecc_parms = TpmsEccParmsBuilder::new_unrestricted_signing_key(scheme, curve).build()?;
 
