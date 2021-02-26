@@ -99,7 +99,7 @@ impl Context {
     ///
     /// # Example
     ///
-    /// ```rust, no_run
+    /// ```rust
     /// # use tss_esapi::{
     /// #     attributes::ObjectAttributesBuilder,
     /// #     structures::{MaxBuffer, Ticket, KeyedHashParms},
@@ -110,10 +110,11 @@ impl Context {
     /// #     Context, Tcti,
     /// # };
     /// # use std::convert::TryFrom;
-    ///
-    /// # // Create context that uses Device TCTI.
+    /// # // Create context
     /// # let mut context = unsafe {
-    /// #     Context::new(Tcti::Device(Default::default())).expect("Failed to create Context")
+    /// #     Context::new(
+    /// #         Tcti::from_environment_variable().expect("Failed to get TCTI"),
+    /// #     ).expect("Failed to create Context")
     /// # };
     /// // Create a key
     /// let object_attributes = ObjectAttributesBuilder::new()
@@ -128,17 +129,19 @@ impl Context {
     ///     .with_parms(PublicParmsUnion::KeyedHashDetail(KeyedHashParms::HMAC {
     ///         hash_alg: HashingAlgorithm::Sha256,
     ///     }))
+    ///     .with_object_attributes(object_attributes)
     ///     .build()
-    ///     .unwrap();
-    /// let key = context
-    ///     .create_primary(Hierarchy::Owner, &key_pub, None, None, None, None)
     ///     .unwrap();
     ///
     /// let input_data = MaxBuffer::try_from("There is no spoon".as_bytes().to_vec())
     ///     .expect("Failed to create buffer for input data.");
-    /// let hmac = context
-    ///     .hmac(key.key_handle.into(), &input_data, HashingAlgorithm::Sha256)
-    ///     .unwrap();
+    ///
+    /// let hmac = context.execute_with_nullauth_session(|ctx| {
+    ///     let key = ctx.create_primary(Hierarchy::Owner, &key_pub, None, None, None, None).unwrap();
+    ///
+    ///     ctx.hmac(key.key_handle.into(), &input_data, HashingAlgorithm::Sha256)
+    /// }).unwrap();
+    ///
     /// ```
     ///
     /// # Errors

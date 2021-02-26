@@ -41,7 +41,10 @@ impl TpmHandle {
     /// Method that indicates if the flushing the
     /// context of the handle is a valid action.
     pub(crate) fn may_be_flushed(&self) -> bool {
-        matches!(self, TpmHandle::HmacSession(_) | TpmHandle::LoadedSession(_) | TpmHandle::Transient(_))
+        matches!(
+            self,
+            TpmHandle::HmacSession(_) | TpmHandle::LoadedSession(_) | TpmHandle::Transient(_)
+        )
     }
 }
 
