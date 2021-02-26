@@ -32,6 +32,9 @@ fn create_ak_public(
         .with_fixed_tpm(true)
         .with_fixed_parent(true)
         .with_sensitive_data_origin(true)
+        // Prevent replay attacks.
+        // Ensure the key can't be reused after a TPM reset/reboot.
+        .with_st_clear(true)
         .build()?;
 
     match key_alg {
