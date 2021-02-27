@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use crate::{
-    abstraction::cipher::Cipher,
+    abstraction::{cipher::Cipher, DefaultKey, KeyCustomization},
     attributes::{ObjectAttributesBuilder, SessionAttributesBuilder},
     constants::{tss::*, SessionType},
     handles::{AuthHandle, KeyHandle},
@@ -19,22 +19,24 @@ use crate::{
 use log::error;
 use std::convert::{TryFrom, TryInto};
 
-fn create_ak_public(
+fn create_ak_public<K: KeyCustomization>(
     key_alg: AsymmetricAlgorithm,
     hash_alg: HashingAlgorithm,
     sign_alg: SignatureScheme,
+    key_customization: &K,
 ) -> Result<TPM2B_PUBLIC> {
-    let obj_attrs = ObjectAttributesBuilder::new()
+    let obj_attrs_builder = ObjectAttributesBuilder::new()
         .with_restricted(true)
         .with_user_with_auth(true)
         .with_sign_encrypt(true)
         .with_decrypt(false)
         .with_fixed_tpm(true)
         .with_fixed_parent(true)
-        .with_sensitive_data_origin(true)
-        .build()?;
+        .with_sensitive_data_origin(true);
 
-    match key_alg {
+    let obj_attrs = key_customization.attributes(obj_attrs_builder).build()?;
+
+    let key_builder = match key_alg {
         AsymmetricAlgorithm::Rsa => Tpm2BPublicBuilder::new()
             .with_type(TPM2_ALG_RSA)
             .with_name_alg(hash_alg.into())
@@ -86,8 +88,10 @@ fn create_ak_public(
             // TDOD: Figure out what to with Null.
             return Err(Error::local_error(WrapperErrorKind::UnsupportedParam));
         }
-    }
-    .build()
+    };
+
+    let key_builder = key_customization.template(key_builder);
+    key_builder.build()
 }
 
 /// This loads an Attestation Key previously generated under the Endorsement hierarchy
@@ -139,12 +143,13 @@ pub fn load_ak(
 }
 
 /// This creates an Attestation Key in the Endorsement hierarchy
-pub fn create_ak(
+pub fn create_ak_custom<K: KeyCustomization>(
     context: &mut Context,
     parent: KeyHandle,
     hash_alg: HashingAlgorithm,
     sign_alg: SignatureScheme,
     ak_auth_value: Option<&Auth>,
+    key_customization: &K,
 ) -> Result<CreateKeyResult> {
     let key_alg = AsymmetricAlgorithm::try_from(sign_alg).map_err(|e| {
         // sign_alg is either HMAC or Null.
@@ -152,7 +157,7 @@ pub fn create_ak(
         e
     })?;
 
-    let ak_pub = create_ak_public(key_alg, hash_alg, sign_alg)?;
+    let ak_pub = create_ak_public(key_alg, hash_alg, sign_alg, key_customization)?;
 
     let session = match context.start_auth_session(
         None,
@@ -187,4 +192,22 @@ pub fn create_ak(
             ctx.create(parent, &ak_pub, ak_auth_value, None, None, None)
         })
     })
+}
+
+/// This creates an Attestation Key in the Endorsement hierarchy
+pub fn create_ak(
+    context: &mut Context,
+    parent: KeyHandle,
+    hash_alg: HashingAlgorithm,
+    sign_alg: SignatureScheme,
+    ak_auth_value: Option<&Auth>,
+) -> Result<CreateKeyResult> {
+    create_ak_custom(
+        context,
+        parent,
+        hash_alg,
+        sign_alg,
+        ak_auth_value,
+        &DefaultKey,
+    )
 }
