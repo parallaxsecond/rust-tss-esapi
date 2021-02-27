@@ -4,8 +4,8 @@
 use std::convert::{TryFrom, TryInto};
 
 use tss_esapi::{
-    abstraction::{ak, ek},
-    attributes::SessionAttributesBuilder,
+    abstraction::{ak, ek, KeyCustomization},
+    attributes::{ObjectAttributesBuilder, SessionAttributesBuilder},
     constants::SessionType,
     handles::AuthHandle,
     interface_types::algorithm::{AsymmetricAlgorithm, HashingAlgorithm, SignatureScheme},
@@ -19,12 +19,13 @@ use common::create_ctx_without_session;
 fn test_create_ak_rsa_rsa() {
     let mut context = create_ctx_without_session();
 
-    let ek_rsa = ek::create_ek_object(&mut context, AsymmetricAlgorithm::Rsa).unwrap();
+    let ek_rsa = ek::create_ek_object(&mut context, AsymmetricAlgorithm::Rsa, None).unwrap();
     ak::create_ak(
         &mut context,
         ek_rsa,
         HashingAlgorithm::Sha256,
         SignatureScheme::RsaPss,
+        None,
         None,
     )
     .unwrap();
@@ -34,12 +35,13 @@ fn test_create_ak_rsa_rsa() {
 fn test_create_ak_rsa_ecc() {
     let mut context = create_ctx_without_session();
 
-    let ek_rsa = ek::create_ek_object(&mut context, AsymmetricAlgorithm::Rsa).unwrap();
+    let ek_rsa = ek::create_ek_object(&mut context, AsymmetricAlgorithm::Rsa, None).unwrap();
     if ak::create_ak(
         &mut context,
         ek_rsa,
         HashingAlgorithm::Sha256,
         SignatureScheme::Sm2,
+        None,
         None,
     )
     .is_ok()
@@ -53,7 +55,7 @@ fn test_create_ak_rsa_ecc() {
 fn test_create_and_use_ak() {
     let mut context = create_ctx_without_session();
 
-    let ek_rsa = ek::create_ek_object(&mut context, AsymmetricAlgorithm::Rsa).unwrap();
+    let ek_rsa = ek::create_ek_object(&mut context, AsymmetricAlgorithm::Rsa, None).unwrap();
     let ak_auth = Auth::try_from(vec![0x1, 0x2, 0x42]).unwrap();
     let att_key = ak::create_ak(
         &mut context,
@@ -61,6 +63,7 @@ fn test_create_and_use_ak() {
         HashingAlgorithm::Sha256,
         SignatureScheme::RsaPss,
         Some(&ak_auth),
+        None,
     )
     .unwrap();
 
@@ -139,4 +142,59 @@ fn test_create_and_use_ak() {
         .unwrap();
 
     assert_eq!(expected, decrypted);
+}
+
+#[test]
+fn test_create_custom_ak() {
+    struct StClearKeys;
+    impl KeyCustomization for &StClearKeys {
+        fn attributes(
+            &self,
+            attributes_builder: ObjectAttributesBuilder,
+        ) -> ObjectAttributesBuilder {
+            attributes_builder.with_st_clear(true)
+        }
+    }
+    let mut context = create_ctx_without_session();
+
+    let ek_rsa = ek::create_ek_object(&mut context, AsymmetricAlgorithm::Rsa, None).unwrap();
+    let ak_auth = Auth::try_from(vec![0x1, 0x2, 0x42]).unwrap();
+    // Without customization, no st clear
+    let att_key_without = ak::create_ak(
+        &mut context,
+        ek_rsa,
+        HashingAlgorithm::Sha256,
+        SignatureScheme::RsaPss,
+        Some(&ak_auth),
+        None,
+    )
+    .unwrap();
+
+    assert_eq!(
+        att_key_without.out_public.publicArea.objectAttributes
+            & tss_esapi::constants::tss::TPMA_OBJECT_STCLEAR,
+        0
+    );
+
+    // With a customization, we get a new attribute
+    let att_key = ak::create_ak(
+        &mut context,
+        ek_rsa,
+        HashingAlgorithm::Sha256,
+        SignatureScheme::RsaPss,
+        Some(&ak_auth),
+        &StClearKeys,
+    )
+    .unwrap();
+
+    assert_eq!(
+        att_key.out_public.publicArea.objectAttributes
+            & tss_esapi::constants::tss::TPMA_OBJECT_STCLEAR,
+        tss_esapi::constants::tss::TPMA_OBJECT_STCLEAR
+    );
+    assert_eq!(
+        att_key.out_public.publicArea.objectAttributes,
+        att_key_without.out_public.publicArea.objectAttributes
+            | tss_esapi::constants::tss::TPMA_OBJECT_STCLEAR
+    );
 }

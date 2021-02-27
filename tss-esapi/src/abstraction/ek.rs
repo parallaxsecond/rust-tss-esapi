@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use crate::{
-    abstraction::nv,
+    abstraction::{nv, IntoKeyCustomization, KeyCustomization},
     attributes::ObjectAttributesBuilder,
     constants::tss::*,
     handles::{KeyHandle, NvIndexTpmHandle, TpmHandle},
@@ -26,8 +26,13 @@ const ECC_P256_EK_CERTIFICATE_NV_INDEX: u32 = 0x01c0000a;
 
 // Source: TCG EK Credential Profile for TPM Family 2.0; Level 0 Version 2.3 Revision 2
 // Appendix B.3.3 and B.3.4
-fn create_ek_public_from_default_template(alg: AsymmetricAlgorithm) -> Result<TPM2B_PUBLIC> {
-    let obj_attrs = ObjectAttributesBuilder::new()
+fn create_ek_public_from_default_template<IKC: IntoKeyCustomization>(
+    alg: AsymmetricAlgorithm,
+    key_customization: IKC,
+) -> Result<TPM2B_PUBLIC> {
+    let key_customization = key_customization.into_key_customization();
+
+    let obj_attrs_builder = ObjectAttributesBuilder::new()
         .with_fixed_tpm(true)
         .with_st_clear(false)
         .with_fixed_parent(true)
@@ -38,8 +43,14 @@ fn create_ek_public_from_default_template(alg: AsymmetricAlgorithm) -> Result<TP
         .with_encrypted_duplication(false)
         .with_restricted(true)
         .with_decrypt(true)
-        .with_sign_encrypt(false)
-        .build()?;
+        .with_sign_encrypt(false);
+
+    let obj_attrs = if let Some(ref k) = key_customization {
+        k.attributes(obj_attrs_builder)
+    } else {
+        obj_attrs_builder
+    }
+    .build()?;
 
     // TPM2_PolicySecret(TPM_RH_ENDORSEMENT)
     // With 32 null-bytes attached, because of the type of with_auth_policy
@@ -51,7 +62,7 @@ fn create_ek_public_from_default_template(alg: AsymmetricAlgorithm) -> Result<TP
         0x00, 0x00, 0x00, 0x00,
     ];
 
-    match alg {
+    let key_builder = match alg {
         AsymmetricAlgorithm::Rsa => Tpm2BPublicBuilder::new()
             .with_type(TPM2_ALG_RSA)
             .with_name_alg(TPM2_ALG_SHA256)
@@ -73,8 +84,7 @@ fn create_ek_public_from_default_template(alg: AsymmetricAlgorithm) -> Result<TP
             .with_unique(PublicIdUnion::Rsa(Box::new(TPM2B_PUBLIC_KEY_RSA {
                 size: 256,
                 buffer: [0; 512],
-            })))
-            .build(),
+            }))),
         AsymmetricAlgorithm::Ecc => Tpm2BPublicBuilder::new()
             .with_type(TPM2_ALG_ECC)
             .with_name_alg(TPM2_ALG_SHA256)
@@ -109,18 +119,28 @@ fn create_ek_public_from_default_template(alg: AsymmetricAlgorithm) -> Result<TP
                     size: 32,
                     buffer: [0; 128],
                 },
-            })))
-            .build(),
+            }))),
         AsymmetricAlgorithm::Null => {
             // TDOD: Figure out what to with Null.
-            Err(Error::local_error(WrapperErrorKind::UnsupportedParam))
+            return Err(Error::local_error(WrapperErrorKind::UnsupportedParam));
         }
-    }
+    };
+
+    let key_builder = if let Some(ref k) = key_customization {
+        k.template(key_builder)
+    } else {
+        key_builder
+    };
+    key_builder.build()
 }
 
 /// Create the Endorsement Key object from the specification templates
-pub fn create_ek_object(context: &mut Context, alg: AsymmetricAlgorithm) -> Result<KeyHandle> {
-    let ek_public = create_ek_public_from_default_template(alg)?;
+pub fn create_ek_object<IKC: IntoKeyCustomization>(
+    context: &mut Context,
+    alg: AsymmetricAlgorithm,
+    key_customization: IKC,
+) -> Result<KeyHandle> {
+    let ek_public = create_ek_public_from_default_template(alg, key_customization)?;
 
     Ok(context
         .execute_with_nullauth_session(|ctx| {
