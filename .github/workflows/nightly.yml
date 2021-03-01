@@ -3,7 +3,8 @@ name: Nightly Checks
 on:
   schedule:
     # Every night at midnight
-    - cron:  '0 0 * * *'
+    - cron: "0 0 * * *"
+  workflow_dispatch:
 
 jobs:
   # This won't build on GA environment because of missing TSS
@@ -38,3 +39,13 @@ jobs:
         run: cargo install cargo-audit
       - name: Execute cargo audit
         run: cargo audit
+
+  coverage:
+    name: Calculate code coverage
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build the container
+        run: docker build -t ubuntucontainer tss-esapi/tests/ --file tss-esapi/tests/Dockerfile-ubuntu
+      - name: Run the container
+        run: docker run -v $(pwd):/tmp/rust-tss-esapi -w /tmp/rust-tss-esapi/tss-esapi --security-opt seccomp=unconfined ubuntucontainer /tmp/rust-tss-esapi/tss-esapi/tests/coverage.sh
