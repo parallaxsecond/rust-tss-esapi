@@ -205,38 +205,36 @@ mod test_activate_credential {
         let (session_attributes, session_attributes_mask) = SessionAttributesBuilder::new().build();
 
         let session_1 = context
-            .start_auth_session(
-                None,
-                None,
-                None,
-                SessionType::Hmac,
-                SymmetricDefinition::AES_256_CFB,
-                HashingAlgorithm::Sha256,
-            )
-            .unwrap();
+            .execute_without_session(|ctx| {
+                ctx.start_auth_session(
+                    None,
+                    None,
+                    None,
+                    SessionType::Hmac,
+                    SymmetricDefinition::AES_256_CFB,
+                    HashingAlgorithm::Sha256,
+                )
+            })
+            .expect("session_1: Call to start_auth_session failed.")
+            .expect("session_1: The auth session returned was NONE");
         context
-            .tr_sess_set_attributes(
-                session_1.unwrap(),
-                session_attributes,
-                session_attributes_mask,
-            )
-            .unwrap();
+            .tr_sess_set_attributes(session_1, session_attributes, session_attributes_mask)
+            .expect("Call to tr_sess_set_attributes failed");
         let session_2 = context
-            .start_auth_session(
-                None,
-                None,
-                None,
-                SessionType::Hmac,
-                SymmetricDefinition::AES_256_CFB,
-                HashingAlgorithm::Sha256,
-            )
-            .unwrap();
+            .execute_without_session(|ctx| {
+                ctx.start_auth_session(
+                    None,
+                    None,
+                    None,
+                    SessionType::Hmac,
+                    SymmetricDefinition::AES_256_CFB,
+                    HashingAlgorithm::Sha256,
+                )
+            })
+            .expect("session_2: Call to start_auth_session failed.")
+            .expect("session_2: The auth session returned was NONE");
         context
-            .tr_sess_set_attributes(
-                session_2.unwrap(),
-                session_attributes,
-                session_attributes_mask,
-            )
+            .tr_sess_set_attributes(session_2, session_attributes, session_attributes_mask)
             .unwrap();
 
         let key_handle = context
@@ -251,7 +249,9 @@ mod test_activate_credential {
             .unwrap()
             .key_handle;
 
-        let (_, key_name, _) = context.read_public(key_handle).unwrap();
+        let (_, key_name, _) = context
+            .read_public(key_handle)
+            .expect("Call to read_public failed");
 
         let cred = vec![1, 2, 3, 4, 5];
 
@@ -259,15 +259,16 @@ mod test_activate_credential {
             .execute_without_session(|ctx| {
                 ctx.make_credential(key_handle, cred.try_into().unwrap(), key_name)
             })
-            .unwrap();
+            .expect("Call to make_credential failed");
 
-        context.set_sessions((session_1, session_2, None));
+        context.set_sessions((Some(session_1), Some(session_2), None));
 
         let decrypted = context
             .activate_credential(key_handle, key_handle, credential_blob, secret)
-            .unwrap();
+            .expect("Call to active_credential failed");
 
-        let expected = Digest::try_from(vec![1, 2, 3, 4, 5]).unwrap();
+        let expected =
+            Digest::try_from(vec![1, 2, 3, 4, 5]).expect("Failed to create digest for expected");
 
         assert_eq!(expected, decrypted);
     }

@@ -716,21 +716,24 @@ impl TransientKeyContextBuilder {
             )?
             .key_handle;
 
-        let new_session = context
-            .start_auth_session(
+        let new_session_cipher = self.default_context_cipher;
+        let new_session_hashing_algorithm = self.session_hash_alg;
+        let new_session = context.execute_without_session(|ctx| {
+            ctx.start_auth_session(
                 Some(root_key_handle),
                 None,
                 None,
                 SessionType::Hmac,
-                self.default_context_cipher.try_into()?,
-                self.session_hash_alg,
+                new_session_cipher.try_into()?,
+                new_session_hashing_algorithm,
             )
             .and_then(|session| {
                 session.ok_or_else(|| {
                     error!("Received unexpected NONE handle from the TPM");
                     Error::local_error(ErrorKind::WrongValueFromTpm)
                 })
-            })?;
+            })
+        })?;
         if let (Some(old_session), _, _) = context.sessions() {
             context.set_sessions((Some(new_session), None, None));
             context.flush_context(old_session.handle().into())?;

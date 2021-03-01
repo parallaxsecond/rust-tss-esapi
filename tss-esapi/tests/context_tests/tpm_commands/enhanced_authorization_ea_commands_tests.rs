@@ -23,14 +23,16 @@ mod test_policy_signed {
             .key_handle;
 
         let trial_session = context
-            .start_auth_session(
-                None,
-                None,
-                None,
-                SessionType::Trial,
-                SymmetricDefinition::AES_256_CFB,
-                HashingAlgorithm::Sha256,
-            )
+            .execute_without_session(|ctx| {
+                ctx.start_auth_session(
+                    None,
+                    None,
+                    None,
+                    SessionType::Trial,
+                    SymmetricDefinition::AES_256_CFB,
+                    HashingAlgorithm::Sha256,
+                )
+            })
             .expect("Start auth session failed")
             .expect("Start auth session returned a NONE handle");
         let (trial_session_attributes, trial_session_attributes_mask) =
@@ -84,14 +86,16 @@ mod test_policy_secret {
         let mut context = create_ctx_with_session();
 
         let trial_session = context
-            .start_auth_session(
-                None,
-                None,
-                None,
-                SessionType::Trial,
-                SymmetricDefinition::AES_256_CFB,
-                HashingAlgorithm::Sha256,
-            )
+            .execute_without_session(|ctx| {
+                ctx.start_auth_session(
+                    None,
+                    None,
+                    None,
+                    SessionType::Trial,
+                    SymmetricDefinition::AES_256_CFB,
+                    HashingAlgorithm::Sha256,
+                )
+            })
             .expect("Start auth session failed")
             .expect("Start auth session returned a NONE handle");
         let (trial_session_attributes, trial_session_attributes_mask) =
@@ -120,7 +124,7 @@ mod test_policy_secret {
                 policy_ref,
                 Some(Duration::from_secs(3600)),
             )
-            .unwrap();
+            .expect("Failed to call policy_secret");
     }
 }
 
