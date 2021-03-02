@@ -49,3 +49,5 @@ jobs:
         run: docker build -t ubuntucontainer tss-esapi/tests/ --file tss-esapi/tests/Dockerfile-ubuntu
       - name: Run the container
         run: docker run -v $(pwd):/tmp/rust-tss-esapi -w /tmp/rust-tss-esapi/tss-esapi --security-opt seccomp=unconfined ubuntucontainer /tmp/rust-tss-esapi/tss-esapi/tests/coverage.sh
+      - name: Collect coverage results
+        run: bash <(curl -s https://codecov.io/bash)
