@@ -17,8 +17,3 @@ tpm2_startup -c -T mssim
 #############################
 cargo install cargo-tarpaulin
 cargo tarpaulin --tests --out Xml --exclude-files="tests/*,../*" -- --test-threads=1 --nocapture
-
-#################
-# Upload report #
-#################
-bash <(curl -s https://codecov.io/bash)
