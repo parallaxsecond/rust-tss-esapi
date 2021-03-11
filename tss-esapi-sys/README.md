@@ -39,3 +39,21 @@ is included in the name of the file - if the triplet you require is not
 available, feel free to raise a Pull Request to add it or to use build-time
 generation of bindings. All the committed bindings **MUST** be generated from
 the library version found under the `vendor` submodule.
+
+## Cross compiling
+
+Cross-compilation can be done as long as you have on your build system the TSS 
+libraries compiled for your target system of choice. We rely on `pkg-config` to
+identify the libraries which we link against. Installing `tpm2-tss` does yield
+`.pc` files which can be used for this purpose, but depending on the exact build
+environment setup, the configuration and compilation of `tpm2-tss` could require
+some special tailoring.
+
+We include cross-compilation builds as a nightly check in Github Actions - you
+can find them [here](../tss-esapi/tests/cross-compile.sh) as an example of the
+steps needed. You can find more information on using `pkg-config` when cross-compiling
+[here](https://github.com/parallaxsecond/rust-tss-esapi/issues/204). Our wrapper
+script around `pkg-config` can be seen [here](../tss-esapi/tests/pkg-config).
+
+Be advised that in some cases the linker used might need to be set manually in
+`.cargo/config`.

@@ -25,3 +25,7 @@ Our end-goal is to achieve a fully Rust-native interface that offers strong safe
 ## Versioning
 
 The `tss-esapi` crate is still under development and thus the interface is not stable (despite the version number). As a rule of thumb, all versions marked `alpha` are expected to be short-lived and superseded by a better, more complete interface that relies on breaking changes.
+
+## Cross compiling
+
+For more information on cross-compiling the `tss-esapi` crate, please see the README of the `tss-esapi-sys` crate.

@@ -41,13 +41,15 @@ jobs:
         run: cargo audit
 
   coverage:
-    name: Calculate code coverage
+    name: Calculate code coverage and cross compile
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
       - name: Build the container
         run: docker build -t ubuntucontainer tss-esapi/tests/ --file tss-esapi/tests/Dockerfile-ubuntu
-      - name: Run the container
+      - name: Run the code coverage script
         run: docker run -v $(pwd):/tmp/rust-tss-esapi -w /tmp/rust-tss-esapi/tss-esapi --security-opt seccomp=unconfined ubuntucontainer /tmp/rust-tss-esapi/tss-esapi/tests/coverage.sh
       - name: Collect coverage results
         run: bash <(curl -s https://codecov.io/bash)
+      - name: Run the cross-compilation script
+        run: docker run -v $(pwd):/tmp/rust-tss-esapi -w /tmp/rust-tss-esapi/tss-esapi ubuntucontainer /tmp/rust-tss-esapi/tss-esapi/tests/cross-compile.sh
