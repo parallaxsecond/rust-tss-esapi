@@ -33,6 +33,6 @@ fn test_retrieve_ek_pubcert() {
 fn test_create_ek() {
     let mut context = create_ctx_without_session();
 
-    let _ = ek::create_ek_object(&mut context, AsymmetricAlgorithm::Rsa).unwrap();
-    let _ = ek::create_ek_object(&mut context, AsymmetricAlgorithm::Ecc).unwrap();
+    let _ = ek::create_ek_object(&mut context, AsymmetricAlgorithm::Rsa, None).unwrap();
+    let _ = ek::create_ek_object(&mut context, AsymmetricAlgorithm::Ecc, None).unwrap();
 }
