@@ -27,6 +27,26 @@ include!(concat!(
     "/src/bindings/x86_64-unknown-linux-gnu.rs"
 ));
 
+#[cfg(all(
+    not(feature = "generate-bindings"),
+    target_arch = "aarch64",
+    target_os = "linux"
+))]
+include!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/src/bindings/aarch64-unknown-linux-gnu.rs"
+));
+
+#[cfg(all(
+    not(feature = "generate-bindings"),
+    target_arch = "armv7",
+    target_os = "linux"
+))]
+include!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/src/bindings/armv7-unknown-linux-gnueabi.rs"
+));
+
 // If the "generate-bindings" feature is on, use the generated bindings.
 #[cfg(feature = "generate-bindings")]
 include!(concat!(env!("OUT_DIR"), "/tss_esapi_bindings.rs"));
