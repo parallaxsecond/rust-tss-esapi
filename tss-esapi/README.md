@@ -1,14 +1,9 @@
-<!--
-  -- Copyright 2021 Contributors to the Parsec project.
-  -- SPDX-License-Identifier: Apache-2.0
---->
-
 # TPM2 Software Stack Rust Wrapper 
 
 <p align="center">
   <a href="https://crates.io/crates/tss-esapi"><img alt="Crates.io" src="https://img.shields.io/crates/v/tss-esapi"></a>
   <a href="https://docs.rs/tss-esapi"><img src="https://docs.rs/tss-esapi/badge.svg" alt="Code documentation"/></a>
-  <a href="https://github.com/parallaxsecond/rust-tss-esapi/actions?query=workflow%3A%22Continuous+Integration%22"><img src="https://github.com/parallaxsecond/rust-tss-esapi/workflows/Continuous%20Integration/badge.svg" alt="CI tests"/></a>
+  <a href="https://codecov.io/gh/parallaxsecond/rust-tss-esapi"><img src="https://codecov.io/gh/parallaxsecond/rust-tss-esapi/branch/main/graph/badge.svg?token=5T7SVCHWFE"/></a>
 </p>
 
 This is the high-level, Rust idiomatic wrapper crate that exposes an interface 
@@ -29,3 +24,5 @@ The `tss-esapi` crate is still under development and thus the interface is not s
 ## Cross compiling
 
 For more information on cross-compiling the `tss-esapi` crate, please see the README of the `tss-esapi-sys` crate.
+
+*Copyright 2021 Contributors to the Parsec project.*
