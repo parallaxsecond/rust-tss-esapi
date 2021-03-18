@@ -8,7 +8,10 @@ use tss_esapi::{
     attributes::{ObjectAttributesBuilder, SessionAttributesBuilder},
     constants::SessionType,
     handles::AuthHandle,
-    interface_types::algorithm::{AsymmetricAlgorithm, HashingAlgorithm, SignatureScheme},
+    interface_types::{
+        algorithm::{AsymmetricAlgorithm, HashingAlgorithm, SignatureScheme},
+        session_handles::PolicySession,
+    },
     structures::{Auth, Digest, SymmetricDefinition},
 };
 
@@ -90,13 +93,10 @@ fn test_create_and_use_ak() {
             SymmetricDefinition::AES_256_CFB,
             HashingAlgorithm::Sha256,
         )
-        .unwrap();
+        .expect("Failed to call start_auth_session")
+        .expect("Failed invalid session value");
     context
-        .tr_sess_set_attributes(
-            session_1.unwrap(),
-            session_aastributes,
-            session_attributes_mask,
-        )
+        .tr_sess_set_attributes(session_1, session_aastributes, session_attributes_mask)
         .unwrap();
     let session_2 = context
         .start_auth_session(
@@ -107,14 +107,11 @@ fn test_create_and_use_ak() {
             SymmetricDefinition::AES_256_CFB,
             HashingAlgorithm::Sha256,
         )
-        .unwrap();
+        .expect("Failed to call start_auth_session")
+        .expect("Failed invalid session value");
     context
-        .tr_sess_set_attributes(
-            session_2.unwrap(),
-            session_aastributes,
-            session_attributes_mask,
-        )
-        .unwrap();
+        .tr_sess_set_attributes(session_2, session_aastributes, session_attributes_mask)
+        .expect("Failed to call tr_sess_set_attributes");
 
     let (credential_blob, secret) = context
         .execute_without_session(|ctx| {
@@ -123,9 +120,10 @@ fn test_create_and_use_ak() {
         .unwrap();
 
     let _ = context
-        .execute_with_session(session_1, |ctx| {
+        .execute_with_session(Some(session_1), |ctx| {
             ctx.policy_secret(
-                session_2.unwrap(),
+                PolicySession::try_from(session_2)
+                    .expect("Failed to convert auth session to policy session"),
                 AuthHandle::Endorsement,
                 Default::default(),
                 Default::default(),
@@ -135,7 +133,7 @@ fn test_create_and_use_ak() {
         })
         .unwrap();
 
-    context.set_sessions((session_1, session_2, None));
+    context.set_sessions((Some(session_1), Some(session_2), None));
 
     let decrypted = context
         .activate_credential(loaded_ak, ek_rsa, credential_blob, secret)

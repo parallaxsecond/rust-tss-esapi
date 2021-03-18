@@ -4,9 +4,8 @@ mod handle_manager;
 use crate::{
     attributes::SessionAttributesBuilder,
     constants::{CapabilityType, PropertyTag, SessionType},
-    handles::ObjectHandle,
-    interface_types::algorithm::HashingAlgorithm,
-    session::Session,
+    handles::{ObjectHandle, SessionHandle},
+    interface_types::{algorithm::HashingAlgorithm, session_handles::AuthSession},
     structures::{CapabilityData, SymmetricDefinition},
     tss2_esys::*,
     Error, Result, Tcti, WrapperErrorKind as ErrorKind,
@@ -50,7 +49,11 @@ pub struct Context {
     /// Handle for the ESYS context object owned through an Mbox.
     /// Wrapping the handle in an optional Mbox is done to allow the `Context` to be closed properly when the `Context` structure is dropped.
     esys_context: Option<MBox<ESYS_CONTEXT>>,
-    sessions: (Option<Session>, Option<Session>, Option<Session>),
+    sessions: (
+        Option<AuthSession>,
+        Option<AuthSession>,
+        Option<AuthSession>,
+    ),
     /// TCTI context handle associated with the ESYS context.
     /// As with the ESYS context, an optional Mbox wrapper allows the context to be deallocated.
     tcti_context: Option<MBox<TSS2_TCTI_CONTEXT>>,
@@ -156,7 +159,11 @@ impl Context {
     /// ```
     pub fn set_sessions(
         &mut self,
-        session_handles: (Option<Session>, Option<Session>, Option<Session>),
+        session_handles: (
+            Option<AuthSession>,
+            Option<AuthSession>,
+            Option<AuthSession>,
+        ),
     ) {
         self.sessions = session_handles;
     }
@@ -169,7 +176,7 @@ impl Context {
     /// # Example
     ///
     /// ```rust
-    /// # use tss_esapi::{Context, Tcti, session::Session};
+    /// # use tss_esapi::{Context, Tcti, interface_types::session_handles::AuthSession};
     /// # // Create context
     /// # let mut context = unsafe {
     /// #     Context::new(
@@ -177,7 +184,7 @@ impl Context {
     /// #     ).expect("Failed to create Context")
     /// # };
     /// // Use password session for auth
-    /// context.set_sessions((Some(Session::Password), None, None));
+    /// context.set_sessions((Some(AuthSession::Password), None, None));
     ///
     /// // Clear auth sessions
     /// context.clear_sessions();
@@ -191,7 +198,7 @@ impl Context {
     /// # Example
     ///
     /// ```rust
-    /// # use tss_esapi::{Context, Tcti, session::Session};
+    /// # use tss_esapi::{Context, Tcti, interface_types::session_handles::AuthSession};
     /// # // Create context
     /// # let mut context = unsafe {
     /// #     Context::new(
@@ -199,22 +206,32 @@ impl Context {
     /// #     ).expect("Failed to create Context")
     /// # };
     /// // Use password session for auth
-    /// context.set_sessions((Some(Session::Password), None, None));
+    /// context.set_sessions((Some(AuthSession::Password), None, None));
     ///
     /// // Retreive sessions in use
     /// let (session_1, session_2, session_3) = context.sessions();
-    /// assert_eq!(Some(Session::Password), session_1);
+    /// assert_eq!(Some(AuthSession::Password), session_1);
     /// assert_eq!(None, session_2);
     /// assert_eq!(None, session_3);
     /// ```
-    pub fn sessions(&self) -> (Option<Session>, Option<Session>, Option<Session>) {
+    pub fn sessions(
+        &self,
+    ) -> (
+        Option<AuthSession>,
+        Option<AuthSession>,
+        Option<AuthSession>,
+    ) {
         self.sessions
     }
 
     /// Execute the closure in f with the specified set of sessions, and sets the original sessions back afterwards
     pub fn execute_with_sessions<F, T>(
         &mut self,
-        session_handles: (Option<Session>, Option<Session>, Option<Session>),
+        session_handles: (
+            Option<AuthSession>,
+            Option<AuthSession>,
+            Option<AuthSession>,
+        ),
         f: F,
     ) -> T
     where
@@ -232,7 +249,7 @@ impl Context {
     }
 
     /// Executes the closure with a single session set, and the others set to None
-    pub fn execute_with_session<F, T>(&mut self, session_handle: Option<Session>, f: F) -> T
+    pub fn execute_with_session<F, T>(&mut self, session_handle: Option<AuthSession>, f: F) -> T
     where
         // We only need to call f once, so it can be FnOnce
         F: FnOnce(&mut Context) -> T,
@@ -260,7 +277,7 @@ impl Context {
         // We only need to call f once, so it can be FnOnce
         F: FnOnce(&mut Context) -> Result<T>,
     {
-        let session = match self.start_auth_session(
+        let auth_session = match self.start_auth_session(
             None,
             None,
             None,
@@ -276,11 +293,11 @@ impl Context {
             .with_decrypt(true)
             .with_encrypt(true)
             .build();
-        self.tr_sess_set_attributes(session, session_attributes, session_attributes_mask)?;
+        self.tr_sess_set_attributes(auth_session, session_attributes, session_attributes_mask)?;
 
-        let res = self.execute_with_session(Some(session), f);
+        let res = self.execute_with_session(Some(auth_session), f);
 
-        self.flush_context(session.handle().into())?;
+        self.flush_context(SessionHandle::from(auth_session).into())?;
 
         res
     }
@@ -364,39 +381,45 @@ impl Context {
     /// Internal function for retrieving the ESYS session handle for
     /// the optional session 1.
     fn optional_session_1(&self) -> ESYS_TR {
-        Session::handle_from_option(self.sessions.0).into()
+        SessionHandle::from(self.sessions.0).into()
     }
 
     /// Internal function for retrieving the ESYS session handle for
     /// the optional session 2.
     fn optional_session_2(&self) -> ESYS_TR {
-        Session::handle_from_option(self.sessions.1).into()
+        SessionHandle::from(self.sessions.1).into()
     }
 
     /// Internal function for retrieving the ESYS session handle for
     /// the optional session 3.
     fn optional_session_3(&self) -> ESYS_TR {
-        Session::handle_from_option(self.sessions.2).into()
+        SessionHandle::from(self.sessions.2).into()
     }
 
     /// Function that returns the required
     /// session handle 1 if it is available else
     /// returns an error.
     fn required_session_1(&self) -> Result<ESYS_TR> {
-        self.sessions.0.map(|v| v.handle().into()).ok_or_else(|| {
-            error!("Missing session handle for authorization (authSession1 = None)");
-            Error::local_error(ErrorKind::MissingAuthSession)
-        })
+        self.sessions
+            .0
+            .map(|v| SessionHandle::from(v).into())
+            .ok_or_else(|| {
+                error!("Missing session handle for authorization (authSession1 = None)");
+                Error::local_error(ErrorKind::MissingAuthSession)
+            })
     }
 
     /// Function that returns the required
     /// session handle 2 if it is available else
     /// returns an error.
     fn required_session_2(&self) -> Result<ESYS_TR> {
-        self.sessions.1.map(|v| v.handle().into()).ok_or_else(|| {
-            error!("Missing session handle for authorization (authSession2 = None)");
-            Error::local_error(ErrorKind::MissingAuthSession)
-        })
+        self.sessions
+            .1
+            .map(|v| SessionHandle::from(v).into())
+            .ok_or_else(|| {
+                error!("Missing session handle for authorization (authSession2 = None)");
+                Error::local_error(ErrorKind::MissingAuthSession)
+            })
     }
 }
 
