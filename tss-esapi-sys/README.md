@@ -1,9 +1,10 @@
-<!--
-  -- Copyright 2021 Contributors to the Parsec project.
-  -- SPDX-License-Identifier: Apache-2.0
---->
-
 # TPM2 Software Stack Rust Wrapper
+
+<p align="center">
+  <a href="https://crates.io/crates/tss-esapi-sys"><img alt="Crates.io" src="https://img.shields.io/crates/v/tss-esapi-sys"></a>
+  <a href="https://docs.rs/tss-esapi-sys"><img src="https://docs.rs/tss-esapi-sys/badge.svg" alt="Code documentation"/></a>
+  <a href="https://codecov.io/gh/parallaxsecond/rust-tss-esapi"><img src="https://codecov.io/gh/parallaxsecond/rust-tss-esapi/branch/main/graph/badge.svg?token=5T7SVCHWFE"/></a>
+</p>
 
 This is the lower-level wrapper that exposes a minimal, low-level C
 interface to Rust to [TSS](https://github.com/tpm2-software/tpm2-tss).
@@ -57,3 +58,5 @@ script around `pkg-config` can be seen [here](../tss-esapi/tests/pkg-config).
 
 Be advised that in some cases the linker used might need to be set manually in
 `.cargo/config`.
+
+*Copyright 2021 Contributors to the Parsec project.*
