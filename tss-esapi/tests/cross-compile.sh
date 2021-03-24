@@ -57,9 +57,11 @@ apt install -y gcc-arm-linux-gnueabi
 apt install -y gcc-aarch64-linux-gnu
 
 # Download OpenSSL source code
-pushd /tmp
-git clone https://github.com/openssl/openssl.git --branch $OPENSSL_VERSION
-popd
+if [ ! -d "/tmp/openssl" ]; then
+    pushd /tmp
+    git clone https://github.com/openssl/openssl.git --branch $OPENSSL_VERSION
+    popd
+fi
 
 # Allow the `pkg-config` crate to cross-compile
 export PKG_CONFIG_ALLOW_CROSS=1
