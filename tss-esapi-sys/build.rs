@@ -7,6 +7,11 @@ use std::path::PathBuf;
 const MINIMUM_VERSION: &str = "2.3.3";
 
 fn main() {
+    if std::env::var("DOCS_RS").is_ok() {
+        // Nothing to be done for docs.rs builds.
+        return;
+    }
+
     #[cfg(feature = "generate-bindings")]
     {
         let out_path = std::path::PathBuf::from(std::env::var("OUT_DIR").unwrap());
@@ -16,7 +21,12 @@ fn main() {
 
     #[cfg(not(feature = "generate-bindings"))]
     {
-        let supported_platforms = vec![String::from("x86_64-unknown-linux-gnu")];
+        let supported_platforms = vec![
+            String::from("x86_64-unknown-linux-gnu"),
+            String::from("aarch64-unknown-linux-gnu"),
+            String::from("armv7-unknown-linux-gnueabi"),
+            String::from("arm-unknown-linux-gnueabi"),
+        ];
         let target = std::env::var("TARGET").unwrap();
 
         // check if target is in the list of supported ones or panic with nice message
