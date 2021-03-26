@@ -1,5 +1,23 @@
 # Changelog
 
+## [tss-esapi-5.0.1](https://github.com/parallaxsecond/rust-tss-esapi/tree/tss-esapi-5.0.1) (2021-03-25)
+
+[Full Changelog](https://github.com/parallaxsecond/rust-tss-esapi/compare/tss-esapi-sys-0.1.1...tss-esapi-5.0.1)
+
+## [tss-esapi-sys-0.1.1](https://github.com/parallaxsecond/rust-tss-esapi/tree/tss-esapi-sys-0.1.1) (2021-03-25)
+
+[Full Changelog](https://github.com/parallaxsecond/rust-tss-esapi/compare/tss-esapi-5.0.0...tss-esapi-sys-0.1.1)
+
+**Fixed bugs:**
+
+- Documentation fails building on docs.rs [\#211](https://github.com/parallaxsecond/rust-tss-esapi/issues/211)
+- Fix cross-compilation scripts [\#212](https://github.com/parallaxsecond/rust-tss-esapi/pull/212) ([ionut-arm](https://github.com/ionut-arm))
+
+**Merged pull requests:**
+
+- Prepare patch release to fix docs.rs build [\#213](https://github.com/parallaxsecond/rust-tss-esapi/pull/213) ([hug-dev](https://github.com/hug-dev))
+- Add a CHANGELOG file [\#210](https://github.com/parallaxsecond/rust-tss-esapi/pull/210) ([hug-dev](https://github.com/hug-dev))
+
 ## [tss-esapi-5.0.0](https://github.com/parallaxsecond/rust-tss-esapi/tree/tss-esapi-5.0.0) (2021-03-23)
 
 [Full Changelog](https://github.com/parallaxsecond/rust-tss-esapi/compare/tss-esapi-sys-0.1.0...tss-esapi-5.0.0)
