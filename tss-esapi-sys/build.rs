@@ -96,6 +96,8 @@ pub fn generate_from_system(esapi_out: PathBuf) {
         .header(format!("{}/tss2/tss2_esys.h", tss2_esys_include_path))
         .header(format!("{}/tss2/tss2_tctildr.h", tss2_tctildr_include_path))
         .header(format!("{}/tss2/tss2_mu.h", tss2_mu_include_path))
+        // See this issue: https://github.com/parallaxsecond/rust-cryptoki/issues/12
+        .blacklist_type("max_align_t")
         .generate_comments(false)
         .derive_default(true)
         .generate()
