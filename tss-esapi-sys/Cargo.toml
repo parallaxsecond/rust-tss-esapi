@@ -13,7 +13,7 @@ documentation = "https://docs.rs/crate/tss-esapi-sys"
 links = "tss2-esys"
 
 [build-dependencies]
-bindgen = { version = "0.56.0", optional = true }
+bindgen = { version = "0.57.0", optional = true }
 pkg-config = "0.3.18"
 
 [features]
