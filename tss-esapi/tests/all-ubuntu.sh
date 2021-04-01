@@ -20,7 +20,7 @@ tpm2_startup -c -T mssim
 ##################
 # Execute clippy #
 ##################
-cargo clippy --all-targets --all-features -- -D clippy::all -D clippy::cargo -A clippy::upper_case_acronyms
+cargo clippy --all-targets --all-features -- -D clippy::all -D clippy::cargo
 
 ###################
 # Build the crate #

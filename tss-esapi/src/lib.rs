@@ -28,6 +28,7 @@
     unused_results,
     missing_copy_implementations
 )]
+#![allow(clippy::upper_case_acronyms)]
 //! # TSS 2.0 Rust Wrapper over Enhanced System API
 //! This crate exposes the functionality of the TCG Software Stack Enhanced System API to
 //! Rust developers, both directly through FFI bindings and through more Rust-tailored interfaces
