@@ -4,7 +4,7 @@ use crate::{
     constants::CapabilityType, structures::CapabilityData, tss2_esys::*, utils::PublicParmsUnion,
     Context, Error, Result, WrapperErrorKind as ErrorKind,
 };
-use log::error;
+use log::{error, warn};
 use mbox::MBox;
 use std::convert::{TryFrom, TryInto};
 use std::ptr::null_mut;
@@ -76,7 +76,7 @@ impl Context {
         if ret.is_success() {
             Ok(())
         } else {
-            error!("Error while testing parameters: {}", ret);
+            warn!("Parameters under test could not be unmarshalled: {}", ret);
             Err(ret)
         }
     }
