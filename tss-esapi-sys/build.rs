@@ -21,17 +21,18 @@ fn main() {
 
     #[cfg(not(feature = "generate-bindings"))]
     {
-        let supported_platforms = vec![
-            String::from("x86_64-unknown-linux-gnu"),
-            String::from("aarch64-unknown-linux-gnu"),
-            String::from("armv7-unknown-linux-gnueabi"),
-            String::from("arm-unknown-linux-gnueabi"),
-        ];
-        let target = std::env::var("TARGET").unwrap();
+        use std::str::FromStr;
+        use target_lexicon::{Architecture, OperatingSystem, Triple};
 
-        // check if target is in the list of supported ones or panic with nice message
-        if !supported_platforms.contains(&target) {
-            panic!(format!("Compilation target ({}) is not part of the supported targets ({:?}). Please compile with the \"generate-bindings\" feature or add support for your platform :)", target, supported_platforms));
+        let target = Triple::from_str(&std::env::var("TARGET").unwrap())
+            .expect("Failed to parse target triple");
+        match (target.architecture, target.operating_system) {
+            (Architecture::Arm(_), OperatingSystem::Linux) => {}
+            (Architecture::Aarch64(_), OperatingSystem::Linux) => {}
+            (Architecture::X86_64, OperatingSystem::Linux) => {}
+            (arch, os) => {
+                panic!("Compilation target (architecture, OS) tuple ({}, {}) is not part of the supported tuples. Please compile with the \"generate-bindings\" feature or add support for your platform :)", arch, os);
+            }
         }
 
         pkg_config::Config::new()
