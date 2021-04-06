@@ -15,6 +15,7 @@ links = "tss2-esys"
 [build-dependencies]
 bindgen = { version = "0.57.0", optional = true }
 pkg-config = "0.3.18"
+target-lexicon = "0.12.0"
 
 [features]
 generate-bindings = ["bindgen"]
