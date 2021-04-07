@@ -237,6 +237,7 @@ impl TryFrom<TPMI_ALG_SYM> for SymmetricAlgorithm {
 pub enum SymmetricMode {
     Ctr,
     Ofb,
+    Cbc,
     Cfb,
     Ecb,
     Null,
@@ -247,6 +248,7 @@ impl From<SymmetricMode> for AlgorithmIdentifier {
         match symmetric_mode {
             SymmetricMode::Ctr => AlgorithmIdentifier::Ctr,
             SymmetricMode::Ofb => AlgorithmIdentifier::Ofb,
+            SymmetricMode::Cbc => AlgorithmIdentifier::Cbc,
             SymmetricMode::Cfb => AlgorithmIdentifier::Cfb,
             SymmetricMode::Ecb => AlgorithmIdentifier::Ecb,
             SymmetricMode::Null => AlgorithmIdentifier::Null,
@@ -260,6 +262,7 @@ impl TryFrom<AlgorithmIdentifier> for SymmetricMode {
         match algorithm_identifier {
             AlgorithmIdentifier::Ctr => Ok(SymmetricMode::Ctr),
             AlgorithmIdentifier::Ofb => Ok(SymmetricMode::Ofb),
+            AlgorithmIdentifier::Cbc => Ok(SymmetricMode::Cbc),
             AlgorithmIdentifier::Cfb => Ok(SymmetricMode::Cfb),
             AlgorithmIdentifier::Ecb => Ok(SymmetricMode::Ecb),
             AlgorithmIdentifier::Null => Ok(SymmetricMode::Null),
