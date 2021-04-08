@@ -225,7 +225,9 @@ impl Tpm2BPublicBuilder {
                 let unique = if let Some(PublicIdUnion::Sym(sym_unique)) = self.unique {
                     TPMU_PUBLIC_ID { sym: sym_unique }
                 } else if self.unique.is_none() {
-                    Default::default()
+                    TPMU_PUBLIC_ID {
+                        sym: Default::default(),
+                    }
                 } else {
                     return Err(Error::local_error(WrapperErrorKind::InconsistentParams));
                 };
