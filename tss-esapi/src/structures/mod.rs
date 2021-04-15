@@ -116,11 +116,26 @@ pub use tickets::HashcheckTicket;
 pub use tickets::Ticket;
 pub use tickets::VerifiedTicket;
 
+/////////////////////////////////////////////////////////
+/// The clock/counter section
+/////////////////////////////////////////////////////////
+mod clock;
+pub use clock::ClockInfo;
+
+/////////////////////////////////////////////////////////
+/// The attestation section
+/////////////////////////////////////////////////////////
+mod attestation;
+pub use attestation::{Attest, AttestBuffer, AttestInfo, AttestationType};
+
+/////////////////////////////////////////////////////////
+/// The algorithm structures section
+/////////////////////////////////////////////////////////
 mod schemes;
 pub use schemes::{HashScheme, HmacScheme, XorScheme};
 
 mod tagged;
 pub use tagged::{
-    schemes::KeyedHashScheme,
+    schemes::{KeyedHashScheme, SignatureScheme},
     symmetric::{SymmetricDefinition, SymmetricDefinitionObject},
 };
