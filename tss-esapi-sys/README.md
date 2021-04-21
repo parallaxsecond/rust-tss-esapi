@@ -51,10 +51,13 @@ environment setup, the configuration and compilation of `tpm2-tss` could require
 some special tailoring.
 
 We include cross-compilation builds as a nightly check in Github Actions - you
-can find them [here](../tss-esapi/tests/cross-compile.sh) as an example of the
-steps needed. You can find more information on using `pkg-config` when cross-compiling
-[here](https://github.com/parallaxsecond/rust-tss-esapi/issues/204). Our wrapper
-script around `pkg-config` can be seen [here](../tss-esapi/tests/pkg-config).
+can find them
+[here](https://github.com/parallaxsecond/rust-tss-esapi/blob/main/tss-esapi/tests/cross-compile.sh)
+as an example of the steps needed. You can find more information on using
+`pkg-config` when cross-compiling
+[here](https://github.com/parallaxsecond/rust-tss-esapi/issues/204). Our
+wrapper script around `pkg-config` can be seen
+[here](https://github.com/parallaxsecond/rust-tss-esapi/blob/main/tss-esapi/tests/pkg-config).
 
 Be advised that in some cases the linker used might need to be set manually in
 `.cargo/config`.
