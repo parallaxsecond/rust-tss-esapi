@@ -37,6 +37,10 @@ fn main() {
 
         pkg_config::Config::new()
             .atleast_version(MINIMUM_VERSION)
+            .probe("tss2-sys")
+            .expect("Failed to find tss2-sys library.");
+        pkg_config::Config::new()
+            .atleast_version(MINIMUM_VERSION)
             .probe("tss2-esys")
             .expect("Failed to find tss2-esys library.");
         pkg_config::Config::new()
