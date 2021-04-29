@@ -57,6 +57,8 @@ pub use self::buffers::public_key_rsa::PublicKeyRSA;
 pub use self::buffers::nonce::Nonce;
 
 pub use self::buffers::timeout::Timeout;
+
+pub use self::buffers::initial_value::InitialValue;
 /////////////////////////////////////////////////////////
 /// The creation section
 /////////////////////////////////////////////////////////
