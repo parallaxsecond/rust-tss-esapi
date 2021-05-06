@@ -56,6 +56,10 @@ fn main() {
 
 #[cfg(feature = "generate-bindings")]
 pub fn generate_from_system(esapi_out: PathBuf) {
+    pkg_config::Config::new()
+        .atleast_version(MINIMUM_VERSION)
+        .probe("tss2-sys")
+        .expect("Failed to find tss2-sys library.");
     let tss2_esys = pkg_config::Config::new()
         .atleast_version(MINIMUM_VERSION)
         .probe("tss2-esys")
