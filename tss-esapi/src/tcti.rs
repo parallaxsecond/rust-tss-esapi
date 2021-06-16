@@ -334,9 +334,15 @@ fn validate_from_str_networktpm_config() {
     assert_eq!(config.host, "localhost".parse::<ServerAddress>().unwrap());
     assert_eq!(config.port, 1234);
 
+    let config = NetworkTPMConfig::from_str("host=1234.1234.1234.1234.12445.111").unwrap();
+    assert_eq!(
+        config.host,
+        ServerAddress::Hostname(String::from("1234.1234.1234.1234.12445.111"))
+    );
+
     let _ = NetworkTPMConfig::from_str("port=abdef").unwrap_err();
     let _ = NetworkTPMConfig::from_str("host=-timey-wimey").unwrap_err();
-    let _ = NetworkTPMConfig::from_str("host=1234.1234.1234.1234.12445.111").unwrap_err();
+    let _ = NetworkTPMConfig::from_str("host=abc@def").unwrap_err();
     let _ = NetworkTPMConfig::from_str("host=").unwrap_err();
     let _ = NetworkTPMConfig::from_str("port=").unwrap_err();
     let _ = NetworkTPMConfig::from_str("port=,host=,yas").unwrap_err();

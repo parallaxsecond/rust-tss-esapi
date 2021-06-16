@@ -20,12 +20,12 @@ fn test_retrieve_ek_pubcert() {
     match ek::retrieve_ek_pubcert(&mut context, AsymmetricAlgorithm::Rsa) {
         Ok(_) => (),
         Err(Error::Tss2Error(Tss2ResponseCode::FormatOne(FormatOneResponseCode(395)))) => (),
-        Err(e) => panic!(format!("Error was unexpected: {:?}", e)),
+        Err(e) => panic!("Error was unexpected: {:?}", e),
     };
     match ek::retrieve_ek_pubcert(&mut context, AsymmetricAlgorithm::Ecc) {
         Ok(_) => (),
         Err(Error::Tss2Error(Tss2ResponseCode::FormatOne(FormatOneResponseCode(395)))) => (),
-        Err(e) => panic!(format!("Error was unexpected: {:?}", e)),
+        Err(e) => panic!("Error was unexpected: {:?}", e),
     };
 }
 
