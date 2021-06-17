@@ -1,5 +1,23 @@
 # Changelog
 
+## [tss-esapi-5.1.0](https://github.com/parallaxsecond/rust-tss-esapi/tree/tss-esapi-5.1.0) (2021-06-17)
+
+[Full Changelog](https://github.com/parallaxsecond/rust-tss-esapi/compare/tss-esapi-sys-0.2.0...tss-esapi-5.1.0)
+
+## [tss-esapi-sys-0.2.0](https://github.com/parallaxsecond/rust-tss-esapi/tree/tss-esapi-sys-0.2.0) (2021-06-17)
+
+[Full Changelog](https://github.com/parallaxsecond/rust-tss-esapi/compare/tss-esapi-5.0.1...tss-esapi-sys-0.2.0)
+
+**Implemented enhancements:**
+
+- Create generic list structure [\#92](https://github.com/parallaxsecond/rust-tss-esapi/issues/92)
+- Bring Context method names closer to the TSS API [\#58](https://github.com/parallaxsecond/rust-tss-esapi/issues/58)
+- Create and deploy enums for algorithm types [\#23](https://github.com/parallaxsecond/rust-tss-esapi/issues/23)
+- Improve method signatures [\#6](https://github.com/parallaxsecond/rust-tss-esapi/issues/6)
+
+**Closed issues:**
+
+- Publish a stable version [\#148](https://github.com/parallaxsecond/rust-tss-esapi/issues/148)
 ## [tss-esapi-5.0.1](https://github.com/parallaxsecond/rust-tss-esapi/tree/tss-esapi-5.0.1) (2021-03-25)
 
 [Full Changelog](https://github.com/parallaxsecond/rust-tss-esapi/compare/tss-esapi-sys-0.1.1...tss-esapi-5.0.1)
