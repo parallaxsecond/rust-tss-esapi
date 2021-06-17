@@ -140,7 +140,6 @@ mod test_nv_storage_nv_index_attributes {
         assert_eq!(
             0b0000_0000_0000_0001_0000_0000_0000_0001u32,
             builder
-                .clone()
                 .build()
                 .expect("Failed to build with pp_write and pp_read added")
                 .0
@@ -150,7 +149,6 @@ mod test_nv_storage_nv_index_attributes {
         assert_eq!(
             0b0000_0000_0000_0001_0000_0000_0000_0011u32,
             builder
-                .clone()
                 .build()
                 .expect("Failed to build with owner_write added")
                 .0
@@ -160,7 +158,6 @@ mod test_nv_storage_nv_index_attributes {
         assert_eq!(
             0b0000_0000_0000_0001_0000_0000_0000_0111u32,
             builder
-                .clone()
                 .build()
                 .expect("Failed to build with auth_write added")
                 .0
@@ -170,7 +167,6 @@ mod test_nv_storage_nv_index_attributes {
         assert_eq!(
             0b0000_0000_0000_0001_0000_0000_0000_1111u32,
             builder
-                .clone()
                 .build()
                 .expect("Failed to build with policy_write added")
                 .0
@@ -180,7 +176,6 @@ mod test_nv_storage_nv_index_attributes {
             // PinPass = 1001 (7,4)
             builder = builder.with_nv_index_type(NvIndexType::PinPass);
             let attributes = builder
-                .clone()
                 .build()
                 .expect("Failed to build with nv index type PinPass added");
             assert_eq!(0b0000_0000_0000_0001_0000_0000_1001_1111u32, attributes.0);
@@ -192,7 +187,6 @@ mod test_nv_storage_nv_index_attributes {
         assert_eq!(
             0b0000_0000_0000_0001_0000_0100_1001_1111u32,
             builder
-                .clone()
                 .build()
                 .expect("Failed to build with policy_delete added")
                 .0
@@ -202,7 +196,6 @@ mod test_nv_storage_nv_index_attributes {
         assert_eq!(
             0b0000_0000_0000_0001_0000_1100_1001_1111u32,
             builder
-                .clone()
                 .build()
                 .expect("Failed to build with write_locked added")
                 .0
@@ -212,7 +205,6 @@ mod test_nv_storage_nv_index_attributes {
         assert_eq!(
             0b0000_0000_0000_0001_0001_1100_1001_1111u32,
             builder
-                .clone()
                 .build()
                 .expect("Failed to build with write_all added")
                 .0
@@ -222,7 +214,6 @@ mod test_nv_storage_nv_index_attributes {
         assert_eq!(
             0b0000_0000_0000_0001_0011_1100_1001_1111u32,
             builder
-                .clone()
                 .build()
                 .expect("Failed to build with write_define added")
                 .0
@@ -232,7 +223,6 @@ mod test_nv_storage_nv_index_attributes {
         assert_eq!(
             0b0000_0000_0000_0001_0111_1100_1001_1111u32,
             builder
-                .clone()
                 .build()
                 .expect("Failed to build with write_stclear added")
                 .0
@@ -242,7 +232,6 @@ mod test_nv_storage_nv_index_attributes {
         assert_eq!(
             0b0000_0000_0000_0001_1111_1100_1001_1111u32,
             builder
-                .clone()
                 .build()
                 .expect("Failed to build with global_lock added")
                 .0
@@ -252,7 +241,6 @@ mod test_nv_storage_nv_index_attributes {
         assert_eq!(
             0b0000_0000_0000_0011_1111_1100_1001_1111u32,
             builder
-                .clone()
                 .build()
                 .expect("Failed to build with owner_read added")
                 .0
@@ -262,7 +250,6 @@ mod test_nv_storage_nv_index_attributes {
         assert_eq!(
             0b0000_0000_0000_0111_1111_1100_1001_1111u32,
             builder
-                .clone()
                 .build()
                 .expect("Failed to build with auth_read added")
                 .0
@@ -272,7 +259,6 @@ mod test_nv_storage_nv_index_attributes {
         assert_eq!(
             0b0000_0000_0000_1111_1111_1100_1001_1111u32,
             builder
-                .clone()
                 .build()
                 .expect("Failed to build with policy_read added")
                 .0
@@ -282,18 +268,13 @@ mod test_nv_storage_nv_index_attributes {
         builder = builder.with_no_da(true);
         assert_eq!(
             0b0000_0010_0000_1111_1111_1100_1001_1111u32,
-            builder
-                .clone()
-                .build()
-                .expect("Failed to build with no_da added")
-                .0
+            builder.build().expect("Failed to build with no_da added").0
         );
 
         builder = builder.with_orderly(true);
         assert_eq!(
             0b0000_0110_0000_1111_1111_1100_1001_1111u32,
             builder
-                .clone()
                 .build()
                 .expect("Failed to build with oderly added")
                 .0
@@ -303,7 +284,6 @@ mod test_nv_storage_nv_index_attributes {
         assert_eq!(
             0b0000_1110_0000_1111_1111_1100_1001_1111u32,
             builder
-                .clone()
                 .build()
                 .expect("Failed to build with clear_stclear added")
                 .0
@@ -313,7 +293,6 @@ mod test_nv_storage_nv_index_attributes {
         assert_eq!(
             0b0001_1110_0000_1111_1111_1100_1001_1111u32,
             builder
-                .clone()
                 .build()
                 .expect("Failed to build with read_locked added")
                 .0
@@ -323,7 +302,6 @@ mod test_nv_storage_nv_index_attributes {
         assert_eq!(
             0b0011_1110_0000_1111_1111_1100_1001_1111u32,
             builder
-                .clone()
                 .build()
                 .expect("Failed to build with written added")
                 .0
@@ -333,7 +311,6 @@ mod test_nv_storage_nv_index_attributes {
         assert_eq!(
             0b0111_1110_0000_1111_1111_1100_1001_1111u32,
             builder
-                .clone()
                 .build()
                 .expect("Failed to build with platform_create added")
                 .0
@@ -343,7 +320,6 @@ mod test_nv_storage_nv_index_attributes {
         assert_eq!(
             0b1111_1110_0000_1111_1111_1100_1001_1111u32,
             builder
-                .clone()
                 .build()
                 .expect("Failed to build with read_stclear added")
                 .0
