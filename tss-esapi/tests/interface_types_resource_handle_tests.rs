@@ -19,17 +19,13 @@ mod test_hierarchy {
                 assert_eq!(ObjectHandle::from(hierarchy), esys_rh);
                 assert_eq!(TpmHandle::from(hierarchy), tpm_rh);
                 let from_esys_rh = Hierarchy::try_from(esys_rh).unwrap_or_else(|_| {
-                    panic!(format!(
-                        "Failed to create Hierarchy from ESYS_TR_RH={}",
-                        name
-                    ))
+                    panic!("Failed to create Hierarchy from ESYS_TR_RH={}", name)
                 });
                 assert_eq!(from_esys_rh, hierarchy);
                 assert_eq!(ObjectHandle::from(from_esys_rh), esys_rh);
                 assert_eq!(TpmHandle::from(from_esys_rh), tpm_rh);
-                let from_tpm_rh = Hierarchy::try_from(tpm_rh).unwrap_or_else(|_| {
-                    panic!(format!("Failed to create Hierarchy from TPM2_RH={}", name))
-                });
+                let from_tpm_rh = Hierarchy::try_from(tpm_rh)
+                    .unwrap_or_else(|_| panic!("Failed to create Hierarchy from TPM2_RH={}", name));
                 assert_eq!(from_tpm_rh, hierarchy);
                 assert_eq!(ObjectHandle::from(from_tpm_rh), esys_rh);
                 assert_eq!(TpmHandle::from(from_tpm_rh), tpm_rh);
@@ -71,14 +67,13 @@ mod test_enables {
                 assert_eq!(ObjectHandle::from(enables), esys_rh);
                 assert_eq!(TpmHandle::from(enables), tpm_rh);
                 let from_esys_rh = Enables::try_from(esys_rh).unwrap_or_else(|_| {
-                    panic!(format!("Failed to create Enables from ESYS_TR_RH={}", name))
+                    panic!("Failed to create Enables from ESYS_TR_RH={}", name)
                 });
                 assert_eq!(from_esys_rh, enables);
                 assert_eq!(ObjectHandle::from(from_esys_rh), esys_rh);
                 assert_eq!(TpmHandle::from(from_esys_rh), tpm_rh);
-                let from_tpm_rh = Enables::try_from(tpm_rh).unwrap_or_else(|_| {
-                    panic!(format!("Failed to create Enables from TPM2_RH={}", name))
-                });
+                let from_tpm_rh = Enables::try_from(tpm_rh)
+                    .unwrap_or_else(|_| panic!("Failed to create Enables from TPM2_RH={}", name));
                 assert_eq!(from_tpm_rh, enables);
                 assert_eq!(ObjectHandle::from(from_tpm_rh), esys_rh);
                 assert_eq!(TpmHandle::from(from_tpm_rh), tpm_rh);
@@ -128,20 +123,13 @@ mod test_hierarchy_auth {
             assert_eq!(ObjectHandle::from(hierarchy_auth), esys_rh);
             assert_eq!(TpmHandle::from(hierarchy_auth), tpm_rh);
             let from_esys_rh = HierarchyAuth::try_from(esys_rh).unwrap_or_else(|_| {
-                panic!(format!(
-                    "Failed to create HierarchyAuth from ESYS_TR_RH={}",
-                    name
-                ))
+                panic!("Failed to create HierarchyAuth from ESYS_TR_RH={}", name)
             });
             assert_eq!(from_esys_rh, hierarchy_auth);
             assert_eq!(ObjectHandle::from(from_esys_rh), esys_rh);
             assert_eq!(TpmHandle::from(from_esys_rh), tpm_rh);
-            let from_tpm_rh = HierarchyAuth::try_from(tpm_rh).unwrap_or_else(|_| {
-                panic!(format!(
-                    "Failed to create HierarchyAuth from TPM2_RH={}",
-                    name
-                ))
-            });
+            let from_tpm_rh = HierarchyAuth::try_from(tpm_rh)
+                .unwrap_or_else(|_| panic!("Failed to create HierarchyAuth from TPM2_RH={}", name));
             assert_eq!(from_tpm_rh, hierarchy_auth);
             assert_eq!(ObjectHandle::from(from_tpm_rh), esys_rh);
             assert_eq!(TpmHandle::from(from_tpm_rh), tpm_rh);

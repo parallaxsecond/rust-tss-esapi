@@ -208,6 +208,44 @@ impl Tpm2BPublicBuilder {
                     },
                 })
             }
+            Some(TPM2_ALG_SYMCIPHER) => {
+                let parameters = if let Some(PublicParmsUnion::SymDetail(params)) = self.parameters
+                {
+                    TPMU_PUBLIC_PARMS {
+                        symDetail: TPMS_SYMCIPHER_PARMS {
+                            sym: SymmetricDefinitionObject::try_from(params)?.into(),
+                        },
+                    }
+                } else if self.parameters.is_none() {
+                    return Err(Error::local_error(WrapperErrorKind::ParamsMissing));
+                } else {
+                    return Err(Error::local_error(WrapperErrorKind::InconsistentParams));
+                };
+
+                let unique = if let Some(PublicIdUnion::Sym(sym_unique)) = self.unique {
+                    TPMU_PUBLIC_ID { sym: sym_unique }
+                } else if self.unique.is_none() {
+                    TPMU_PUBLIC_ID {
+                        sym: Default::default(),
+                    }
+                } else {
+                    return Err(Error::local_error(WrapperErrorKind::InconsistentParams));
+                };
+
+                Ok(TPM2B_PUBLIC {
+                    size: std::mem::size_of::<TPMT_PUBLIC>()
+                        .try_into()
+                        .expect("Failed to convert usize to u16"), // should not fail on valid targets
+                    publicArea: TPMT_PUBLIC {
+                        type_: self.type_.unwrap(), // cannot fail given that this is inside a match on `type_`
+                        nameAlg: self.name_alg,
+                        objectAttributes: self.object_attributes.0,
+                        authPolicy: self.auth_policy,
+                        parameters,
+                        unique,
+                    },
+                })
+            }
             _ => Err(Error::local_error(WrapperErrorKind::UnsupportedParam)),
         }
     }

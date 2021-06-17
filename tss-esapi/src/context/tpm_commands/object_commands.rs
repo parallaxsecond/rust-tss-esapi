@@ -22,6 +22,16 @@ impl Context {
     /// The authentication value, initial data, outside info and creation PCRs are passed as slices
     /// which are then converted by the method into TSS native structures.
     ///
+    /// # Parameters
+    /// * `parent_handle` - The [KeyHandle] of the parent for the new object that is being created.
+    /// * `public` -  The public part of the object that is being created.
+    /// * `auth_value` - The value used to be used for authorize usage of the object.
+    /// * `sensitive_data` - The data that is to be sealed, a key or derivation values.
+    /// * `outside_info` - Data that will be included in the creation data for this
+    ///                  object to provide permanent, verifiable linkage between
+    ///                  the object that is being created and some object owner data.
+    /// * `creation_pcrs`- PCRs that will be used in creation data.
+    ///
     /// # Errors
     /// * if either of the slices is larger than the maximum size of the native objects, a
     /// `WrongParamSize` wrapper error is returned
@@ -32,7 +42,7 @@ impl Context {
         parent_handle: KeyHandle,
         public: &TPM2B_PUBLIC,
         auth_value: Option<&Auth>,
-        initial_data: Option<&SensitiveData>,
+        sensitive_data: Option<&SensitiveData>,
         outside_info: Option<&Data>,
         creation_pcrs: Option<PcrSelectionList>,
     ) -> Result<CreateKeyResult> {
@@ -42,7 +52,7 @@ impl Context {
                 .unwrap(), // will not fail on targets of at least 16 bits
             sensitive: TPMS_SENSITIVE_CREATE {
                 userAuth: auth_value.cloned().unwrap_or_default().into(),
-                data: initial_data.cloned().unwrap_or_default().into(),
+                data: sensitive_data.cloned().unwrap_or_default().into(),
             },
         };
         let creation_pcrs = PcrSelectionList::list_from_option(creation_pcrs);

@@ -205,3 +205,11 @@ pub mod public_key_rsa {
 pub mod timeout {
     buffer_type!(Timeout, 8, TPM2B_TIMEOUT);
 }
+
+pub mod initial_value {
+    buffer_type!(
+        InitialValue,
+        crate::tss2_esys::TPM2_MAX_SYM_BLOCK_SIZE as usize,
+        TPM2B_IV
+    );
+}
