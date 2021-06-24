@@ -52,7 +52,7 @@ mod test_pcr_selection_list {
 
         pcr_selection_list.subtract(&pcr_selection_list_1).unwrap();
 
-        assert_eq!(true, pcr_selection_list.is_empty());
+        assert!(pcr_selection_list.is_empty());
     }
 
     #[test]

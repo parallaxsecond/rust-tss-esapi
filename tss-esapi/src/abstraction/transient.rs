@@ -145,7 +145,7 @@ impl TransientKeyContext {
                 scheme,
                 pub_exponent,
             } => {
-                if RSA_KEY_SIZES.iter().find(|sz| **sz == size).is_none() {
+                if !RSA_KEY_SIZES.iter().any(|sz| *sz == size) {
                     return Err(Error::local_error(ErrorKind::WrongParamSize));
                 }
 
@@ -156,7 +156,7 @@ impl TransientKeyContext {
                 )?)
             }
             KeyParams::RsaEncrypt { size, pub_exponent } => {
-                if RSA_KEY_SIZES.iter().find(|sz| **sz == size).is_none() {
+                if !RSA_KEY_SIZES.iter().any(|sz| *sz == size) {
                     return Err(Error::local_error(ErrorKind::WrongParamSize));
                 }
                 create_unrestricted_encryption_decryption_rsa_public(size, pub_exponent)
@@ -180,10 +180,9 @@ impl TransientKeyContext {
     /// `TransientKeyContext::`set_session_attrs`, `Context::load_external_public`,
     /// `Context::context_save`, `Context::flush_context`
     pub fn load_external_rsa_public_key(&mut self, public_key: &[u8]) -> Result<TpmsContext> {
-        if RSA_KEY_SIZES
+        if !RSA_KEY_SIZES
             .iter()
-            .find(|sz| usize::from(**sz) == public_key.len() * 8)
-            .is_none()
+            .any(|sz| usize::from(*sz) == public_key.len() * 8)
         {
             return Err(Error::local_error(ErrorKind::WrongParamSize));
         }
@@ -236,10 +235,9 @@ impl TransientKeyContext {
         public_modulus: &[u8],
         public_exponent: RsaExponent,
     ) -> Result<TpmsContext> {
-        if RSA_KEY_SIZES
+        if !RSA_KEY_SIZES
             .iter()
-            .find(|sz| usize::from(**sz) == public_modulus.len() * 8)
-            .is_none()
+            .any(|sz| usize::from(*sz) == public_modulus.len() * 8)
         {
             return Err(Error::local_error(ErrorKind::WrongParamSize));
         }
@@ -657,11 +655,7 @@ impl TransientKeyContextBuilder {
         if self.root_key_auth_size > 32 {
             return Err(Error::local_error(ErrorKind::WrongParamSize));
         }
-        if RSA_KEY_SIZES
-            .iter()
-            .find(|sz| **sz == self.root_key_size)
-            .is_none()
-        {
+        if !RSA_KEY_SIZES.iter().any(|sz| *sz == self.root_key_size) {
             error!("The reference implementation only supports key sizes of 1,024 and 2,048 bits");
             return Err(Error::local_error(ErrorKind::WrongParamSize));
         }
