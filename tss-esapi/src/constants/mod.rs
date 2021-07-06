@@ -9,6 +9,9 @@
 mod algorithm;
 pub use algorithm::AlgorithmIdentifier;
 
+/// Representation of TPM_GENERATED_VALUE
+pub const TPM_GENERATED_VALUE: u32 = 0xff544347;
+
 /// The contants defined in the TSS specification.
 #[allow(
     non_snake_case,

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 use crate::{
     interface_types::algorithm::{HashingAlgorithm, KeyDerivationFunction},
-    tss2_esys::{TPMS_SCHEME_HASH, TPMS_SCHEME_HMAC, TPMS_SCHEME_XOR},
+    tss2_esys::{TPMS_SCHEME_ECDAA, TPMS_SCHEME_HASH, TPMS_SCHEME_HMAC, TPMS_SCHEME_XOR},
     Error, Result,
 };
 use std::convert::{TryFrom, TryInto};
@@ -118,5 +118,41 @@ impl From<XorScheme> for TPMS_SCHEME_XOR {
             hashAlg: xor_scheme.hashing_algorithm.into(),
             kdf: xor_scheme.key_derivation_function.into(),
         }
+    }
+}
+
+/// Struct for holding ECDAA scheme
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct EcdaaScheme {
+    hashing_algorithm: HashingAlgorithm,
+    count: u16,
+}
+
+impl EcdaaScheme {
+    pub const fn new(hashing_algorithm: HashingAlgorithm, count: u16) -> Self {
+        EcdaaScheme {
+            hashing_algorithm,
+            count,
+        }
+    }
+}
+
+impl From<EcdaaScheme> for TPMS_SCHEME_ECDAA {
+    fn from(native: EcdaaScheme) -> Self {
+        TPMS_SCHEME_ECDAA {
+            hashAlg: native.hashing_algorithm.into(),
+            count: native.count,
+        }
+    }
+}
+
+impl TryFrom<TPMS_SCHEME_ECDAA> for EcdaaScheme {
+    type Error = Error;
+
+    fn try_from(tss: TPMS_SCHEME_ECDAA) -> Result<Self> {
+        Ok(EcdaaScheme {
+            hashing_algorithm: tss.hashAlg.try_into()?,
+            count: tss.count,
+        })
     }
 }
