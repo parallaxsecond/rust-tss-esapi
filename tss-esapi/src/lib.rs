@@ -110,5 +110,6 @@ pub mod handles;
 pub mod interface_types;
 pub mod nv;
 pub mod structures;
-mod tcti;
+pub mod tcti;
+pub mod tcti_ldr;
 pub mod utils;
