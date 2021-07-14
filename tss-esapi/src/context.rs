@@ -272,10 +272,11 @@ impl Context {
     /// The session attributes for the generated empty session that
     /// is used to execute closure will have the attributes decrypt
     /// and encrypt set.
-    pub fn execute_with_nullauth_session<F, T>(&mut self, f: F) -> Result<T>
+    pub fn execute_with_nullauth_session<F, T, E>(&mut self, f: F) -> std::result::Result<T, E>
     where
         // We only need to call f once, so it can be FnOnce
-        F: FnOnce(&mut Context) -> Result<T>,
+        F: FnOnce(&mut Context) -> std::result::Result<T, E>,
+        E: From<Error>,
     {
         let auth_session = match self.start_auth_session(
             None,
@@ -286,7 +287,7 @@ impl Context {
             HashingAlgorithm::Sha256,
         )? {
             Some(ses) => ses,
-            None => return Err(Error::local_error(ErrorKind::WrongValueFromTpm)),
+            None => return Err(E::from(Error::local_error(ErrorKind::WrongValueFromTpm))),
         };
 
         let (session_attributes, session_attributes_mask) = SessionAttributesBuilder::new()
