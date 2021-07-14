@@ -35,6 +35,10 @@ impl PcrSelection {
         self.hashing_algorithm
     }
 
+    pub fn selected_pcrs(&self) -> &BitFlags<PcrSlot> {
+        &self.selected_pcrs
+    }
+
     pub fn merge(&mut self, other: &Self) -> Result<()> {
         // Check that the hashing algorithm match
         if self.hashing_algorithm != other.hashing_algorithm {

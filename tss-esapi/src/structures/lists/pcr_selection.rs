@@ -11,7 +11,7 @@ use std::convert::TryFrom;
 /// corresponds to the TSS TPML_PCR_SELECTION.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct PcrSelectionList {
-    items: HashMap<HashingAlgorithm, PcrSelection>,
+    items: Vec<PcrSelection>,
 }
 
 impl PcrSelectionList {
@@ -26,94 +26,23 @@ impl PcrSelectionList {
         self.items.is_empty()
     }
 
+    /// Gets the selections
+    pub fn get_selections(&self) -> &[PcrSelection] {
+        &self.items
+    }
+
     /// Function for retrieving the PcrSelectionList from Option<PcrSelectionList>
     ///
     /// This returns an empty list if None is passed
     pub fn list_from_option(pcr_list: Option<PcrSelectionList>) -> PcrSelectionList {
         pcr_list.unwrap_or_else(|| PcrSelectionListBuilder::new().build())
     }
-
-    /// Removes items in `other` from `self.
-    ///
-    /// # Arguments
-    ///
-    /// * `other` - A PcrSelectionList containing items
-    ///             that will be removed from `self`.
-    ///
-    ///
-    /// # Constraints
-    ///
-    /// * Cannot be called with `other` that contains items that
-    ///   are not present in `self`.
-    ///
-    /// * Cannot be called with `other` that contains pcr selection
-    ///   associated with a hashing algorithm that cannot be subtracted
-    ///   from the pcr selection associated with the same hashing algorithm
-    ///   in `self`.
-    ///
-    /// # Errors
-    ///
-    /// * Calling the method with `other` that contains items
-    ///   not present in `self` will result in an InvalidParam error.
-    ///
-    ///
-    /// # Examples
-    /// ```
-    /// use tss_esapi::structures::{PcrSelectionListBuilder, PcrSlot};
-    /// use tss_esapi::interface_types::algorithm::HashingAlgorithm;
-    /// // pcr selections
-    /// let mut pcr_selection_list = PcrSelectionListBuilder::new()
-    ///     .with_size_of_select(Default::default())
-    ///     .with_selection(HashingAlgorithm::Sha256, &[PcrSlot::Slot0, PcrSlot::Slot8])
-    ///     .build();
-    ///
-    /// // Another pcr selections
-    /// let other = PcrSelectionListBuilder::new()
-    ///     .with_size_of_select(Default::default())
-    ///     .with_selection(
-    ///         HashingAlgorithm::Sha256, &[PcrSlot::Slot0],
-    ///     )
-    ///     .build();
-    /// pcr_selection_list.subtract(&other).unwrap();
-    /// assert_eq!(pcr_selection_list.len(), 1);
-    /// ```
-    pub fn subtract(&mut self, other: &Self) -> Result<()> {
-        if self == other {
-            self.items.clear();
-            return Ok(());
-        }
-
-        if self.is_empty() {
-            error!("Error: Trying to remove item that did not exist");
-            return Err(Error::local_error(WrapperErrorKind::InvalidParam));
-        }
-
-        for hashing_algorithm in other.items.keys() {
-            // Lookup selection in self.
-            let pcr_selection = match self.items.get_mut(&hashing_algorithm) {
-                Some(val) => val,
-                None => {
-                    error!("Error: Trying to remove item that did not exist");
-                    return Err(Error::local_error(WrapperErrorKind::InvalidParam));
-                }
-            };
-            // Check if value exists in other and if not then nothing needs to be done
-            if let Some(val) = other.items.get(&hashing_algorithm) {
-                pcr_selection.subtract(val)?;
-
-                if pcr_selection.is_empty() {
-                    let _ = self.items.remove(&hashing_algorithm);
-                }
-            }
-        }
-        Ok(())
-    }
 }
 
 impl From<PcrSelectionList> for TPML_PCR_SELECTION {
     fn from(pcr_selections: PcrSelectionList) -> TPML_PCR_SELECTION {
         let mut tss_pcr_selection_list: TPML_PCR_SELECTION = Default::default();
-        for (_, pcr_selection) in pcr_selections.items {
+        for pcr_selection in pcr_selections.items {
             tss_pcr_selection_list.pcrSelections[tss_pcr_selection_list.count as usize] =
                 pcr_selection.into();
             tss_pcr_selection_list.count += 1;
@@ -137,23 +66,12 @@ impl TryFrom<TPML_PCR_SELECTION> for PcrSelectionList {
             return Err(Error::local_error(WrapperErrorKind::InvalidParam));
         }
 
-        let mut items = HashMap::<HashingAlgorithm, PcrSelection>::new();
+        let mut items = Vec::<PcrSelection>::with_capacity(size);
         // Loop over available selections
         for tpms_pcr_selection in tpml_pcr_selection.pcrSelections[..size].iter() {
             // Parse pcr selection.
             let parsed_pcr_selection = PcrSelection::try_from(*tpms_pcr_selection)?;
-            // Insert the selection into the storage. Or merge with an existing.
-            match items.get_mut(&parsed_pcr_selection.hashing_algorithm()) {
-                Some(previously_parsed_pcr_selection) => {
-                    previously_parsed_pcr_selection.merge(&parsed_pcr_selection)?;
-                }
-                None => {
-                    let _ = items.insert(
-                        parsed_pcr_selection.hashing_algorithm(),
-                        parsed_pcr_selection,
-                    );
-                }
-            }
+            items.push(parsed_pcr_selection);
         }
         Ok(PcrSelectionList { items })
     }
@@ -222,7 +140,7 @@ impl PcrSelectionListBuilder {
             items: self
                 .items
                 .iter()
-                .map(|(k, v)| (*k, PcrSelection::new(*k, size_of_select, v.as_slice())))
+                .map(|(k, v)| PcrSelection::new(*k, size_of_select, v.as_slice()))
                 .collect(),
         }
     }
