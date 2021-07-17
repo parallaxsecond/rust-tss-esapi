@@ -34,31 +34,28 @@ pub use result::CreatePrimaryKeyResult;
 /// The sized buffers section
 /////////////////////////////////////////////////////////
 mod buffers;
-pub use self::buffers::auth::Auth;
-
-pub use self::buffers::digest::Digest;
-
-pub use self::buffers::max_buffer::MaxBuffer;
-
-pub use self::buffers::max_nv_buffer::MaxNvBuffer;
-
-pub use self::buffers::data::Data;
-
-pub use self::buffers::id_object::IDObject;
-
-pub use self::buffers::encrypted_secret::EncryptedSecret;
-
-pub use self::buffers::sensitive_data::SensitiveData;
-
-pub use self::buffers::private::Private;
-
-pub use self::buffers::public_key_rsa::PublicKeyRSA;
-
-pub use self::buffers::nonce::Nonce;
-
-pub use self::buffers::timeout::Timeout;
-
-pub use self::buffers::initial_value::InitialValue;
+pub use self::buffers::{
+    auth::Auth,
+    data::Data,
+    digest::Digest,
+    ecc_parameter::EccParameter,
+    encrypted_secret::EncryptedSecret,
+    id_object::IDObject,
+    initial_value::InitialValue,
+    max_buffer::MaxBuffer,
+    max_nv_buffer::MaxNvBuffer,
+    nonce::Nonce,
+    private::Private,
+    public::{
+        ecc::{PublicEccParameters, PublicEccParametersBuilder},
+        keyed_hash::PublicKeyedHashParameters,
+        rsa::{PublicRsaParameters, PublicRsaParametersBuilder, RsaExponent},
+        Public, PublicBuilder,
+    },
+    public_key_rsa::PublicKeyRsa,
+    sensitive_data::SensitiveData,
+    timeout::Timeout,
+};
 /////////////////////////////////////////////////////////
 /// The creation section
 /////////////////////////////////////////////////////////
@@ -107,7 +104,7 @@ pub mod pcr_selection_list {
 /// The parameters section
 /////////////////////////////////////////////////////////
 mod parameters;
-pub use self::parameters::{KeyedHashParameters, SymmetricCipherParameters};
+pub use self::parameters::SymmetricCipherParameters;
 /////////////////////////////////////////////////////////
 /// The tickets section
 /////////////////////////////////////////////////////////
@@ -123,6 +120,20 @@ pub use schemes::{HashScheme, HmacScheme, XorScheme};
 
 mod tagged;
 pub use tagged::{
-    schemes::KeyedHashScheme,
+    parameters::PublicParameters,
+    schemes::{
+        EccScheme, KeyDerivationFunctionScheme, KeyedHashScheme, RsaDecryptionScheme, RsaScheme,
+    },
+    signature::Signature,
     symmetric::{SymmetricDefinition, SymmetricDefinitionObject},
 };
+/////////////////////////////////////////////////////////
+/// ECC structures
+/////////////////////////////////////////////////////////
+mod ecc;
+pub use ecc::point::EccPoint;
+/////////////////////////////////////////////////////////
+/// Signatures structures
+/////////////////////////////////////////////////////////
+mod signatures;
+pub use signatures::{EccSignature, RsaSignature};

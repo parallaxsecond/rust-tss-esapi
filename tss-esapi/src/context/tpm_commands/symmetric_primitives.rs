@@ -34,10 +34,15 @@ impl Context {
     /// # use tss_esapi::{
     /// #     constants::AlgorithmIdentifier,
     /// #     attributes::ObjectAttributesBuilder,
-    /// #     abstraction::cipher::Cipher,
-    /// #     Context, Tcti, Result,
-    /// #     utils::{PublicParmsUnion, Tpm2BPublicBuilder},
-    /// #     structures::{Auth, InitialValue, MaxBuffer, SensitiveData},
+    /// #     Context, tcti_ldr::TctiNameConf, Result,
+    /// #     structures::{
+    /// #         Auth, InitialValue, MaxBuffer, SensitiveData, RsaExponent, SymmetricDefinitionObject,
+    /// #         SymmetricCipherParameters, PublicBuilder,
+    /// #     },
+    /// #     interface_types::{
+    /// #         algorithm::{PublicAlgorithm, HashingAlgorithm},
+    /// #         key_bits::RsaKeyBits,
+    /// #     },
     /// # };
     /// use tss_esapi::interface_types::session_handles::AuthSession;
     /// use tss_esapi::interface_types::algorithm::SymmetricMode;
@@ -45,7 +50,7 @@ impl Context {
     /// # // Create context
     /// # let mut context =
     /// #     Context::new(
-    /// #         Tcti::from_environment_variable().expect("Failed to get TCTI"),
+    /// #         TctiNameConf::from_environment_variable().expect("Failed to get TCTI"),
     /// #     ).expect("Failed to create Context");
     /// # // Set auth for owner
     /// # context
@@ -65,9 +70,9 @@ impl Context {
     /// #     ctx.create_primary(
     /// #         tss_esapi::interface_types::resource_handles::Hierarchy::Owner,
     /// #         &tss_esapi::utils::create_restricted_decryption_rsa_public(
-    /// #             Cipher::aes_256_cfb(),
-    /// #             2048,
-    /// #             0,
+    /// #             SymmetricDefinitionObject::AES_256_CFB,
+    /// #             RsaKeyBits::Rsa2048,
+    /// #             RsaExponent::default(),
     /// #         )
     /// #         .expect("Failed to create public for primary key"),
     /// #         Some(&primary_key_auth),
@@ -90,11 +95,12 @@ impl Context {
     /// #     .build()
     /// #     .expect("Failed to create object attributes for symmetric key");
     /// # // Create public part for the symmetric key
-    /// # let symmetric_key_public = Tpm2BPublicBuilder::new()
-    /// #     .with_type(AlgorithmIdentifier::SymCipher.into()) // This is a flaw in the builder. Should not have to use raw types.
-    /// #     .with_name_alg(AlgorithmIdentifier::Sha256.into()) // This is a flaw in the builder. Should not have to use raw types.
+    /// # let symmetric_key_public = PublicBuilder::new()
+    /// #     .with_public_algorithm(PublicAlgorithm::SymCipher)
+    /// #     .with_name_hashing_algorithm(HashingAlgorithm::Sha256)
     /// #     .with_object_attributes(symmetric_key_object_attributes)
-    /// #     .with_parms(PublicParmsUnion::SymDetail(Cipher::aes_256_cfb()))
+    /// #     .with_symmetric_cipher_parameters(SymmetricCipherParameters::new(SymmetricDefinitionObject::AES_256_CFB))
+    /// #     .with_symmetric_cipher_unique_identifier(&Default::default())
     /// #     .build()
     /// #     .expect("Failed to create public for symmetric key public");
     /// # // Create auth for the symmetric key
@@ -133,7 +139,7 @@ impl Context {
     /// #         ctx.load(
     /// #             primary_key_handle,
     /// #             symmetric_key_creation_data.out_private,
-    /// #             symmetric_key_creation_data.out_public,
+    /// #             &symmetric_key_creation_data.out_public,
     /// #         )
     /// #         .expect("Failed to load symmetric key")
     /// #     });
@@ -232,7 +238,7 @@ impl Context {
     /// # Example
     ///
     /// ```rust
-    /// # use tss_esapi::{Context, Tcti,
+    /// # use tss_esapi::{Context, tcti_ldr::TctiNameConf,
     /// #     structures::{MaxBuffer, Ticket},
     /// #     interface_types::{algorithm::HashingAlgorithm, resource_handles::Hierarchy},
     /// # };
@@ -240,7 +246,7 @@ impl Context {
     /// # // Create context
     /// # let mut context =
     /// #     Context::new(
-    /// #         Tcti::from_environment_variable().expect("Failed to get TCTI"),
+    /// #         TctiNameConf::from_environment_variable().expect("Failed to get TCTI"),
     /// #     ).expect("Failed to create Context");
     /// let input_data = MaxBuffer::try_from("There is no spoon".as_bytes().to_vec())
     ///     .expect("Failed to create buffer for input data.");
@@ -307,20 +313,18 @@ impl Context {
     /// ```rust
     /// # use tss_esapi::{
     /// #     attributes::ObjectAttributesBuilder,
-    /// #     structures::{MaxBuffer, Ticket, KeyedHashParameters, KeyedHashScheme, HmacScheme},
+    /// #     structures::{MaxBuffer, Ticket, PublicKeyedHashParameters, KeyedHashScheme, HmacScheme, PublicBuilder, Digest},
     /// #     interface_types::{
     /// #           resource_handles::Hierarchy,
-    /// #           algorithm::HashingAlgorithm,
+    /// #           algorithm::{HashingAlgorithm, PublicAlgorithm},
     /// #     },
-    /// #     constants::tss::{TPM2_ALG_KEYEDHASH, TPM2_ALG_SHA256},
-    /// #     utils::{Tpm2BPublicBuilder, PublicParmsUnion},
-    /// #     Context, Tcti,
+    /// #     Context, tcti_ldr::TctiNameConf,
     /// # };
     /// # use std::convert::TryFrom;
     /// # // Create context
     /// # let mut context =
     /// #     Context::new(
-    /// #         Tcti::from_environment_variable().expect("Failed to get TCTI"),
+    /// #         TctiNameConf::from_environment_variable().expect("Failed to get TCTI"),
     /// #     ).expect("Failed to create Context");
     /// // Create a key
     /// let object_attributes = ObjectAttributesBuilder::new()
@@ -329,13 +333,12 @@ impl Context {
     ///     .with_user_with_auth(true)
     ///     .build()
     ///     .expect("Failed to build object attributes");
-    /// let key_pub = Tpm2BPublicBuilder::new()
-    ///     .with_type(TPM2_ALG_KEYEDHASH)
-    ///     .with_name_alg(TPM2_ALG_SHA256)
-    ///     .with_parms(PublicParmsUnion::KeyedHashDetail(KeyedHashParameters::new(
-    ///         KeyedHashScheme::HMAC_SHA_256,
-    ///     )))
+    /// let key_pub = PublicBuilder::new()
+    ///     .with_public_algorithm(PublicAlgorithm::KeyedHash)
+    ///     .with_name_hashing_algorithm(HashingAlgorithm::Sha256)
     ///     .with_object_attributes(object_attributes)
+    ///     .with_keyed_hash_parameters(PublicKeyedHashParameters::new(KeyedHashScheme::HMAC_SHA_256))
+    ///     .with_keyed_hash_unique_identifier(&Digest::default())
     ///     .build()
     ///     .unwrap();
     ///

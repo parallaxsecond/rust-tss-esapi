@@ -1,17 +1,27 @@
 // Copyright 2020 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
-use std::{convert::TryFrom, env, str::FromStr, sync::Once};
+use std::{
+    convert::{TryFrom, TryInto},
+    env,
+    str::FromStr,
+    sync::Once,
+};
 
 use tss_esapi::{
     abstraction::cipher::Cipher,
     attributes::{ObjectAttributesBuilder, SessionAttributesBuilder},
     constants::SessionType,
     interface_types::{
-        algorithm::HashingAlgorithm, resource_handles::Hierarchy, session_handles::PolicySession,
+        algorithm::{HashingAlgorithm, PublicAlgorithm, RsaSchemeAlgorithm},
+        key_bits::RsaKeyBits,
+        resource_handles::Hierarchy,
+        session_handles::PolicySession,
     },
-    structures::{Digest, MaxBuffer, PcrSelectionListBuilder, PcrSlot, SymmetricDefinition},
+    structures::{
+        Digest, KeyedHashScheme, MaxBuffer, PcrSelectionListBuilder, PcrSlot, Public,
+        PublicBuilder, PublicKeyedHashParameters, RsaExponent, RsaScheme, SymmetricDefinition,
+    },
     tcti_ldr::TctiNameConf,
-    tss2_esys::{TPM2B_PUBLIC, TPMU_PUBLIC_PARMS},
     utils, Context,
 };
 
@@ -101,23 +111,35 @@ pub fn create_ctx_with_session() -> Context {
 }
 
 #[allow(dead_code)]
-pub fn decryption_key_pub() -> TPM2B_PUBLIC {
-    utils::create_restricted_decryption_rsa_public(Cipher::aes_256_cfb(), 2048, 0).unwrap()
-}
-
-#[allow(dead_code)]
-pub fn encryption_decryption_key_pub() -> TPM2B_PUBLIC {
-    utils::create_unrestricted_encryption_decryption_rsa_public(2048, 0).unwrap()
-}
-
-#[allow(dead_code)]
-pub fn signing_key_pub() -> TPM2B_PUBLIC {
-    utils::create_unrestricted_signing_rsa_public(
-        utils::AsymSchemeUnion::RSASSA(HashingAlgorithm::Sha256),
-        2048,
-        0,
+pub fn decryption_key_pub() -> Public {
+    utils::create_restricted_decryption_rsa_public(
+        Cipher::aes_256_cfb()
+            .try_into()
+            .expect("Failed to create symmetric object"),
+        RsaKeyBits::Rsa2048,
+        RsaExponent::default(),
     )
-    .unwrap()
+    .expect("Failed to create a restricted decryption rsa public structure")
+}
+
+#[allow(dead_code)]
+pub fn encryption_decryption_key_pub() -> Public {
+    utils::create_unrestricted_encryption_decryption_rsa_public(
+        RsaKeyBits::Rsa2048,
+        RsaExponent::default(),
+    )
+    .expect("Failed to create an unrestricted encryption decryption rsa public structure")
+}
+
+#[allow(dead_code)]
+pub fn signing_key_pub() -> Public {
+    utils::create_unrestricted_signing_rsa_public(
+        RsaScheme::create(RsaSchemeAlgorithm::RsaSsa, Some(HashingAlgorithm::Sha256))
+            .expect("Failed to create RSA scheme"),
+        RsaKeyBits::Rsa2048,
+        RsaExponent::default(),
+    )
+    .expect("Failed to create an unrestricted signing rsa public structure")
 }
 
 #[allow(dead_code)]
@@ -265,7 +287,7 @@ pub fn get_pcr_policy_digest(
 }
 
 #[allow(dead_code)]
-pub fn create_public_sealed_object() -> tss_esapi::tss2_esys::TPM2B_PUBLIC {
+pub fn create_public_sealed_object() -> Public {
     let object_attributes = ObjectAttributesBuilder::new()
         .with_fixed_tpm(true)
         .with_fixed_parent(true)
@@ -275,18 +297,13 @@ pub fn create_public_sealed_object() -> tss_esapi::tss2_esys::TPM2B_PUBLIC {
         .build()
         .expect("Failed to create object attributes");
 
-    let mut params: TPMU_PUBLIC_PARMS = Default::default();
-    params.keyedHashDetail.scheme.scheme = tss_esapi::constants::tss::TPM2_ALG_NULL;
-
-    tss_esapi::tss2_esys::TPM2B_PUBLIC {
-        size: std::mem::size_of::<tss_esapi::tss2_esys::TPMT_PUBLIC>() as u16,
-        publicArea: tss_esapi::tss2_esys::TPMT_PUBLIC {
-            type_: tss_esapi::constants::tss::TPM2_ALG_KEYEDHASH,
-            nameAlg: tss_esapi::constants::tss::TPM2_ALG_SHA256,
-            objectAttributes: object_attributes.0,
-            authPolicy: Default::default(),
-            parameters: params,
-            unique: Default::default(),
-        },
-    }
+    PublicBuilder::new()
+        .with_public_algorithm(PublicAlgorithm::KeyedHash)
+        .with_name_hashing_algorithm(HashingAlgorithm::Sha256)
+        .with_object_attributes(object_attributes)
+        .with_auth_policy(&Default::default())
+        .with_keyed_hash_parameters(PublicKeyedHashParameters::new(KeyedHashScheme::Null))
+        .with_keyed_hash_unique_identifier(&Default::default())
+        .build()
+        .expect("Failed to create public strucuture.")
 }

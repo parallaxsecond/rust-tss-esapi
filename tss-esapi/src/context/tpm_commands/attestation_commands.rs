@@ -2,13 +2,13 @@
 // SPDX-License-Identifier: Apache-2.0
 use crate::{
     handles::KeyHandle,
-    structures::{Data, PcrSelectionList},
+    structures::{Data, PcrSelectionList, Signature},
     tss2_esys::*,
-    utils::Signature,
     Context, Error, Result,
 };
 use log::error;
 use mbox::MBox;
+use std::convert::TryFrom;
 use std::ptr::null_mut;
 
 impl Context {
@@ -47,7 +47,7 @@ impl Context {
         if ret.is_success() {
             let quoted = unsafe { MBox::<TPM2B_ATTEST>::from_raw(quoted) };
             let signature = unsafe { MBox::from_raw(signature) };
-            Ok((*quoted, unsafe { Signature::try_from(*signature)? }))
+            Ok((*quoted, Signature::try_from(*signature)?))
         } else {
             error!("Error in quoting PCR: {}", ret);
             Err(ret)

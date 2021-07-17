@@ -7,8 +7,7 @@ pub mod ek;
 pub mod nv;
 pub mod transient;
 
-use crate::attributes::ObjectAttributesBuilder;
-use crate::utils::Tpm2BPublicBuilder;
+use crate::{attributes::ObjectAttributesBuilder, structures::PublicBuilder};
 
 /// KeyCustomizaion allows to adjust how a key is going to be created
 pub trait KeyCustomization {
@@ -18,7 +17,7 @@ pub trait KeyCustomization {
     }
 
     /// Alter the key template used on key creation
-    fn template(&self, template_builder: Tpm2BPublicBuilder) -> Tpm2BPublicBuilder {
+    fn template(&self, template_builder: PublicBuilder) -> PublicBuilder {
         template_builder
     }
 }

@@ -4,10 +4,10 @@ use crate::{
     handles::{AuthHandle, ObjectHandle, SessionHandle},
     interface_types::session_handles::PolicySession,
     structures::{
-        AuthTicket, Digest, DigestList, Name, Nonce, PcrSelectionList, Timeout, VerifiedTicket,
+        AuthTicket, Digest, DigestList, Name, Nonce, PcrSelectionList, Signature, Timeout,
+        VerifiedTicket,
     },
     tss2_esys::*,
-    utils::Signature,
     Context, Error, Result, WrapperErrorKind as ErrorKind,
 };
 use log::error;

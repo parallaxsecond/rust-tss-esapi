@@ -66,22 +66,26 @@ impl Context {
     ///
     /// ```rust
     /// # use tss_esapi::{
-    /// #     Context, Tcti, structures::Auth,
+    /// #     Context, tcti_ldr::TctiNameConf, structures::Auth,
     /// #     constants::{
     /// #         tss::{TPMA_SESSION_DECRYPT, TPMA_SESSION_ENCRYPT},
     /// #         SessionType,
     /// #     },
-    /// #     interface_types::{resource_handles::Hierarchy, algorithm::HashingAlgorithm},
-    /// #     utils::{create_unrestricted_signing_rsa_public, AsymSchemeUnion},
+    /// #     interface_types::{
+    /// #         resource_handles::Hierarchy,
+    /// #         algorithm::{HashingAlgorithm, RsaSchemeAlgorithm},
+    /// #         key_bits::RsaKeyBits,
+    /// #     },
+    /// #     utils::create_unrestricted_signing_rsa_public,
     /// #     attributes::SessionAttributesBuilder,
-    /// #     structures::SymmetricDefinition,
+    /// #     structures::{SymmetricDefinition, RsaExponent, RsaScheme},
     /// # };
     /// # use std::convert::TryFrom;
     /// # use std::str::FromStr;
     /// # // Create context
     /// # let mut context =
     /// #     Context::new(
-    /// #         Tcti::from_environment_variable().expect("Failed to get TCTI"),
+    /// #         TctiNameConf::from_environment_variable().expect("Failed to get TCTI"),
     /// #     ).expect("Failed to create Context");
     ///
     /// // Create session for a key
@@ -105,9 +109,10 @@ impl Context {
     ///
     /// // Create public area for a rsa key
     /// let public_area = create_unrestricted_signing_rsa_public(
-    ///         AsymSchemeUnion::RSASSA(HashingAlgorithm::Sha256),
-    ///         2048,
-    ///         0,
+    ///         RsaScheme::create(RsaSchemeAlgorithm::RsaSsa, Some(HashingAlgorithm::Sha256))
+    ///             .expect("Failed to create RSA scheme"),
+    ///         RsaKeyBits::Rsa2048,
+    ///         RsaExponent::default(),
     ///     )
     ///     .expect("Failed to create rsa public area");
     ///
@@ -177,26 +182,26 @@ impl Context {
     /// Make transient object peristent:
     /// ```rust
     /// # use tss_esapi::{
-    /// #     Context, Tcti, Result,
+    /// #     Context, tcti_ldr::TctiNameConf, Result,
     /// #     constants::{
     /// #         SessionType, CapabilityType,
     /// #         tss::TPM2_PERSISTENT_FIRST,
     /// #     },
     /// #     handles::PcrHandle,
-    /// #     structures::{Digest, CapabilityData, Auth},
+    /// #     structures::{Digest, CapabilityData, Auth, RsaExponent, SymmetricDefinitionObject},
     /// #     interface_types::{
     /// #       resource_handles::Hierarchy,
+    /// #       key_bits::RsaKeyBits,
     /// #     },
     /// #     handles::{ObjectHandle, TpmHandle, PersistentTpmHandle},
     /// #     utils::create_restricted_decryption_rsa_public,
     /// #     tss2_esys::TPM2_HANDLE,
-    /// #     abstraction::cipher::Cipher,
     /// # };
     /// # use std::{env, str::FromStr, convert::TryFrom};
     /// # // Create context
     /// # let mut context =
     /// #     Context::new(
-    /// #         Tcti::from_environment_variable().expect("Failed to get TCTI"),
+    /// #         TctiNameConf::from_environment_variable().expect("Failed to get TCTI"),
     /// #     ).expect("Failed to create Context");
     /// # // Create persistent TPM handle with
     /// # let persistent_tpm_handle =
@@ -240,8 +245,11 @@ impl Context {
     /// #    ctx
     /// #        .create_primary(
     /// #            Hierarchy::Owner,
-    /// #            &create_restricted_decryption_rsa_public(Cipher::aes_256_cfb(), 2048, 0)
-    /// #               .expect("Failed to Public structure for key"),
+    /// #            &create_restricted_decryption_rsa_public(
+    /// #               SymmetricDefinitionObject::AES_256_CFB,
+    /// #               RsaKeyBits::Rsa2048,
+    /// #               RsaExponent::default(),
+    /// #            ).expect("Failed to Public structure for key"),
     /// #            Some(auth_value_primary).as_ref(),
     /// #            None,
     /// #            None,
@@ -293,26 +301,26 @@ impl Context {
     /// Make persistent object transient
     /// ```rust
     /// # use tss_esapi::{
-    /// #     Context, Tcti, Result,
+    /// #     Context, tcti_ldr::TctiNameConf, Result,
     /// #     constants::{
     /// #         SessionType, CapabilityType,
     /// #         tss::TPM2_PERSISTENT_FIRST,
     /// #     },
     /// #     handles::PcrHandle,
-    /// #     structures::{Digest, CapabilityData, Auth},
+    /// #     structures::{Digest, CapabilityData, Auth, RsaExponent, SymmetricDefinitionObject},
     /// #     interface_types::{
     /// #       resource_handles::Hierarchy,
+    /// #       key_bits::RsaKeyBits,
     /// #     },
     /// #     handles::{ObjectHandle, TpmHandle, PersistentTpmHandle},
     /// #     utils::create_restricted_decryption_rsa_public,
     /// #     tss2_esys::TPM2_HANDLE,
-    /// #     abstraction::cipher::Cipher,
     /// # };
     /// # use std::{env, str::FromStr, convert::TryFrom};
     /// # // Create context
     /// # let mut context =
     /// #     Context::new(
-    /// #         Tcti::from_environment_variable().expect("Failed to get TCTI"),
+    /// #         TctiNameConf::from_environment_variable().expect("Failed to get TCTI"),
     /// #     ).expect("Failed to create Context");
     /// # // Create persistent TPM handle with
     /// # let persistent_tpm_handle =
@@ -356,8 +364,11 @@ impl Context {
     /// #    ctx
     /// #        .create_primary(
     /// #            Hierarchy::Owner,
-    /// #            &create_restricted_decryption_rsa_public(Cipher::aes_256_cfb(), 2048, 0)
-    /// #               .expect("Failed to Public structure for key"),
+    /// #            &create_restricted_decryption_rsa_public(
+    /// #               SymmetricDefinitionObject::AES_256_CFB,
+    /// #               RsaKeyBits::Rsa2048,
+    /// #               RsaExponent::default(),
+    /// #            ).expect("Failed to Public structure for key"),
     /// #            Some(auth_value_primary).as_ref(),
     /// #            None,
     /// #            None,

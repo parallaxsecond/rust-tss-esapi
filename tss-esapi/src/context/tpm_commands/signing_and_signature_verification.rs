@@ -2,9 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 use crate::{
     handles::KeyHandle,
-    structures::{Digest, HashcheckTicket, VerifiedTicket},
+    structures::{Digest, HashcheckTicket, Signature, VerifiedTicket},
     tss2_esys::*,
-    utils::Signature,
     Context, Error, Result,
 };
 use log::error;
@@ -73,7 +72,7 @@ impl Context {
 
         if ret.is_success() {
             let signature = unsafe { MBox::from_raw(signature) };
-            Ok(unsafe { Signature::try_from(*signature)? })
+            Ok(Signature::try_from(*signature)?)
         } else {
             error!("Error when signing: {}", ret);
             Err(ret)

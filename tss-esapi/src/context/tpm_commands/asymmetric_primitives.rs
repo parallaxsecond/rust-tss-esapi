@@ -1,8 +1,11 @@
 // Copyright 2021 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
 use crate::{
-    handles::KeyHandle, structures::Data, structures::PublicKeyRSA, tss2_esys::*,
-    utils::AsymSchemeUnion, Context, Error, Result,
+    handles::KeyHandle,
+    structures::Data,
+    structures::{PublicKeyRsa, RsaDecryptionScheme},
+    tss2_esys::*,
+    Context, Error, Result,
 };
 use log::error;
 use std::convert::TryFrom;
@@ -13,10 +16,10 @@ impl Context {
     pub fn rsa_encrypt(
         &mut self,
         key_handle: KeyHandle,
-        message: PublicKeyRSA,
-        in_scheme: AsymSchemeUnion,
+        message: PublicKeyRsa,
+        in_scheme: RsaDecryptionScheme,
         label: Data,
-    ) -> Result<PublicKeyRSA> {
+    ) -> Result<PublicKeyRsa> {
         let mut out_data = null_mut();
         let ret = unsafe {
             Esys_RSA_Encrypt(
@@ -26,7 +29,7 @@ impl Context {
                 self.optional_session_2(),
                 self.optional_session_3(),
                 &message.into(),
-                &in_scheme.get_rsa_decrypt_struct(),
+                &in_scheme.into(),
                 &label.into(),
                 &mut out_data,
             )
@@ -34,7 +37,7 @@ impl Context {
         let ret = Error::from_tss_rc(ret);
 
         if ret.is_success() {
-            let data = unsafe { PublicKeyRSA::try_from(*out_data)? };
+            let data = unsafe { PublicKeyRsa::try_from(*out_data)? };
             Ok(data)
         } else {
             error!("Error when performing RSA encryption: {}", ret);
@@ -46,10 +49,10 @@ impl Context {
     pub fn rsa_decrypt(
         &mut self,
         key_handle: KeyHandle,
-        cipher_text: PublicKeyRSA,
-        in_scheme: AsymSchemeUnion,
+        cipher_text: PublicKeyRsa,
+        in_scheme: RsaDecryptionScheme,
         label: Data,
-    ) -> Result<PublicKeyRSA> {
+    ) -> Result<PublicKeyRsa> {
         let mut message = null_mut();
         let ret = unsafe {
             Esys_RSA_Decrypt(
@@ -59,7 +62,7 @@ impl Context {
                 self.optional_session_2(),
                 self.optional_session_3(),
                 &cipher_text.into(),
-                &in_scheme.get_rsa_decrypt_struct(),
+                &in_scheme.into(),
                 &label.into(),
                 &mut message,
             )
@@ -67,7 +70,7 @@ impl Context {
         let ret = Error::from_tss_rc(ret);
 
         if ret.is_success() {
-            let data = unsafe { PublicKeyRSA::try_from(*message)? };
+            let data = unsafe { PublicKeyRsa::try_from(*message)? };
             Ok(data)
         } else {
             error!("Error when performing RSA decryption: {}", ret);

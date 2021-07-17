@@ -2,44 +2,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use crate::{
-    structures::{KeyedHashScheme, SymmetricDefinitionObject},
-    tss2_esys::{TPMS_KEYEDHASH_PARMS, TPMS_SYMCIPHER_PARMS},
-    Error, Result,
+    structures::SymmetricDefinitionObject, tss2_esys::TPMS_SYMCIPHER_PARMS, Error, Result,
 };
+
 use std::convert::{TryFrom, TryInto};
-
-/// Keyed hash parameters
-///
-/// # Details
-/// Corresponds to TPMS_KEYEDHASH_PARMS
-#[derive(Clone, Copy, Debug)]
-pub struct KeyedHashParameters {
-    keyed_hash_scheme: KeyedHashScheme,
-}
-
-impl KeyedHashParameters {
-    pub const fn new(keyed_hash_scheme: KeyedHashScheme) -> KeyedHashParameters {
-        KeyedHashParameters { keyed_hash_scheme }
-    }
-}
-
-impl TryFrom<TPMS_KEYEDHASH_PARMS> for KeyedHashParameters {
-    type Error = Error;
-
-    fn try_from(tpms_keyed_hash_parms: TPMS_KEYEDHASH_PARMS) -> Result<Self> {
-        Ok(KeyedHashParameters {
-            keyed_hash_scheme: tpms_keyed_hash_parms.scheme.try_into()?,
-        })
-    }
-}
-
-impl From<KeyedHashParameters> for TPMS_KEYEDHASH_PARMS {
-    fn from(keyed_hash_prams: KeyedHashParameters) -> Self {
-        TPMS_KEYEDHASH_PARMS {
-            scheme: keyed_hash_prams.keyed_hash_scheme.into(),
-        }
-    }
-}
 
 /// Symmetric cipher parameters
 ///

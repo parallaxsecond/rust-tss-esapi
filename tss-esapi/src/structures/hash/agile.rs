@@ -6,7 +6,7 @@ use crate::tss2_esys::{TPMT_HA, TPMU_HA};
 use crate::{Error, Result, WrapperErrorKind};
 use std::convert::{TryFrom, TryInto};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct HashAgile {
     algorithm: HashingAlgorithm,
     digest: Digest,
@@ -42,6 +42,27 @@ impl TryFrom<HashAgile> for TPMT_HA {
                     sm3_256: digest_val.try_into()?,
                 },
                 _ => return Err(Error::local_error(WrapperErrorKind::UnsupportedParam)),
+            },
+        })
+    }
+}
+
+impl TryFrom<TPMT_HA> for HashAgile {
+    type Error = Error;
+
+    fn try_from(tpmt_ha: TPMT_HA) -> Result<Self> {
+        let algorithm = HashingAlgorithm::try_from(tpmt_ha.hashAlg)?;
+        Ok(HashAgile {
+            algorithm,
+            digest: match algorithm {
+                HashingAlgorithm::Sha1 => unsafe { tpmt_ha.digest.sha1 }.as_ref().try_into()?,
+                HashingAlgorithm::Sha256 => unsafe { tpmt_ha.digest.sha256 }.as_ref().try_into()?,
+                HashingAlgorithm::Sha384 => unsafe { tpmt_ha.digest.sha384 }.as_ref().try_into()?,
+                HashingAlgorithm::Sha512 => unsafe { tpmt_ha.digest.sha512 }.as_ref().try_into()?,
+                HashingAlgorithm::Sm3_256 => {
+                    unsafe { tpmt_ha.digest.sm3_256 }.as_ref().try_into()?
+                }
+                _ => return Err(Error::local_error(WrapperErrorKind::WrongValueFromTpm)),
             },
         })
     }
