@@ -21,7 +21,7 @@ use log::error;
 use zeroize::Zeroize;
 
 use serde::{Deserialize, Serialize};
-use std::collections::{BTreeMap, HashMap};
+use std::collections::BTreeMap;
 use std::convert::{TryFrom, TryInto};
 /// Helper for building `TPM2B_PUBLIC` values out of its subcomponents.
 ///
@@ -1196,7 +1196,7 @@ impl<'a> IntoIterator for &'a PcrBank {
 /// hashing algorithm
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct PcrData {
-    data: HashMap<HashingAlgorithm, PcrBank>,
+    data: Vec<(HashingAlgorithm, PcrBank)>,
 }
 
 impl PcrData {
@@ -1222,9 +1222,7 @@ impl PcrData {
         let pcr_selections = &tpml_pcr_selections.pcrSelections[..selections_count];
 
         let mut digest_iter = digests.iter();
-        let mut parsed_pcr_data = PcrData {
-            data: Default::default(),
-        };
+        let mut data = Vec::<(HashingAlgorithm, PcrBank)>::new();
         for &pcr_selection in pcr_selections {
             // Parse hash algorithm from selection
             let parsed_hash_algorithm =
@@ -1262,15 +1260,7 @@ impl PcrData {
                     return Err(Error::local_error(WrapperErrorKind::InconsistentParams));
                 }
             }
-            // Add the parsed pcr bank for the parsed hashing algorithm.
-            if parsed_pcr_data
-                .data
-                .insert(parsed_hash_algorithm, parsed_pcr_bank)
-                .is_some()
-            {
-                error!("Error trying to insert data into a PcrBank where data have already been inserted");
-                return Err(Error::local_error(WrapperErrorKind::InconsistentParams));
-            }
+            data.push((parsed_hash_algorithm, parsed_pcr_bank));
         }
         // Make sure all values in the digest have been read.
         if digest_iter.next().is_some() {
@@ -1278,11 +1268,15 @@ impl PcrData {
             return Err(Error::local_error(WrapperErrorKind::InconsistentParams));
         }
 
-        Ok(parsed_pcr_data)
+        Ok(PcrData { data })
     }
-    /// Function for retriving a bank associated with the hashing_algorithm.
+
+    /// Function for retrieving the first PCR values associated with hashing_algorithm.
     pub fn pcr_bank(&self, hashing_algorithm: HashingAlgorithm) -> Option<&PcrBank> {
-        self.data.get(&hashing_algorithm)
+        self.data
+            .iter()
+            .find(|(alg, _)| alg == &hashing_algorithm)
+            .map(|(_, bank)| bank)
     }
 
     /// Function for retrieving the number of banks in the data.
@@ -1296,12 +1290,12 @@ impl PcrData {
     }
 }
 
-impl<'a> IntoIterator for &'a PcrData {
-    type Item = (&'a HashingAlgorithm, &'a PcrBank);
-    type IntoIter = ::std::collections::hash_map::Iter<'a, HashingAlgorithm, PcrBank>;
+impl<'a> IntoIterator for PcrData {
+    type Item = (HashingAlgorithm, PcrBank);
+    type IntoIter = ::std::vec::IntoIter<(HashingAlgorithm, PcrBank)>;
 
     fn into_iter(self) -> Self::IntoIter {
-        self.data.iter()
+        self.data.into_iter()
     }
 }
 
@@ -1309,8 +1303,8 @@ impl From<PcrData> for TPML_DIGEST {
     fn from(pcr_data: PcrData) -> Self {
         let mut tpml_digest: TPML_DIGEST = Default::default();
 
-        for (_hash_algo, pcr_bank) in pcr_data.into_iter() {
-            for (_pcr_slot, pcr_value) in pcr_bank.into_iter() {
+        for (_, pcr_bank) in pcr_data.into_iter() {
+            for (_, pcr_value) in pcr_bank.into_iter() {
                 let i = tpml_digest.count as usize;
                 let size = pcr_value.value().len() as u16;
                 tpml_digest.digests[i].size = size;
