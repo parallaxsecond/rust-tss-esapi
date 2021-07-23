@@ -22,7 +22,7 @@ use crate::interface_types::{
     algorithm::HashingAlgorithm, ecc::EccCurve, resource_handles::Hierarchy,
 };
 use crate::structures::{Auth, CreateKeyResult, Data, Digest, PublicKeyRSA, VerifiedTicket};
-use crate::tcti::Tcti;
+use crate::tcti_ldr::TctiNameConf;
 use crate::tss2_esys::*;
 use crate::utils::{
     self, create_restricted_decryption_rsa_public,
@@ -560,7 +560,7 @@ impl TransientKeyContext {
 /// * Session hash algorithm: SHA256
 #[derive(Debug)]
 pub struct TransientKeyContextBuilder {
-    tcti: Tcti,
+    tcti_name_conf: TctiNameConf,
     hierarchy: Hierarchy,
     root_key_size: u16, // TODO: replace with root key PUBLIC definition
     root_key_auth_size: usize,
@@ -573,7 +573,7 @@ impl TransientKeyContextBuilder {
     /// Create a new builder.
     pub fn new() -> Self {
         TransientKeyContextBuilder {
-            tcti: Tcti::Device(Default::default()),
+            tcti_name_conf: TctiNameConf::Device(Default::default()),
             hierarchy: Hierarchy::Owner,
             root_key_size: 2048,
             root_key_auth_size: 32,
@@ -583,9 +583,9 @@ impl TransientKeyContextBuilder {
         }
     }
 
-    /// Define the TCTI to be used by the client.
-    pub fn with_tcti(mut self, tcti: Tcti) -> Self {
-        self.tcti = tcti;
+    /// Define the TCTI name configuration to be used by the client.
+    pub fn with_tcti(mut self, tcti_name_conf: TctiNameConf) -> Self {
+        self.tcti_name_conf = tcti_name_conf;
         self
     }
 
@@ -659,7 +659,7 @@ impl TransientKeyContextBuilder {
             error!("The reference implementation only supports key sizes of 1,024 and 2,048 bits");
             return Err(Error::local_error(ErrorKind::WrongParamSize));
         }
-        let mut context = Context::new(self.tcti)?;
+        let mut context = Context::new(self.tcti_name_conf)?;
 
         let root_key_auth = if self.root_key_auth_size > 0 {
             let random = context.get_random(self.root_key_auth_size)?;

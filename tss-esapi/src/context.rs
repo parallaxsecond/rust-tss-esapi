@@ -7,15 +7,15 @@ use crate::{
     handles::{ObjectHandle, SessionHandle},
     interface_types::{algorithm::HashingAlgorithm, session_handles::AuthSession},
     structures::{CapabilityData, SymmetricDefinition},
+    tcti_ldr::{TabrmdConfig, TctiContext, TctiNameConf},
     tss2_esys::*,
-    Error, Result, Tcti, WrapperErrorKind as ErrorKind,
+    Error, Result, WrapperErrorKind as ErrorKind,
 };
 use handle_manager::HandleManager;
 use log::{error, info};
 use mbox::MBox;
 use std::collections::HashMap;
 use std::convert::TryFrom;
-use std::ffi::CString;
 use std::ptr::null_mut;
 
 /// Safe abstraction over an ESYS_CONTEXT.
@@ -56,7 +56,7 @@ pub struct Context {
     ),
     /// TCTI context handle associated with the ESYS context.
     /// As with the ESYS context, an optional Mbox wrapper allows the context to be deallocated.
-    tcti_context: Option<MBox<TSS2_TCTI_CONTEXT>>,
+    tcti_context: TctiContext,
     /// Handle manager that keep tracks of the state of the handles and how they are to be
     /// disposed.
     handle_manager: HandleManager,
@@ -76,29 +76,20 @@ impl Context {
     /// Create a new ESYS context based on the desired TCTI
     ///
     /// # Safety
-    /// * the client is responsible for ensuring that the context can be initialized safely,
-    /// threading-wise
+    /// The client is responsible for ensuring that the context can be initialized safely,
+    /// threading-wise. Some TCTI are not safe to execute with multiple commands in parallel.
     ///
     /// # Errors
     /// * if either `Tss2_TctiLdr_Initiialize` or `Esys_Initialize` fail, a corresponding
     /// Tss2ResponseCode will be returned
-    pub unsafe fn new(tcti: Tcti) -> Result<Self> {
+    pub unsafe fn new(tcti_name_conf: TctiNameConf) -> Result<Self> {
         let mut esys_context = null_mut();
-        let mut tcti_context = null_mut();
 
-        let tcti_name_conf = CString::try_from(tcti)?; // should never panic
-
-        let ret = Tss2_TctiLdr_Initialize(tcti_name_conf.as_ptr(), &mut tcti_context);
-        let ret = Error::from_tss_rc(ret);
-        if !ret.is_success() {
-            error!("Error when creating a TCTI context: {}", ret);
-            return Err(ret);
-        }
-        let mut tcti_context = Some(MBox::from_raw(tcti_context));
+        let tcti_context = TctiContext::initialize(tcti_name_conf)?;
 
         let ret = Esys_Initialize(
             &mut esys_context,
-            tcti_context.as_mut().unwrap().as_mut_ptr(), // will not panic as per how tcti_context is initialised
+            tcti_context.tcti_context_ptr(),
             null_mut(),
         );
         let ret = Error::from_tss_rc(ret);
@@ -119,6 +110,17 @@ impl Context {
         }
     }
 
+    /// Create a new ESYS context based on the TAB Ressource Manager Daemon.
+    /// The TABRMD will make sure that multiple users can use the TPM safely.
+    ///
+    /// # Errors
+    /// * if either `Tss2_TctiLdr_Initiialize` or `Esys_Initialize` fail, a corresponding
+    /// Tss2ResponseCode will be returned
+    pub fn new_tabrmd(tabrmd_conf: TabrmdConfig) -> Result<Self> {
+        // Safe in this specific case because of the TABRMD usage.
+        unsafe { Context::new(TctiNameConf::Tabrmd(tabrmd_conf)) }
+    }
+
     /// Set the sessions to be used in calls to ESAPI.
     ///
     /// # Details
@@ -128,7 +130,7 @@ impl Context {
     /// # Example
     ///
     /// ```rust
-    /// # use tss_esapi::{Context, Tcti,
+    /// # use tss_esapi::{Context, tcti_ldr::TctiNameConf,
     /// #     constants::SessionType,
     /// #     interface_types::algorithm::HashingAlgorithm,
     /// #     structures::SymmetricDefinition,
@@ -136,7 +138,7 @@ impl Context {
     /// # // Create context
     /// # let mut context = unsafe {
     /// #     Context::new(
-    /// #        Tcti::from_environment_variable().expect("Failed to get TCTI"),
+    /// #        TctiNameConf::from_environment_variable().expect("Failed to get TCTI"),
     /// #     ).expect("Failed to create Context")
     /// # };
     /// // Create auth session without key_handle, bind_handle
@@ -176,11 +178,11 @@ impl Context {
     /// # Example
     ///
     /// ```rust
-    /// # use tss_esapi::{Context, Tcti, interface_types::session_handles::AuthSession};
+    /// # use tss_esapi::{Context, tcti_ldr::TctiNameConf, interface_types::session_handles::AuthSession};
     /// # // Create context
     /// # let mut context = unsafe {
     /// #     Context::new(
-    /// #         Tcti::from_environment_variable().expect("Failed to get TCTI"),
+    /// #         TctiNameConf::from_environment_variable().expect("Failed to get TCTI"),
     /// #     ).expect("Failed to create Context")
     /// # };
     /// // Use password session for auth
@@ -198,11 +200,11 @@ impl Context {
     /// # Example
     ///
     /// ```rust
-    /// # use tss_esapi::{Context, Tcti, interface_types::session_handles::AuthSession};
+    /// # use tss_esapi::{Context, tcti_ldr::TctiNameConf, interface_types::session_handles::AuthSession};
     /// # // Create context
     /// # let mut context = unsafe {
     /// #     Context::new(
-    /// #         Tcti::from_environment_variable().expect("Failed to get TCTI"),
+    /// #         TctiNameConf::from_environment_variable().expect("Failed to get TCTI"),
     /// #     ).expect("Failed to create Context")
     /// # };
     /// // Use password session for auth
@@ -331,12 +333,12 @@ impl Context {
     /// # Example
     ///
     /// ```rust
-    /// # use tss_esapi::{Context, Tcti, constants::PropertyTag};
+    /// # use tss_esapi::{Context, tcti_ldr::TctiNameConf, constants::PropertyTag};
     /// # use std::str::FromStr;
     /// # // Create context
     /// # let mut context = unsafe {
     /// #     Context::new(
-    /// #         Tcti::from_environment_variable().expect("Failed to get TCTI"),
+    /// #         TctiNameConf::from_environment_variable().expect("Failed to get TCTI"),
     /// #     ).expect("Failed to create Context")
     /// # };
     /// let rev = context
@@ -450,10 +452,6 @@ impl Drop for Context {
         }
 
         let esys_context = self.esys_context.take().unwrap(); // should not fail based on how the context is initialised/used
-        let tcti_context = self.tcti_context.take().unwrap(); // should not fail based on how the context is initialised/used
-
-        // Close the TCTI context.
-        unsafe { Tss2_TctiLdr_Finalize(&mut tcti_context.into_raw()) };
 
         // Close the context.
         unsafe { Esys_Finalize(&mut esys_context.into_raw()) };
