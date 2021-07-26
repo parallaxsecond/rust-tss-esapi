@@ -48,6 +48,11 @@ impl TctiContext {
         }
         Ok(TctiContext { tcti_context })
     }
+
+    /// Get access to the inner C pointer
+    pub(crate) fn tcti_context_ptr(&self) -> *mut tss_esapi_sys::TSS2_TCTI_CONTEXT {
+        self.tcti_context
+    }
 }
 
 impl Drop for TctiContext {

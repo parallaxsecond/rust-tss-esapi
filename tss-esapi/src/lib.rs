@@ -98,7 +98,9 @@
 pub use abstraction::transient::TransientKeyContext;
 pub use context::Context;
 pub use error::{Error, Result, WrapperErrorKind};
-pub use tcti::Tcti;
+pub use tcti_ldr::TctiNameConf;
+// To replace painlessly the old Tcti structure, should maybe be deprecated at some point.
+pub use tcti_ldr::TctiNameConf as Tcti;
 
 pub use tss_esapi_sys as tss2_esys;
 pub mod abstraction;
@@ -110,6 +112,5 @@ pub mod handles;
 pub mod interface_types;
 pub mod nv;
 pub mod structures;
-pub mod tcti;
 pub mod tcti_ldr;
 pub mod utils;

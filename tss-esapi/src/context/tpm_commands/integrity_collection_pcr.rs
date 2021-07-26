@@ -27,7 +27,7 @@ impl Context {
     ///
     /// ```rust
     /// # use tss_esapi::{
-    /// #     Context, Tcti,
+    /// #     Context, TctiNameConf,
     /// #     constants::SessionType,
     /// #     attributes::SessionAttributesBuilder,
     /// #     handles::PcrHandle,
@@ -37,7 +37,7 @@ impl Context {
     /// # // Create context
     /// # let mut context = unsafe {
     /// #     Context::new(
-    /// #         Tcti::from_environment_variable().expect("Failed to get TCTI"),
+    /// #         TctiNameConf::from_environment_variable().expect("Failed to get TCTI"),
     /// #     ).expect("Failed to create Context")
     /// # };
     /// # // Create session for a pcr
@@ -133,12 +133,12 @@ impl Context {
     /// # Example
     ///
     /// ```rust
-    /// # use tss_esapi::{Context, Tcti};
+    /// # use tss_esapi::{Context, TctiNameConf};
     /// # use std::{env, str::FromStr};
     /// # // Create context
     /// # let mut context = unsafe {
     /// #     Context::new(
-    /// #         Tcti::from_environment_variable().expect("Failed to get TCTI"),
+    /// #         TctiNameConf::from_environment_variable().expect("Failed to get TCTI"),
     /// #     ).expect("Failed to create Context")
     /// # };
     /// use tss_esapi::{
@@ -209,7 +209,7 @@ impl Context {
     ///
     /// ```rust
     /// # use tss_esapi::{
-    /// #     Context, Tcti,
+    /// #     Context, TctiNameConf,
     /// #     constants::SessionType,
     /// #     attributes::SessionAttributesBuilder,
     /// #     structures::SymmetricDefinition,
@@ -219,7 +219,7 @@ impl Context {
     /// # // Create context
     /// # let mut context = unsafe {
     /// #     Context::new(
-    /// #         Tcti::from_environment_variable().expect("Failed to get TCTI"),
+    /// #         TctiNameConf::from_environment_variable().expect("Failed to get TCTI"),
     /// #     ).expect("Failed to create Context")
     /// # };
     /// # // Create session for a pcr

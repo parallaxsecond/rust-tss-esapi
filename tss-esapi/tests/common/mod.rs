@@ -10,8 +10,9 @@ use tss_esapi::{
         algorithm::HashingAlgorithm, resource_handles::Hierarchy, session_handles::PolicySession,
     },
     structures::{Digest, MaxBuffer, PcrSelectionListBuilder, PcrSlot, SymmetricDefinition},
+    tcti_ldr::TctiNameConf,
     tss2_esys::{TPM2B_PUBLIC, TPMU_PUBLIC_PARMS},
-    utils, Context, Tcti,
+    utils, Context,
 };
 
 #[allow(dead_code)]
@@ -56,12 +57,12 @@ pub fn setup_logging() {
 }
 
 #[allow(dead_code)]
-pub fn create_tcti() -> Tcti {
+pub fn create_tcti() -> TctiNameConf {
     setup_logging();
 
     match env::var("TEST_TCTI") {
-        Err(_) => Tcti::Mssim(Default::default()),
-        Ok(tctistr) => Tcti::from_str(&tctistr).expect("Error parsing TEST_TCTI"),
+        Err(_) => TctiNameConf::Mssim(Default::default()),
+        Ok(tctistr) => TctiNameConf::from_str(&tctistr).expect("Error parsing TEST_TCTI"),
     }
 }
 
