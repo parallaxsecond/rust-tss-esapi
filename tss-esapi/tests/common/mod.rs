@@ -69,7 +69,7 @@ pub fn create_tcti() -> TctiNameConf {
 #[allow(dead_code)]
 pub fn create_ctx_without_session() -> Context {
     let tcti = create_tcti();
-    unsafe { Context::new(tcti).unwrap() }
+    Context::new(tcti).unwrap()
 }
 
 #[allow(dead_code)]

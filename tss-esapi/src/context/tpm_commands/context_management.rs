@@ -79,11 +79,10 @@ impl Context {
     /// # use std::convert::TryFrom;
     /// # use std::str::FromStr;
     /// # // Create context
-    /// # let mut context = unsafe {
+    /// # let mut context =
     /// #     Context::new(
     /// #         Tcti::from_environment_variable().expect("Failed to get TCTI"),
-    /// #     ).expect("Failed to create Context")
-    /// # };
+    /// #     ).expect("Failed to create Context");
     ///
     /// // Create session for a key
     /// let session = context
@@ -195,11 +194,10 @@ impl Context {
     /// # };
     /// # use std::{env, str::FromStr, convert::TryFrom};
     /// # // Create context
-    /// # let mut context = unsafe {
+    /// # let mut context =
     /// #     Context::new(
     /// #         Tcti::from_environment_variable().expect("Failed to get TCTI"),
-    /// #     ).expect("Failed to create Context")
-    /// # };
+    /// #     ).expect("Failed to create Context");
     /// # // Create persistent TPM handle with
     /// # let persistent_tpm_handle =
     /// #    PersistentTpmHandle::new(u32::from_be_bytes([0x81, 0x00, 0x00, 0x01]))
@@ -312,11 +310,10 @@ impl Context {
     /// # };
     /// # use std::{env, str::FromStr, convert::TryFrom};
     /// # // Create context
-    /// # let mut context = unsafe {
+    /// # let mut context =
     /// #     Context::new(
     /// #         Tcti::from_environment_variable().expect("Failed to get TCTI"),
-    /// #     ).expect("Failed to create Context")
-    /// # };
+    /// #     ).expect("Failed to create Context");
     /// # // Create persistent TPM handle with
     /// # let persistent_tpm_handle =
     /// #    PersistentTpmHandle::new(u32::from_be_bytes([0x81, 0x00, 0x00, 0x01]))

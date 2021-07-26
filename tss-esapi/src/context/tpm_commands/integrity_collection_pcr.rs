@@ -35,11 +35,10 @@ impl Context {
     /// # };
     /// # use std::{env, str::FromStr};
     /// # // Create context
-    /// # let mut context = unsafe {
+    /// # let mut context =
     /// #     Context::new(
     /// #         TctiNameConf::from_environment_variable().expect("Failed to get TCTI"),
-    /// #     ).expect("Failed to create Context")
-    /// # };
+    /// #     ).expect("Failed to create Context");
     /// # // Create session for a pcr
     /// # let pcr_session = context
     /// #     .start_auth_session(
@@ -136,11 +135,10 @@ impl Context {
     /// # use tss_esapi::{Context, TctiNameConf};
     /// # use std::{env, str::FromStr};
     /// # // Create context
-    /// # let mut context = unsafe {
+    /// # let mut context =
     /// #     Context::new(
     /// #         TctiNameConf::from_environment_variable().expect("Failed to get TCTI"),
-    /// #     ).expect("Failed to create Context")
-    /// # };
+    /// #     ).expect("Failed to create Context");
     /// use tss_esapi::{
     ///     interface_types::algorithm::HashingAlgorithm,
     ///     structures::{PcrSelectionListBuilder, PcrSlot},
@@ -217,11 +215,10 @@ impl Context {
     /// # };
     /// # use std::{env, str::FromStr};
     /// # // Create context
-    /// # let mut context = unsafe {
+    /// # let mut context =
     /// #     Context::new(
     /// #         TctiNameConf::from_environment_variable().expect("Failed to get TCTI"),
-    /// #     ).expect("Failed to create Context")
-    /// # };
+    /// #     ).expect("Failed to create Context");
     /// # // Create session for a pcr
     /// # let pcr_session = context
     /// #     .start_auth_session(

@@ -75,27 +75,35 @@ mod general_esys_tr;
 impl Context {
     /// Create a new ESYS context based on the desired TCTI
     ///
-    /// # Safety
+    /// # Warning
     /// The client is responsible for ensuring that the context can be initialized safely,
     /// threading-wise. Some TCTI are not safe to execute with multiple commands in parallel.
+    /// If the sequence of commands to the TPM is interrupted by another application, commands
+    /// might fail unexpectedly.
+    /// If multiple applications are using the TPM in parallel, make sure to use the TABRMD TCTI
+    /// which will offer multi-user support to a single TPM device.
+    /// See the
+    /// [specification](https://trustedcomputinggroup.org/wp-content/uploads/TSS-TAB-and-Resource-Manager-ver1.0-rev16_Public_Review.pdf) for more information.
     ///
     /// # Errors
     /// * if either `Tss2_TctiLdr_Initiialize` or `Esys_Initialize` fail, a corresponding
     /// Tss2ResponseCode will be returned
-    pub unsafe fn new(tcti_name_conf: TctiNameConf) -> Result<Self> {
+    pub fn new(tcti_name_conf: TctiNameConf) -> Result<Self> {
         let mut esys_context = null_mut();
 
         let tcti_context = TctiContext::initialize(tcti_name_conf)?;
 
-        let ret = Esys_Initialize(
-            &mut esys_context,
-            tcti_context.tcti_context_ptr(),
-            null_mut(),
-        );
+        let ret = unsafe {
+            Esys_Initialize(
+                &mut esys_context,
+                tcti_context.tcti_context_ptr(),
+                null_mut(),
+            )
+        };
         let ret = Error::from_tss_rc(ret);
 
         if ret.is_success() {
-            let esys_context = Some(MBox::from_raw(esys_context));
+            let esys_context = unsafe { Some(MBox::from_raw(esys_context)) };
             let context = Context {
                 esys_context,
                 sessions: (None, None, None),
@@ -117,8 +125,7 @@ impl Context {
     /// * if either `Tss2_TctiLdr_Initiialize` or `Esys_Initialize` fail, a corresponding
     /// Tss2ResponseCode will be returned
     pub fn new_with_tabrmd(tabrmd_conf: TabrmdConfig) -> Result<Self> {
-        // Safe in this specific case because of the TABRMD usage.
-        unsafe { Context::new(TctiNameConf::Tabrmd(tabrmd_conf)) }
+        Context::new(TctiNameConf::Tabrmd(tabrmd_conf))
     }
 
     /// Set the sessions to be used in calls to ESAPI.
@@ -136,11 +143,10 @@ impl Context {
     /// #     structures::SymmetricDefinition,
     /// # };
     /// # // Create context
-    /// # let mut context = unsafe {
+    /// # let mut context =
     /// #     Context::new(
     /// #        TctiNameConf::from_environment_variable().expect("Failed to get TCTI"),
-    /// #     ).expect("Failed to create Context")
-    /// # };
+    /// #     ).expect("Failed to create Context");
     /// // Create auth session without key_handle, bind_handle
     /// // and Nonce
     /// let auth_session = context
@@ -180,11 +186,10 @@ impl Context {
     /// ```rust
     /// # use tss_esapi::{Context, tcti_ldr::TctiNameConf, interface_types::session_handles::AuthSession};
     /// # // Create context
-    /// # let mut context = unsafe {
+    /// # let mut context =
     /// #     Context::new(
     /// #         TctiNameConf::from_environment_variable().expect("Failed to get TCTI"),
-    /// #     ).expect("Failed to create Context")
-    /// # };
+    /// #     ).expect("Failed to create Context");
     /// // Use password session for auth
     /// context.set_sessions((Some(AuthSession::Password), None, None));
     ///
@@ -202,11 +207,10 @@ impl Context {
     /// ```rust
     /// # use tss_esapi::{Context, tcti_ldr::TctiNameConf, interface_types::session_handles::AuthSession};
     /// # // Create context
-    /// # let mut context = unsafe {
+    /// # let mut context =
     /// #     Context::new(
     /// #         TctiNameConf::from_environment_variable().expect("Failed to get TCTI"),
-    /// #     ).expect("Failed to create Context")
-    /// # };
+    /// #     ).expect("Failed to create Context");
     /// // Use password session for auth
     /// context.set_sessions((Some(AuthSession::Password), None, None));
     ///
@@ -336,11 +340,10 @@ impl Context {
     /// # use tss_esapi::{Context, tcti_ldr::TctiNameConf, constants::PropertyTag};
     /// # use std::str::FromStr;
     /// # // Create context
-    /// # let mut context = unsafe {
+    /// # let mut context =
     /// #     Context::new(
     /// #         TctiNameConf::from_environment_variable().expect("Failed to get TCTI"),
-    /// #     ).expect("Failed to create Context")
-    /// # };
+    /// #     ).expect("Failed to create Context");
     /// let rev = context
     ///     .get_tpm_property(PropertyTag::Revision)
     ///     .expect("Wrong value from TPM")
