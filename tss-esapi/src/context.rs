@@ -116,7 +116,7 @@ impl Context {
     /// # Errors
     /// * if either `Tss2_TctiLdr_Initiialize` or `Esys_Initialize` fail, a corresponding
     /// Tss2ResponseCode will be returned
-    pub fn new_tabrmd(tabrmd_conf: TabrmdConfig) -> Result<Self> {
+    pub fn new_with_tabrmd(tabrmd_conf: TabrmdConfig) -> Result<Self> {
         // Safe in this specific case because of the TABRMD usage.
         unsafe { Context::new(TctiNameConf::Tabrmd(tabrmd_conf)) }
     }
