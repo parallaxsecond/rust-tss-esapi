@@ -90,7 +90,7 @@ impl PcrSelectionList {
 
         for hashing_algorithm in other.items.keys() {
             // Lookup selection in self.
-            let pcr_selection = match self.items.get_mut(&hashing_algorithm) {
+            let pcr_selection = match self.items.get_mut(hashing_algorithm) {
                 Some(val) => val,
                 None => {
                     error!("Error: Trying to remove item that did not exist");
@@ -98,11 +98,11 @@ impl PcrSelectionList {
                 }
             };
             // Check if value exists in other and if not then nothing needs to be done
-            if let Some(val) = other.items.get(&hashing_algorithm) {
+            if let Some(val) = other.items.get(hashing_algorithm) {
                 pcr_selection.subtract(val)?;
 
                 if pcr_selection.is_empty() {
-                    let _ = self.items.remove(&hashing_algorithm);
+                    let _ = self.items.remove(hashing_algorithm);
                 }
             }
         }
