@@ -30,11 +30,10 @@ impl Context {
     /// #     structures::SymmetricDefinition,
     /// # };
     /// # // Create context
-    /// # let mut context = unsafe {
+    /// # let mut context =
     /// #     Context::new(
     /// #         Tcti::from_environment_variable().expect("Failed to get TCTI"),
-    /// #     ).expect("Failed to create Context")
-    /// # };
+    /// #     ).expect("Failed to create Context");
     /// // Create auth session without key_handle, bind_handle
     /// // and Nonce
     /// let session = context

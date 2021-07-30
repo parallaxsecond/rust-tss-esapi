@@ -19,54 +19,44 @@ const HASH: [u8; 32] = [
 ];
 
 fn create_ctx() -> TransientKeyContext {
-    unsafe {
-        TransientKeyContextBuilder::new()
-            .with_tcti(create_tcti())
-            .build()
-            .unwrap()
-    }
+    TransientKeyContextBuilder::new()
+        .with_tcti(create_tcti())
+        .build()
+        .unwrap()
 }
 
 #[test]
 fn wrong_key_sizes() {
     assert_eq!(
-        unsafe {
-            TransientKeyContextBuilder::new()
-                .with_tcti(create_tcti())
-                .with_root_key_size(1023)
-                .build()
-                .unwrap_err()
-        },
+        TransientKeyContextBuilder::new()
+            .with_tcti(create_tcti())
+            .with_root_key_size(1023)
+            .build()
+            .unwrap_err(),
         Error::WrapperError(ErrorKind::WrongParamSize)
     );
     assert_eq!(
-        unsafe {
-            TransientKeyContextBuilder::new()
-                .with_tcti(create_tcti())
-                .with_root_key_size(1025)
-                .build()
-                .unwrap_err()
-        },
+        TransientKeyContextBuilder::new()
+            .with_tcti(create_tcti())
+            .with_root_key_size(1025)
+            .build()
+            .unwrap_err(),
         Error::WrapperError(ErrorKind::WrongParamSize)
     );
     assert_eq!(
-        unsafe {
-            TransientKeyContextBuilder::new()
-                .with_tcti(create_tcti())
-                .with_root_key_size(2047)
-                .build()
-                .unwrap_err()
-        },
+        TransientKeyContextBuilder::new()
+            .with_tcti(create_tcti())
+            .with_root_key_size(2047)
+            .build()
+            .unwrap_err(),
         Error::WrapperError(ErrorKind::WrongParamSize)
     );
     assert_eq!(
-        unsafe {
-            TransientKeyContextBuilder::new()
-                .with_tcti(create_tcti())
-                .with_root_key_size(2049)
-                .build()
-                .unwrap_err()
-        },
+        TransientKeyContextBuilder::new()
+            .with_tcti(create_tcti())
+            .with_root_key_size(2049)
+            .build()
+            .unwrap_err(),
         Error::WrapperError(ErrorKind::WrongParamSize)
     );
 }
@@ -74,13 +64,11 @@ fn wrong_key_sizes() {
 #[test]
 fn wrong_auth_size() {
     assert_eq!(
-        unsafe {
-            TransientKeyContextBuilder::new()
-                .with_tcti(create_tcti())
-                .with_root_key_auth_size(33)
-                .build()
-                .unwrap_err()
-        },
+        TransientKeyContextBuilder::new()
+            .with_tcti(create_tcti())
+            .with_root_key_auth_size(33)
+            .build()
+            .unwrap_err(),
         Error::WrapperError(ErrorKind::WrongParamSize)
     );
 }
