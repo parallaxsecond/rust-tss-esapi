@@ -54,7 +54,7 @@ impl TryFrom<Name> for TPM2B_NAME {
             size: size as u16,
             ..Default::default()
         };
-        tss_name.name[..size].copy_from_slice(&name.value());
+        tss_name.name[..size].copy_from_slice(name.value());
         Ok(tss_name)
     }
 }
