@@ -524,7 +524,6 @@ impl PublicIdUnion {
 /// Rust enum representation of `TPMU_PUBLIC_PARMS`.
 // Most of the field types are from bindgen which does not implement Debug on them.
 #[allow(missing_debug_implementations)]
-#[allow(clippy::pub_enum_variant_names)]
 #[derive(Copy, Clone)]
 pub enum PublicParmsUnion {
     KeyedHashDetail(KeyedHashParameters),
