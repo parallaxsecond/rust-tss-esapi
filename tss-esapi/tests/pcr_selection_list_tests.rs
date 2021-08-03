@@ -1,166 +1,97 @@
 // Copyright 2020 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
+use std::convert::TryFrom;
 use tss_esapi::{
     interface_types::algorithm::HashingAlgorithm,
-    structures::{PcrSelectSize, PcrSelectionListBuilder, PcrSlot},
+    structures::{PcrSelectSize, PcrSelection, PcrSelectionList, PcrSlot},
+    tss2_esys::{TPML_PCR_SELECTION, TPMS_PCR_SELECTION},
 };
 
 mod test_pcr_selection_list {
     use super::*;
-    #[test]
-    fn test_subtract_remaining_values() {
-        let mut pcr_selection_list = PcrSelectionListBuilder::new()
-            .with_size_of_select(Default::default())
-            .with_selection(
-                HashingAlgorithm::Sha256,
-                &[PcrSlot::Slot0, PcrSlot::Slot8, PcrSlot::Slot16],
-            )
-            .build();
-
-        let pcr_selection_list_1 = PcrSelectionListBuilder::new()
-            .with_size_of_select(Default::default())
-            .with_selection(HashingAlgorithm::Sha256, &[PcrSlot::Slot0, PcrSlot::Slot8])
-            .build();
-
-        let expected = PcrSelectionListBuilder::new()
-            .with_size_of_select(Default::default())
-            .with_selection(HashingAlgorithm::Sha256, &[PcrSlot::Slot16])
-            .build();
-
-        pcr_selection_list.subtract(&pcr_selection_list_1).unwrap();
-
-        assert_eq!(expected, pcr_selection_list);
-    }
 
     #[test]
-    fn test_subtract_nothing_remaining() {
-        let mut pcr_selection_list = PcrSelectionListBuilder::new()
-            .with_size_of_select(Default::default())
-            .with_selection(
-                HashingAlgorithm::Sha256,
-                &[PcrSlot::Slot0, PcrSlot::Slot8, PcrSlot::Slot16],
-            )
-            .build();
+    fn from_tpml_retains_order() {
+        let selection_1 = PcrSelection::new(
+            HashingAlgorithm::Sha256,
+            PcrSelectSize::ThreeBytes,
+            &[PcrSlot::Slot10],
+        );
+        let selection_1 = TPMS_PCR_SELECTION::try_from(selection_1).unwrap();
 
-        let pcr_selection_list_1 = PcrSelectionListBuilder::new()
-            .with_size_of_select(Default::default())
-            .with_selection(
-                HashingAlgorithm::Sha256,
-                &[PcrSlot::Slot0, PcrSlot::Slot8, PcrSlot::Slot16],
-            )
-            .build();
+        let selection_2 = PcrSelection::new(
+            HashingAlgorithm::Sha256,
+            PcrSelectSize::ThreeBytes,
+            &[PcrSlot::Slot11],
+        );
+        let selection_2 = TPMS_PCR_SELECTION::try_from(selection_2).unwrap();
 
-        pcr_selection_list.subtract(&pcr_selection_list_1).unwrap();
+        let selection_3 = PcrSelection::new(
+            HashingAlgorithm::Sha1,
+            PcrSelectSize::ThreeBytes,
+            &[PcrSlot::Slot16],
+        );
+        let selection_3 = TPMS_PCR_SELECTION::try_from(selection_3).unwrap();
 
-        assert!(pcr_selection_list.is_empty());
-    }
+        let selection_4 = PcrSelection::new(
+            HashingAlgorithm::Sha1,
+            PcrSelectSize::ThreeBytes,
+            &[PcrSlot::Slot2],
+        );
+        let selection_4 = TPMS_PCR_SELECTION::try_from(selection_4).unwrap();
 
-    #[test]
-    fn test_subtract_with_non_equal_size_of_select_failure() {
-        // pcr selections with 3 bytes size of select.
-        let mut pcr_selection_list = PcrSelectionListBuilder::new()
-            .with_size_of_select(PcrSelectSize::ThreeBytes)
-            .with_selection(
-                HashingAlgorithm::Sha256,
-                &[PcrSlot::Slot0, PcrSlot::Slot8, PcrSlot::Slot16],
-            )
-            .build();
+        let empty_selection =
+            PcrSelection::new(HashingAlgorithm::Sha1, PcrSelectSize::ThreeBytes, &[]);
+        let empty_selection = TPMS_PCR_SELECTION::try_from(empty_selection).unwrap();
 
-        // Pcr selections with 2 bytes size of select.
-        let pcr_selection_list_1 = PcrSelectionListBuilder::new()
-            .with_size_of_select(PcrSelectSize::TwoBytes)
-            .with_selection(
-                HashingAlgorithm::Sha256,
-                &[PcrSlot::Slot0, PcrSlot::Slot8, PcrSlot::Slot16],
-            )
-            .build();
+        let tpml_selections = TPML_PCR_SELECTION {
+            count: 4,
+            pcrSelections: [
+                selection_1,
+                selection_2,
+                selection_3,
+                selection_4,
+                empty_selection,
+                empty_selection,
+                empty_selection,
+                empty_selection,
+                empty_selection,
+                empty_selection,
+                empty_selection,
+                empty_selection,
+                empty_selection,
+                empty_selection,
+                empty_selection,
+                empty_selection,
+            ],
+        };
 
-        pcr_selection_list
-            .subtract(&pcr_selection_list_1)
-            .unwrap_err();
-    }
+        let selections = PcrSelectionList::try_from(tpml_selections).unwrap();
+        let tpml_selections = TPML_PCR_SELECTION::try_from(selections).unwrap();
+        let selections = PcrSelectionList::try_from(tpml_selections).unwrap();
 
-    #[test]
-    fn test_subtract_attempting_to_subtract_a_non_existant_value_failure() {
-        // pcr selections
-        let mut pcr_selection_list = PcrSelectionListBuilder::new()
-            .with_size_of_select(Default::default())
-            .with_selection(HashingAlgorithm::Sha256, &[PcrSlot::Slot0, PcrSlot::Slot8])
-            .build();
+        assert_eq!(selections.len(), 4);
 
-        // Pcr selections with 1 more pcr slot then the previous.
-        let pcr_selection_list_1 = PcrSelectionListBuilder::new()
-            .with_size_of_select(Default::default())
-            .with_selection(
-                HashingAlgorithm::Sha256,
-                &[PcrSlot::Slot0, PcrSlot::Slot8, PcrSlot::Slot16],
-            )
-            .build();
+        let sel_1 = selections.get_selections()[0];
+        let sel_2 = selections.get_selections()[1];
+        let sel_3 = selections.get_selections()[2];
+        let sel_4 = selections.get_selections()[3];
 
-        pcr_selection_list
-            .subtract(&pcr_selection_list_1)
-            .unwrap_err();
-    }
+        assert_eq!(sel_1.hashing_algorithm(), HashingAlgorithm::Sha256);
+        assert!(!sel_1.is_empty());
+        assert!(sel_1.selected_pcrs().contains(PcrSlot::Slot10));
+        assert!(!sel_1.selected_pcrs().contains(PcrSlot::Slot11));
 
-    #[test]
-    fn test_subtract_with_larg_selection_ramining_value() {
-        // pcr selections
-        let mut pcr_selection_list = PcrSelectionListBuilder::new()
-            .with_size_of_select(Default::default())
-            .with_selection(
-                HashingAlgorithm::Sha1,
-                &[
-                    PcrSlot::Slot1,
-                    PcrSlot::Slot3,
-                    PcrSlot::Slot5,
-                    PcrSlot::Slot7,
-                ],
-            )
-            .with_selection(
-                HashingAlgorithm::Sha256,
-                &[PcrSlot::Slot0, PcrSlot::Slot7, PcrSlot::Slot8],
-            )
-            .with_selection(
-                HashingAlgorithm::Sha512,
-                &[
-                    PcrSlot::Slot4,
-                    PcrSlot::Slot8,
-                    PcrSlot::Slot12,
-                    PcrSlot::Slot16,
-                ],
-            )
-            .build();
+        assert_eq!(sel_2.hashing_algorithm(), HashingAlgorithm::Sha256);
+        assert!(!sel_2.is_empty());
+        assert!(sel_2.selected_pcrs().contains(PcrSlot::Slot11));
 
-        let pcr_selection_list_1 = PcrSelectionListBuilder::new()
-            .with_size_of_select(Default::default())
-            .with_selection(
-                HashingAlgorithm::Sha1,
-                &[
-                    PcrSlot::Slot1,
-                    /*PcrSlot::Slot3, PcrSlot::Slot5,*/ PcrSlot::Slot7,
-                ],
-            )
-            .with_selection(
-                HashingAlgorithm::Sha256,
-                &[PcrSlot::Slot0, PcrSlot::Slot7, PcrSlot::Slot8],
-            )
-            .with_selection(
-                HashingAlgorithm::Sha512,
-                &[
-                    PcrSlot::Slot4,
-                    PcrSlot::Slot8,
-                    /*PcrSlot::Slot12,*/ PcrSlot::Slot16,
-                ],
-            )
-            .build();
+        assert_eq!(sel_3.hashing_algorithm(), HashingAlgorithm::Sha1);
+        assert!(!sel_3.is_empty());
+        assert!(sel_3.selected_pcrs().contains(PcrSlot::Slot16));
 
-        let expected = PcrSelectionListBuilder::new()
-            .with_size_of_select(Default::default())
-            .with_selection(HashingAlgorithm::Sha1, &[PcrSlot::Slot3, PcrSlot::Slot5])
-            .with_selection(HashingAlgorithm::Sha512, &[PcrSlot::Slot12])
-            .build();
-
-        pcr_selection_list.subtract(&pcr_selection_list_1).unwrap();
-        assert_eq!(expected, pcr_selection_list);
+        assert_eq!(sel_4.hashing_algorithm(), HashingAlgorithm::Sha1);
+        assert!(!sel_4.is_empty());
+        assert!(sel_4.selected_pcrs().contains(PcrSlot::Slot2));
     }
 }
