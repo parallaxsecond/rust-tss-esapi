@@ -50,7 +50,7 @@ impl TctiContext {
     }
 
     /// Get access to the inner C pointer
-    pub(crate) fn tcti_context_ptr(&self) -> *mut tss_esapi_sys::TSS2_TCTI_CONTEXT {
+    pub(crate) fn tcti_context_ptr(&mut self) -> *mut tss_esapi_sys::TSS2_TCTI_CONTEXT {
         self.tcti_context
     }
 }
@@ -62,6 +62,13 @@ impl Drop for TctiContext {
         }
     }
 }
+
+// `Send` and `Sync` are implemented to allow `TctiContext` to be thread-safe.
+// This is necessary because `*mut TSS2_TCTI_CONTEXT` is not thread-safe by
+// default. We can confirm the safety as the pointer can only be accessed
+// in a thread-safe way (i.e. in methods that require a `&mut self`).
+unsafe impl Send for TctiContext {}
+unsafe impl Sync for TctiContext {}
 
 /// Wrapper around the TSS2_TCTI_INFO structure.
 #[derive(Debug)]

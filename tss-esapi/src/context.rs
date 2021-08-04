@@ -91,7 +91,7 @@ impl Context {
     pub fn new(tcti_name_conf: TctiNameConf) -> Result<Self> {
         let mut esys_context = null_mut();
 
-        let tcti_context = TctiContext::initialize(tcti_name_conf)?;
+        let mut tcti_context = TctiContext::initialize(tcti_name_conf)?;
 
         let ret = unsafe {
             Esys_Initialize(
