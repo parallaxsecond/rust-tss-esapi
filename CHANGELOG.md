@@ -1,5 +1,48 @@
 # Changelog
 
+## [tss-esapi-6.1.0](https://github.com/parallaxsecond/rust-tss-esapi/tree/tss-esapi-6.1.0) (2021-08-04)
+
+[Full Changelog](https://github.com/parallaxsecond/rust-tss-esapi/compare/tss-esapi-6.0.0...tss-esapi-6.1.0)
+
+**Implemented enhancements:**
+
+- Implement Send/Sync on TctiContext [\#246](https://github.com/parallaxsecond/rust-tss-esapi/pull/246) ([ionut-arm](https://github.com/ionut-arm))
+
+## [tss-esapi-6.0.0](https://github.com/parallaxsecond/rust-tss-esapi/tree/tss-esapi-6.0.0) (2021-08-04)
+
+[Full Changelog](https://github.com/parallaxsecond/rust-tss-esapi/compare/tss-esapi-5.1.0...tss-esapi-6.0.0)
+
+**Fixed bugs:**
+
+- Fix some new clippy lints [\#242](https://github.com/parallaxsecond/rust-tss-esapi/pull/242) ([hug-dev](https://github.com/hug-dev))
+- Fix tests [\#230](https://github.com/parallaxsecond/rust-tss-esapi/pull/230) ([ionut-arm](https://github.com/ionut-arm))
+- Add tss2-sys when generating bindings too [\#227](https://github.com/parallaxsecond/rust-tss-esapi/pull/227) ([ionut-arm](https://github.com/ionut-arm))
+- Replace links with absolute paths [\#225](https://github.com/parallaxsecond/rust-tss-esapi/pull/225) ([hug-dev](https://github.com/hug-dev))
+- Fixes [\#218](https://github.com/parallaxsecond/rust-tss-esapi/pull/218) ([ionut-arm](https://github.com/ionut-arm))
+- Fix a failing bindgen test [\#215](https://github.com/parallaxsecond/rust-tss-esapi/pull/215) ([hug-dev](https://github.com/hug-dev))
+
+**Closed issues:**
+
+- Use the new TctiContext in the TSS Context [\#235](https://github.com/parallaxsecond/rust-tss-esapi/issues/235)
+- How to call `Context::new` safely? [\#229](https://github.com/parallaxsecond/rust-tss-esapi/issues/229)
+
+**Merged pull requests:**
+
+- Bump version numbers for release [\#244](https://github.com/parallaxsecond/rust-tss-esapi/pull/244) ([ionut-arm](https://github.com/ionut-arm))
+- Ensure PcrSelectionList retains order, \#2 [\#243](https://github.com/parallaxsecond/rust-tss-esapi/pull/243) ([ionut-arm](https://github.com/ionut-arm))
+- Remove old Tcti feature [\#239](https://github.com/parallaxsecond/rust-tss-esapi/pull/239) ([hug-dev](https://github.com/hug-dev))
+- Ensure PcrData retains order [\#238](https://github.com/parallaxsecond/rust-tss-esapi/pull/238) ([puiterwijk](https://github.com/puiterwijk))
+- Abstract execute\_With\_nullauth\_session return type [\#237](https://github.com/parallaxsecond/rust-tss-esapi/pull/237) ([puiterwijk](https://github.com/puiterwijk))
+- Add a wrapper above the TCTI Loader library [\#234](https://github.com/parallaxsecond/rust-tss-esapi/pull/234) ([hug-dev](https://github.com/hug-dev))
+- Update CHANGELOG for 5.1.0 [\#233](https://github.com/parallaxsecond/rust-tss-esapi/pull/233) ([ionut-arm](https://github.com/ionut-arm))
+- Link to tss2-sys as well [\#226](https://github.com/parallaxsecond/rust-tss-esapi/pull/226) ([ionut-arm](https://github.com/ionut-arm))
+- Adds the encrypt\_decrypt\_2 context method [\#220](https://github.com/parallaxsecond/rust-tss-esapi/pull/220) ([Superhepper](https://github.com/Superhepper))
+- Modify handling of cross-compilation targets [\#219](https://github.com/parallaxsecond/rust-tss-esapi/pull/219) ([hug-dev](https://github.com/hug-dev))
+- Bump bindgen to 0.57.0 [\#217](https://github.com/parallaxsecond/rust-tss-esapi/pull/217) ([eclipseo](https://github.com/eclipseo))
+- Allow upper case acronyms [\#216](https://github.com/parallaxsecond/rust-tss-esapi/pull/216) ([ionut-arm](https://github.com/ionut-arm))
+- Update CHANGELOG with new release [\#214](https://github.com/parallaxsecond/rust-tss-esapi/pull/214) ([hug-dev](https://github.com/hug-dev))
+
+
 ## [tss-esapi-5.1.0](https://github.com/parallaxsecond/rust-tss-esapi/tree/tss-esapi-5.1.0) (2021-06-17)
 
 [Full Changelog](https://github.com/parallaxsecond/rust-tss-esapi/compare/tss-esapi-sys-0.2.0...tss-esapi-5.1.0)
