@@ -1,8 +1,9 @@
 // Copyright 2020 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
-use crate::tss2_esys::TPMS_PCR_SELECT;
+use crate::tss2_esys::{TPM2_PCR_SELECT_MAX, TPMS_PCR_SELECT};
 use crate::{Error, Result, WrapperErrorKind};
 use enumflags2::BitFlags;
+use enumflags2::_internal::RawBitFlags;
 use log::error;
 use num_derive::{FromPrimitive, ToPrimitive};
 use num_traits::{FromPrimitive, ToPrimitive};
@@ -47,6 +48,56 @@ pub enum PcrSlot {
     Slot23 = 0x0080_0000,
 }
 
+impl From<PcrSlot> for u32 {
+    fn from(pcr_slot: PcrSlot) -> u32 {
+        pcr_slot.bits()
+    }
+}
+
+impl TryFrom<u32> for PcrSlot {
+    type Error = Error;
+
+    fn try_from(pcr_slot: u32) -> Result<PcrSlot> {
+        BitFlags::<PcrSlot>::try_from(pcr_slot)
+            .map_err(|e| {
+                error!("Failed to convert tss pcr slot data to PcrSlot: {:?}", e);
+                Error::local_error(WrapperErrorKind::InvalidParam)
+            })
+            .and_then(|bit_flags| {
+                let mut pcr_slots_iter = bit_flags.iter();
+
+                pcr_slots_iter
+                    .next()
+                    .ok_or_else(|| {
+                        error!("No valid bit was set in the PcrSlot data");
+                        Error::local_error(WrapperErrorKind::InvalidParam)
+                    })
+                    .and_then(|pcr_slot| {
+                        if pcr_slots_iter.next().is_none() {
+                            Ok(pcr_slot)
+                        } else {
+                            error!("tss pcr slot data contained more then one value");
+                            Err(Error::local_error(WrapperErrorKind::InvalidParam))
+                        }
+                    })
+            })
+    }
+}
+
+impl From<PcrSlot> for [u8; TPM2_PCR_SELECT_MAX as usize] {
+    fn from(pcr_slot: PcrSlot) -> [u8; TPM2_PCR_SELECT_MAX as usize] {
+        u32::from(pcr_slot).to_le_bytes()
+    }
+}
+
+impl TryFrom<[u8; TPM2_PCR_SELECT_MAX as usize]> for PcrSlot {
+    type Error = Error;
+
+    fn try_from(tss_pcr_slot: [u8; TPM2_PCR_SELECT_MAX as usize]) -> Result<PcrSlot> {
+        PcrSlot::try_from(u32::from_le_bytes(tss_pcr_slot))
+    }
+}
+
 /// Enum with the possible values for sizeofSelect.
 #[derive(FromPrimitive, ToPrimitive, Debug, Copy, Clone, PartialEq, Eq)]
 #[repr(u8)]
@@ -73,11 +124,22 @@ pub struct PcrSelect {
 }
 
 impl PcrSelect {
+    /// Creates a new PcrSelect
     pub fn new(size_of_select: PcrSelectSize, pcr_slots: &[PcrSlot]) -> Self {
         PcrSelect {
             size_of_select,
             selected_pcrs: pcr_slots.iter().cloned().collect(),
         }
+    }
+
+    /// Returns the size of the select.
+    pub fn size_of_select(&self) -> PcrSelectSize {
+        self.size_of_select
+    }
+
+    /// Returns the sekected PCRs in the select.
+    pub fn selected_pcrs(&self) -> Vec<PcrSlot> {
+        self.selected_pcrs.iter().collect()
     }
 }
 
