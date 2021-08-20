@@ -184,7 +184,7 @@ mod test_evict_control {
                                 handle,
                                 Persistent::Persistent(persistent_tpm_handle),
                             )
-                            .expect("Failed to evict persitent handle");
+                            .expect("Failed to evict persistent handle");
                         return;
                     }
 
