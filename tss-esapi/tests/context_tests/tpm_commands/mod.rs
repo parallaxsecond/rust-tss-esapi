@@ -7,6 +7,7 @@ mod authenticated_countdown_timer_tests;
 mod capability_commands_tests;
 mod clocks_and_timers_tests;
 mod command_audit_tests;
+mod context_management_tests;
 mod dictionary_attack_functions_tests;
 mod duplication_commands_tests;
 mod enhanced_authorization_ea_commands_tests;
