@@ -1,7 +1,9 @@
 // Copyright 2021 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
 mod test_ctx_save {
-    use super::*;
+    use crate::common::{create_ctx_with_session, decryption_key_pub, signing_key_pub};
+    use std::convert::TryFrom;
+    use tss_esapi::{interface_types::resource_handles::Hierarchy, structures::Auth};
 
     #[test]
     fn test_ctx_save() {
@@ -61,7 +63,11 @@ mod test_ctx_save {
 }
 
 mod test_ctx_load {
-    use super::*;
+    use crate::common::{create_ctx_with_session, decryption_key_pub, signing_key_pub};
+    use std::convert::TryFrom;
+    use tss_esapi::{
+        handles::KeyHandle, interface_types::resource_handles::Hierarchy, structures::Auth,
+    };
 
     #[test]
     fn test_ctx_load() {
@@ -102,7 +108,9 @@ mod test_ctx_load {
 }
 
 mod test_flush_context {
-    use super::*;
+    use crate::common::{create_ctx_with_session, decryption_key_pub, signing_key_pub};
+    use std::convert::TryFrom;
+    use tss_esapi::{interface_types::resource_handles::Hierarchy, structures::Auth};
 
     #[test]
     fn test_flush_ctx() {
@@ -163,8 +171,19 @@ mod test_flush_context {
 }
 
 mod test_evict_control {
-    use super::*;
-    use tss_esapi::constants::tss::TPM2_PERSISTENT_FIRST;
+    use crate::common::{create_ctx_without_session, decryption_key_pub};
+    use std::convert::TryFrom;
+    use tss_esapi::{
+        constants::{tss::TPM2_PERSISTENT_FIRST, CapabilityType},
+        handles::{ObjectHandle, PersistentTpmHandle, TpmHandle},
+        interface_types::{
+            dynamic_handles::Persistent,
+            resource_handles::{Hierarchy, Provision},
+            session_handles::AuthSession,
+        },
+        structures::{Auth, CapabilityData},
+        tss2_esys::TPM2_HANDLE,
+    };
 
     fn remove_persitent_handle(persistent_tpm_handle: PersistentTpmHandle) {
         let mut context = create_ctx_without_session();
@@ -216,7 +235,7 @@ mod test_evict_control {
         let mut context = create_ctx_without_session();
 
         // Set Password session
-        context.set_sessions((Some(Session::Password), None, None));
+        context.set_sessions((Some(AuthSession::Password), None, None));
 
         // Create primary key handle
         let auth_value_primary = Auth::try_from(vec![1, 2, 3, 4, 5])
