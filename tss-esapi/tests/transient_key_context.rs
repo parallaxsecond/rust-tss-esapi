@@ -5,17 +5,16 @@ use tss_esapi::{
     abstraction::transient::{KeyParams, TransientKeyContextBuilder},
     constants::response_code::Tss2ResponseCodeKind,
     interface_types::{
-        algorithm::{
-            EccSchemeAlgorithm, HashingAlgorithm, RsaDecryptAlgorithm, RsaSchemeAlgorithm,
-        },
+        algorithm::{EccSchemeAlgorithm, HashingAlgorithm, RsaSchemeAlgorithm},
         ecc::EccCurve,
         key_bits::RsaKeyBits,
+        resource_handles::Hierarchy,
     },
     structures::{
-        Auth, Digest, EccScheme, PublicKeyRsa, RsaDecryptionScheme, RsaExponent, RsaScheme,
-        RsaSignature, Signature,
+        Auth, CreateKeyResult, Digest, EccScheme, Public, PublicKeyRsa, RsaExponent, RsaScheme,
+        RsaSignature, Signature, SymmetricDefinitionObject,
     },
-    utils::PublicKey,
+    utils::{create_restricted_decryption_rsa_public, PublicKey},
     Error, TransientKeyContext, WrapperErrorKind as ErrorKind,
 };
 
@@ -93,32 +92,6 @@ fn load_bad_sized_key() {
 }
 
 #[test]
-fn load_bad_sized_keypair() {
-    let mut ctx = create_ctx();
-    assert_eq!(
-        ctx.load_external_rsa(
-            &[0xDE, 0xAD, 0xBE, 0xEF],
-            &[0xCA, 0xFE, 0xBA, 0xBE],
-            RsaExponent::default()
-        )
-        .unwrap_err(),
-        Error::WrapperError(ErrorKind::WrongParamSize)
-    );
-}
-
-#[test]
-fn load_keypair_size_mismatch() {
-    let mut ctx = create_ctx();
-    let private_key: [u8; 1000] = [0; 1000];
-    let public_key: [u8; 2048] = [0; 2048];
-    assert_eq!(
-        ctx.load_external_rsa(&private_key, &public_key, RsaExponent::default())
-            .unwrap_err(),
-        Error::WrapperError(ErrorKind::WrongParamSize)
-    );
-}
-
-#[test]
 fn verify() {
     let pub_key = vec![
         0x96, 0xDC, 0x72, 0x77, 0x49, 0x82, 0xFD, 0x2D, 0x06, 0x65, 0x8C, 0xE5, 0x3A, 0xCD, 0xED,
@@ -162,61 +135,33 @@ fn verify() {
 
     let mut ctx = create_ctx();
     let pub_key = ctx.load_external_rsa_public_key(&pub_key).unwrap();
+    let key_params = KeyParams::Rsa {
+        size: RsaKeyBits::Rsa1024,
+        scheme: RsaScheme::create(RsaSchemeAlgorithm::RsaSsa, Some(HashingAlgorithm::Sha256))
+            .expect("Failed to create RSA scheme"),
+        pub_exponent: RsaExponent::default(),
+    };
     let _ = ctx
-        .verify_signature(pub_key, digest, signature)
+        .verify_signature(pub_key, key_params, digest, signature)
         .expect("the signature should be valid");
-}
-
-#[test]
-fn verify_keypair() {
-    let pub_key = vec![
-        0xCD, 0x1A, 0xBA, 0xE5, 0xD7, 0x34, 0x34, 0x1A, 0xD3, 0x73, 0xBA, 0xE4, 0xF9, 0xEF, 0x46,
-        0xB1, 0xCF, 0x69, 0x9D, 0x40, 0x54, 0xC8, 0x59, 0xB9, 0xC0, 0xF0, 0xC8, 0x11, 0xCA, 0x4D,
-        0x7B, 0x1C, 0xB0, 0x3C, 0x66, 0xEA, 0x65, 0x51, 0x56, 0x63, 0x9B, 0x78, 0xC5, 0xDB, 0x2C,
-        0x2F, 0xEA, 0x42, 0x43, 0x0F, 0x41, 0x7A, 0xB3, 0xD4, 0xAE, 0xE5, 0xF6, 0x3B, 0x88, 0x1D,
-        0xD1, 0x06, 0xA3, 0xC6, 0x01, 0x05, 0xBC, 0x46, 0xBB, 0x18, 0xC7, 0xA7, 0x94, 0xA1, 0x7F,
-        0x50, 0x39, 0x24, 0x05, 0x55, 0x1F, 0x77, 0x28, 0x7E, 0x61, 0xB5, 0xF7, 0x84, 0x35, 0x4C,
-        0xD3, 0x51, 0x02, 0x1E, 0x18, 0x53, 0xB0, 0xCF, 0xD3, 0x47, 0x0D, 0x4C, 0xC9, 0xBD, 0x9E,
-        0x39, 0x83, 0x6B, 0x83, 0xC1, 0xBE, 0x6B, 0xB2, 0x00, 0xFE, 0xF5, 0x67, 0x86, 0x40, 0x6E,
-        0x8C, 0xD4, 0x5F, 0x73, 0xE4, 0xA9, 0xF5, 0x23,
-    ];
-
-    let priv_key = vec![
-        0xF6, 0x94, 0x95, 0x35, 0x2F, 0x2A, 0xB5, 0x8D, 0xB8, 0x9A, 0x0A, 0x6D, 0xDB, 0x06, 0x0C,
-        0xA0, 0xBA, 0xA5, 0xEC, 0x19, 0x0D, 0x1D, 0x61, 0xF0, 0xFA, 0xE3, 0x2C, 0xDF, 0xB7, 0x51,
-        0x6F, 0xC9, 0xE4, 0x96, 0x8B, 0x5C, 0x49, 0x4C, 0x05, 0x7F, 0x35, 0xDF, 0xE6, 0x91, 0x36,
-        0xFE, 0x35, 0x43, 0x4F, 0x0A, 0x3B, 0x89, 0x79, 0x55, 0x13, 0x47, 0xC4, 0x7A, 0x35, 0x7A,
-        0xBA, 0xD0, 0xAD, 0x0B,
-    ];
-
-    let mut ctx = create_ctx();
-    let _key_context = ctx
-        .load_external_rsa(&priv_key, &pub_key, RsaExponent::default())
-        .unwrap();
 }
 
 #[test]
 fn sign_with_bad_auth() {
     let mut ctx = create_ctx();
-    let (key, key_auth) = ctx
-        .create_key(
-            KeyParams::RsaSign {
-                size: RsaKeyBits::Rsa2048,
-                scheme: RsaScheme::create(
-                    RsaSchemeAlgorithm::RsaSsa,
-                    Some(HashingAlgorithm::Sha256),
-                )
-                .expect("Failed to create RSA scheme"),
-                pub_exponent: RsaExponent::default(),
-            },
-            16,
-        )
-        .unwrap();
+    let key_params = KeyParams::Rsa {
+        size: RsaKeyBits::Rsa2048,
+        scheme: RsaScheme::create(RsaSchemeAlgorithm::RsaSsa, Some(HashingAlgorithm::Sha256))
+            .expect("Failed to create RSA scheme"),
+        pub_exponent: RsaExponent::default(),
+    };
+    let (key, key_auth) = ctx.create_key(key_params, 16).unwrap();
     let auth_value = key_auth.unwrap();
     let mut bad_auth_values = auth_value.value().to_vec();
     bad_auth_values[6..10].copy_from_slice(&[0xDE, 0xAD, 0xBE, 0xEF]);
     ctx.sign(
         key,
+        key_params,
         Some(Auth::try_from(bad_auth_values).unwrap()),
         Digest::try_from(HASH.to_vec()).unwrap(),
     )
@@ -226,56 +171,48 @@ fn sign_with_bad_auth() {
 #[test]
 fn sign_with_no_auth() {
     let mut ctx = create_ctx();
-    let (key, _) = ctx
-        .create_key(
-            KeyParams::RsaSign {
-                size: RsaKeyBits::Rsa2048,
-                scheme: RsaScheme::create(
-                    RsaSchemeAlgorithm::RsaSsa,
-                    Some(HashingAlgorithm::Sha256),
-                )
-                .expect("Failed to create RSA scheme"),
-                pub_exponent: RsaExponent::default(),
-            },
-            16,
-        )
-        .unwrap();
-    ctx.sign(key, None, Digest::try_from(HASH.to_vec()).unwrap())
-        .unwrap_err();
+    let key_params = KeyParams::Rsa {
+        size: RsaKeyBits::Rsa2048,
+        scheme: RsaScheme::create(RsaSchemeAlgorithm::RsaSsa, Some(HashingAlgorithm::Sha256))
+            .expect("Failed to create RSA scheme"),
+        pub_exponent: RsaExponent::default(),
+    };
+    let (key, _) = ctx.create_key(key_params, 16).unwrap();
+    ctx.sign(
+        key,
+        key_params,
+        None,
+        Digest::try_from(HASH.to_vec()).unwrap(),
+    )
+    .unwrap_err();
 }
 
 #[test]
 fn encrypt_decrypt() {
     let mut ctx = create_ctx();
-    let (key, auth) = ctx
-        .create_key(
-            KeyParams::RsaEncrypt {
-                size: RsaKeyBits::Rsa2048,
-                pub_exponent: RsaExponent::default(),
-            },
-            16,
-        )
-        .unwrap();
+    let key_params = KeyParams::Rsa {
+        size: RsaKeyBits::Rsa2048,
+        scheme: RsaScheme::create(RsaSchemeAlgorithm::Oaep, Some(HashingAlgorithm::Sha256))
+            .expect("Failed to create RSA scheme"),
+        pub_exponent: RsaExponent::default(),
+    };
+    let (key, auth) = ctx.create_key(key_params, 16).unwrap();
     let dec_key = key.clone();
     let message = vec![0x1, 0x2, 0x3];
-
-    let rsa_oaep_decryption_scheme =
-        RsaDecryptionScheme::create(RsaDecryptAlgorithm::Oaep, Some(HashingAlgorithm::Sha256))
-            .expect("Failed to create rsa oaep decryption schemer");
 
     let ciphertext = ctx
         .rsa_encrypt(
             key,
+            key_params,
             None,
             PublicKeyRsa::try_from(message.clone()).unwrap(),
-            rsa_oaep_decryption_scheme,
             None,
         )
         .unwrap();
     assert_ne!(message, ciphertext.value());
 
     let plaintext = ctx
-        .rsa_decrypt(dec_key, auth, ciphertext, rsa_oaep_decryption_scheme, None)
+        .rsa_decrypt(dec_key, key_params, auth, ciphertext, None)
         .unwrap();
     assert_eq!(message, plaintext.value());
 }
@@ -283,39 +220,35 @@ fn encrypt_decrypt() {
 #[test]
 fn two_signatures_different_digest() {
     let mut ctx = create_ctx();
-    let (key1, auth1) = ctx
-        .create_key(
-            KeyParams::RsaSign {
-                size: RsaKeyBits::Rsa2048,
-                scheme: RsaScheme::create(
-                    RsaSchemeAlgorithm::RsaSsa,
-                    Some(HashingAlgorithm::Sha256),
-                )
-                .expect("Failed to create RSA scheme"),
-                pub_exponent: RsaExponent::default(),
-            },
-            16,
-        )
-        .unwrap();
-    let (key2, auth2) = ctx
-        .create_key(
-            KeyParams::RsaSign {
-                size: RsaKeyBits::Rsa2048,
-                scheme: RsaScheme::create(
-                    RsaSchemeAlgorithm::RsaSsa,
-                    Some(HashingAlgorithm::Sha256),
-                )
-                .expect("Failed to create RSA scheme"),
-                pub_exponent: RsaExponent::default(),
-            },
-            16,
-        )
-        .unwrap();
+    let key_params1 = KeyParams::Rsa {
+        size: RsaKeyBits::Rsa2048,
+        scheme: RsaScheme::create(RsaSchemeAlgorithm::RsaSsa, Some(HashingAlgorithm::Sha256))
+            .expect("Failed to create RSA scheme"),
+        pub_exponent: RsaExponent::default(),
+    };
+    let (key1, auth1) = ctx.create_key(key_params1, 16).unwrap();
+    let key_params2 = KeyParams::Rsa {
+        size: RsaKeyBits::Rsa2048,
+        scheme: RsaScheme::create(RsaSchemeAlgorithm::RsaSsa, Some(HashingAlgorithm::Sha256))
+            .expect("Failed to create RSA scheme"),
+        pub_exponent: RsaExponent::default(),
+    };
+    let (key2, auth2) = ctx.create_key(key_params2, 16).unwrap();
     let signature1 = ctx
-        .sign(key1, auth1, Digest::try_from(HASH.to_vec()).unwrap())
+        .sign(
+            key1,
+            key_params1,
+            auth1,
+            Digest::try_from(HASH.to_vec()).unwrap(),
+        )
         .unwrap();
     let signature2 = ctx
-        .sign(key2, auth2, Digest::try_from(HASH.to_vec()).unwrap())
+        .sign(
+            key2,
+            key_params2,
+            auth2,
+            Digest::try_from(HASH.to_vec()).unwrap(),
+        )
         .unwrap();
 
     if let Signature::RsaSsa(rsa_signature_1) = signature1 {
@@ -335,49 +268,45 @@ fn two_signatures_different_digest() {
 #[test]
 fn verify_wrong_key() {
     let mut ctx = create_ctx();
-    let (key1, auth1) = ctx
-        .create_key(
-            KeyParams::RsaSign {
-                size: RsaKeyBits::Rsa2048,
-                scheme: RsaScheme::create(
-                    RsaSchemeAlgorithm::RsaSsa,
-                    Some(HashingAlgorithm::Sha256),
-                )
-                .expect("Failed to create RSA scheme"),
-                pub_exponent: RsaExponent::default(),
-            },
-            16,
-        )
-        .unwrap();
-    let (key2, _) = ctx
-        .create_key(
-            KeyParams::RsaSign {
-                size: RsaKeyBits::Rsa2048,
-                scheme: RsaScheme::create(
-                    RsaSchemeAlgorithm::RsaSsa,
-                    Some(HashingAlgorithm::Sha256),
-                )
-                .expect("Failed to create RSA scheme"),
-                pub_exponent: RsaExponent::default(),
-            },
-            16,
-        )
-        .unwrap();
+    let key_params1 = KeyParams::Rsa {
+        size: RsaKeyBits::Rsa2048,
+        scheme: RsaScheme::create(RsaSchemeAlgorithm::RsaSsa, Some(HashingAlgorithm::Sha256))
+            .expect("Failed to create RSA scheme"),
+        pub_exponent: RsaExponent::default(),
+    };
+    let (key1, auth1) = ctx.create_key(key_params1, 16).unwrap();
+
+    let key_params2 = KeyParams::Rsa {
+        size: RsaKeyBits::Rsa2048,
+        scheme: RsaScheme::create(RsaSchemeAlgorithm::RsaSsa, Some(HashingAlgorithm::Sha256))
+            .expect("Failed to create RSA scheme"),
+        pub_exponent: RsaExponent::default(),
+    };
+    let (key2, _) = ctx.create_key(key_params2, 16).unwrap();
 
     // Sign with the first key
     let signature = ctx
-        .sign(key1, auth1, Digest::try_from(HASH.to_vec()).unwrap())
+        .sign(
+            key1,
+            key_params1,
+            auth1,
+            Digest::try_from(HASH.to_vec()).unwrap(),
+        )
         .unwrap();
 
     // Import and verify with the second key
-    let pub_key = ctx.read_public_key(key2).unwrap();
-    let pub_key = match pub_key {
+    let pub_key = match key2.public() {
         PublicKey::Rsa(pub_key) => pub_key,
         _ => panic!("Got wrong type of key!"),
     };
-    let pub_key = ctx.load_external_rsa_public_key(&pub_key).unwrap();
+    let pub_key = ctx.load_external_rsa_public_key(pub_key).unwrap();
     if let Error::Tss2Error(error) = ctx
-        .verify_signature(pub_key, Digest::try_from(HASH.to_vec()).unwrap(), signature)
+        .verify_signature(
+            pub_key,
+            key_params2,
+            Digest::try_from(HASH.to_vec()).unwrap(),
+            signature,
+        )
         .unwrap_err()
     {
         assert_eq!(error.kind(), Some(Tss2ResponseCodeKind::Signature));
@@ -388,35 +317,37 @@ fn verify_wrong_key() {
 #[test]
 fn verify_wrong_digest() {
     let mut ctx = create_ctx();
-    let (key, auth) = ctx
-        .create_key(
-            KeyParams::RsaSign {
-                size: RsaKeyBits::Rsa2048,
-                scheme: RsaScheme::create(
-                    RsaSchemeAlgorithm::RsaSsa,
-                    Some(HashingAlgorithm::Sha256),
-                )
-                .expect("Failed to create RSA scheme"),
-                pub_exponent: RsaExponent::default(),
-            },
-            16,
-        )
-        .unwrap();
+    let key_params = KeyParams::Rsa {
+        size: RsaKeyBits::Rsa2048,
+        scheme: RsaScheme::create(RsaSchemeAlgorithm::RsaSsa, Some(HashingAlgorithm::Sha256))
+            .expect("Failed to create RSA scheme"),
+        pub_exponent: RsaExponent::default(),
+    };
+    let (key, auth) = ctx.create_key(key_params, 16).unwrap();
 
     let signature = ctx
-        .sign(key.clone(), auth, Digest::try_from(HASH.to_vec()).unwrap())
+        .sign(
+            key.clone(),
+            key_params,
+            auth,
+            Digest::try_from(HASH.to_vec()).unwrap(),
+        )
         .unwrap();
-    let pub_key = ctx.read_public_key(key).unwrap();
-    let pub_key = match pub_key {
+    let pub_key = match key.public() {
         PublicKey::Rsa(pub_key) => pub_key,
         _ => panic!("Got wrong type of key!"),
     };
-    let pub_key = ctx.load_external_rsa_public_key(&pub_key).unwrap();
+    let pub_key = ctx.load_external_rsa_public_key(pub_key).unwrap();
 
     let mut digest_values = HASH.to_vec();
     digest_values[0..4].copy_from_slice(&[0xDE, 0xAD, 0xBE, 0xEF]);
     if let Error::Tss2Error(error) = ctx
-        .verify_signature(pub_key, Digest::try_from(digest_values).unwrap(), signature)
+        .verify_signature(
+            pub_key,
+            key_params,
+            Digest::try_from(digest_values).unwrap(),
+            signature,
+        )
         .unwrap_err()
     {
         assert_eq!(error.kind(), Some(Tss2ResponseCodeKind::Signature));
@@ -429,31 +360,33 @@ fn verify_wrong_digest() {
 fn full_test() {
     let mut ctx = create_ctx();
     for _ in 0..4 {
-        let (key, auth) = ctx
-            .create_key(
-                KeyParams::RsaSign {
-                    size: RsaKeyBits::Rsa2048,
-                    scheme: RsaScheme::create(
-                        RsaSchemeAlgorithm::RsaSsa,
-                        Some(HashingAlgorithm::Sha256),
-                    )
-                    .expect("Failed to create RSA scheme"),
-                    pub_exponent: RsaExponent::default(),
-                },
-                16,
+        let key_params = KeyParams::Rsa {
+            size: RsaKeyBits::Rsa2048,
+            scheme: RsaScheme::create(RsaSchemeAlgorithm::RsaSsa, Some(HashingAlgorithm::Sha256))
+                .expect("Failed to create RSA scheme"),
+            pub_exponent: RsaExponent::default(),
+        };
+        let (key, auth) = ctx.create_key(key_params, 16).unwrap();
+        let signature = ctx
+            .sign(
+                key.clone(),
+                key_params,
+                auth,
+                Digest::try_from(HASH.to_vec()).unwrap(),
             )
             .unwrap();
-        let signature = ctx
-            .sign(key.clone(), auth, Digest::try_from(HASH.to_vec()).unwrap())
-            .unwrap();
-        let pub_key = ctx.read_public_key(key).unwrap();
-        let pub_key = match pub_key {
+        let pub_key = match key.public() {
             PublicKey::Rsa(pub_key) => pub_key,
             _ => panic!("Got wrong type of key!"),
         };
-        let pub_key = ctx.load_external_rsa_public_key(&pub_key).unwrap();
+        let pub_key = ctx.load_external_rsa_public_key(pub_key).unwrap();
         let _ = ctx
-            .verify_signature(pub_key, Digest::try_from(HASH.to_vec()).unwrap(), signature)
+            .verify_signature(
+                pub_key,
+                key_params,
+                Digest::try_from(HASH.to_vec()).unwrap(),
+                signature,
+            )
             .unwrap();
     }
 }
@@ -499,27 +432,135 @@ fn create_ecc_key_decryption_scheme() {
 #[test]
 fn full_ecc_test() {
     let mut ctx = create_ctx();
+    let key_params = KeyParams::Ecc {
+        curve: EccCurve::NistP256,
+        scheme: EccScheme::create(
+            EccSchemeAlgorithm::EcDsa,
+            Some(HashingAlgorithm::Sha256),
+            None,
+        )
+        .expect("Failed to create ecc scheme"),
+    };
     for _ in 0..4 {
-        let (key, auth) = ctx
-            .create_key(
-                KeyParams::Ecc {
-                    curve: EccCurve::NistP256,
-                    scheme: EccScheme::create(
-                        EccSchemeAlgorithm::EcDsa,
-                        Some(HashingAlgorithm::Sha256),
-                        None,
-                    )
-                    .expect("Failed to create ecc scheme"),
-                },
-                16,
+        let (key, auth) = ctx.create_key(key_params, 16).unwrap();
+        let signature = ctx
+            .sign(
+                key.clone(),
+                key_params,
+                auth,
+                Digest::try_from(HASH.to_vec()).unwrap(),
             )
             .unwrap();
-        let signature = ctx
-            .sign(key.clone(), auth, Digest::try_from(HASH.to_vec()).unwrap())
-            .unwrap();
-        let _pub_key = ctx.read_public_key(key.clone()).unwrap();
         let _ = ctx
-            .verify_signature(key, Digest::try_from(HASH.to_vec()).unwrap(), signature)
+            .verify_signature(
+                key,
+                key_params,
+                Digest::try_from(HASH.to_vec()).unwrap(),
+                signature,
+            )
             .unwrap();
+    }
+}
+
+#[test]
+fn ctx_migration_test() {
+    // Create two key contexts using `Context`, one for an RSA keypair,
+    // one for just the public part of the key
+    let mut basic_ctx = common::create_ctx_with_session();
+    let random_digest = basic_ctx.get_random(16).unwrap();
+    let key_auth = Auth::try_from(random_digest.value().to_vec()).unwrap();
+    let prim_key_handle = basic_ctx
+        .create_primary(
+            Hierarchy::Owner,
+            &create_restricted_decryption_rsa_public(
+                SymmetricDefinitionObject::AES_256_CFB,
+                RsaKeyBits::Rsa2048,
+                RsaExponent::create(0).unwrap(),
+            )
+            .unwrap(),
+            Some(&key_auth),
+            None,
+            None,
+            None,
+        )
+        .unwrap()
+        .key_handle;
+
+    let result = basic_ctx
+        .create(
+            prim_key_handle,
+            &common::signing_key_pub(),
+            Some(&key_auth),
+            None,
+            None,
+            None,
+        )
+        .unwrap();
+
+    let key_handle = basic_ctx
+        .load(
+            prim_key_handle,
+            result.out_private.clone(),
+            &result.out_public,
+        )
+        .unwrap();
+    let key_context = basic_ctx.context_save(key_handle.into()).unwrap();
+
+    let pub_key_handle = basic_ctx
+        .load_external_public(&result.out_public, Hierarchy::Owner)
+        .unwrap();
+    let pub_key_context = basic_ctx.context_save(pub_key_handle.into()).unwrap();
+
+    // Drop the `Context` to free the comms channel to the TPM
+    std::mem::drop(basic_ctx);
+
+    // Migrate the keys and attempt to use them
+    let mut ctx = create_ctx();
+    let key = ctx
+        .migrate_key_from_ctx(key_context, Some(key_auth.clone()))
+        .unwrap();
+    let pub_key = ctx
+        .migrate_key_from_ctx(pub_key_context, Some(key_auth.clone()))
+        .unwrap();
+
+    let key_params = KeyParams::Rsa {
+        scheme: RsaScheme::create(RsaSchemeAlgorithm::RsaSsa, Some(HashingAlgorithm::Sha256))
+            .expect("Failed to create RSA scheme"),
+        size: RsaKeyBits::Rsa2048,
+        pub_exponent: RsaExponent::default(),
+    };
+    let signature = ctx
+        .sign(
+            key.clone(),
+            key_params,
+            Some(key_auth),
+            Digest::try_from(HASH.to_vec()).unwrap(),
+        )
+        .unwrap();
+    let _ = ctx
+        .verify_signature(
+            pub_key.clone(),
+            key_params,
+            Digest::try_from(HASH.to_vec()).unwrap(),
+            signature,
+        )
+        .expect("the signature should be valid");
+
+    // Check that the public key is identical across the migration
+    if let CreateKeyResult {
+        out_public: Public::Rsa { unique, .. },
+        ..
+    } = result
+    {
+        assert_eq!(
+            PublicKey::Rsa(unique.value().to_vec()),
+            pub_key.public().clone()
+        );
+        assert_eq!(
+            PublicKey::Rsa(unique.value().to_vec()),
+            key.public().clone()
+        );
+    } else {
+        panic!("Got wrong type of key from TPM");
     }
 }

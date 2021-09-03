@@ -106,7 +106,8 @@ pub mod sensitive_data {
 }
 
 pub mod private {
-    buffer_type!(Private, 256, TPM2B_PRIVATE);
+    use tss_esapi_sys::_PRIVATE;
+    buffer_type!(Private, ::std::mem::size_of::<_PRIVATE>(), TPM2B_PRIVATE);
 }
 
 pub mod encrypted_secret {
