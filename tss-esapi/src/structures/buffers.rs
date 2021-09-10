@@ -91,6 +91,8 @@ macro_rules! buffer_type {
     };
 }
 
+pub mod public;
+
 pub mod auth {
     buffer_type!(Auth, 64, TPM2B_AUTH);
 }
@@ -199,7 +201,79 @@ pub mod nonce {
 }
 
 pub mod public_key_rsa {
-    buffer_type!(PublicKeyRSA, 512, TPM2B_PUBLIC_KEY_RSA);
+    use crate::{interface_types::key_bits::RsaKeyBits, tss2_esys::TPM2_MAX_RSA_KEY_BYTES};
+    buffer_type!(
+        PublicKeyRsa,
+        TPM2_MAX_RSA_KEY_BYTES as usize,
+        TPM2B_PUBLIC_KEY_RSA
+    );
+
+    impl PublicKeyRsa {
+        pub fn new_empty_with_size(rsa_key_bits: RsaKeyBits) -> Self {
+            match rsa_key_bits {
+                RsaKeyBits::Rsa1024 => PublicKeyRsa(vec![0u8; 128].into()),
+                RsaKeyBits::Rsa2048 => PublicKeyRsa(vec![0u8; 256].into()),
+                RsaKeyBits::Rsa3072 => PublicKeyRsa(vec![0u8; 384].into()),
+                RsaKeyBits::Rsa4096 => PublicKeyRsa(vec![0u8; 512].into()),
+            }
+        }
+    }
+
+    impl TryFrom<PublicKeyRsa> for [u8; 128] {
+        type Error = Error;
+
+        fn try_from(public_key_rsa: PublicKeyRsa) -> Result<Self> {
+            if public_key_rsa.value().len() > 128 {
+                return Err(Error::local_error(WrapperErrorKind::WrongParamSize));
+            }
+
+            let mut value = [0u8; 128];
+            value.copy_from_slice(public_key_rsa.value());
+            Ok(value)
+        }
+    }
+
+    impl TryFrom<PublicKeyRsa> for [u8; 256] {
+        type Error = Error;
+
+        fn try_from(public_key_rsa: PublicKeyRsa) -> Result<Self> {
+            if public_key_rsa.value().len() > 256 {
+                return Err(Error::local_error(WrapperErrorKind::WrongParamSize));
+            }
+
+            let mut value = [0u8; 256];
+            value.copy_from_slice(public_key_rsa.value());
+            Ok(value)
+        }
+    }
+
+    impl TryFrom<PublicKeyRsa> for [u8; 384] {
+        type Error = Error;
+
+        fn try_from(public_key_rsa: PublicKeyRsa) -> Result<Self> {
+            if public_key_rsa.value().len() > 384 {
+                return Err(Error::local_error(WrapperErrorKind::WrongParamSize));
+            }
+
+            let mut value = [0u8; 384];
+            value.copy_from_slice(public_key_rsa.value());
+            Ok(value)
+        }
+    }
+
+    impl TryFrom<PublicKeyRsa> for [u8; 512] {
+        type Error = Error;
+
+        fn try_from(public_key_rsa: PublicKeyRsa) -> Result<Self> {
+            if public_key_rsa.value().len() > 512 {
+                return Err(Error::local_error(WrapperErrorKind::WrongParamSize));
+            }
+
+            let mut value = [0u8; 512];
+            value.copy_from_slice(public_key_rsa.value());
+            Ok(value)
+        }
+    }
 }
 
 pub mod timeout {
@@ -211,5 +285,13 @@ pub mod initial_value {
         InitialValue,
         crate::tss2_esys::TPM2_MAX_SYM_BLOCK_SIZE as usize,
         TPM2B_IV
+    );
+}
+
+pub mod ecc_parameter {
+    buffer_type!(
+        EccParameter,
+        crate::tss2_esys::TPM2_MAX_ECC_KEY_BYTES as usize,
+        TPM2B_ECC_PARAMETER
     );
 }

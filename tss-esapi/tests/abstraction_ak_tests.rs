@@ -9,7 +9,7 @@ use tss_esapi::{
     constants::SessionType,
     handles::AuthHandle,
     interface_types::{
-        algorithm::{AsymmetricAlgorithm, HashingAlgorithm, SignatureScheme},
+        algorithm::{AsymmetricAlgorithm, HashingAlgorithm, SignatureSchemeAlgorithm},
         session_handles::PolicySession,
     },
     structures::{Auth, Digest, SymmetricDefinition},
@@ -27,7 +27,7 @@ fn test_create_ak_rsa_rsa() {
         &mut context,
         ek_rsa,
         HashingAlgorithm::Sha256,
-        SignatureScheme::RsaPss,
+        SignatureSchemeAlgorithm::RsaPss,
         None,
         None,
     )
@@ -43,7 +43,7 @@ fn test_create_ak_rsa_ecc() {
         &mut context,
         ek_rsa,
         HashingAlgorithm::Sha256,
-        SignatureScheme::Sm2,
+        SignatureSchemeAlgorithm::Sm2,
         None,
         None,
     )
@@ -64,7 +64,7 @@ fn test_create_and_use_ak() {
         &mut context,
         ek_rsa,
         HashingAlgorithm::Sha256,
-        SignatureScheme::RsaPss,
+        SignatureSchemeAlgorithm::RsaPss,
         Some(&ak_auth),
         None,
     )
@@ -162,16 +162,15 @@ fn test_create_custom_ak() {
         &mut context,
         ek_rsa,
         HashingAlgorithm::Sha256,
-        SignatureScheme::RsaPss,
+        SignatureSchemeAlgorithm::RsaPss,
         Some(&ak_auth),
         None,
     )
     .unwrap();
 
-    assert_eq!(
-        att_key_without.out_public.publicArea.objectAttributes
-            & tss_esapi::constants::tss::TPMA_OBJECT_STCLEAR,
-        0
+    assert!(
+        !att_key_without.out_public.object_attributes().st_clear(),
+        "ST Clear was set"
     );
 
     // With a customization, we get a new attribute
@@ -179,20 +178,19 @@ fn test_create_custom_ak() {
         &mut context,
         ek_rsa,
         HashingAlgorithm::Sha256,
-        SignatureScheme::RsaPss,
+        SignatureSchemeAlgorithm::RsaPss,
         Some(&ak_auth),
         &StClearKeys,
     )
     .unwrap();
 
     assert_eq!(
-        att_key.out_public.publicArea.objectAttributes
-            & tss_esapi::constants::tss::TPMA_OBJECT_STCLEAR,
+        att_key.out_public.object_attributes().0 & tss_esapi::constants::tss::TPMA_OBJECT_STCLEAR,
         tss_esapi::constants::tss::TPMA_OBJECT_STCLEAR
     );
     assert_eq!(
-        att_key.out_public.publicArea.objectAttributes,
-        att_key_without.out_public.publicArea.objectAttributes
+        att_key.out_public.object_attributes().0,
+        att_key_without.out_public.object_attributes().0
             | tss_esapi::constants::tss::TPMA_OBJECT_STCLEAR
     );
 }

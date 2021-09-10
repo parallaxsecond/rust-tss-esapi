@@ -2,16 +2,20 @@
 // SPDX-License-Identifier: Apache-2.0
 mod test_encrypt_decrypt_2 {
     use crate::common::create_ctx_without_session;
-    use std::convert::TryFrom;
+    use std::convert::{TryFrom, TryInto};
     use tss_esapi::{
         abstraction::cipher::Cipher,
         attributes::ObjectAttributesBuilder,
-        constants::AlgorithmIdentifier,
         interface_types::{
-            algorithm::SymmetricMode, resource_handles::Hierarchy, session_handles::AuthSession,
+            algorithm::{HashingAlgorithm, PublicAlgorithm, SymmetricMode},
+            key_bits::RsaKeyBits,
+            resource_handles::Hierarchy,
+            session_handles::AuthSession,
         },
-        structures::{Auth, InitialValue, MaxBuffer, SensitiveData},
-        utils::{PublicParmsUnion, Tpm2BPublicBuilder},
+        structures::{
+            Auth, InitialValue, MaxBuffer, PublicBuilder, RsaExponent, SensitiveData,
+            SymmetricCipherParameters,
+        },
     };
     #[test]
     fn test_encrypt_decrypt_with_aes_128_cfb_symmetric_key() {
@@ -34,9 +38,11 @@ mod test_encrypt_decrypt_2 {
             ctx.create_primary(
                 Hierarchy::Owner,
                 &tss_esapi::utils::create_restricted_decryption_rsa_public(
-                    Cipher::aes_128_cfb(),
-                    2048,
-                    0,
+                    Cipher::aes_128_cfb()
+                        .try_into()
+                        .expect("Failed to convert from Cipher"),
+                    RsaKeyBits::Rsa2048,
+                    RsaExponent::default(),
                 )
                 .expect("Failed to create public for primary key"),
                 Some(&primary_key_auth),
@@ -59,11 +65,16 @@ mod test_encrypt_decrypt_2 {
             .build()
             .expect("Failed to create object attributes for symmetric key");
 
-        let symmetric_key_public = Tpm2BPublicBuilder::new()
-            .with_type(AlgorithmIdentifier::SymCipher.into()) // This is a flaw in the builder. Should not have to use raw types.
-            .with_name_alg(AlgorithmIdentifier::Sha256.into()) // This is a flaw in the builder. Should not have to use raw types.
+        let symmetric_key_public = PublicBuilder::new()
+            .with_public_algorithm(PublicAlgorithm::SymCipher)
+            .with_name_hashing_algorithm(HashingAlgorithm::Sha256)
             .with_object_attributes(symmetric_key_object_attributes)
-            .with_parms(PublicParmsUnion::SymDetail(Cipher::aes_128_cfb()))
+            .with_symmetric_cipher_parameters(SymmetricCipherParameters::new(
+                Cipher::aes_128_cfb()
+                    .try_into()
+                    .expect("Failed to create symmteric cipher parameters from cipher"),
+            ))
+            .with_symmetric_cipher_unique_identifier(&Default::default())
             .build()
             .expect("Failed to create public for symmetric key public");
 
@@ -100,7 +111,7 @@ mod test_encrypt_decrypt_2 {
                 ctx.load(
                     primary_key_handle,
                     symmetric_key_creation_data.out_private,
-                    symmetric_key_creation_data.out_public,
+                    &symmetric_key_creation_data.out_public,
                 )
                 .expect("Failed to load symmetric key")
             });
@@ -183,10 +194,11 @@ mod test_hmac {
     use std::convert::TryFrom;
     use tss_esapi::{
         attributes::ObjectAttributesBuilder,
-        constants::tss::{TPM2_ALG_KEYEDHASH, TPM2_ALG_SHA256},
-        interface_types::{algorithm::HashingAlgorithm, resource_handles::Hierarchy},
-        structures::{KeyedHashParameters, KeyedHashScheme, MaxBuffer},
-        utils::{PublicParmsUnion, Tpm2BPublicBuilder},
+        interface_types::{
+            algorithm::{HashingAlgorithm, PublicAlgorithm},
+            resource_handles::Hierarchy,
+        },
+        structures::{KeyedHashScheme, MaxBuffer, PublicBuilder, PublicKeyedHashParameters},
     };
 
     #[test]
@@ -200,15 +212,16 @@ mod test_hmac {
             .build()
             .expect("Failed to build object attributes");
 
-        let key_pub = Tpm2BPublicBuilder::new()
-            .with_type(TPM2_ALG_KEYEDHASH)
-            .with_name_alg(TPM2_ALG_SHA256)
-            .with_parms(PublicParmsUnion::KeyedHashDetail(KeyedHashParameters::new(
-                KeyedHashScheme::HMAC_SHA_256,
-            )))
+        let key_pub = PublicBuilder::new()
+            .with_public_algorithm(PublicAlgorithm::KeyedHash)
+            .with_name_hashing_algorithm(HashingAlgorithm::Sha256)
             .with_object_attributes(object_attributes)
+            .with_keyed_hash_parameters(PublicKeyedHashParameters::new(
+                KeyedHashScheme::HMAC_SHA_256,
+            ))
+            .with_keyed_hash_unique_identifier(&Default::default())
             .build()
-            .unwrap();
+            .expect("Failed to build public strucuture for key.");
 
         let key = context
             .create_primary(Hierarchy::Owner, &key_pub, None, None, None, None)

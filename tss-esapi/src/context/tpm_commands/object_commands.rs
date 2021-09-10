@@ -6,7 +6,7 @@ use crate::{
     interface_types::resource_handles::Hierarchy,
     structures::{
         Auth, CreateKeyResult, CreationData, CreationTicket, Data, Digest, EncryptedSecret,
-        IDObject, Name, PcrSelectionList, Private, SensitiveData,
+        IDObject, Name, PcrSelectionList, Private, Public, SensitiveData,
     },
     tss2_esys::*,
     Context, Error, Result,
@@ -40,7 +40,7 @@ impl Context {
     pub fn create(
         &mut self,
         parent_handle: KeyHandle,
-        public: &TPM2B_PUBLIC,
+        public: &Public,
         auth_value: Option<&Auth>,
         sensitive_data: Option<&SensitiveData>,
         outside_info: Option<&Data>,
@@ -57,11 +57,11 @@ impl Context {
         };
         let creation_pcrs = PcrSelectionList::list_from_option(creation_pcrs);
 
-        let mut outpublic = null_mut();
-        let mut outprivate = null_mut();
-        let mut creation_data = null_mut();
-        let mut creation_hash = null_mut();
-        let mut creation_ticket = null_mut();
+        let mut out_public_ptr = null_mut();
+        let mut out_private_ptr = null_mut();
+        let mut creation_data_ptr = null_mut();
+        let mut creation_hash_ptr = null_mut();
+        let mut creation_ticket_ptr = null_mut();
 
         let ret = unsafe {
             Esys_Create(
@@ -71,35 +71,30 @@ impl Context {
                 self.optional_session_2(),
                 self.optional_session_3(),
                 &sensitive_create,
-                public,
+                &public.clone().into(),
                 &outside_info.cloned().unwrap_or_default().into(),
                 &creation_pcrs.into(),
-                &mut outprivate,
-                &mut outpublic,
-                &mut creation_data,
-                &mut creation_hash,
-                &mut creation_ticket,
+                &mut out_private_ptr,
+                &mut out_public_ptr,
+                &mut creation_data_ptr,
+                &mut creation_hash_ptr,
+                &mut creation_ticket_ptr,
             )
         };
         let ret = Error::from_tss_rc(ret);
 
         if ret.is_success() {
-            let outprivate = unsafe { MBox::from_raw(outprivate) };
-            let outprivate = Private::try_from(*outprivate)?;
-            let outpublic = unsafe { MBox::from_raw(outpublic) };
-            let creation_data = unsafe { MBox::from_raw(creation_data) };
-            let creation_hash = unsafe { MBox::from_raw(creation_hash) };
-            let creation_ticket = unsafe { MBox::from_raw(creation_ticket) };
-
-            let creation_data = CreationData::try_from(*creation_data)?;
-            let creation_hash = Digest::try_from(*creation_hash)?;
-            let creation_ticket = CreationTicket::try_from(*creation_ticket)?;
+            let out_private_owned = unsafe { MBox::from_raw(out_private_ptr) };
+            let out_public_owned = unsafe { MBox::from_raw(out_public_ptr) };
+            let creation_data_owned = unsafe { MBox::from_raw(creation_data_ptr) };
+            let creation_hash_owned = unsafe { MBox::from_raw(creation_hash_ptr) };
+            let creation_ticket_owned = unsafe { MBox::from_raw(creation_ticket_ptr) };
             Ok(CreateKeyResult {
-                out_private: outprivate,
-                out_public: *outpublic,
-                creation_data,
-                creation_hash,
-                creation_ticket,
+                out_private: Private::try_from(*out_private_owned)?,
+                out_public: Public::try_from(*out_public_owned)?,
+                creation_data: CreationData::try_from(*creation_data_owned)?,
+                creation_hash: Digest::try_from(*creation_hash_owned)?,
+                creation_ticket: CreationTicket::try_from(*creation_ticket_owned)?,
             })
         } else {
             error!("Error in creating derived key: {}", ret);
@@ -112,7 +107,7 @@ impl Context {
         &mut self,
         parent_handle: KeyHandle,
         private: Private,
-        public: TPM2B_PUBLIC,
+        public: &Public,
     ) -> Result<KeyHandle> {
         let mut esys_key_handle = ESYS_TR_NONE;
         let ret = unsafe {
@@ -123,7 +118,7 @@ impl Context {
                 self.optional_session_2(),
                 self.optional_session_3(),
                 &private.into(),
-                &public,
+                &public.clone().into(),
                 &mut esys_key_handle,
             )
         };
@@ -143,7 +138,7 @@ impl Context {
     pub fn load_external(
         &mut self,
         private: &TPM2B_SENSITIVE,
-        public: &TPM2B_PUBLIC,
+        public: &Public,
         hierarchy: Hierarchy,
     ) -> Result<KeyHandle> {
         let mut esys_key_handle = ESYS_TR_NONE;
@@ -154,7 +149,7 @@ impl Context {
                 self.optional_session_2(),
                 self.optional_session_3(),
                 private,
-                public,
+                &public.clone().into(),
                 if cfg!(tpm2_tss_version = "3") {
                     ObjectHandle::from(hierarchy).into()
                 } else {
@@ -180,7 +175,7 @@ impl Context {
     /// Load the public part of an external key and return its new handle.
     pub fn load_external_public(
         &mut self,
-        public: &TPM2B_PUBLIC,
+        public: &Public,
         hierarchy: Hierarchy,
     ) -> Result<KeyHandle> {
         let mut esys_key_handle = ESYS_TR_NONE;
@@ -191,7 +186,7 @@ impl Context {
                 self.optional_session_2(),
                 self.optional_session_3(),
                 null(),
-                public,
+                &public.clone().into(),
                 if cfg!(tpm2_tss_version = "3") {
                     ObjectHandle::from(hierarchy).into()
                 } else {
@@ -215,10 +210,10 @@ impl Context {
     }
 
     /// Read the public part of a key currently in the TPM and return it.
-    pub fn read_public(&mut self, key_handle: KeyHandle) -> Result<(TPM2B_PUBLIC, Name, Name)> {
-        let mut public = null_mut();
-        let mut name = null_mut();
-        let mut qualified_name = null_mut();
+    pub fn read_public(&mut self, key_handle: KeyHandle) -> Result<(Public, Name, Name)> {
+        let mut out_public_ptr = null_mut();
+        let mut out_name_ptr = null_mut();
+        let mut out_qualified_name_ptr = null_mut();
         let ret = unsafe {
             Esys_ReadPublic(
                 self.mut_context(),
@@ -226,22 +221,23 @@ impl Context {
                 self.optional_session_1(),
                 self.optional_session_2(),
                 self.optional_session_3(),
-                &mut public,
-                &mut name,
-                &mut qualified_name,
+                &mut out_public_ptr,
+                &mut out_name_ptr,
+                &mut out_qualified_name_ptr,
             )
         };
         let ret = Error::from_tss_rc(ret);
 
         if ret.is_success() {
-            let name = unsafe { MBox::from_raw(name) };
-            let qualified_name = unsafe { MBox::from_raw(qualified_name) };
-            let public = unsafe { MBox::<TPM2B_PUBLIC>::from_raw(public) };
+            let out_name_owned = unsafe { MBox::from_raw(out_name_ptr) };
+            let out_qualified_name_owned = unsafe { MBox::from_raw(out_qualified_name_ptr) };
+            let out_public_owned = unsafe { MBox::<TPM2B_PUBLIC>::from_raw(out_public_ptr) };
 
-            let name = Name::try_from(*name)?;
-            let qualified_name = Name::try_from(*qualified_name)?;
-
-            Ok((*public, name, qualified_name))
+            Ok((
+                Public::try_from(*out_public_owned)?,
+                Name::try_from(*out_name_owned)?,
+                Name::try_from(*out_qualified_name_owned)?,
+            ))
         } else {
             error!("Error in reading public part of object: {}", ret);
             Err(ret)
@@ -256,7 +252,7 @@ impl Context {
         credential_blob: IDObject,
         secret: EncryptedSecret,
     ) -> Result<Digest> {
-        let mut out_cert_info = null_mut();
+        let mut out_cert_info_ptr = null_mut();
         let ret = unsafe {
             Esys_ActivateCredential(
                 self.mut_context(),
@@ -267,16 +263,16 @@ impl Context {
                 self.optional_session_3(),
                 &credential_blob.into(),
                 &secret.into(),
-                &mut out_cert_info,
+                &mut out_cert_info_ptr,
             )
         };
 
         let ret = Error::from_tss_rc(ret);
 
         if ret.is_success() {
-            let out_cert_info = unsafe { MBox::<TPM2B_DIGEST>::from_raw(out_cert_info) };
+            let out_cert_info_owned = unsafe { MBox::<TPM2B_DIGEST>::from_raw(out_cert_info_ptr) };
 
-            Ok(Digest::try_from(*out_cert_info)?)
+            Ok(Digest::try_from(*out_cert_info_owned)?)
         } else {
             error!("Error when activating credential: {}", ret);
             Err(ret)

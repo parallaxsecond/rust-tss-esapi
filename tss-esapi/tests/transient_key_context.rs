@@ -2,11 +2,20 @@
 // SPDX-License-Identifier: Apache-2.0
 use std::convert::TryFrom;
 use tss_esapi::{
-    abstraction::transient::{KeyParams, RsaExponent, TransientKeyContextBuilder},
+    abstraction::transient::{KeyParams, TransientKeyContextBuilder},
     constants::response_code::Tss2ResponseCodeKind,
-    interface_types::{algorithm::HashingAlgorithm, ecc::EccCurve},
-    structures::{Auth, Digest, PublicKeyRSA},
-    utils::{AsymSchemeUnion, PublicKey, Signature, SignatureData},
+    interface_types::{
+        algorithm::{
+            EccSchemeAlgorithm, HashingAlgorithm, RsaDecryptAlgorithm, RsaSchemeAlgorithm,
+        },
+        ecc::EccCurve,
+        key_bits::RsaKeyBits,
+    },
+    structures::{
+        Auth, Digest, EccScheme, PublicKeyRsa, RsaDecryptionScheme, RsaExponent, RsaScheme,
+        RsaSignature, Signature,
+    },
+    utils::PublicKey,
     Error, TransientKeyContext, WrapperErrorKind as ErrorKind,
 };
 
@@ -33,7 +42,7 @@ fn wrong_key_sizes() {
             .with_root_key_size(1023)
             .build()
             .unwrap_err(),
-        Error::WrapperError(ErrorKind::WrongParamSize)
+        Error::WrapperError(ErrorKind::InvalidParam)
     );
     assert_eq!(
         TransientKeyContextBuilder::new()
@@ -41,7 +50,7 @@ fn wrong_key_sizes() {
             .with_root_key_size(1025)
             .build()
             .unwrap_err(),
-        Error::WrapperError(ErrorKind::WrongParamSize)
+        Error::WrapperError(ErrorKind::InvalidParam)
     );
     assert_eq!(
         TransientKeyContextBuilder::new()
@@ -49,7 +58,7 @@ fn wrong_key_sizes() {
             .with_root_key_size(2047)
             .build()
             .unwrap_err(),
-        Error::WrapperError(ErrorKind::WrongParamSize)
+        Error::WrapperError(ErrorKind::InvalidParam)
     );
     assert_eq!(
         TransientKeyContextBuilder::new()
@@ -57,7 +66,7 @@ fn wrong_key_sizes() {
             .with_root_key_size(2049)
             .build()
             .unwrap_err(),
-        Error::WrapperError(ErrorKind::WrongParamSize)
+        Error::WrapperError(ErrorKind::InvalidParam)
     );
 }
 
@@ -79,7 +88,7 @@ fn load_bad_sized_key() {
     assert_eq!(
         ctx.load_external_rsa_public_key(&[0xDE, 0xAD, 0xBE, 0xEF])
             .unwrap_err(),
-        Error::WrapperError(ErrorKind::WrongParamSize)
+        Error::WrapperError(ErrorKind::InvalidParam)
     );
 }
 
@@ -131,21 +140,25 @@ fn verify() {
     ])
     .unwrap();
 
-    let signature = Signature {
-        scheme: AsymSchemeUnion::RSASSA(HashingAlgorithm::Sha256),
-        signature: SignatureData::RsaSignature(vec![
-            0x8c, 0xf8, 0x87, 0x3a, 0xb2, 0x9a, 0x18, 0xf9, 0xe0, 0x2e, 0xb9, 0x2d, 0xe7, 0xc8,
-            0x32, 0x12, 0xd6, 0xd9, 0x2d, 0x98, 0xec, 0x9e, 0x47, 0xb7, 0x5b, 0x26, 0x86, 0x9d,
-            0xf5, 0xa2, 0x6b, 0x8b, 0x6f, 0x00, 0xd3, 0xbb, 0x68, 0x88, 0xe1, 0xad, 0xcf, 0x1c,
-            0x09, 0x81, 0x91, 0xbf, 0xee, 0xce, 0x4f, 0xb5, 0x83, 0x3c, 0xf5, 0xb0, 0xfa, 0x68,
-            0x69, 0xde, 0x7b, 0xe8, 0x49, 0x69, 0x40, 0xad, 0x90, 0xf1, 0x7f, 0x31, 0xf2, 0x75,
-            0x4e, 0x1c, 0x52, 0x92, 0x72, 0x2e, 0x0b, 0x06, 0xe7, 0x32, 0xb4, 0x5e, 0x82, 0x8b,
-            0x39, 0x72, 0x24, 0x5f, 0xee, 0x17, 0xae, 0x2d, 0x77, 0x53, 0xff, 0x1a, 0xad, 0x12,
-            0x83, 0x4f, 0xb5, 0x52, 0x92, 0x6e, 0xda, 0xb2, 0x55, 0x77, 0xa7, 0x58, 0xcc, 0x10,
-            0xa6, 0x7f, 0xc5, 0x26, 0x4e, 0x5b, 0x75, 0x9d, 0x83, 0x05, 0x9f, 0x99, 0xde, 0xc6,
-            0xf5, 0x12,
-        ]),
-    };
+    let signature = Signature::RsaSsa(
+        RsaSignature::create(
+            HashingAlgorithm::Sha256,
+            PublicKeyRsa::try_from(vec![
+                0x8c, 0xf8, 0x87, 0x3a, 0xb2, 0x9a, 0x18, 0xf9, 0xe0, 0x2e, 0xb9, 0x2d, 0xe7, 0xc8,
+                0x32, 0x12, 0xd6, 0xd9, 0x2d, 0x98, 0xec, 0x9e, 0x47, 0xb7, 0x5b, 0x26, 0x86, 0x9d,
+                0xf5, 0xa2, 0x6b, 0x8b, 0x6f, 0x00, 0xd3, 0xbb, 0x68, 0x88, 0xe1, 0xad, 0xcf, 0x1c,
+                0x09, 0x81, 0x91, 0xbf, 0xee, 0xce, 0x4f, 0xb5, 0x83, 0x3c, 0xf5, 0xb0, 0xfa, 0x68,
+                0x69, 0xde, 0x7b, 0xe8, 0x49, 0x69, 0x40, 0xad, 0x90, 0xf1, 0x7f, 0x31, 0xf2, 0x75,
+                0x4e, 0x1c, 0x52, 0x92, 0x72, 0x2e, 0x0b, 0x06, 0xe7, 0x32, 0xb4, 0x5e, 0x82, 0x8b,
+                0x39, 0x72, 0x24, 0x5f, 0xee, 0x17, 0xae, 0x2d, 0x77, 0x53, 0xff, 0x1a, 0xad, 0x12,
+                0x83, 0x4f, 0xb5, 0x52, 0x92, 0x6e, 0xda, 0xb2, 0x55, 0x77, 0xa7, 0x58, 0xcc, 0x10,
+                0xa6, 0x7f, 0xc5, 0x26, 0x4e, 0x5b, 0x75, 0x9d, 0x83, 0x05, 0x9f, 0x99, 0xde, 0xc6,
+                0xf5, 0x12,
+            ])
+            .expect("Failed to create Public RSA key structure for RSA signature"),
+        )
+        .expect("Failed to create RSA signature"),
+    );
 
     let mut ctx = create_ctx();
     let pub_key = ctx.load_external_rsa_public_key(&pub_key).unwrap();
@@ -188,9 +201,13 @@ fn sign_with_bad_auth() {
     let (key, key_auth) = ctx
         .create_key(
             KeyParams::RsaSign {
-                size: 2048,
-                scheme: AsymSchemeUnion::RSASSA(HashingAlgorithm::Sha256),
-                pub_exponent: 0,
+                size: RsaKeyBits::Rsa2048,
+                scheme: RsaScheme::create(
+                    RsaSchemeAlgorithm::RsaSsa,
+                    Some(HashingAlgorithm::Sha256),
+                )
+                .expect("Failed to create RSA scheme"),
+                pub_exponent: RsaExponent::default(),
             },
             16,
         )
@@ -212,9 +229,13 @@ fn sign_with_no_auth() {
     let (key, _) = ctx
         .create_key(
             KeyParams::RsaSign {
-                size: 2048,
-                scheme: AsymSchemeUnion::RSASSA(HashingAlgorithm::Sha256),
-                pub_exponent: 0,
+                size: RsaKeyBits::Rsa2048,
+                scheme: RsaScheme::create(
+                    RsaSchemeAlgorithm::RsaSsa,
+                    Some(HashingAlgorithm::Sha256),
+                )
+                .expect("Failed to create RSA scheme"),
+                pub_exponent: RsaExponent::default(),
             },
             16,
         )
@@ -229,8 +250,8 @@ fn encrypt_decrypt() {
     let (key, auth) = ctx
         .create_key(
             KeyParams::RsaEncrypt {
-                size: 2048,
-                pub_exponent: 0,
+                size: RsaKeyBits::Rsa2048,
+                pub_exponent: RsaExponent::default(),
             },
             16,
         )
@@ -238,25 +259,23 @@ fn encrypt_decrypt() {
     let dec_key = key.clone();
     let message = vec![0x1, 0x2, 0x3];
 
+    let rsa_oaep_decryption_scheme =
+        RsaDecryptionScheme::create(RsaDecryptAlgorithm::Oaep, Some(HashingAlgorithm::Sha256))
+            .expect("Failed to create rsa oaep decryption schemer");
+
     let ciphertext = ctx
         .rsa_encrypt(
             key,
             None,
-            PublicKeyRSA::try_from(message.clone()).unwrap(),
-            AsymSchemeUnion::RSAOAEP(HashingAlgorithm::Sha256),
+            PublicKeyRsa::try_from(message.clone()).unwrap(),
+            rsa_oaep_decryption_scheme,
             None,
         )
         .unwrap();
     assert_ne!(message, ciphertext.value());
 
     let plaintext = ctx
-        .rsa_decrypt(
-            dec_key,
-            auth,
-            ciphertext,
-            AsymSchemeUnion::RSAOAEP(HashingAlgorithm::Sha256),
-            None,
-        )
+        .rsa_decrypt(dec_key, auth, ciphertext, rsa_oaep_decryption_scheme, None)
         .unwrap();
     assert_eq!(message, plaintext.value());
 }
@@ -267,9 +286,13 @@ fn two_signatures_different_digest() {
     let (key1, auth1) = ctx
         .create_key(
             KeyParams::RsaSign {
-                size: 2048,
-                scheme: AsymSchemeUnion::RSASSA(HashingAlgorithm::Sha256),
-                pub_exponent: 0,
+                size: RsaKeyBits::Rsa2048,
+                scheme: RsaScheme::create(
+                    RsaSchemeAlgorithm::RsaSsa,
+                    Some(HashingAlgorithm::Sha256),
+                )
+                .expect("Failed to create RSA scheme"),
+                pub_exponent: RsaExponent::default(),
             },
             16,
         )
@@ -277,9 +300,13 @@ fn two_signatures_different_digest() {
     let (key2, auth2) = ctx
         .create_key(
             KeyParams::RsaSign {
-                size: 2048,
-                scheme: AsymSchemeUnion::RSASSA(HashingAlgorithm::Sha256),
-                pub_exponent: 0,
+                size: RsaKeyBits::Rsa2048,
+                scheme: RsaScheme::create(
+                    RsaSchemeAlgorithm::RsaSsa,
+                    Some(HashingAlgorithm::Sha256),
+                )
+                .expect("Failed to create RSA scheme"),
+                pub_exponent: RsaExponent::default(),
             },
             16,
         )
@@ -291,7 +318,18 @@ fn two_signatures_different_digest() {
         .sign(key2, auth2, Digest::try_from(HASH.to_vec()).unwrap())
         .unwrap();
 
-    assert!(signature1.signature != signature2.signature);
+    if let Signature::RsaSsa(rsa_signature_1) = signature1 {
+        if let Signature::RsaSsa(rsa_signature_2) = signature2 {
+            assert!(
+                rsa_signature_1.signature().value().to_vec()
+                    != rsa_signature_2.signature().value().to_vec()
+            );
+        } else {
+            panic!("Unexpected signature for signature 2");
+        }
+    } else {
+        panic!("Unexpected singature for signature 1");
+    }
 }
 
 #[test]
@@ -300,9 +338,13 @@ fn verify_wrong_key() {
     let (key1, auth1) = ctx
         .create_key(
             KeyParams::RsaSign {
-                size: 2048,
-                scheme: AsymSchemeUnion::RSASSA(HashingAlgorithm::Sha256),
-                pub_exponent: 0,
+                size: RsaKeyBits::Rsa2048,
+                scheme: RsaScheme::create(
+                    RsaSchemeAlgorithm::RsaSsa,
+                    Some(HashingAlgorithm::Sha256),
+                )
+                .expect("Failed to create RSA scheme"),
+                pub_exponent: RsaExponent::default(),
             },
             16,
         )
@@ -310,9 +352,13 @@ fn verify_wrong_key() {
     let (key2, _) = ctx
         .create_key(
             KeyParams::RsaSign {
-                size: 2048,
-                scheme: AsymSchemeUnion::RSASSA(HashingAlgorithm::Sha256),
-                pub_exponent: 0,
+                size: RsaKeyBits::Rsa2048,
+                scheme: RsaScheme::create(
+                    RsaSchemeAlgorithm::RsaSsa,
+                    Some(HashingAlgorithm::Sha256),
+                )
+                .expect("Failed to create RSA scheme"),
+                pub_exponent: RsaExponent::default(),
             },
             16,
         )
@@ -345,9 +391,13 @@ fn verify_wrong_digest() {
     let (key, auth) = ctx
         .create_key(
             KeyParams::RsaSign {
-                size: 2048,
-                scheme: AsymSchemeUnion::RSASSA(HashingAlgorithm::Sha256),
-                pub_exponent: 0,
+                size: RsaKeyBits::Rsa2048,
+                scheme: RsaScheme::create(
+                    RsaSchemeAlgorithm::RsaSsa,
+                    Some(HashingAlgorithm::Sha256),
+                )
+                .expect("Failed to create RSA scheme"),
+                pub_exponent: RsaExponent::default(),
             },
             16,
         )
@@ -382,9 +432,13 @@ fn full_test() {
         let (key, auth) = ctx
             .create_key(
                 KeyParams::RsaSign {
-                    size: 2048,
-                    scheme: AsymSchemeUnion::RSASSA(HashingAlgorithm::Sha256),
-                    pub_exponent: 0,
+                    size: RsaKeyBits::Rsa2048,
+                    scheme: RsaScheme::create(
+                        RsaSchemeAlgorithm::RsaSsa,
+                        Some(HashingAlgorithm::Sha256),
+                    )
+                    .expect("Failed to create RSA scheme"),
+                    pub_exponent: RsaExponent::default(),
                 },
                 16,
             )
@@ -411,25 +465,16 @@ fn create_ecc_key() {
         .create_key(
             KeyParams::Ecc {
                 curve: EccCurve::NistP256,
-                scheme: AsymSchemeUnion::ECDSA(HashingAlgorithm::Sha256),
+                scheme: EccScheme::create(
+                    EccSchemeAlgorithm::EcDsa,
+                    Some(HashingAlgorithm::Sha256),
+                    None,
+                )
+                .expect("Failed to create ecc scheme"),
             },
             16,
         )
         .unwrap();
-}
-
-#[test]
-fn create_ecc_key_rsa_scheme() {
-    let mut ctx = create_ctx();
-    let _ = ctx
-        .create_key(
-            KeyParams::Ecc {
-                curve: EccCurve::NistP256,
-                scheme: AsymSchemeUnion::RSASSA(HashingAlgorithm::Sha256),
-            },
-            16,
-        )
-        .unwrap_err();
 }
 
 #[test]
@@ -439,7 +484,12 @@ fn create_ecc_key_decryption_scheme() {
         .create_key(
             KeyParams::Ecc {
                 curve: EccCurve::NistP256,
-                scheme: AsymSchemeUnion::ECDH(HashingAlgorithm::Sha256),
+                scheme: EccScheme::create(
+                    EccSchemeAlgorithm::EcDh,
+                    Some(HashingAlgorithm::Sha256),
+                    None,
+                )
+                .expect("Failed to create ecc scheme"),
             },
             16,
         )
@@ -454,7 +504,12 @@ fn full_ecc_test() {
             .create_key(
                 KeyParams::Ecc {
                     curve: EccCurve::NistP256,
-                    scheme: AsymSchemeUnion::ECDSA(HashingAlgorithm::Sha256),
+                    scheme: EccScheme::create(
+                        EccSchemeAlgorithm::EcDsa,
+                        Some(HashingAlgorithm::Sha256),
+                        None,
+                    )
+                    .expect("Failed to create ecc scheme"),
                 },
                 16,
             )

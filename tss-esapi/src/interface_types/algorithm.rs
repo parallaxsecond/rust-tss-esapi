@@ -3,7 +3,8 @@
 use crate::{
     constants::AlgorithmIdentifier,
     tss2_esys::{
-        TPMI_ALG_ASYM, TPMI_ALG_HASH, TPMI_ALG_KDF, TPMI_ALG_KEYEDHASH_SCHEME, TPMI_ALG_SIG_SCHEME,
+        TPMI_ALG_ASYM, TPMI_ALG_ECC_SCHEME, TPMI_ALG_HASH, TPMI_ALG_KDF, TPMI_ALG_KEYEDHASH_SCHEME,
+        TPMI_ALG_PUBLIC, TPMI_ALG_RSA_DECRYPT, TPMI_ALG_RSA_SCHEME, TPMI_ALG_SIG_SCHEME,
         TPMI_ALG_SYM, TPMI_ALG_SYM_MODE, TPMI_ALG_SYM_OBJECT,
     },
     Error, Result, WrapperErrorKind,
@@ -131,7 +132,8 @@ pub enum KeyDerivationFunction {
     Kdf1Sp800_56a,
     Kdf2,
     Kdf1Sp800_108,
-    EcMqv,
+    Mgf1,
+    Null,
 }
 
 impl From<KeyDerivationFunction> for AlgorithmIdentifier {
@@ -140,7 +142,8 @@ impl From<KeyDerivationFunction> for AlgorithmIdentifier {
             KeyDerivationFunction::Kdf1Sp800_56a => AlgorithmIdentifier::Kdf1Sp800_56a,
             KeyDerivationFunction::Kdf2 => AlgorithmIdentifier::Kdf2,
             KeyDerivationFunction::Kdf1Sp800_108 => AlgorithmIdentifier::Kdf1Sp800_108,
-            KeyDerivationFunction::EcMqv => AlgorithmIdentifier::EcMqv,
+            KeyDerivationFunction::Mgf1 => AlgorithmIdentifier::Mgf1,
+            KeyDerivationFunction::Null => AlgorithmIdentifier::Null,
         }
     }
 }
@@ -153,7 +156,8 @@ impl TryFrom<AlgorithmIdentifier> for KeyDerivationFunction {
             AlgorithmIdentifier::Kdf1Sp800_56a => Ok(KeyDerivationFunction::Kdf1Sp800_56a),
             AlgorithmIdentifier::Kdf2 => Ok(KeyDerivationFunction::Kdf2),
             AlgorithmIdentifier::Kdf1Sp800_108 => Ok(KeyDerivationFunction::Kdf1Sp800_108),
-            AlgorithmIdentifier::EcMqv => Ok(KeyDerivationFunction::EcMqv),
+            AlgorithmIdentifier::Mgf1 => Ok(KeyDerivationFunction::Mgf1),
+            AlgorithmIdentifier::Null => Ok(KeyDerivationFunction::Null),
             _ => Err(Error::local_error(WrapperErrorKind::InvalidParam)),
         }
     }
@@ -336,7 +340,7 @@ impl TryFrom<TPMI_ALG_ASYM> for AsymmetricAlgorithm {
 /// # Details
 /// This corresponds to TPMI_ALG_SIG_SCHEME
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
-pub enum SignatureScheme {
+pub enum SignatureSchemeAlgorithm {
     RsaSsa,
     RsaPss,
     EcDsa,
@@ -347,63 +351,63 @@ pub enum SignatureScheme {
     Null,
 }
 
-impl From<SignatureScheme> for AlgorithmIdentifier {
-    fn from(signature_scheme: SignatureScheme) -> Self {
-        match signature_scheme {
-            SignatureScheme::RsaSsa => AlgorithmIdentifier::RsaSsa,
-            SignatureScheme::RsaPss => AlgorithmIdentifier::RsaPss,
-            SignatureScheme::EcDsa => AlgorithmIdentifier::EcDsa,
-            SignatureScheme::EcDaa => AlgorithmIdentifier::EcDaa,
-            SignatureScheme::Sm2 => AlgorithmIdentifier::Sm2,
-            SignatureScheme::EcSchnorr => AlgorithmIdentifier::EcSchnorr,
-            SignatureScheme::Hmac => AlgorithmIdentifier::Hmac,
-            SignatureScheme::Null => AlgorithmIdentifier::Null,
+impl From<SignatureSchemeAlgorithm> for AlgorithmIdentifier {
+    fn from(signature_scheme_algorithm: SignatureSchemeAlgorithm) -> Self {
+        match signature_scheme_algorithm {
+            SignatureSchemeAlgorithm::RsaSsa => AlgorithmIdentifier::RsaSsa,
+            SignatureSchemeAlgorithm::RsaPss => AlgorithmIdentifier::RsaPss,
+            SignatureSchemeAlgorithm::EcDsa => AlgorithmIdentifier::EcDsa,
+            SignatureSchemeAlgorithm::EcDaa => AlgorithmIdentifier::EcDaa,
+            SignatureSchemeAlgorithm::Sm2 => AlgorithmIdentifier::Sm2,
+            SignatureSchemeAlgorithm::EcSchnorr => AlgorithmIdentifier::EcSchnorr,
+            SignatureSchemeAlgorithm::Hmac => AlgorithmIdentifier::Hmac,
+            SignatureSchemeAlgorithm::Null => AlgorithmIdentifier::Null,
         }
     }
 }
 
-impl TryFrom<AlgorithmIdentifier> for SignatureScheme {
+impl TryFrom<AlgorithmIdentifier> for SignatureSchemeAlgorithm {
     type Error = Error;
     fn try_from(algorithm_identifier: AlgorithmIdentifier) -> Result<Self> {
         match algorithm_identifier {
-            AlgorithmIdentifier::RsaSsa => Ok(SignatureScheme::RsaSsa),
-            AlgorithmIdentifier::RsaPss => Ok(SignatureScheme::RsaPss),
-            AlgorithmIdentifier::EcDsa => Ok(SignatureScheme::EcDsa),
-            AlgorithmIdentifier::EcDaa => Ok(SignatureScheme::EcDaa),
-            AlgorithmIdentifier::Sm2 => Ok(SignatureScheme::Sm2),
-            AlgorithmIdentifier::EcSchnorr => Ok(SignatureScheme::EcSchnorr),
-            AlgorithmIdentifier::Hmac => Ok(SignatureScheme::Hmac),
-            AlgorithmIdentifier::Null => Ok(SignatureScheme::Null),
+            AlgorithmIdentifier::RsaSsa => Ok(SignatureSchemeAlgorithm::RsaSsa),
+            AlgorithmIdentifier::RsaPss => Ok(SignatureSchemeAlgorithm::RsaPss),
+            AlgorithmIdentifier::EcDsa => Ok(SignatureSchemeAlgorithm::EcDsa),
+            AlgorithmIdentifier::EcDaa => Ok(SignatureSchemeAlgorithm::EcDaa),
+            AlgorithmIdentifier::Sm2 => Ok(SignatureSchemeAlgorithm::Sm2),
+            AlgorithmIdentifier::EcSchnorr => Ok(SignatureSchemeAlgorithm::EcSchnorr),
+            AlgorithmIdentifier::Hmac => Ok(SignatureSchemeAlgorithm::Hmac),
+            AlgorithmIdentifier::Null => Ok(SignatureSchemeAlgorithm::Null),
             _ => Err(Error::local_error(WrapperErrorKind::InvalidParam)),
         }
     }
 }
 
-impl From<SignatureScheme> for TPMI_ALG_SIG_SCHEME {
-    fn from(signature_scheme: SignatureScheme) -> Self {
-        AlgorithmIdentifier::from(signature_scheme).into()
+impl From<SignatureSchemeAlgorithm> for TPMI_ALG_SIG_SCHEME {
+    fn from(signature_scheme_algorithm: SignatureSchemeAlgorithm) -> Self {
+        AlgorithmIdentifier::from(signature_scheme_algorithm).into()
     }
 }
 
-impl TryFrom<TPMI_ALG_SIG_SCHEME> for SignatureScheme {
+impl TryFrom<TPMI_ALG_SIG_SCHEME> for SignatureSchemeAlgorithm {
     type Error = Error;
     fn try_from(tpmi_alg_sym_scheme: TPMI_ALG_SIG_SCHEME) -> Result<Self> {
-        SignatureScheme::try_from(AlgorithmIdentifier::try_from(tpmi_alg_sym_scheme)?)
+        SignatureSchemeAlgorithm::try_from(AlgorithmIdentifier::try_from(tpmi_alg_sym_scheme)?)
     }
 }
 
 // A convinience conversion into AsymmetricAlgorithm
 // that is associated with the signature scheme.
-impl TryFrom<SignatureScheme> for AsymmetricAlgorithm {
+impl TryFrom<SignatureSchemeAlgorithm> for AsymmetricAlgorithm {
     type Error = Error;
-    fn try_from(signature_scheme: SignatureScheme) -> Result<Self> {
+    fn try_from(signature_scheme: SignatureSchemeAlgorithm) -> Result<Self> {
         match signature_scheme {
-            SignatureScheme::RsaSsa => Ok(AsymmetricAlgorithm::Rsa),
-            SignatureScheme::RsaPss => Ok(AsymmetricAlgorithm::Rsa),
-            SignatureScheme::EcDsa => Ok(AsymmetricAlgorithm::Ecc),
-            SignatureScheme::EcDaa => Ok(AsymmetricAlgorithm::Ecc),
-            SignatureScheme::Sm2 => Ok(AsymmetricAlgorithm::Ecc),
-            SignatureScheme::EcSchnorr => Ok(AsymmetricAlgorithm::Ecc),
+            SignatureSchemeAlgorithm::RsaSsa => Ok(AsymmetricAlgorithm::Rsa),
+            SignatureSchemeAlgorithm::RsaPss => Ok(AsymmetricAlgorithm::Rsa),
+            SignatureSchemeAlgorithm::EcDsa => Ok(AsymmetricAlgorithm::Ecc),
+            SignatureSchemeAlgorithm::EcDaa => Ok(AsymmetricAlgorithm::Ecc),
+            SignatureSchemeAlgorithm::Sm2 => Ok(AsymmetricAlgorithm::Ecc),
+            SignatureSchemeAlgorithm::EcSchnorr => Ok(AsymmetricAlgorithm::Ecc),
             _ => {
                 // HMAC is for symmetric algorithms
                 //
@@ -465,5 +469,217 @@ impl TryFrom<TPMI_ALG_SYM_OBJECT> for SymmetricObject {
 
     fn try_from(tpmi_alg_sym_object: TPMI_ALG_SYM_OBJECT) -> Result<Self> {
         SymmetricObject::try_from(AlgorithmIdentifier::try_from(tpmi_alg_sym_object)?)
+    }
+}
+
+/// Enum repsenting the public interface type
+///
+/// # Details
+/// This corresponds to TPMI_ALG_PUBLIC
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
+pub enum PublicAlgorithm {
+    Rsa,
+    KeyedHash,
+    Ecc,
+    SymCipher,
+}
+
+impl From<PublicAlgorithm> for AlgorithmIdentifier {
+    fn from(public_algorithm: PublicAlgorithm) -> Self {
+        match public_algorithm {
+            PublicAlgorithm::Rsa => AlgorithmIdentifier::Rsa,
+            PublicAlgorithm::KeyedHash => AlgorithmIdentifier::KeyedHash,
+            PublicAlgorithm::Ecc => AlgorithmIdentifier::Ecc,
+            PublicAlgorithm::SymCipher => AlgorithmIdentifier::SymCipher,
+        }
+    }
+}
+
+impl TryFrom<AlgorithmIdentifier> for PublicAlgorithm {
+    type Error = Error;
+    fn try_from(algorithm_identifier: AlgorithmIdentifier) -> Result<Self> {
+        match algorithm_identifier {
+            AlgorithmIdentifier::Rsa => Ok(PublicAlgorithm::Rsa),
+            AlgorithmIdentifier::KeyedHash => Ok(PublicAlgorithm::KeyedHash),
+            AlgorithmIdentifier::Ecc => Ok(PublicAlgorithm::Ecc),
+            AlgorithmIdentifier::SymCipher => Ok(PublicAlgorithm::SymCipher),
+            _ => Err(Error::local_error(WrapperErrorKind::InvalidParam)),
+        }
+    }
+}
+
+impl From<PublicAlgorithm> for TPMI_ALG_PUBLIC {
+    fn from(public_algorithm: PublicAlgorithm) -> Self {
+        AlgorithmIdentifier::from(public_algorithm).into()
+    }
+}
+
+impl TryFrom<TPMI_ALG_PUBLIC> for PublicAlgorithm {
+    type Error = Error;
+
+    fn try_from(tpmi_alg_public: TPMI_ALG_PUBLIC) -> Result<Self> {
+        PublicAlgorithm::try_from(AlgorithmIdentifier::try_from(tpmi_alg_public)?)
+    }
+}
+
+/// Enum repsenting the rsa scheme interface type
+///
+/// # Details
+/// This corresponds to TPMI_ALG_RSA_SCHEME
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
+pub enum RsaSchemeAlgorithm {
+    RsaSsa,
+    RsaEs,
+    RsaPss,
+    Oaep,
+    Null,
+}
+
+impl From<RsaSchemeAlgorithm> for AlgorithmIdentifier {
+    fn from(rsa_scheme_algorithm: RsaSchemeAlgorithm) -> Self {
+        match rsa_scheme_algorithm {
+            RsaSchemeAlgorithm::RsaSsa => AlgorithmIdentifier::RsaSsa,
+            RsaSchemeAlgorithm::RsaEs => AlgorithmIdentifier::RsaEs,
+            RsaSchemeAlgorithm::RsaPss => AlgorithmIdentifier::RsaPss,
+            RsaSchemeAlgorithm::Oaep => AlgorithmIdentifier::Oaep,
+            RsaSchemeAlgorithm::Null => AlgorithmIdentifier::Null,
+        }
+    }
+}
+
+impl TryFrom<AlgorithmIdentifier> for RsaSchemeAlgorithm {
+    type Error = Error;
+
+    fn try_from(algorithm_identifier: AlgorithmIdentifier) -> Result<Self> {
+        match algorithm_identifier {
+            AlgorithmIdentifier::RsaSsa => Ok(RsaSchemeAlgorithm::RsaSsa),
+            AlgorithmIdentifier::RsaEs => Ok(RsaSchemeAlgorithm::RsaEs),
+            AlgorithmIdentifier::RsaPss => Ok(RsaSchemeAlgorithm::RsaPss),
+            AlgorithmIdentifier::Oaep => Ok(RsaSchemeAlgorithm::Oaep),
+            AlgorithmIdentifier::Null => Ok(RsaSchemeAlgorithm::Null),
+            _ => Err(Error::local_error(WrapperErrorKind::InvalidParam)),
+        }
+    }
+}
+
+impl From<RsaSchemeAlgorithm> for TPMI_ALG_RSA_SCHEME {
+    fn from(rsa_scheme_algorithm: RsaSchemeAlgorithm) -> Self {
+        AlgorithmIdentifier::from(rsa_scheme_algorithm).into()
+    }
+}
+
+impl TryFrom<TPMI_ALG_RSA_SCHEME> for RsaSchemeAlgorithm {
+    type Error = Error;
+
+    fn try_from(tpmi_alg_rsa_scheme: TPMI_ALG_RSA_SCHEME) -> Result<Self> {
+        RsaSchemeAlgorithm::try_from(AlgorithmIdentifier::try_from(tpmi_alg_rsa_scheme)?)
+    }
+}
+
+/// Enum repsenting the rsa scheme interface type
+///
+/// # Details
+/// This corresponds to TPMI_ALG_ECC_SCHEME
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
+pub enum EccSchemeAlgorithm {
+    EcDsa,
+    EcDh,
+    EcDaa,
+    Sm2,
+    EcSchnorr,
+    EcMqv,
+    Null,
+}
+
+impl From<EccSchemeAlgorithm> for AlgorithmIdentifier {
+    fn from(ecc_scheme_algorithm: EccSchemeAlgorithm) -> Self {
+        match ecc_scheme_algorithm {
+            EccSchemeAlgorithm::EcDsa => AlgorithmIdentifier::EcDsa,
+            EccSchemeAlgorithm::EcDh => AlgorithmIdentifier::EcDh,
+            EccSchemeAlgorithm::EcDaa => AlgorithmIdentifier::EcDaa,
+            EccSchemeAlgorithm::Sm2 => AlgorithmIdentifier::Sm2,
+            EccSchemeAlgorithm::EcSchnorr => AlgorithmIdentifier::EcSchnorr,
+            EccSchemeAlgorithm::EcMqv => AlgorithmIdentifier::EcMqv,
+            EccSchemeAlgorithm::Null => AlgorithmIdentifier::Null,
+        }
+    }
+}
+
+impl TryFrom<AlgorithmIdentifier> for EccSchemeAlgorithm {
+    type Error = Error;
+
+    fn try_from(algorithm_identifier: AlgorithmIdentifier) -> Result<Self> {
+        match algorithm_identifier {
+            AlgorithmIdentifier::EcDsa => Ok(EccSchemeAlgorithm::EcDsa),
+            AlgorithmIdentifier::EcDh => Ok(EccSchemeAlgorithm::EcDh),
+            AlgorithmIdentifier::EcDaa => Ok(EccSchemeAlgorithm::EcDaa),
+            AlgorithmIdentifier::Sm2 => Ok(EccSchemeAlgorithm::Sm2),
+            AlgorithmIdentifier::EcSchnorr => Ok(EccSchemeAlgorithm::EcSchnorr),
+            AlgorithmIdentifier::EcMqv => Ok(EccSchemeAlgorithm::EcMqv),
+            AlgorithmIdentifier::Null => Ok(EccSchemeAlgorithm::Null),
+            _ => Err(Error::local_error(WrapperErrorKind::InvalidParam)),
+        }
+    }
+}
+
+impl From<EccSchemeAlgorithm> for TPMI_ALG_ECC_SCHEME {
+    fn from(ecc_scheme_algorithm: EccSchemeAlgorithm) -> Self {
+        AlgorithmIdentifier::from(ecc_scheme_algorithm).into()
+    }
+}
+
+impl TryFrom<TPMI_ALG_ECC_SCHEME> for EccSchemeAlgorithm {
+    type Error = Error;
+
+    fn try_from(tpmi_alg_ecc_scheme: TPMI_ALG_ECC_SCHEME) -> Result<Self> {
+        EccSchemeAlgorithm::try_from(AlgorithmIdentifier::try_from(tpmi_alg_ecc_scheme)?)
+    }
+}
+
+/// Enum repsenting the rsa decryption interface type
+///
+/// # Details
+/// This corresponds to TPMI_ALG_RSA_DECRYPT
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
+pub enum RsaDecryptAlgorithm {
+    RsaEs,
+    Oaep,
+    Null,
+}
+
+impl From<RsaDecryptAlgorithm> for AlgorithmIdentifier {
+    fn from(rsa_decrypt_algorithm: RsaDecryptAlgorithm) -> Self {
+        match rsa_decrypt_algorithm {
+            RsaDecryptAlgorithm::RsaEs => AlgorithmIdentifier::RsaEs,
+            RsaDecryptAlgorithm::Oaep => AlgorithmIdentifier::Oaep,
+            RsaDecryptAlgorithm::Null => AlgorithmIdentifier::Null,
+        }
+    }
+}
+
+impl TryFrom<AlgorithmIdentifier> for RsaDecryptAlgorithm {
+    type Error = Error;
+
+    fn try_from(algorithm_identifier: AlgorithmIdentifier) -> Result<Self> {
+        match algorithm_identifier {
+            AlgorithmIdentifier::RsaEs => Ok(RsaDecryptAlgorithm::RsaEs),
+            AlgorithmIdentifier::Oaep => Ok(RsaDecryptAlgorithm::Oaep),
+            AlgorithmIdentifier::Null => Ok(RsaDecryptAlgorithm::Null),
+            _ => Err(Error::local_error(WrapperErrorKind::InvalidParam)),
+        }
+    }
+}
+
+impl From<RsaDecryptAlgorithm> for TPMI_ALG_RSA_DECRYPT {
+    fn from(rsa_decrypt_algorithm: RsaDecryptAlgorithm) -> Self {
+        AlgorithmIdentifier::from(rsa_decrypt_algorithm).into()
+    }
+}
+
+impl TryFrom<TPMI_ALG_RSA_DECRYPT> for RsaDecryptAlgorithm {
+    type Error = Error;
+
+    fn try_from(tpmi_alg_rsa_decrypt: TPMI_ALG_RSA_DECRYPT) -> Result<Self> {
+        RsaDecryptAlgorithm::try_from(AlgorithmIdentifier::try_from(tpmi_alg_rsa_decrypt)?)
     }
 }

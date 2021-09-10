@@ -1,7 +1,7 @@
 // Copyright 2021 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
 use crate::{
-    tss2_esys::{TPM2_KEY_BITS, TPMI_AES_KEY_BITS, TPMI_SM4_KEY_BITS},
+    tss2_esys::{TPM2_KEY_BITS, TPMI_AES_KEY_BITS, TPMI_RSA_KEY_BITS, TPMI_SM4_KEY_BITS},
     Error, Result, WrapperErrorKind,
 };
 use std::convert::TryFrom;
@@ -100,6 +100,43 @@ impl TryFrom<TPM2_KEY_BITS> for CamelliaKeyBits {
             128 => Ok(CamelliaKeyBits::Camellia128),
             192 => Ok(CamelliaKeyBits::Camellia192),
             256 => Ok(CamelliaKeyBits::Camellia256),
+            _ => Err(Error::local_error(WrapperErrorKind::InvalidParam)),
+        }
+    }
+}
+
+/// RSA key bits interface type
+///
+/// # Details
+/// This corresponds to TPMI_RSA_KEY_BITS
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
+pub enum RsaKeyBits {
+    Rsa1024,
+    Rsa2048,
+    Rsa3072,
+    Rsa4096,
+}
+
+impl From<RsaKeyBits> for TPMI_RSA_KEY_BITS {
+    fn from(rsa_key_bits: RsaKeyBits) -> TPMI_RSA_KEY_BITS {
+        match rsa_key_bits {
+            RsaKeyBits::Rsa1024 => 1024,
+            RsaKeyBits::Rsa2048 => 2048,
+            RsaKeyBits::Rsa3072 => 3072,
+            RsaKeyBits::Rsa4096 => 4096,
+        }
+    }
+}
+
+impl TryFrom<TPMI_RSA_KEY_BITS> for RsaKeyBits {
+    type Error = Error;
+
+    fn try_from(tpmi_rsa_key_bits: TPMI_RSA_KEY_BITS) -> Result<RsaKeyBits> {
+        match tpmi_rsa_key_bits {
+            1024 => Ok(RsaKeyBits::Rsa1024),
+            2048 => Ok(RsaKeyBits::Rsa2048),
+            3072 => Ok(RsaKeyBits::Rsa3072),
+            4096 => Ok(RsaKeyBits::Rsa4096),
             _ => Err(Error::local_error(WrapperErrorKind::InvalidParam)),
         }
     }

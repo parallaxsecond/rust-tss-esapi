@@ -4,9 +4,11 @@ mod test_rsa_encrypt_decrypt {
     use crate::common::{create_ctx_with_session, encryption_decryption_key_pub};
     use std::convert::TryFrom;
     use tss_esapi::{
-        interface_types::{algorithm::HashingAlgorithm, resource_handles::Hierarchy},
-        structures::{Auth, Data, PublicKeyRSA},
-        utils::AsymSchemeUnion,
+        interface_types::{
+            algorithm::{HashingAlgorithm, RsaDecryptAlgorithm},
+            resource_handles::Hierarchy,
+        },
+        structures::{Auth, Data, PublicKeyRsa, RsaDecryptionScheme},
     };
 
     #[test]
@@ -27,11 +29,14 @@ mod test_rsa_encrypt_decrypt {
             .unwrap()
             .key_handle;
 
-        let scheme = AsymSchemeUnion::RSAOAEP(HashingAlgorithm::Sha256);
+        // let scheme = AsymSchemeUnion::RSAOAEP(HashingAlgorithm::Sha256);
+        let scheme =
+            RsaDecryptionScheme::create(RsaDecryptAlgorithm::Oaep, Some(HashingAlgorithm::Sha256))
+                .expect("Failed to create rsa decryption scheme");
 
         let plaintext_bytes: Vec<u8> = vec![0x01, 0x02, 0x03];
 
-        let plaintext = PublicKeyRSA::try_from(plaintext_bytes.clone()).unwrap();
+        let plaintext = PublicKeyRsa::try_from(plaintext_bytes.clone()).unwrap();
 
         let ciphertext = context
             .rsa_encrypt(key_handle, plaintext, scheme, Data::default())

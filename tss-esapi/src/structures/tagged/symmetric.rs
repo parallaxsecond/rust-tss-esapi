@@ -154,6 +154,19 @@ pub enum SymmetricDefinitionObject {
     Null,
 }
 
+impl SymmetricDefinitionObject {
+    /// Constant for the AES 128 bits CFB symmetric definition object
+    pub const AES_128_CFB: SymmetricDefinitionObject = SymmetricDefinitionObject::Aes {
+        key_bits: AesKeyBits::Aes128,
+        mode: SymmetricMode::Cfb,
+    };
+    /// Constant for the AES 256 bits CFB symmetric definition object
+    pub const AES_256_CFB: SymmetricDefinitionObject = SymmetricDefinitionObject::Aes {
+        key_bits: AesKeyBits::Aes256,
+        mode: SymmetricMode::Cfb,
+    };
+}
+
 impl From<SymmetricDefinitionObject> for TPMT_SYM_DEF_OBJECT {
     fn from(symmetric_definition_object: SymmetricDefinitionObject) -> TPMT_SYM_DEF_OBJECT {
         match symmetric_definition_object {

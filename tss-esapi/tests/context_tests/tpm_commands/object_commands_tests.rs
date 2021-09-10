@@ -71,30 +71,25 @@ mod test_load {
             .unwrap();
 
         let _ = context
-            .load(prim_key_handle, result.out_private, result.out_public)
+            .load(prim_key_handle, result.out_private, &result.out_public)
             .unwrap();
     }
 }
 
 mod test_load_external_public {
     use crate::common::{create_ctx_with_session, KEY};
+    use std::convert::TryFrom;
     use tss_esapi::{
         attributes::ObjectAttributesBuilder,
-        constants::tss::{TPM2_ALG_RSA, TPM2_ALG_SHA256},
-        interface_types::{algorithm::HashingAlgorithm, resource_handles::Hierarchy},
-        tss2_esys::{TPM2B_PUBLIC, TPM2B_PUBLIC_KEY_RSA},
-        utils::{
-            AsymSchemeUnion, PublicIdUnion, PublicParmsUnion, Tpm2BPublicBuilder,
-            TpmsRsaParmsBuilder,
+        interface_types::{
+            algorithm::{HashingAlgorithm, PublicAlgorithm, RsaSchemeAlgorithm},
+            key_bits::RsaKeyBits,
+            resource_handles::Hierarchy,
         },
+        structures::{Public, PublicBuilder, PublicKeyRsa, PublicRsaParametersBuilder, RsaScheme},
     };
 
-    pub fn get_ext_rsa_pub() -> TPM2B_PUBLIC {
-        let scheme = AsymSchemeUnion::RSASSA(HashingAlgorithm::Sha256);
-        let rsa_parms = TpmsRsaParmsBuilder::new_unrestricted_signing_key(scheme, 2048, 0)
-            .build()
-            .unwrap(); // should not fail as we control the params
-
+    pub fn get_ext_rsa_pub() -> Public {
         let object_attributes = ObjectAttributesBuilder::new()
             .with_user_with_auth(true)
             .with_decrypt(false)
@@ -103,20 +98,26 @@ mod test_load_external_public {
             .build()
             .expect("Failed to build object attributes");
 
-        let pub_buffer = TPM2B_PUBLIC_KEY_RSA {
-            size: 256,
-            buffer: KEY,
-        };
-        let pub_key = PublicIdUnion::Rsa(Box::from(pub_buffer));
-
-        Tpm2BPublicBuilder::new()
-            .with_type(TPM2_ALG_RSA)
-            .with_name_alg(TPM2_ALG_SHA256)
+        PublicBuilder::new()
+            .with_public_algorithm(PublicAlgorithm::Rsa)
+            .with_name_hashing_algorithm(HashingAlgorithm::Sha256)
             .with_object_attributes(object_attributes)
-            .with_parms(PublicParmsUnion::RsaDetail(rsa_parms))
-            .with_unique(pub_key)
+            .with_rsa_parameters(
+                PublicRsaParametersBuilder::new_unrestricted_signing_key(
+                    RsaScheme::create(RsaSchemeAlgorithm::RsaSsa, Some(HashingAlgorithm::Sha256))
+                        .expect("Failed to create rsa scheme"),
+                    RsaKeyBits::Rsa2048,
+                    Default::default(),
+                )
+                .build()
+                .expect("Failed to create rsa parameters for public structure"),
+            )
+            .with_rsa_unique_identifier(
+                &PublicKeyRsa::try_from(&KEY[..256])
+                    .expect("Failed to create Public RSA key from buffer"),
+            )
             .build()
-            .unwrap() // should not fail as we control the params
+            .expect("Failed to build Public structure")
     }
 
     #[test]
@@ -320,7 +321,7 @@ mod test_unseal {
             )
             .unwrap();
         let loaded_key = context
-            .load(key_handle_unseal, result.out_private, result.out_public)
+            .load(key_handle_unseal, result.out_private, &result.out_public)
             .unwrap();
         let unsealed = context.unseal(loaded_key.into()).unwrap();
         let unsealed = unsealed.value();

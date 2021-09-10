@@ -88,7 +88,11 @@ mod test_change_auth {
             )
             .unwrap();
         let loaded_key = context
-            .load(prim_key_handle, keyresult.out_private, keyresult.out_public)
+            .load(
+                prim_key_handle,
+                keyresult.out_private,
+                &keyresult.out_public,
+            )
             .unwrap();
 
         let random_digest = context.get_random(16).unwrap();
@@ -98,7 +102,7 @@ mod test_change_auth {
             .object_change_auth(loaded_key.into(), prim_key_handle.into(), new_key_auth)
             .unwrap();
         context
-            .load(prim_key_handle, new_private, keyresult.out_public)
+            .load(prim_key_handle, new_private, &keyresult.out_public)
             .unwrap();
     }
 

@@ -6,7 +6,7 @@ use crate::{
     interface_types::resource_handles::Hierarchy,
     structures::{
         Auth, CreatePrimaryKeyResult, CreationData, CreationTicket, Data, Digest, PcrSelectionList,
-        SensitiveData,
+        Public, SensitiveData,
     },
     tss2_esys::*,
     Context, Error, Result,
@@ -30,7 +30,7 @@ impl Context {
     pub fn create_primary(
         &mut self,
         primary_handle: Hierarchy,
-        public: &TPM2B_PUBLIC,
+        public: &Public,
         auth_value: Option<&Auth>,
         initial_data: Option<&SensitiveData>,
         outside_info: Option<&Data>,
@@ -47,10 +47,10 @@ impl Context {
         };
         let creation_pcrs = PcrSelectionList::list_from_option(creation_pcrs);
 
-        let mut outpublic = null_mut();
-        let mut creation_data = null_mut();
-        let mut creation_hash = null_mut();
-        let mut creation_ticket = null_mut();
+        let mut out_public_ptr = null_mut();
+        let mut creation_data_ptr = null_mut();
+        let mut creation_hash_ptr = null_mut();
+        let mut creation_ticket_ptr = null_mut();
         let mut esys_prim_key_handle = ESYS_TR_NONE;
 
         let ret = unsafe {
@@ -61,37 +61,33 @@ impl Context {
                 self.optional_session_2(),
                 self.optional_session_3(),
                 &sensitive_create,
-                public,
+                &public.clone().into(),
                 &outside_info.cloned().unwrap_or_default().into(),
                 &creation_pcrs.into(),
                 &mut esys_prim_key_handle,
-                &mut outpublic,
-                &mut creation_data,
-                &mut creation_hash,
-                &mut creation_ticket,
+                &mut out_public_ptr,
+                &mut creation_data_ptr,
+                &mut creation_hash_ptr,
+                &mut creation_ticket_ptr,
             )
         };
         let ret = Error::from_tss_rc(ret);
 
         if ret.is_success() {
-            let out_public = unsafe { MBox::from_raw(outpublic) };
-            let creation_data = unsafe { MBox::from_raw(creation_data) };
-            let creation_hash = unsafe { MBox::from_raw(creation_hash) };
-            let creation_ticket = unsafe { MBox::from_raw(creation_ticket) };
-
-            let creation_data = CreationData::try_from(*creation_data)?;
-            let creation_hash = Digest::try_from(*creation_hash)?;
-            let creation_ticket = CreationTicket::try_from(*creation_ticket)?;
+            let out_public_owned = unsafe { MBox::from_raw(out_public_ptr) };
+            let creation_data_owned = unsafe { MBox::from_raw(creation_data_ptr) };
+            let creation_hash_owned = unsafe { MBox::from_raw(creation_hash_ptr) };
+            let creation_ticket_owned = unsafe { MBox::from_raw(creation_ticket_ptr) };
 
             let primary_key_handle = KeyHandle::from(esys_prim_key_handle);
             self.handle_manager
                 .add_handle(primary_key_handle.into(), HandleDropAction::Flush)?;
             Ok(CreatePrimaryKeyResult {
                 key_handle: primary_key_handle,
-                out_public: *out_public,
-                creation_data,
-                creation_hash,
-                creation_ticket,
+                out_public: Public::try_from(*out_public_owned)?,
+                creation_data: CreationData::try_from(*creation_data_owned)?,
+                creation_hash: Digest::try_from(*creation_hash_owned)?,
+                creation_ticket: CreationTicket::try_from(*creation_ticket_owned)?,
             })
         } else {
             error!("Error in creating primary key: {}", ret);

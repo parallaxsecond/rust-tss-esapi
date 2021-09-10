@@ -4,21 +4,21 @@
 use crate::{
     abstraction::{nv, IntoKeyCustomization, KeyCustomization},
     attributes::ObjectAttributesBuilder,
-    constants::tss::*,
     handles::{KeyHandle, NvIndexTpmHandle, TpmHandle},
     interface_types::{
-        algorithm::AsymmetricAlgorithm,
+        algorithm::{AsymmetricAlgorithm, HashingAlgorithm, PublicAlgorithm},
+        ecc::EccCurve,
+        key_bits::RsaKeyBits,
         resource_handles::{Hierarchy, NvAuth},
     },
-    tss2_esys::{
-        TPM2B_ECC_PARAMETER, TPM2B_PUBLIC, TPM2B_PUBLIC_KEY_RSA, TPMS_ECC_PARMS, TPMS_ECC_POINT,
-        TPMS_RSA_PARMS, TPMS_SCHEME_HASH, TPMT_ECC_SCHEME, TPMT_KDF_SCHEME, TPMT_RSA_SCHEME,
-        TPMT_SYM_DEF_OBJECT, TPMU_ASYM_SCHEME, TPMU_SYM_KEY_BITS, TPMU_SYM_MODE,
+    structures::{
+        Digest, EccParameter, EccPoint, EccScheme, KeyDerivationFunctionScheme, Public,
+        PublicBuilder, PublicEccParametersBuilder, PublicKeyRsa, PublicRsaParametersBuilder,
+        RsaExponent, RsaScheme, SymmetricDefinitionObject,
     },
-    utils::{PublicIdUnion, PublicParmsUnion, Tpm2BPublicBuilder},
     Context, Error, Result, WrapperErrorKind,
 };
-
+use std::convert::TryFrom;
 // Source: TCG EK Credential Profile for TPM Family 2.0; Level 0 Version 2.3 Revision 2
 // Section 2.2.1.4 (Low Range) for Windows compatibility
 const RSA_2048_EK_CERTIFICATE_NV_INDEX: u32 = 0x01c00002;
@@ -29,7 +29,7 @@ const ECC_P256_EK_CERTIFICATE_NV_INDEX: u32 = 0x01c0000a;
 fn create_ek_public_from_default_template<IKC: IntoKeyCustomization>(
     alg: AsymmetricAlgorithm,
     key_customization: IKC,
-) -> Result<TPM2B_PUBLIC> {
+) -> Result<Public> {
     let key_customization = key_customization.into_key_customization();
 
     let obj_attrs_builder = ObjectAttributesBuilder::new()
@@ -63,63 +63,43 @@ fn create_ek_public_from_default_template<IKC: IntoKeyCustomization>(
     ];
 
     let key_builder = match alg {
-        AsymmetricAlgorithm::Rsa => Tpm2BPublicBuilder::new()
-            .with_type(TPM2_ALG_RSA)
-            .with_name_alg(TPM2_ALG_SHA256)
+        AsymmetricAlgorithm::Rsa => PublicBuilder::new()
+            .with_public_algorithm(PublicAlgorithm::Rsa)
+            .with_name_hashing_algorithm(HashingAlgorithm::Sha256)
             .with_object_attributes(obj_attrs)
-            .with_auth_policy(32, authpolicy)
-            .with_parms(PublicParmsUnion::RsaDetail(TPMS_RSA_PARMS {
-                symmetric: TPMT_SYM_DEF_OBJECT {
-                    algorithm: TPM2_ALG_AES,
-                    keyBits: TPMU_SYM_KEY_BITS { aes: 128 },
-                    mode: TPMU_SYM_MODE { aes: TPM2_ALG_CFB },
-                },
-                scheme: TPMT_RSA_SCHEME {
-                    scheme: TPM2_ALG_NULL,
-                    details: Default::default(),
-                },
-                keyBits: 2048,
-                exponent: 0,
-            }))
-            .with_unique(PublicIdUnion::Rsa(Box::new(TPM2B_PUBLIC_KEY_RSA {
-                size: 256,
-                buffer: [0; 512],
-            }))),
-        AsymmetricAlgorithm::Ecc => Tpm2BPublicBuilder::new()
-            .with_type(TPM2_ALG_ECC)
-            .with_name_alg(TPM2_ALG_SHA256)
+            .with_auth_policy(&Digest::try_from(authpolicy[0..32].to_vec())?)
+            .with_rsa_parameters(
+                PublicRsaParametersBuilder::new()
+                    .with_symmetric(SymmetricDefinitionObject::AES_128_CFB)
+                    .with_scheme(RsaScheme::Null)
+                    .with_key_bits(RsaKeyBits::Rsa2048)
+                    .with_exponent(RsaExponent::default())
+                    .with_is_signing_key(obj_attrs.sign_encrypt())
+                    .with_is_decryption_key(obj_attrs.decrypt())
+                    .with_restricted(obj_attrs.decrypt())
+                    .build()?,
+            )
+            .with_rsa_unique_identifier(&PublicKeyRsa::new_empty_with_size(RsaKeyBits::Rsa2048)),
+        AsymmetricAlgorithm::Ecc => PublicBuilder::new()
+            .with_public_algorithm(PublicAlgorithm::Ecc)
+            .with_name_hashing_algorithm(HashingAlgorithm::Sha256)
             .with_object_attributes(obj_attrs)
-            .with_auth_policy(32, authpolicy)
-            .with_parms(PublicParmsUnion::EccDetail(TPMS_ECC_PARMS {
-                symmetric: TPMT_SYM_DEF_OBJECT {
-                    algorithm: TPM2_ALG_AES,
-                    keyBits: TPMU_SYM_KEY_BITS { sym: 128 },
-                    mode: TPMU_SYM_MODE { sym: TPM2_ALG_CFB },
-                },
-                scheme: TPMT_ECC_SCHEME {
-                    scheme: TPM2_ALG_NULL,
-                    details: TPMU_ASYM_SCHEME {
-                        anySig: TPMS_SCHEME_HASH {
-                            hashAlg: TPM2_ALG_NULL,
-                        },
-                    },
-                },
-                curveID: TPM2_ECC_NIST_P256,
-                kdf: TPMT_KDF_SCHEME {
-                    scheme: TPM2_ALG_NULL,
-                    details: Default::default(),
-                },
-            }))
-            .with_unique(PublicIdUnion::Ecc(Box::new(TPMS_ECC_POINT {
-                x: TPM2B_ECC_PARAMETER {
-                    size: 32,
-                    buffer: [0; 128],
-                },
-                y: TPM2B_ECC_PARAMETER {
-                    size: 32,
-                    buffer: [0; 128],
-                },
-            }))),
+            .with_auth_policy(&Digest::try_from(authpolicy[0..32].to_vec())?)
+            .with_ecc_parameters(
+                PublicEccParametersBuilder::new()
+                    .with_symmetric(SymmetricDefinitionObject::AES_128_CFB)
+                    .with_ecc_scheme(EccScheme::Null)
+                    .with_curve(EccCurve::NistP256)
+                    .with_key_derivation_function_scheme(KeyDerivationFunctionScheme::Null)
+                    .with_is_signing_key(obj_attrs.sign_encrypt())
+                    .with_is_decryption_key(obj_attrs.decrypt())
+                    .with_restricted(obj_attrs.decrypt())
+                    .build()?,
+            )
+            .with_ecc_unique_identifier(&EccPoint::new(
+                EccParameter::try_from(vec![0u8; 32])?,
+                EccParameter::try_from(vec![0u8; 32])?,
+            )),
         AsymmetricAlgorithm::Null => {
             // TDOD: Figure out what to with Null.
             return Err(Error::local_error(WrapperErrorKind::UnsupportedParam));

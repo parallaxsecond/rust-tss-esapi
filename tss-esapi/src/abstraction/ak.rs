@@ -4,19 +4,22 @@
 use crate::{
     abstraction::{cipher::Cipher, IntoKeyCustomization, KeyCustomization},
     attributes::{ObjectAttributesBuilder, SessionAttributesBuilder},
-    constants::{tss::*, SessionType},
+    constants::{AlgorithmIdentifier, SessionType},
     handles::{AuthHandle, KeyHandle, SessionHandle},
     interface_types::{
-        algorithm::{AsymmetricAlgorithm, HashingAlgorithm, SignatureScheme},
+        algorithm::{
+            AsymmetricAlgorithm, EccSchemeAlgorithm, HashingAlgorithm, PublicAlgorithm,
+            RsaSchemeAlgorithm, SignatureSchemeAlgorithm,
+        },
+        ecc::EccCurve,
+        key_bits::RsaKeyBits,
         session_handles::PolicySession,
     },
-    structures::{Auth, CreateKeyResult, Private},
-    tss2_esys::{
-        TPM2B_PUBLIC, TPMS_ECC_PARMS, TPMS_RSA_PARMS, TPMS_SCHEME_HASH, TPMT_ECC_SCHEME,
-        TPMT_KDF_SCHEME, TPMT_RSA_SCHEME, TPMT_SYM_DEF_OBJECT, TPMU_ASYM_SCHEME, TPMU_SYM_KEY_BITS,
-        TPMU_SYM_MODE,
+    structures::{
+        Auth, CreateKeyResult, EccScheme, KeyDerivationFunctionScheme, Private, Public,
+        PublicBuilder, PublicEccParametersBuilder, PublicKeyRsa, PublicRsaParametersBuilder,
+        RsaExponent, RsaScheme, SymmetricDefinitionObject,
     },
-    utils::{PublicIdUnion, PublicParmsUnion, Tpm2BPublicBuilder},
     Context, Error, Result, WrapperErrorKind,
 };
 use log::error;
@@ -25,9 +28,9 @@ use std::convert::{TryFrom, TryInto};
 fn create_ak_public<IKC: IntoKeyCustomization>(
     key_alg: AsymmetricAlgorithm,
     hash_alg: HashingAlgorithm,
-    sign_alg: SignatureScheme,
+    sign_alg: SignatureSchemeAlgorithm,
     key_customization: IKC,
-) -> Result<TPM2B_PUBLIC> {
+) -> Result<Public> {
     let key_customization = key_customization.into_key_customization();
 
     let obj_attrs_builder = ObjectAttributesBuilder::new()
@@ -46,67 +49,48 @@ fn create_ak_public<IKC: IntoKeyCustomization>(
     }
     .build()?;
 
-    let key_builder = match key_alg {
-        AsymmetricAlgorithm::Rsa => Tpm2BPublicBuilder::new()
-            .with_type(TPM2_ALG_RSA)
-            .with_name_alg(hash_alg.into())
+    match key_alg {
+        AsymmetricAlgorithm::Rsa => PublicBuilder::new()
+            .with_public_algorithm(PublicAlgorithm::Rsa)
+            .with_name_hashing_algorithm(hash_alg)
             .with_object_attributes(obj_attrs)
-            .with_parms(PublicParmsUnion::RsaDetail(TPMS_RSA_PARMS {
-                symmetric: TPMT_SYM_DEF_OBJECT {
-                    algorithm: TPM2_ALG_NULL,
-                    keyBits: TPMU_SYM_KEY_BITS { aes: 0 },
-                    mode: TPMU_SYM_MODE { aes: TPM2_ALG_NULL },
-                },
-                scheme: TPMT_RSA_SCHEME {
-                    scheme: sign_alg.into(),
-                    details: TPMU_ASYM_SCHEME {
-                        anySig: TPMS_SCHEME_HASH {
-                            hashAlg: hash_alg.into(),
-                        },
-                    },
-                },
-                keyBits: 2048,
-                exponent: 0,
-            }))
-            .with_unique(PublicIdUnion::Rsa(Box::new(Default::default()))),
-        AsymmetricAlgorithm::Ecc => Tpm2BPublicBuilder::new()
-            .with_type(TPM2_ALG_ECC)
-            .with_name_alg(hash_alg.into())
+            .with_rsa_parameters(
+                PublicRsaParametersBuilder::new()
+                    .with_scheme(RsaScheme::create(
+                        RsaSchemeAlgorithm::try_from(AlgorithmIdentifier::from(sign_alg))?,
+                        Some(hash_alg),
+                    )?)
+                    .with_key_bits(RsaKeyBits::Rsa2048)
+                    .with_exponent(RsaExponent::default())
+                    .with_is_signing_key(obj_attrs.sign_encrypt())
+                    .with_is_decryption_key(obj_attrs.decrypt())
+                    .with_restricted(obj_attrs.restricted())
+                    .build()?,
+            )
+            .with_rsa_unique_identifier(&PublicKeyRsa::default())
+            .build(),
+        AsymmetricAlgorithm::Ecc => PublicBuilder::new()
+            .with_public_algorithm(PublicAlgorithm::Ecc)
+            .with_name_hashing_algorithm(hash_alg)
             .with_object_attributes(obj_attrs)
-            .with_parms(PublicParmsUnion::EccDetail(TPMS_ECC_PARMS {
-                symmetric: TPMT_SYM_DEF_OBJECT {
-                    algorithm: TPM2_ALG_NULL,
-                    keyBits: TPMU_SYM_KEY_BITS { sym: 0 },
-                    mode: TPMU_SYM_MODE { sym: TPM2_ALG_NULL },
-                },
-                scheme: TPMT_ECC_SCHEME {
-                    scheme: TPM2_ALG_NULL,
-                    details: TPMU_ASYM_SCHEME {
-                        anySig: TPMS_SCHEME_HASH {
-                            hashAlg: hash_alg.into(),
-                        },
-                    },
-                },
-                curveID: TPM2_ECC_NIST_P256,
-                kdf: TPMT_KDF_SCHEME {
-                    scheme: TPM2_ALG_NULL,
-                    details: Default::default(),
-                },
-            }))
-            .with_unique(PublicIdUnion::Ecc(Box::new(Default::default()))),
+            .with_ecc_parameters(
+                PublicEccParametersBuilder::new()
+                    .with_symmetric(SymmetricDefinitionObject::Null)
+                    .with_ecc_scheme(EccScheme::create(
+                        EccSchemeAlgorithm::try_from(AlgorithmIdentifier::from(sign_alg))?,
+                        Some(hash_alg),
+                        Some(0),
+                    )?)
+                    .with_curve(EccCurve::NistP192)
+                    .with_key_derivation_function_scheme(KeyDerivationFunctionScheme::Null)
+                    .build()?,
+            )
+            .build(),
         AsymmetricAlgorithm::Null => {
-            // TDOD: Figure out what to with Null.
-            return Err(Error::local_error(WrapperErrorKind::UnsupportedParam));
+            // TODO: Figure out what to with Null.
+            Err(Error::local_error(WrapperErrorKind::UnsupportedParam))
         }
-    };
-
-    let key_builder = if let Some(ref k) = key_customization {
-        k.template(key_builder)
-    } else {
-        key_builder
-    };
-
-    key_builder.build()
+    }
 }
 
 /// This loads an Attestation Key previously generated under the Endorsement hierarchy
@@ -115,7 +99,7 @@ pub fn load_ak(
     parent: KeyHandle,
     ak_auth_value: Option<&Auth>,
     private: Private,
-    public: TPM2B_PUBLIC,
+    public: Public,
 ) -> Result<KeyHandle> {
     let policy_auth_session = context
         .start_auth_session(
@@ -153,7 +137,7 @@ pub fn load_ak(
             })?;
 
             ctx.execute_with_session(Some(policy_auth_session), |ctx| {
-                ctx.load(parent, private, public)
+                ctx.load(parent, private, &public)
             })
         },
     )?;
@@ -170,7 +154,7 @@ pub fn create_ak<IKC: IntoKeyCustomization>(
     context: &mut Context,
     parent: KeyHandle,
     hash_alg: HashingAlgorithm,
-    sign_alg: SignatureScheme,
+    sign_alg: SignatureSchemeAlgorithm,
     ak_auth_value: Option<&Auth>,
     key_customization: IKC,
 ) -> Result<CreateKeyResult> {

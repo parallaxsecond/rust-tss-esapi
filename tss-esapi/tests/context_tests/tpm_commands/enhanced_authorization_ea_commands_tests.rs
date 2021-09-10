@@ -13,8 +13,7 @@ mod test_policy_signed {
             algorithm::HashingAlgorithm, resource_handles::Hierarchy,
             session_handles::PolicySession,
         },
-        structures::{Digest, Nonce, SymmetricDefinition},
-        utils::{AsymSchemeUnion, Signature, SignatureData},
+        structures::{Digest, Nonce, PublicKeyRsa, RsaSignature, Signature, SymmetricDefinition},
     };
     #[test]
     fn test_policy_signed() {
@@ -55,10 +54,15 @@ mod test_policy_signed {
         let cp_hash_a =
             Digest::try_from(vec![1, 2, 3]).expect("Failed to convert data into Digest");
         let policy_ref = Nonce::try_from(vec![1, 2, 3]).expect("Failed to convert data into Nonce");
-        let signature = Signature {
-            scheme: AsymSchemeUnion::RSASSA(HashingAlgorithm::Sha256),
-            signature: SignatureData::RsaSignature(vec![0xab; 32]),
-        };
+
+        let signature = Signature::RsaSsa(
+            RsaSignature::create(
+                HashingAlgorithm::Sha256,
+                PublicKeyRsa::try_from(vec![0xab; 32])
+                    .expect("Failed to create Public RSA key strucutre for RSA signature"),
+            )
+            .expect("Failed to create RSA signature"),
+        );
 
         let trial_policy_session = PolicySession::try_from(trial_policy_auth_session)
             .expect("Failed to convert auth session into policy session");

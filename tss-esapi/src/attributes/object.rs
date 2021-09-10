@@ -60,6 +60,18 @@ impl ObjectAttributes {
     }
 }
 
+impl From<ObjectAttributes> for TPMA_OBJECT {
+    fn from(object_attributes: ObjectAttributes) -> Self {
+        object_attributes.0
+    }
+}
+
+impl From<TPMA_OBJECT> for ObjectAttributes {
+    fn from(tpma_object: TPMA_OBJECT) -> Self {
+        ObjectAttributes(tpma_object)
+    }
+}
+
 /// A builder for [ObjectAttributes]
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub struct ObjectAttributesBuilder {

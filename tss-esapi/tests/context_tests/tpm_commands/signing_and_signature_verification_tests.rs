@@ -6,9 +6,8 @@ mod test_verify_signature {
     use tss_esapi::{
         constants::tss::{TPM2_ALG_NULL, TPM2_RH_NULL, TPM2_ST_HASHCHECK},
         interface_types::{algorithm::HashingAlgorithm, resource_handles::Hierarchy},
-        structures::{Auth, Digest},
+        structures::{Auth, Digest, PublicKeyRsa, RsaSignature, Signature},
         tss2_esys::{TPMT_SIG_SCHEME, TPMT_TK_HASHCHECK},
-        utils::{AsymSchemeUnion, Signature, SignatureData},
     };
 
     #[test]
@@ -92,9 +91,16 @@ mod test_verify_signature {
             )
             .unwrap();
 
-        if let SignatureData::RsaSignature(signature) = &mut signature.signature {
-            signature.reverse();
+        if let Signature::RsaSsa(rsa_signature) = &mut signature {
+            let mut key_data: Vec<u8> = rsa_signature.signature().value().to_vec();
+            key_data.reverse();
+            *rsa_signature = RsaSignature::create(
+                rsa_signature.hashing_algorithm(),
+                PublicKeyRsa::try_from(key_data).expect("Failed to create oublic key rsa,"),
+            )
+            .expect("Failed to create signature");
         }
+
         assert!(context
             .verify_signature(
                 key_handle,
@@ -122,10 +128,15 @@ mod test_verify_signature {
             .unwrap()
             .key_handle;
 
-        let signature = Signature {
-            scheme: AsymSchemeUnion::RSASSA(HashingAlgorithm::Sha256),
-            signature: SignatureData::RsaSignature(vec![0xab; 500]),
-        };
+        let signature = Signature::RsaSsa(
+            RsaSignature::create(
+                HashingAlgorithm::Sha256,
+                PublicKeyRsa::try_from(vec![0xab; 500])
+                    .expect("Failed to create public key rsa structure"),
+            )
+            .expect("Failed to create RSA SSA signature"),
+        );
+
         assert!(context
             .verify_signature(
                 key_handle,
@@ -153,10 +164,14 @@ mod test_verify_signature {
             .unwrap()
             .key_handle;
 
-        let signature = Signature {
-            scheme: AsymSchemeUnion::RSASSA(HashingAlgorithm::Sha256),
-            signature: SignatureData::RsaSignature(vec![0; 0]),
-        };
+        let signature = Signature::RsaSsa(
+            RsaSignature::create(
+                HashingAlgorithm::Sha256,
+                PublicKeyRsa::try_from(vec![0; 0])
+                    .expect("Failed to create public key rsa structure"),
+            )
+            .expect("Failed to create RSA SSA signature"),
+        );
         assert!(context
             .verify_signature(
                 key_handle,

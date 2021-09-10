@@ -55,7 +55,7 @@ mod test_ctx_save {
             .unwrap();
 
         let key_handle = context
-            .load(prim_key_handle, result.out_private, result.out_public)
+            .load(prim_key_handle, result.out_private, &result.out_public)
             .unwrap();
         context.flush_context(prim_key_handle.into()).unwrap();
         let _ = context.context_save(key_handle.into()).unwrap();
@@ -98,7 +98,7 @@ mod test_ctx_load {
             .unwrap();
 
         let key_handle = context
-            .load(prim_key_handle, result.out_private, result.out_public)
+            .load(prim_key_handle, result.out_private, &result.out_public)
             .unwrap();
         context.flush_context(prim_key_handle.into()).unwrap();
         let key_ctx = context.context_save(key_handle.into()).unwrap();
@@ -163,7 +163,7 @@ mod test_flush_context {
             .unwrap();
 
         let key_handle = context
-            .load(prim_key_handle, result.out_private, result.out_public)
+            .load(prim_key_handle, result.out_private, &result.out_public)
             .unwrap();
         context.flush_context(prim_key_handle.into()).unwrap();
         let _ = context.read_public(key_handle).unwrap();

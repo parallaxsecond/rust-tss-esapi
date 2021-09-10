@@ -76,9 +76,7 @@ mod test_key_derivation_function_interface_type {
     use super::*;
     use tss_esapi::{
         constants::{
-            tss::{
-                TPM2_ALG_ECMQV, TPM2_ALG_KDF1_SP800_108, TPM2_ALG_KDF1_SP800_56A, TPM2_ALG_KDF2,
-            },
+            tss::{TPM2_ALG_KDF1_SP800_108, TPM2_ALG_KDF1_SP800_56A, TPM2_ALG_KDF2, TPM2_ALG_MGF1},
             AlgorithmIdentifier,
         },
         interface_types::algorithm::KeyDerivationFunction,
@@ -94,7 +92,7 @@ mod test_key_derivation_function_interface_type {
             KeyDerivationFunction::Kdf1Sp800_108
         );
         test_conversion!(TPM2_ALG_KDF2, KeyDerivationFunction::Kdf2);
-        test_conversion!(TPM2_ALG_ECMQV, KeyDerivationFunction::EcMqv);
+        test_conversion!(TPM2_ALG_MGF1, KeyDerivationFunction::Mgf1);
     }
 }
 
@@ -169,60 +167,60 @@ mod test_signature_scheme_interface_type {
             },
             AlgorithmIdentifier,
         },
-        interface_types::algorithm::{AsymmetricAlgorithm, SignatureScheme},
+        interface_types::algorithm::{AsymmetricAlgorithm, SignatureSchemeAlgorithm},
     };
     #[test]
     fn test_signature_scheme_conversion() {
-        test_conversion!(TPM2_ALG_RSASSA, SignatureScheme::RsaSsa);
-        test_conversion!(TPM2_ALG_RSAPSS, SignatureScheme::RsaPss);
-        test_conversion!(TPM2_ALG_ECDSA, SignatureScheme::EcDsa);
-        test_conversion!(TPM2_ALG_ECDAA, SignatureScheme::EcDaa);
-        test_conversion!(TPM2_ALG_SM2, SignatureScheme::Sm2);
-        test_conversion!(TPM2_ALG_ECSCHNORR, SignatureScheme::EcSchnorr);
-        test_conversion!(TPM2_ALG_HMAC, SignatureScheme::Hmac);
-        test_conversion!(TPM2_ALG_NULL, SignatureScheme::Null);
+        test_conversion!(TPM2_ALG_RSASSA, SignatureSchemeAlgorithm::RsaSsa);
+        test_conversion!(TPM2_ALG_RSAPSS, SignatureSchemeAlgorithm::RsaPss);
+        test_conversion!(TPM2_ALG_ECDSA, SignatureSchemeAlgorithm::EcDsa);
+        test_conversion!(TPM2_ALG_ECDAA, SignatureSchemeAlgorithm::EcDaa);
+        test_conversion!(TPM2_ALG_SM2, SignatureSchemeAlgorithm::Sm2);
+        test_conversion!(TPM2_ALG_ECSCHNORR, SignatureSchemeAlgorithm::EcSchnorr);
+        test_conversion!(TPM2_ALG_HMAC, SignatureSchemeAlgorithm::Hmac);
+        test_conversion!(TPM2_ALG_NULL, SignatureSchemeAlgorithm::Null);
     }
 
     #[test]
     fn test_special_conversion_into_asymmetric_algorithm() {
         assert_eq!(
             AsymmetricAlgorithm::Rsa,
-            SignatureScheme::RsaSsa
+            SignatureSchemeAlgorithm::RsaSsa
                 .try_into()
                 .expect("Failed to convert RsaSsa into asymmetric algorithm")
         );
         assert_eq!(
             AsymmetricAlgorithm::Rsa,
-            SignatureScheme::RsaPss
+            SignatureSchemeAlgorithm::RsaPss
                 .try_into()
                 .expect("Failed to convert RsaPss into asymmetric algorithm")
         );
         assert_eq!(
             AsymmetricAlgorithm::Ecc,
-            SignatureScheme::EcDsa
+            SignatureSchemeAlgorithm::EcDsa
                 .try_into()
                 .expect("Failed to convert EcDsa into asymmetric algorithm")
         );
         assert_eq!(
             AsymmetricAlgorithm::Ecc,
-            SignatureScheme::EcDaa
+            SignatureSchemeAlgorithm::EcDaa
                 .try_into()
                 .expect("Failed to convert EcDaa into asymmetric algorithm")
         );
         assert_eq!(
             AsymmetricAlgorithm::Ecc,
-            SignatureScheme::Sm2
+            SignatureSchemeAlgorithm::Sm2
                 .try_into()
                 .expect("Failed to convert Sm2 into asymmetric algorithm")
         );
 
-        if AsymmetricAlgorithm::try_from(SignatureScheme::Hmac).is_ok() {
+        if AsymmetricAlgorithm::try_from(SignatureSchemeAlgorithm::Hmac).is_ok() {
             panic!("It should not be possible to convert Hmac into an asymmetric algorithm");
         }
 
         // TODO: Change this if Null should be able to be converted into
         // an asymmetric algorithm
-        if AsymmetricAlgorithm::try_from(SignatureScheme::Null).is_ok() {
+        if AsymmetricAlgorithm::try_from(SignatureSchemeAlgorithm::Null).is_ok() {
             panic!("It should not be possible to convert Null into an asymmetric algorithm");
         }
     }

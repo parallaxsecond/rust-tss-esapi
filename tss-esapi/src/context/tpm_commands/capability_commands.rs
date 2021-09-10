@@ -1,12 +1,14 @@
 // Copyright 2021 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
 use crate::{
-    constants::CapabilityType, structures::CapabilityData, tss2_esys::*, utils::PublicParmsUnion,
+    constants::CapabilityType,
+    structures::{CapabilityData, PublicParameters},
+    tss2_esys::*,
     Context, Error, Result, WrapperErrorKind as ErrorKind,
 };
 use log::{error, warn};
 use mbox::MBox;
-use std::convert::{TryFrom, TryInto};
+use std::convert::TryFrom;
 use std::ptr::null_mut;
 
 impl Context {
@@ -57,18 +59,14 @@ impl Context {
     /// # Errors
     /// * if any of the public parameters is not compatible with the TPM,
     /// an `Err` containing the specific unmarshalling error will be returned.
-    pub fn test_parms(&mut self, parms: PublicParmsUnion) -> Result<()> {
-        let public_parms = TPMT_PUBLIC_PARMS {
-            type_: parms.object_type(),
-            parameters: parms.try_into()?,
-        };
+    pub fn test_parms(&mut self, public_parmeters: PublicParameters) -> Result<()> {
         let ret = unsafe {
             Esys_TestParms(
                 self.mut_context(),
                 self.optional_session_1(),
                 self.optional_session_2(),
                 self.optional_session_3(),
-                &public_parms,
+                &public_parmeters.into(),
             )
         };
 

@@ -13,50 +13,35 @@
 //!
 //! Object contexts thus act as an opaque handle that can, however, be used by the client to seralize
 //! and persist the underlying data.
-use crate::abstraction::cipher::Cipher;
-use crate::attributes::{ObjectAttributesBuilder, SessionAttributesBuilder};
-use crate::constants::tss::*;
-use crate::constants::SessionType;
-use crate::handles::{KeyHandle, SessionHandle};
-use crate::interface_types::{
-    algorithm::HashingAlgorithm, ecc::EccCurve, resource_handles::Hierarchy,
+use crate::{
+    abstraction::cipher::Cipher,
+    attributes::{ObjectAttributesBuilder, SessionAttributesBuilder},
+    constants::{tss::*, SessionType},
+    handles::{KeyHandle, SessionHandle},
+    interface_types::{
+        algorithm::{HashingAlgorithm, PublicAlgorithm, RsaSchemeAlgorithm},
+        ecc::EccCurve,
+        key_bits::RsaKeyBits,
+        resource_handles::Hierarchy,
+    },
+    structures::{
+        Auth, CreateKeyResult, Data, Digest, EccScheme, Public, PublicBuilder, PublicKeyRsa,
+        PublicRsaParametersBuilder, RsaDecryptionScheme, RsaExponent, RsaScheme, Signature,
+        VerifiedTicket,
+    },
+    tcti_ldr::TctiNameConf,
+    tss2_esys::*,
+    utils::{
+        create_restricted_decryption_rsa_public,
+        create_unrestricted_encryption_decryption_rsa_public,
+        create_unrestricted_signing_ecc_public, create_unrestricted_signing_rsa_public,
+        create_unrestricted_signing_rsa_public_with_unique, PublicKey, TpmsContext,
+    },
+    Context, Error, Result, WrapperErrorKind as ErrorKind,
 };
-use crate::structures::{Auth, CreateKeyResult, Data, Digest, PublicKeyRSA, VerifiedTicket};
-use crate::tcti_ldr::TctiNameConf;
-use crate::tss2_esys::*;
-use crate::utils::{
-    self, create_restricted_decryption_rsa_public,
-    create_unrestricted_encryption_decryption_rsa_public, create_unrestricted_signing_ecc_public,
-    create_unrestricted_signing_rsa_public, AsymSchemeUnion, PublicIdUnion, PublicKey,
-    PublicParmsUnion, Tpm2BPublicBuilder, TpmsContext, TpmsRsaParmsBuilder, RSA_KEY_SIZES,
-};
-use crate::Context;
-use crate::{Error, Result, WrapperErrorKind as ErrorKind};
+
 use log::error;
 use std::convert::{TryFrom, TryInto};
-
-#[derive(Copy, Clone, Debug)]
-pub struct RsaExponent {
-    value: u32,
-}
-
-impl Default for RsaExponent {
-    fn default() -> RsaExponent {
-        RsaExponent {
-            value: (1 << 16) + 1,
-        }
-    }
-}
-
-impl RsaExponent {
-    pub fn new(value: u32) -> RsaExponent {
-        RsaExponent { value }
-    }
-
-    pub fn value(&self) -> u32 {
-        self.value
-    }
-}
 
 /// Structure offering an abstracted programming experience.
 ///
@@ -127,7 +112,7 @@ impl TransientKeyContext {
         self.set_session_attrs()?;
         let key_handle = self
             .context
-            .load(self.root_key_handle, out_private, out_public)?;
+            .load(self.root_key_handle, out_private, &out_public)?;
 
         self.set_session_attrs()?;
         let key_context = self.context.context_save(key_handle.into()).or_else(|e| {
@@ -138,27 +123,18 @@ impl TransientKeyContext {
         Ok((key_context, key_auth))
     }
 
-    fn get_public_from_params(&self, params: KeyParams) -> Result<TPM2B_PUBLIC> {
+    fn get_public_from_params(&self, params: KeyParams) -> Result<Public> {
         match params {
             KeyParams::RsaSign {
                 size,
                 scheme,
                 pub_exponent,
-            } => {
-                if !RSA_KEY_SIZES.iter().any(|sz| *sz == size) {
-                    return Err(Error::local_error(ErrorKind::WrongParamSize));
-                }
-
-                Ok(create_unrestricted_signing_rsa_public(
-                    scheme,
-                    size,
-                    pub_exponent,
-                )?)
-            }
+            } => Ok(create_unrestricted_signing_rsa_public(
+                scheme,
+                size,
+                pub_exponent,
+            )?),
             KeyParams::RsaEncrypt { size, pub_exponent } => {
-                if !RSA_KEY_SIZES.iter().any(|sz| *sz == size) {
-                    return Err(Error::local_error(ErrorKind::WrongParamSize));
-                }
                 create_unrestricted_encryption_decryption_rsa_public(size, pub_exponent)
             }
             KeyParams::Ecc { curve, scheme } => {
@@ -180,26 +156,18 @@ impl TransientKeyContext {
     /// `TransientKeyContext::`set_session_attrs`, `Context::load_external_public`,
     /// `Context::context_save`, `Context::flush_context`
     pub fn load_external_rsa_public_key(&mut self, public_key: &[u8]) -> Result<TpmsContext> {
-        if !RSA_KEY_SIZES
-            .iter()
-            .any(|sz| usize::from(*sz) == public_key.len() * 8)
-        {
-            return Err(Error::local_error(ErrorKind::WrongParamSize));
-        }
-        let mut pk_buffer = [0_u8; 512];
-        pk_buffer[..public_key.len()].clone_from_slice(&public_key[..public_key.len()]);
-        let pk = TPMU_PUBLIC_ID {
-            rsa: TPM2B_PUBLIC_KEY_RSA {
-                size: public_key.len().try_into().unwrap(), // should not fail on valid targets, given the checks above
-                buffer: pk_buffer,
-            },
-        };
-        let mut public = create_unrestricted_signing_rsa_public(
-            AsymSchemeUnion::RSASSA(HashingAlgorithm::Sha256),
-            u16::try_from(public_key.len()).unwrap() * 8_u16,
-            0,
+        let rsa_key_bits = RsaKeyBits::try_from(
+            u16::try_from(public_key.len()).map_err(|e| {
+                error!("Failed to convert length of public key to u16: {:?}", e);
+                Error::local_error(ErrorKind::InvalidParam)
+            })? * 8u16,
         )?;
-        public.publicArea.unique = pk;
+        let public = create_unrestricted_signing_rsa_public_with_unique(
+            RsaScheme::create(RsaSchemeAlgorithm::RsaSsa, Some(HashingAlgorithm::Sha256))?,
+            rsa_key_bits,
+            RsaExponent::default(),
+            &PublicKeyRsa::try_from(public_key)?,
+        )?;
         self.set_session_attrs()?;
         let key_handle = self
             .context
@@ -235,28 +203,10 @@ impl TransientKeyContext {
         public_modulus: &[u8],
         public_exponent: RsaExponent,
     ) -> Result<TpmsContext> {
-        if !RSA_KEY_SIZES
-            .iter()
-            .any(|sz| usize::from(*sz) == public_modulus.len() * 8)
-        {
-            return Err(Error::local_error(ErrorKind::WrongParamSize));
-        }
-
         // Check if there is a mismatch between private key and public key sizes.
         if key_prime.len() * 2 != public_modulus.len() {
             return Err(Error::local_error(ErrorKind::WrongParamSize));
         }
-
-        // Handle public key...
-        let mut public_modulus_buffer = [0_u8; 512];
-        public_modulus_buffer[..public_modulus.len()]
-            .clone_from_slice(&public_modulus[..public_modulus.len()]);
-
-        let pub_buffer = TPM2B_PUBLIC_KEY_RSA {
-            size: public_modulus.len().try_into().unwrap(),
-            buffer: public_modulus_buffer,
-        };
-        let pub_id_union = PublicIdUnion::Rsa(Box::from(pub_buffer));
 
         let object_attributes = ObjectAttributesBuilder::new()
             .with_user_with_auth(true)
@@ -265,22 +215,27 @@ impl TransientKeyContext {
             .with_restricted(false)
             .build()?;
 
-        let rsa_parms = TpmsRsaParmsBuilder::new_unrestricted_signing_key(
-            AsymSchemeUnion::RSASSA(HashingAlgorithm::Sha256),
-            u16::try_from(public_modulus.len()).unwrap() * 8_u16,
-            public_exponent.value(),
-        )
-        .build()
-        .unwrap();
+        let key_bits = RsaKeyBits::try_from(
+            u16::try_from(public_modulus.len()).map_err(|e| {
+                error!("Failed to convert public modulus to u16: {:?}", e);
+                Error::local_error(ErrorKind::InvalidParam)
+            })? * 8u16,
+        )?;
 
-        let public = Tpm2BPublicBuilder::new()
-            .with_type(TPM2_ALG_RSA)
-            .with_name_alg(TPM2_ALG_SHA256)
+        let public = PublicBuilder::new()
+            .with_public_algorithm(PublicAlgorithm::Rsa)
+            .with_name_hashing_algorithm(HashingAlgorithm::Sha256)
             .with_object_attributes(object_attributes)
-            .with_parms(PublicParmsUnion::RsaDetail(rsa_parms))
-            .with_unique(pub_id_union)
-            .build()
-            .unwrap();
+            .with_rsa_parameters(
+                PublicRsaParametersBuilder::new_unrestricted_signing_key(
+                    RsaScheme::create(RsaSchemeAlgorithm::RsaSsa, Some(HashingAlgorithm::Sha256))?,
+                    key_bits,
+                    public_exponent,
+                )
+                .build()?,
+            )
+            .with_rsa_unique_identifier(&PublicKeyRsa::try_from(public_modulus)?)
+            .build()?;
 
         // Handle private key...
         let mut key_prime_buffer = [0_u8; 256];
@@ -327,7 +282,7 @@ impl TransientKeyContext {
         let key_handle = self.context.context_load(key_context)?;
 
         self.set_session_attrs()?;
-        let key_pub_id = self
+        let public = self
             .context
             .read_public(key_handle.into())
             .or_else(|e| {
@@ -335,20 +290,13 @@ impl TransientKeyContext {
                 Err(e)
             })?
             .0;
-        let key = match unsafe { PublicIdUnion::from_public(&key_pub_id)? } {
-            // call should be safe given our trust in the TSS library
-            PublicIdUnion::Rsa(pub_key) => {
-                let mut key = pub_key.buffer.to_vec();
-                key.truncate(pub_key.size.try_into().unwrap()); // should not fail on supported targets
-                PublicKey::Rsa(key)
-            }
-            PublicIdUnion::Ecc(pub_key) => {
-                let mut x = pub_key.x.buffer.to_vec();
-                x.truncate(pub_key.x.size.try_into().unwrap()); // should not fail on supported targets
-                let mut y = pub_key.y.buffer.to_vec();
-                y.truncate(pub_key.y.size.try_into().unwrap()); // should not fail on supported targets
-                PublicKey::Ecc { x, y }
-            }
+
+        let key = match public {
+            Public::Rsa { unique, .. } => PublicKey::Rsa(unique.value().to_vec()),
+            Public::Ecc { unique, .. } => PublicKey::Ecc {
+                x: unique.x().value().to_vec(),
+                y: unique.y().value().to_vec(),
+            },
             _ => return Err(Error::local_error(ErrorKind::UnsupportedParam)),
         };
         self.context.flush_context(key_handle)?;
@@ -369,10 +317,10 @@ impl TransientKeyContext {
         &mut self,
         key_context: TpmsContext,
         key_auth: Option<Auth>,
-        message: PublicKeyRSA,
-        scheme: AsymSchemeUnion,
+        message: PublicKeyRsa,
+        scheme: RsaDecryptionScheme,
         label: Option<Data>,
-    ) -> Result<PublicKeyRSA> {
+    ) -> Result<PublicKeyRsa> {
         self.set_session_attrs()?;
         let key_handle = self
             .context
@@ -414,10 +362,10 @@ impl TransientKeyContext {
         &mut self,
         key_context: TpmsContext,
         key_auth: Option<Auth>,
-        ciphertext: PublicKeyRSA,
-        scheme: AsymSchemeUnion,
+        ciphertext: PublicKeyRsa,
+        scheme: RsaDecryptionScheme,
         label: Option<Data>,
-    ) -> Result<PublicKeyRSA> {
+    ) -> Result<PublicKeyRsa> {
         self.set_session_attrs()?;
         let key_handle = self
             .context
@@ -459,7 +407,7 @@ impl TransientKeyContext {
         key_context: TpmsContext,
         key_auth: Option<Auth>,
         digest: Digest,
-    ) -> Result<utils::Signature> {
+    ) -> Result<Signature> {
         self.set_session_attrs()?;
         let key_handle = self
             .context
@@ -508,7 +456,7 @@ impl TransientKeyContext {
         &mut self,
         key_context: TpmsContext,
         digest: Digest,
-        signature: utils::Signature,
+        signature: Signature,
     ) -> Result<VerifiedTicket> {
         self.set_session_attrs()?;
         let key_handle = self
@@ -649,15 +597,14 @@ impl TransientKeyContextBuilder {
     /// `Context::start_auth_session`, `Context::create_primary`, `Context::flush_context`,
     /// `Context::set_handle_auth`
     /// * if the root key authentication size is given greater than 32 or if the root key size is
-    /// not 1024, 2048, 3072 or 4096, a `WrongParamSize` wrapper error is returned
+    /// not 1024, 2048, 3072 or 4096, a `InvalidParam` wrapper error is returned
     pub fn build(self) -> Result<TransientKeyContext> {
         if self.root_key_auth_size > 32 {
             return Err(Error::local_error(ErrorKind::WrongParamSize));
         }
-        if !RSA_KEY_SIZES.iter().any(|sz| *sz == self.root_key_size) {
-            error!("The reference implementation only supports key sizes of 1,024 and 2,048 bits");
-            return Err(Error::local_error(ErrorKind::WrongParamSize));
-        }
+
+        let root_key_rsa_key_bits = RsaKeyBits::try_from(self.root_key_size)?;
+
         let mut context = Context::new(self.tcti_name_conf)?;
 
         let root_key_auth = if self.root_key_auth_size > 0 {
@@ -698,9 +645,9 @@ impl TransientKeyContextBuilder {
             .create_primary(
                 self.hierarchy,
                 &create_restricted_decryption_rsa_public(
-                    self.default_context_cipher,
-                    self.root_key_size,
-                    0,
+                    self.default_context_cipher.try_into()?,
+                    root_key_rsa_key_bits,
+                    RsaExponent::default(),
                 )?,
                 root_key_auth.as_ref(),
                 None,
@@ -751,25 +698,25 @@ pub enum KeyParams {
         /// Size of key in bits
         ///
         /// Can only be one of: 1024, 2048, 3072 or 4096
-        size: u16,
+        size: RsaKeyBits,
         /// Asymmetric scheme to be used with the key
         ///
         /// *Must* be an RSA-specific scheme
-        scheme: AsymSchemeUnion,
+        scheme: RsaScheme,
         /// Public exponent of the key
         ///
         /// If set to 0, it will default to 2^16 - 1
-        pub_exponent: u32,
+        pub_exponent: RsaExponent,
     },
     RsaEncrypt {
         /// Size of key in bits
         ///
         /// Can only be one of: 1024, 2048, 3072 or 4096
-        size: u16,
+        size: RsaKeyBits,
         /// Public exponent of the key
         ///
         /// If set to 0, it will default to 2^16 - 1
-        pub_exponent: u32,
+        pub_exponent: RsaExponent,
     },
     Ecc {
         /// Curve that the key will be based on
@@ -777,6 +724,6 @@ pub enum KeyParams {
         /// Asymmetric scheme to be used with the key
         ///
         /// *Must* be an ECC scheme
-        scheme: AsymSchemeUnion,
+        scheme: EccScheme,
     },
 }
