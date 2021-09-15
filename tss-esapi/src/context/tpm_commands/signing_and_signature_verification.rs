@@ -59,7 +59,7 @@ impl Context {
             Esys_Sign(
                 self.mut_context(),
                 key_handle.into(),
-                self.optional_session_1(),
+                self.required_session_1()?,
                 self.optional_session_2(),
                 self.optional_session_3(),
                 &digest.clone().into(),
