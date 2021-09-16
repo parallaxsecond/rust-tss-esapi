@@ -1,3 +1,5 @@
+use tss_esapi_sys::TPM2B_ECC_POINT;
+
 // Copyright 2021 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
 use crate::{structures::EccParameter, tss2_esys::TPMS_ECC_POINT, Error, Result};
@@ -41,6 +43,19 @@ impl From<EccPoint> for TPMS_ECC_POINT {
         TPMS_ECC_POINT {
             x: ecc_point.x.into(),
             y: ecc_point.y.into(),
+        }
+    }
+}
+
+impl From<EccPoint> for TPM2B_ECC_POINT {
+    fn from(ecc_point: EccPoint) -> Self {
+        let size = std::mem::size_of::<u16>()
+            + ecc_point.x().len()
+            + std::mem::size_of::<u16>()
+            + ecc_point.y().len();
+        TPM2B_ECC_POINT {
+            size: size as u16,
+            point: ecc_point.into(),
         }
     }
 }
