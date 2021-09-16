@@ -321,11 +321,6 @@ impl Context {
     /// ```
     pub fn ecdh_z_gen(&mut self, key_handle: KeyHandle, in_point: EccPoint) -> Result<EccPoint> {
         let mut point = null_mut();
-        let in_point: TPMS_ECC_POINT = in_point.into();
-        let in_point = TPM2B_ECC_POINT {
-            size: in_point.x.size + in_point.y.size,
-            point: in_point,
-        };
         let ret = unsafe {
             Esys_ECDH_ZGen(
                 self.mut_context(),
@@ -333,7 +328,7 @@ impl Context {
                 self.required_session_1()?,
                 self.optional_session_2(),
                 self.optional_session_3(),
-                &in_point,
+                &in_point.into(),
                 &mut point,
             )
         };
