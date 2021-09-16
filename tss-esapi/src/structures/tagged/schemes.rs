@@ -530,3 +530,16 @@ impl TryFrom<TPMT_RSA_DECRYPT> for RsaDecryptionScheme {
         }
     }
 }
+
+impl TryFrom<RsaScheme> for RsaDecryptionScheme {
+    type Error = Error;
+
+    fn try_from(rsa_scheme: RsaScheme) -> Result<Self> {
+        match rsa_scheme {
+            RsaScheme::RsaEs => Ok(RsaDecryptionScheme::RsaEs),
+            RsaScheme::Oaep(hash_scheme) => Ok(RsaDecryptionScheme::Oaep(hash_scheme)),
+            RsaScheme::Null => Ok(RsaDecryptionScheme::Null),
+            _ => Err(Error::local_error(WrapperErrorKind::InvalidParam)),
+        }
+    }
+}

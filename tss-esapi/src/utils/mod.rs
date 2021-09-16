@@ -44,6 +44,13 @@ pub struct TpmsContext {
     context_blob: Vec<u8>,
 }
 
+impl TpmsContext {
+    /// Get a reference to the `context_blob` field
+    pub fn context_blob(&self) -> &Vec<u8> {
+        &self.context_blob
+    }
+}
+
 // TODO: Replace with `From`
 impl TryFrom<TPMS_CONTEXT> for TpmsContext {
     type Error = Error;
@@ -96,7 +103,7 @@ impl TryFrom<TpmsContext> for TPMS_CONTEXT {
 ///
 /// * `symmetric` - Cipher to be used for decrypting children of the key
 /// * `key_bits` - Size in bits of the decryption key
-/// * `pub_exponent` - Public exponent of the RSA key. A value of 0 defaults to 2^16 + 1
+/// * `pub_exponent` - Public exponent of the RSA key
 pub fn create_restricted_decryption_rsa_public(
     symmetric: SymmetricDefinitionObject,
     rsa_key_bits: RsaKeyBits,
@@ -124,7 +131,7 @@ pub fn create_restricted_decryption_rsa_public(
             )
             .build()?,
         )
-        .with_rsa_unique_identifier(&PublicKeyRsa::new_empty_with_size(rsa_key_bits))
+        .with_rsa_unique_identifier(&PublicKeyRsa::default())
         .build()
 }
 
@@ -132,7 +139,7 @@ pub fn create_restricted_decryption_rsa_public(
 ///
 /// * `symmetric` - Cipher to be used for decrypting children of the key
 /// * `key_bits` - Size in bits of the decryption key
-/// * `pub_exponent` - Public exponent of the RSA key. A value of 0 defaults to 2^16 + 1
+/// * `pub_exponent` - Public exponent of the RSA key
 pub fn create_unrestricted_encryption_decryption_rsa_public(
     rsa_key_bits: RsaKeyBits,
     rsa_pub_exponent: RsaExponent,
@@ -161,7 +168,7 @@ pub fn create_unrestricted_encryption_decryption_rsa_public(
                 .with_restricted(false)
                 .build()?,
         )
-        .with_rsa_unique_identifier(&PublicKeyRsa::new_empty_with_size(rsa_key_bits))
+        .with_rsa_unique_identifier(&PublicKeyRsa::default())
         .build()
 }
 
@@ -169,7 +176,7 @@ pub fn create_unrestricted_encryption_decryption_rsa_public(
 ///
 /// * `scheme` - RSA scheme to be used for signing
 /// * `key_bits` - Size in bits of the decryption key
-/// * `pub_exponent` - Public exponent of the RSA key. A value of 0 defaults to 2^16 + 1
+/// * `pub_exponent` - Public exponent of the RSA key
 pub fn create_unrestricted_signing_rsa_public(
     scheme: RsaScheme,
     rsa_key_bits: RsaKeyBits,
@@ -197,7 +204,7 @@ pub fn create_unrestricted_signing_rsa_public(
             )
             .build()?,
         )
-        .with_rsa_unique_identifier(&PublicKeyRsa::new_empty_with_size(rsa_key_bits))
+        .with_rsa_unique_identifier(&PublicKeyRsa::default())
         .build()
 }
 
@@ -205,7 +212,7 @@ pub fn create_unrestricted_signing_rsa_public(
 ///
 /// * `scheme` - RSA scheme to be used for signing
 /// * `key_bits` - Size in bits of the decryption key
-/// * `pub_exponent` - Public exponent of the RSA key. A value of 0 defaults to 2^16 + 1
+/// * `pub_exponent` - Public exponent of the RSA key
 /// * `rsa_public_key` - The public part of the RSA key that is going to be used as unique identifier.
 pub fn create_unrestricted_signing_rsa_public_with_unique(
     scheme: RsaScheme,
@@ -268,10 +275,25 @@ pub fn create_unrestricted_signing_ecc_public(
         .build()
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize, Zeroize, PartialEq, Eq)]
 pub enum PublicKey {
     Rsa(Vec<u8>),
     Ecc { x: Vec<u8>, y: Vec<u8> },
+}
+
+impl TryFrom<Public> for PublicKey {
+    type Error = Error;
+
+    fn try_from(public: Public) -> Result<Self> {
+        match public {
+            Public::Rsa { unique, .. } => Ok(PublicKey::Rsa(unique.value().to_vec())),
+            Public::Ecc { unique, .. } => Ok(PublicKey::Ecc {
+                x: unique.x().value().to_vec(),
+                y: unique.y().value().to_vec(),
+            }),
+            _ => Err(Error::local_error(WrapperErrorKind::WrongValueFromTpm)),
+        }
+    }
 }
 
 type PcrValue = Digest;

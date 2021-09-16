@@ -221,6 +221,10 @@ pub struct RsaExponent {
 }
 
 impl RsaExponent {
+    /// Empty exponent (internal value is 0), which is treated by TPMs
+    /// as a shorthand for the default value (2^16 + 1).
+    pub const ZERO_EXPONENT: Self = RsaExponent { value: 0 };
+
     /// Function for creating a new RsaExponent
     ///
     /// # Errors

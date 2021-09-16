@@ -372,7 +372,7 @@ impl Context {
             let out_private = Private::try_from(*out_private)?;
             Ok(out_private)
         } else {
-            error!("Error changing hierarchy auth: {}", ret);
+            error!("Error changing object auth: {}", ret);
             Err(ret)
         }
     }

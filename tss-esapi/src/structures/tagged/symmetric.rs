@@ -202,6 +202,23 @@ impl From<SymmetricDefinitionObject> for TPMT_SYM_DEF_OBJECT {
     }
 }
 
+impl From<SymmetricDefinitionObject> for SymmetricDefinition {
+    fn from(sym_def_obj: SymmetricDefinitionObject) -> Self {
+        match sym_def_obj {
+            SymmetricDefinitionObject::Null => SymmetricDefinition::Null,
+            SymmetricDefinitionObject::Camellia { key_bits, mode } => {
+                SymmetricDefinition::Camellia { key_bits, mode }
+            }
+            SymmetricDefinitionObject::Aes { key_bits, mode } => {
+                SymmetricDefinition::Aes { key_bits, mode }
+            }
+            SymmetricDefinitionObject::Sm4 { key_bits, mode } => {
+                SymmetricDefinition::Sm4 { key_bits, mode }
+            }
+        }
+    }
+}
+
 impl TryFrom<TPMT_SYM_DEF_OBJECT> for SymmetricDefinitionObject {
     type Error = Error;
     fn try_from(tpmt_sym_def_object: TPMT_SYM_DEF_OBJECT) -> Result<SymmetricDefinitionObject> {
