@@ -30,12 +30,34 @@ macro_rules! test_conversion {
     };
 }
 
-mod test_hashing_algorithm_interface_type {
+macro_rules! test_invalid_tpm_alg_conversion {
+    ($invalid_tpm_alg_id:ident, $interface_type:ident, WrapperErrorKind::$expected_error:ident) => {
+        assert_eq!(
+            $interface_type::try_from(tss_esapi::constants::tss::$invalid_tpm_alg_id),
+            Err(tss_esapi::Error::WrapperError(
+                tss_esapi::WrapperErrorKind::$expected_error
+            )),
+        );
+    };
+}
+
+macro_rules! test_invalid_algorithm_conversion {
+    (AlgorithmIdentifier::$invalid_algorithm_item:ident, $interface_type:ident, WrapperErrorKind::$expected_error:ident) => {
+        assert_eq!(
+            $interface_type::try_from(AlgorithmIdentifier::$invalid_algorithm_item),
+            Err(tss_esapi::Error::WrapperError(
+                tss_esapi::WrapperErrorKind::$expected_error
+            )),
+        )
+    };
+}
+
+mod hashing_algorithm_tests {
     use super::*;
     use tss_esapi::{
         constants::{
             tss::{
-                TPM2_ALG_SHA1, TPM2_ALG_SHA256, TPM2_ALG_SHA384, TPM2_ALG_SHA3_256,
+                TPM2_ALG_NULL, TPM2_ALG_SHA1, TPM2_ALG_SHA256, TPM2_ALG_SHA384, TPM2_ALG_SHA3_256,
                 TPM2_ALG_SHA3_384, TPM2_ALG_SHA3_512, TPM2_ALG_SHA512, TPM2_ALG_SM3_256,
             },
             AlgorithmIdentifier,
@@ -52,10 +74,25 @@ mod test_hashing_algorithm_interface_type {
         test_conversion!(TPM2_ALG_SHA3_256, HashingAlgorithm::Sha3_256);
         test_conversion!(TPM2_ALG_SHA3_384, HashingAlgorithm::Sha3_384);
         test_conversion!(TPM2_ALG_SHA3_512, HashingAlgorithm::Sha3_512);
+        test_conversion!(TPM2_ALG_NULL, HashingAlgorithm::Null);
+    }
+
+    #[test]
+    fn test_conversion_of_incorrect_algorithm() {
+        test_invalid_tpm_alg_conversion!(
+            TPM2_ALG_RSA,
+            HashingAlgorithm,
+            WrapperErrorKind::InvalidParam
+        );
+        test_invalid_algorithm_conversion!(
+            AlgorithmIdentifier::Ecc,
+            HashingAlgorithm,
+            WrapperErrorKind::InvalidParam
+        )
     }
 }
 
-mod test_keyed_hash_scheme_interface_type {
+mod keyed_hash_scheme_tests {
     use super::*;
     use tss_esapi::{
         constants::{
@@ -70,9 +107,23 @@ mod test_keyed_hash_scheme_interface_type {
         test_conversion!(TPM2_ALG_XOR, KeyedHashSchemeAlgorithm::Xor);
         test_conversion!(TPM2_ALG_NULL, KeyedHashSchemeAlgorithm::Null);
     }
+
+    #[test]
+    fn test_conversion_of_incorrect_algorithm() {
+        test_invalid_tpm_alg_conversion!(
+            TPM2_ALG_RSA,
+            KeyedHashSchemeAlgorithm,
+            WrapperErrorKind::InvalidParam
+        );
+        test_invalid_algorithm_conversion!(
+            AlgorithmIdentifier::Ecc,
+            KeyedHashSchemeAlgorithm,
+            WrapperErrorKind::InvalidParam
+        )
+    }
 }
 
-mod test_key_derivation_function_interface_type {
+mod key_derivation_function_tests {
     use super::*;
     use tss_esapi::{
         constants::{
@@ -94,9 +145,23 @@ mod test_key_derivation_function_interface_type {
         test_conversion!(TPM2_ALG_KDF2, KeyDerivationFunction::Kdf2);
         test_conversion!(TPM2_ALG_MGF1, KeyDerivationFunction::Mgf1);
     }
+
+    #[test]
+    fn test_conversion_of_incorrect_algorithm() {
+        test_invalid_tpm_alg_conversion!(
+            TPM2_ALG_RSA,
+            KeyDerivationFunction,
+            WrapperErrorKind::InvalidParam
+        );
+        test_invalid_algorithm_conversion!(
+            AlgorithmIdentifier::Ecc,
+            KeyDerivationFunction,
+            WrapperErrorKind::InvalidParam
+        )
+    }
 }
 
-mod test_symmetric_algorithm_interface_type {
+mod symmetric_algorithm_tests {
     use super::*;
     use tss_esapi::{
         constants::{
@@ -117,28 +182,60 @@ mod test_symmetric_algorithm_interface_type {
         test_conversion!(TPM2_ALG_XOR, SymmetricAlgorithm::Xor);
         test_conversion!(TPM2_ALG_NULL, SymmetricAlgorithm::Null);
     }
+
+    #[test]
+    fn test_conversion_of_incorrect_algorithm() {
+        test_invalid_tpm_alg_conversion!(
+            TPM2_ALG_RSA,
+            SymmetricAlgorithm,
+            WrapperErrorKind::InvalidParam
+        );
+        test_invalid_algorithm_conversion!(
+            AlgorithmIdentifier::Ecc,
+            SymmetricAlgorithm,
+            WrapperErrorKind::InvalidParam
+        )
+    }
 }
 
-mod test_symmetric_mode_interface_type {
+mod symmetric_mode_tests {
     use super::*;
     use tss_esapi::{
         constants::{
-            tss::{TPM2_ALG_CFB, TPM2_ALG_CTR, TPM2_ALG_ECB, TPM2_ALG_NULL, TPM2_ALG_OFB},
+            tss::{
+                TPM2_ALG_CBC, TPM2_ALG_CFB, TPM2_ALG_CTR, TPM2_ALG_ECB, TPM2_ALG_NULL, TPM2_ALG_OFB,
+            },
             AlgorithmIdentifier,
         },
         interface_types::algorithm::SymmetricMode,
     };
+
     #[test]
     fn test_symmetric_mode_conversion() {
         test_conversion!(TPM2_ALG_CTR, SymmetricMode::Ctr);
         test_conversion!(TPM2_ALG_OFB, SymmetricMode::Ofb);
+        test_conversion!(TPM2_ALG_CBC, SymmetricMode::Cbc);
         test_conversion!(TPM2_ALG_CFB, SymmetricMode::Cfb);
         test_conversion!(TPM2_ALG_ECB, SymmetricMode::Ecb);
         test_conversion!(TPM2_ALG_NULL, SymmetricMode::Null);
     }
+
+    #[test]
+    fn test_conversion_of_incorrect_algorithm() {
+        test_invalid_tpm_alg_conversion!(
+            TPM2_ALG_RSA,
+            SymmetricMode,
+            WrapperErrorKind::InvalidParam
+        );
+        test_invalid_algorithm_conversion!(
+            AlgorithmIdentifier::Ecc,
+            SymmetricMode,
+            WrapperErrorKind::InvalidParam
+        )
+    }
 }
 
-mod test_asymmetric_algorithm_interface_type {
+mod asymmetric_algorithm_tests {
     use super::*;
     use tss_esapi::{
         constants::{
@@ -154,9 +251,23 @@ mod test_asymmetric_algorithm_interface_type {
         test_conversion!(TPM2_ALG_ECC, AsymmetricAlgorithm::Ecc);
         test_conversion!(TPM2_ALG_NULL, AsymmetricAlgorithm::Null);
     }
+
+    #[test]
+    fn test_conversion_of_incorrect_algorithm() {
+        test_invalid_tpm_alg_conversion!(
+            TPM2_ALG_AES,
+            AsymmetricAlgorithm,
+            WrapperErrorKind::InvalidParam
+        );
+        test_invalid_algorithm_conversion!(
+            AlgorithmIdentifier::Sm4,
+            AsymmetricAlgorithm,
+            WrapperErrorKind::InvalidParam
+        )
+    }
 }
 
-mod test_signature_scheme_interface_type {
+mod signature_scheme_tests {
     use super::*;
     use std::convert::TryInto;
     use tss_esapi::{
@@ -213,6 +324,12 @@ mod test_signature_scheme_interface_type {
                 .try_into()
                 .expect("Failed to convert Sm2 into asymmetric algorithm")
         );
+        assert_eq!(
+            AsymmetricAlgorithm::Ecc,
+            SignatureSchemeAlgorithm::EcSchnorr
+                .try_into()
+                .expect("Failed to convert EcSchnorr into asymmetric algorithm")
+        );
 
         if AsymmetricAlgorithm::try_from(SignatureSchemeAlgorithm::Hmac).is_ok() {
             panic!("It should not be possible to convert Hmac into an asymmetric algorithm");
@@ -224,9 +341,23 @@ mod test_signature_scheme_interface_type {
             panic!("It should not be possible to convert Null into an asymmetric algorithm");
         }
     }
+
+    #[test]
+    fn test_conversion_of_incorrect_algorithm() {
+        test_invalid_tpm_alg_conversion!(
+            TPM2_ALG_AES,
+            AsymmetricAlgorithm,
+            WrapperErrorKind::InvalidParam
+        );
+        test_invalid_algorithm_conversion!(
+            AlgorithmIdentifier::Sm4,
+            AsymmetricAlgorithm,
+            WrapperErrorKind::InvalidParam
+        )
+    }
 }
 
-mod test_symmetric_object_interface_type {
+mod symmetric_object_tests {
     use super::*;
     use tss_esapi::{
         constants::{
@@ -242,5 +373,19 @@ mod test_symmetric_object_interface_type {
         test_conversion!(TPM2_ALG_SM4, SymmetricObject::Sm4);
         test_conversion!(TPM2_ALG_CAMELLIA, SymmetricObject::Camellia);
         test_conversion!(TPM2_ALG_NULL, SymmetricObject::Null);
+    }
+
+    #[test]
+    fn test_conversion_of_incorrect_algorithm() {
+        test_invalid_tpm_alg_conversion!(
+            TPM2_ALG_RSA,
+            SymmetricObject,
+            WrapperErrorKind::InvalidParam
+        );
+        test_invalid_algorithm_conversion!(
+            AlgorithmIdentifier::Ecc,
+            SymmetricObject,
+            WrapperErrorKind::InvalidParam
+        )
     }
 }
