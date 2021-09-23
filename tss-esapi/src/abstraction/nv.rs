@@ -36,6 +36,7 @@ pub fn read_full(
         let res = context.nv_read(auth_handle, nv_idx, size, offset as u16)?;
         result.extend_from_slice(&res);
     }
+    context.execute_without_session(|ctx| ctx.tr_close(&mut nv_idx.into()))?;
 
     Ok(result)
 }
