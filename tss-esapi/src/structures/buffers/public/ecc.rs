@@ -150,12 +150,15 @@ impl PublicEccParametersBuilder {
 
         if self.restricted && self.is_decryption_key {
             if self.symmetric.is_none() {
+                error!("Symmetric should be set for restricted & decryption keys");
                 return Err(Error::local_error(WrapperErrorKind::ParamsMissing));
             }
         } else if self.symmetric.is_some() {
+            error!("Symmetric should be set for decryption keys");
             return Err(Error::local_error(WrapperErrorKind::InconsistentParams));
         }
         if self.is_decryption_key && self.is_signing_key {
+            error!("Key cannot be decryption and signing key at the same time");
             return Err(Error::local_error(WrapperErrorKind::InconsistentParams));
         }
 
@@ -169,6 +172,7 @@ impl PublicEccParametersBuilder {
             && ecc_scheme.algorithm() != EccSchemeAlgorithm::Sm2
             && ecc_scheme.algorithm() != EccSchemeAlgorithm::EcSchnorr
         {
+            error!("Signing key can use only EcDsa, EcDaa, Sm2 or EcSchorr schemes");
             return Err(Error::local_error(WrapperErrorKind::InconsistentParams));
         }
 
@@ -178,12 +182,14 @@ impl PublicEccParametersBuilder {
             && ecc_scheme.algorithm() != EccSchemeAlgorithm::EcMqv
             && ecc_scheme.algorithm() != EccSchemeAlgorithm::Null
         {
+            error!("Decryption key can use only Sm2, EcDh, EcMqv and Null schemes");
             return Err(Error::local_error(WrapperErrorKind::InconsistentParams));
         }
 
         if (ecc_curve == EccCurve::BnP256 || ecc_curve == EccCurve::BnP638)
             && ecc_scheme.algorithm() != EccSchemeAlgorithm::EcDaa
         {
+            error!("Bn curve should use only EcDaa scheme");
             return Err(Error::local_error(WrapperErrorKind::InconsistentParams));
         }
 
