@@ -5,30 +5,20 @@ use std::convert::TryFrom;
 use tss_esapi::{
     abstraction::nv,
     attributes::NvIndexAttributesBuilder,
-    handles::NvIndexTpmHandle,
+    handles::{NvIndexHandle, NvIndexTpmHandle},
     interface_types::{
         algorithm::HashingAlgorithm,
         resource_handles::{NvAuth, Provision},
     },
     nv::storage::NvPublicBuilder,
     structures::MaxNvBuffer,
+    Context,
 };
 
 mod common;
 use common::create_ctx_with_session;
 
-#[test]
-fn list() {
-    let mut context = create_ctx_with_session();
-    nv::list(&mut context).unwrap();
-}
-
-#[test]
-fn read_full() {
-    let mut context = create_ctx_with_session();
-
-    let nv_index = NvIndexTpmHandle::new(0x01500015).unwrap();
-
+fn write_nv_index(context: &mut Context, nv_index: NvIndexTpmHandle) -> NvIndexHandle {
     // Create owner nv public.
     let owner_nv_index_attributes = NvIndexAttributesBuilder::new()
         .with_owner_write(true)
@@ -60,6 +50,42 @@ fn read_full() {
     context
         .nv_write(NvAuth::Owner, owner_nv_index_handle, &expected_data, 1024)
         .unwrap();
+
+    owner_nv_index_handle
+}
+
+#[test]
+fn list() {
+    let mut context = create_ctx_with_session();
+
+    let nv_index = NvIndexTpmHandle::new(0x01500015).unwrap();
+
+    assert!(!nv::list(&mut context)
+        .unwrap()
+        .iter()
+        .map(|(public, _)| public.nv_index())
+        .any(|x| x == nv_index));
+
+    let owner_nv_index_handle = write_nv_index(&mut context, nv_index);
+
+    assert!(nv::list(&mut context)
+        .unwrap()
+        .iter()
+        .map(|(public, _)| public.nv_index())
+        .any(|x| x == nv_index));
+
+    let _ = context
+        .nv_undefine_space(Provision::Owner, owner_nv_index_handle)
+        .unwrap();
+}
+
+#[test]
+fn read_full() {
+    let mut context = create_ctx_with_session();
+
+    let nv_index = NvIndexTpmHandle::new(0x01500015).unwrap();
+
+    let owner_nv_index_handle = write_nv_index(&mut context, nv_index);
 
     // Now read it back
     let read_result = nv::read_full(&mut context, NvAuth::Owner, nv_index);
