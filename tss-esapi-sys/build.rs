@@ -29,6 +29,7 @@ fn main() {
         match (target.architecture, target.operating_system) {
             (Architecture::Arm(_), OperatingSystem::Linux) => {}
             (Architecture::Aarch64(_), OperatingSystem::Linux) => {}
+            (Architecture::X86_64, OperatingSystem::Darwin) => {}
             (Architecture::X86_64, OperatingSystem::Linux) => {}
             (arch, os) => {
                 panic!("Compilation target (architecture, OS) tuple ({}, {}) is not part of the supported tuples. Please compile with the \"generate-bindings\" feature or add support for your platform :)", arch, os);
@@ -106,7 +107,7 @@ pub fn generate_from_system(esapi_out: PathBuf) {
         .header(format!("{}/tss2/tss2_tctildr.h", tss2_tctildr_include_path))
         .header(format!("{}/tss2/tss2_mu.h", tss2_mu_include_path))
         // See this issue: https://github.com/parallaxsecond/rust-cryptoki/issues/12
-        .blacklist_type("max_align_t")
+        .blocklist_type("max_align_t")
         .generate_comments(false)
         .derive_default(true)
         .generate()
