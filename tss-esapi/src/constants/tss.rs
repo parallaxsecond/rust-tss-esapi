@@ -423,6 +423,7 @@ pub const TPM2_PT_LIBRARY_COMMANDS: TPM2_PT = TPM2_PT_FIXED + 42; /* number of c
 pub const TPM2_PT_VENDOR_COMMANDS: TPM2_PT = TPM2_PT_FIXED + 43; /* number of vendor commands that are implemented */
 pub const TPM2_PT_NV_BUFFER_MAX: TPM2_PT = TPM2_PT_FIXED + 44; /* the maximum data size in one NV write command */
 pub const TPM2_PT_MODES: TPM2_PT = TPM2_PT_FIXED + 45; /* a TPMA_MODES value indicating that the TPM is designed for these modes. */
+pub const TPM2_PT_MAX_CAP_BUFFER: TPM2_PT = TPM2_PT_FIXED + 46; /* the maximum size of a TPMS_CAPABILITY_DATA structure returned in TPM2_GetCapability(). */
 pub const TPM2_PT_VAR: TPM2_PT = TPM2_PT_GROUP * 2; /* the group of variable properties returned as TPMS_TAGGED_PROPERTY. The properties in this group change because of a Protected Capability other than a firmware update. The values are not necessarily persistent across all power transitions. */
 pub const TPM2_PT_PERMANENT: TPM2_PT = TPM2_PT_VAR + 0; /* TPMA_PERMANENT */
 pub const TPM2_PT_STARTUP_CLEAR: TPM2_PT = TPM2_PT_VAR + 1; /* TPMA_STARTUP_CLEAR */
