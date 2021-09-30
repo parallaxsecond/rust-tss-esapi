@@ -1,9 +1,11 @@
 // Copyright 2020 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
 
+use std::convert::TryFrom;
+
 use crate::{
     constants::{tss::*, CapabilityType, PropertyTag},
-    handles::{NvIndexHandle, NvIndexTpmHandle, ObjectHandle, TpmHandle},
+    handles::{NvIndexHandle, NvIndexTpmHandle, TpmHandle},
     interface_types::resource_handles::NvAuth,
     nv::storage::NvPublic,
     structures::{CapabilityData, Name},
@@ -36,29 +38,49 @@ pub fn read_full(
         let res = context.nv_read(auth_handle, nv_idx, size, offset as u16)?;
         result.extend_from_slice(&res);
     }
+    context.execute_without_session(|ctx| ctx.tr_close(&mut nv_idx.into()))?;
 
     Ok(result)
+}
+
+/// Returns the NvPublic and Name associated with an NV index TPM handle
+fn get_nv_index_info(
+    context: &mut Context,
+    nv_index_tpm_handle: NvIndexTpmHandle,
+) -> Result<(NvPublic, Name)> {
+    context
+        .tr_from_tpm_public(nv_index_tpm_handle.into())
+        .and_then(|mut object_handle| {
+            context
+                .nv_read_public(NvIndexHandle::from(object_handle))
+                .map_err(|e| {
+                    let _ = context.tr_close(&mut object_handle);
+                    e
+                })
+                .and_then(|(nv_public, name)| {
+                    context.tr_close(&mut object_handle)?;
+                    Ok((nv_public, name))
+                })
+        })
 }
 
 /// Lists all the currently defined NV Indexes' names and public components
 pub fn list(context: &mut Context) -> Result<Vec<(NvPublic, Name)>> {
     context.execute_without_session(|ctx| {
-        let (handles, _) = ctx.get_capability(
+        ctx.get_capability(
             CapabilityType::Handles,
             TPM2_NV_INDEX_FIRST,
             TPM2_PT_NV_INDEX_MAX,
-        )?;
-        let handles = match handles {
-            CapabilityData::Handles(handles) => handles,
-            _ => return Err(Error::local_error(WrapperErrorKind::WrongValueFromTpm)),
-        };
-        handles
-            .iter()
-            .map(|h| ctx.tr_from_tpm_public(*h))
-            .collect::<Result<Vec<ObjectHandle>>>()?
-            .iter()
-            .map(|h| NvIndexHandle::from(*h))
-            .map(|h| ctx.nv_read_public(h))
-            .collect()
+        )
+        .and_then(|(capability_data, _)| match capability_data {
+            CapabilityData::Handles(tpm_handles) => Ok(tpm_handles),
+            _ => Err(Error::local_error(WrapperErrorKind::WrongValueFromTpm)),
+        })
+        .and_then(|tpm_handles| {
+            tpm_handles
+                .iter()
+                .map(|&tpm_handle| get_nv_index_info(ctx, NvIndexTpmHandle::try_from(tpm_handle)?))
+                .collect()
+        })
     })
 }
