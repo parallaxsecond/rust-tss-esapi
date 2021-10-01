@@ -154,7 +154,7 @@ impl PublicEccParametersBuilder {
                 return Err(Error::local_error(WrapperErrorKind::ParamsMissing));
             }
         } else if self.symmetric.is_some() {
-            error!("Symmetric should be set for decryption keys");
+            error!("Symmetric should not be set for decryption keys that are not restricted");
             return Err(Error::local_error(WrapperErrorKind::InconsistentParams));
         }
         if self.is_decryption_key && self.is_signing_key {
