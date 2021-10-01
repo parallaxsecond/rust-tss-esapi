@@ -40,7 +40,7 @@ fn main() {
             .atleast_version(MINIMUM_VERSION)
             .probe("tss2-sys")
             .expect("Failed to find tss2-sys library.");
-        pkg_config::Config::new()
+        let tss2_esys = pkg_config::Config::new()
             .atleast_version(MINIMUM_VERSION)
             .probe("tss2-esys")
             .expect("Failed to find tss2-esys library.");
@@ -52,6 +52,8 @@ fn main() {
             .atleast_version(MINIMUM_VERSION)
             .probe("tss2-mu")
             .expect("Failed to find tss2-mu library.");
+
+        println!("cargo:version={}", tss2_esys.version);
     }
 }
 
