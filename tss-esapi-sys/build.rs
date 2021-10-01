@@ -74,12 +74,7 @@ pub fn generate_from_system(esapi_out: PathBuf) {
         .probe("tss2-mu")
         .expect("Failed to find tss2-mu");
 
-    // Check version to automatically set compatability flag.
-    match tss2_esys.version.chars().next().unwrap() {
-        '2' => println!("cargo:rustc-cfg=tpm2_tss_version=\"2\""),
-        '3' => println!("cargo:rustc-cfg=tpm2_tss_version=\"3\""),
-        major => panic!("Unsupported TSS version: {}", major),
-    }
+    println!("cargo:version={}", tss2_esys.version);
 
     // These three pkg-config files should contain only one include/lib path.
     let tss2_esys_include_path = tss2_esys.include_paths[0]
