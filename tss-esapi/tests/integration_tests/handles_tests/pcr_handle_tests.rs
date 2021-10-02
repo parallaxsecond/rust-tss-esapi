@@ -21,61 +21,68 @@ fn test_conversion_of_invalid_handle() {
     let _ = PcrHandle::try_from(invalid_object_handle).unwrap_err();
 }
 
+macro_rules! test_valid_conversions {
+    ($esys_tr_handle:ident, PcrHandle::$pcr_handle:ident) => {
+        assert_eq!(
+            ObjectHandle::from(PcrHandle::$pcr_handle),
+            ObjectHandle::from($esys_tr_handle),
+            "ObjectHandle conversion failed for PcrHandle::{}",
+            std::stringify!($pcr_handle)
+        );
+
+        assert_eq!(
+            $esys_tr_handle,
+            ESYS_TR::from(PcrHandle::$pcr_handle),
+            "Esys TR handle conversion failed for PcrHandle::{}",
+            std::stringify!($pcr_handle),
+        );
+
+        assert_eq!(
+            PcrHandle::$pcr_handle,
+            PcrHandle::try_from($esys_tr_handle).expect(&format!(
+                "Failed to convert {} to PcrHandle",
+                std::stringify!($esys_tr_handle)
+            )),
+            "{} did not convert to the expected value PcrHandle::{}",
+            std::stringify!($esys_tr_handle),
+            std::stringify!($pcr_handle),
+        );
+    };
+}
+
 #[test]
 fn test_conversion_of_valid_handle() {
-    // closure used for the repeated tests
-    let conversion_check = |valid_esys_tr_value: ESYS_TR| {
-        let valid_object_handle = ObjectHandle::try_from(valid_esys_tr_value).unwrap();
-
-        // Conversion from ESYS_TR and ObjectHandle.
-        let from_esys_tr = PcrHandle::try_from(valid_esys_tr_value).unwrap();
-        let from_object_handle = PcrHandle::try_from(valid_esys_tr_value).unwrap();
-        assert_eq!(from_esys_tr, from_object_handle);
-
-        // Conversion into ObjectHandle
-        let into_object_handle_1: ObjectHandle = from_esys_tr.into();
-        let into_object_handle_2: ObjectHandle = from_object_handle.into();
-        assert_eq!(valid_object_handle, into_object_handle_1);
-        assert_eq!(valid_object_handle, into_object_handle_2);
-
-        // Conversion into ESYS_TR
-        let into_esys_tr_1: ESYS_TR = from_esys_tr.into();
-        let into_esys_tr_2: ESYS_TR = from_object_handle.into();
-        assert_eq!(valid_esys_tr_value, into_esys_tr_1);
-        assert_eq!(valid_esys_tr_value, into_esys_tr_2);
-    };
-
     // Check the valid values
-    conversion_check(ESYS_TR_PCR0);
-    conversion_check(ESYS_TR_PCR1);
-    conversion_check(ESYS_TR_PCR2);
-    conversion_check(ESYS_TR_PCR3);
-    conversion_check(ESYS_TR_PCR4);
-    conversion_check(ESYS_TR_PCR5);
-    conversion_check(ESYS_TR_PCR6);
-    conversion_check(ESYS_TR_PCR7);
-    conversion_check(ESYS_TR_PCR8);
-    conversion_check(ESYS_TR_PCR9);
-    conversion_check(ESYS_TR_PCR10);
-    conversion_check(ESYS_TR_PCR11);
-    conversion_check(ESYS_TR_PCR12);
-    conversion_check(ESYS_TR_PCR13);
-    conversion_check(ESYS_TR_PCR14);
-    conversion_check(ESYS_TR_PCR15);
-    conversion_check(ESYS_TR_PCR16);
-    conversion_check(ESYS_TR_PCR17);
-    conversion_check(ESYS_TR_PCR18);
-    conversion_check(ESYS_TR_PCR19);
-    conversion_check(ESYS_TR_PCR20);
-    conversion_check(ESYS_TR_PCR21);
-    conversion_check(ESYS_TR_PCR22);
-    conversion_check(ESYS_TR_PCR23);
-    conversion_check(ESYS_TR_PCR24);
-    conversion_check(ESYS_TR_PCR25);
-    conversion_check(ESYS_TR_PCR26);
-    conversion_check(ESYS_TR_PCR27);
-    conversion_check(ESYS_TR_PCR28);
-    conversion_check(ESYS_TR_PCR29);
-    conversion_check(ESYS_TR_PCR30);
-    conversion_check(ESYS_TR_PCR31);
+    test_valid_conversions!(ESYS_TR_PCR0, PcrHandle::Pcr0);
+    test_valid_conversions!(ESYS_TR_PCR1, PcrHandle::Pcr1);
+    test_valid_conversions!(ESYS_TR_PCR2, PcrHandle::Pcr2);
+    test_valid_conversions!(ESYS_TR_PCR3, PcrHandle::Pcr3);
+    test_valid_conversions!(ESYS_TR_PCR4, PcrHandle::Pcr4);
+    test_valid_conversions!(ESYS_TR_PCR5, PcrHandle::Pcr5);
+    test_valid_conversions!(ESYS_TR_PCR6, PcrHandle::Pcr6);
+    test_valid_conversions!(ESYS_TR_PCR7, PcrHandle::Pcr7);
+    test_valid_conversions!(ESYS_TR_PCR8, PcrHandle::Pcr8);
+    test_valid_conversions!(ESYS_TR_PCR9, PcrHandle::Pcr9);
+    test_valid_conversions!(ESYS_TR_PCR10, PcrHandle::Pcr10);
+    test_valid_conversions!(ESYS_TR_PCR11, PcrHandle::Pcr11);
+    test_valid_conversions!(ESYS_TR_PCR12, PcrHandle::Pcr12);
+    test_valid_conversions!(ESYS_TR_PCR13, PcrHandle::Pcr13);
+    test_valid_conversions!(ESYS_TR_PCR14, PcrHandle::Pcr14);
+    test_valid_conversions!(ESYS_TR_PCR15, PcrHandle::Pcr15);
+    test_valid_conversions!(ESYS_TR_PCR16, PcrHandle::Pcr16);
+    test_valid_conversions!(ESYS_TR_PCR17, PcrHandle::Pcr17);
+    test_valid_conversions!(ESYS_TR_PCR18, PcrHandle::Pcr18);
+    test_valid_conversions!(ESYS_TR_PCR19, PcrHandle::Pcr19);
+    test_valid_conversions!(ESYS_TR_PCR20, PcrHandle::Pcr20);
+    test_valid_conversions!(ESYS_TR_PCR21, PcrHandle::Pcr21);
+    test_valid_conversions!(ESYS_TR_PCR22, PcrHandle::Pcr22);
+    test_valid_conversions!(ESYS_TR_PCR23, PcrHandle::Pcr23);
+    test_valid_conversions!(ESYS_TR_PCR24, PcrHandle::Pcr24);
+    test_valid_conversions!(ESYS_TR_PCR25, PcrHandle::Pcr25);
+    test_valid_conversions!(ESYS_TR_PCR26, PcrHandle::Pcr26);
+    test_valid_conversions!(ESYS_TR_PCR27, PcrHandle::Pcr27);
+    test_valid_conversions!(ESYS_TR_PCR28, PcrHandle::Pcr28);
+    test_valid_conversions!(ESYS_TR_PCR29, PcrHandle::Pcr29);
+    test_valid_conversions!(ESYS_TR_PCR30, PcrHandle::Pcr30);
+    test_valid_conversions!(ESYS_TR_PCR31, PcrHandle::Pcr31);
 }
