@@ -39,7 +39,7 @@ impl PublicRsaParametersBuilder {
 
     /// Creates a [PublicRsaParametersBuilder] that is setup
     /// to build a restructed decryption key.
-    pub fn new_restricted_decryption_key(
+    pub const fn new_restricted_decryption_key(
         symmetric: SymmetricDefinitionObject,
         key_bits: RsaKeyBits,
         exponent: RsaExponent,

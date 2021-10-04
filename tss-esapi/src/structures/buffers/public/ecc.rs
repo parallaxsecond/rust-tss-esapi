@@ -35,7 +35,7 @@ impl PublicEccParametersBuilder {
     }
 
     /// Create parameters for a restricted decryption key (i.e. a storage key)
-    pub fn new_restricted_decryption_key(
+    pub const fn new_restricted_decryption_key(
         symmetric: SymmetricDefinitionObject,
         curve: EccCurve,
     ) -> Self {
@@ -51,7 +51,7 @@ impl PublicEccParametersBuilder {
     }
 
     /// Create parameters for an unrestricted signing key
-    pub fn new_unrestricted_signing_key(scheme: EccScheme, curve: EccCurve) -> Self {
+    pub const fn new_unrestricted_signing_key(scheme: EccScheme, curve: EccCurve) -> Self {
         PublicEccParametersBuilder {
             symmetric: None,
             ecc_scheme: Some(scheme),
