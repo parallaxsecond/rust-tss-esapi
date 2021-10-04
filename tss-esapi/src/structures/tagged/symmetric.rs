@@ -167,6 +167,12 @@ impl SymmetricDefinitionObject {
     };
 }
 
+impl Default for SymmetricDefinitionObject {
+    fn default() -> Self {
+        Self::Null
+    }
+}
+
 impl From<SymmetricDefinitionObject> for TPMT_SYM_DEF_OBJECT {
     fn from(symmetric_definition_object: SymmetricDefinitionObject) -> TPMT_SYM_DEF_OBJECT {
         match symmetric_definition_object {
