@@ -10,9 +10,7 @@ use log::error;
 use std::convert::{TryFrom, TryInto};
 
 /// Builder for `TPMS_RSA_PARMS` values.
-// Most of the field types are from bindgen which does not implement Debug on them.
-#[allow(missing_debug_implementations)]
-#[derive(Copy, Clone, Default)]
+#[derive(Copy, Clone, Default, Debug)]
 pub struct PublicRsaParametersBuilder {
     symmetric: Option<SymmetricDefinitionObject>,
     rsa_scheme: Option<RsaScheme>,
