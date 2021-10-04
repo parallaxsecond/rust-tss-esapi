@@ -40,7 +40,7 @@ fn main() {
             .atleast_version(MINIMUM_VERSION)
             .probe("tss2-sys")
             .expect("Failed to find tss2-sys library.");
-        pkg_config::Config::new()
+        let tss2_esys = pkg_config::Config::new()
             .atleast_version(MINIMUM_VERSION)
             .probe("tss2-esys")
             .expect("Failed to find tss2-esys library.");
@@ -52,6 +52,8 @@ fn main() {
             .atleast_version(MINIMUM_VERSION)
             .probe("tss2-mu")
             .expect("Failed to find tss2-mu library.");
+
+        println!("cargo:version={}", tss2_esys.version);
     }
 }
 
@@ -74,12 +76,7 @@ pub fn generate_from_system(esapi_out: PathBuf) {
         .probe("tss2-mu")
         .expect("Failed to find tss2-mu");
 
-    // Check version to automatically set compatability flag.
-    match tss2_esys.version.chars().next().unwrap() {
-        '2' => println!("cargo:rustc-cfg=tpm2_tss_version=\"2\""),
-        '3' => println!("cargo:rustc-cfg=tpm2_tss_version=\"3\""),
-        major => panic!("Unsupported TSS version: {}", major),
-    }
+    println!("cargo:version={}", tss2_esys.version);
 
     // These three pkg-config files should contain only one include/lib path.
     let tss2_esys_include_path = tss2_esys.include_paths[0]
