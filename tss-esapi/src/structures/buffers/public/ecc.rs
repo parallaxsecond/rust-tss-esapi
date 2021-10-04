@@ -10,7 +10,7 @@ use log::error;
 use std::convert::{TryFrom, TryInto};
 
 /// Builder for PublicEccParameters.
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, Default)]
 pub struct PublicEccParametersBuilder {
     symmetric: Option<SymmetricDefinitionObject>,
     ecc_scheme: Option<EccScheme>,
