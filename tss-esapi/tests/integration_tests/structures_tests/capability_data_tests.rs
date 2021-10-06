@@ -37,7 +37,7 @@ fn test_pp_commands() {
     let mut context = create_ctx_without_session();
 
     let (_capabs, _more) = context
-        .get_capability(CapabilityType::PPCommands, 0, 80)
+        .get_capability(CapabilityType::PpCommands, 0, 80)
         .unwrap();
 }
 
@@ -55,7 +55,7 @@ fn test_assigned_pcr() {
     let mut context = create_ctx_without_session();
 
     let (_capabs, _more) = context
-        .get_capability(CapabilityType::AssignedPCR, 0, 80)
+        .get_capability(CapabilityType::AssignedPcr, 0, 80)
         .unwrap();
 }
 
@@ -64,7 +64,7 @@ fn test_tpm_properties() {
     let mut context = create_ctx_without_session();
 
     let (_capabs, _more) = context
-        .get_capability(CapabilityType::TPMProperties, 0, 80)
+        .get_capability(CapabilityType::TpmProperties, 0, 80)
         .unwrap();
 }
 
@@ -73,7 +73,7 @@ fn test_pcr_properties() {
     let mut context = create_ctx_without_session();
 
     let (_capabs, _more) = context
-        .get_capability(CapabilityType::PCRProperties, 0, 80)
+        .get_capability(CapabilityType::PcrProperties, 0, 80)
         .unwrap();
 }
 
@@ -82,6 +82,28 @@ fn test_ecc_curves() {
     let mut context = create_ctx_without_session();
 
     let (_capabs, _more) = context
-        .get_capability(CapabilityType::ECCCurves, 0, 80)
+        .get_capability(CapabilityType::EccCurves, 0, 80)
         .unwrap();
+}
+
+// For these tests to work the tpm2-tss library need to have the
+// authPolicies field in the TPMU_CAPABILITIES union.
+#[ignore]
+#[test]
+fn test_auth_policies() {
+    let mut context = create_ctx_without_session();
+
+    let (_capabs, _more) = context
+        .get_capability(CapabilityType::AuthPolicies, 0, 80)
+        .unwrap();
+}
+
+// For these tests to work the tpm2-tss library need to have the
+// actData field in the TPMU_CAPABILITIES union.
+#[ignore]
+#[test]
+fn test_act() {
+    let mut context = create_ctx_without_session();
+
+    let (_capabs, _more) = context.get_capability(CapabilityType::Act, 0, 80).unwrap();
 }
