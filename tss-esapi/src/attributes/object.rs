@@ -2,7 +2,7 @@ use crate::{tss2_esys::TPMA_OBJECT, Result};
 use bitfield::bitfield;
 
 bitfield! {
-    /// Butfield representing the object attributes.
+    /// Bitfield representing the object attributes.
     #[derive(Copy, Clone, Eq, PartialEq)]
     pub struct ObjectAttributes(TPMA_OBJECT);
     impl Debug;
