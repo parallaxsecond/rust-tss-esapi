@@ -233,7 +233,7 @@ impl PublicBuilder {
                         Error::local_error(WrapperErrorKind::ParamsMissing)
                     })?,
                     unique: self.rsa_unique_identifier.ok_or_else(|| {
-                        error!("RSA unique identifier has not been set in the PublicBuilder even though the RSA algorithm had been selected.");
+                        error!("RSA unique identifier has not been set in the PublicBuilder even though the RSA algorithm had been selected. Consider using: .with_rsa_unique_identifier(&PublicKeyRsa::default())");
                         Error::local_error(WrapperErrorKind::ParamsMissing)
                     })?,
                 })
@@ -248,7 +248,7 @@ impl PublicBuilder {
                         Error::local_error(WrapperErrorKind::ParamsMissing)
                     })?,
                     unique: self.keyed_hash_unique_identifier.ok_or_else(|| {
-                        error!("Keyed hash unique identifier have not been set in the Public Builder even though the keyed hash algorithm have been selected");
+                        error!("Keyed hash unique identifier have not been set in the Public Builder even though the keyed hash algorithm have been selected. Consider using: .with_keyed_hash_unique_identifier(&Digest::default())");
                         Error::local_error(WrapperErrorKind::ParamsMissing)
                     })?,
                 })
@@ -263,7 +263,7 @@ impl PublicBuilder {
                         Error::local_error(WrapperErrorKind::ParamsMissing)
                     })?,
                     unique: self.ecc_unique_identifier.ok_or_else(|| {
-                        error!("ECC unique identifier have not been set in the Public Builder even though the ECC algorithm have been selected");
+                        error!("ECC unique identifier have not been set in the Public Builder even though the ECC algorithm have been selected. Consider using: .with_ecc_unique_identifier(&EccPoint::default())");
                         Error::local_error(WrapperErrorKind::ParamsMissing)
                     })?,
                 })
@@ -278,7 +278,7 @@ impl PublicBuilder {
                         Error::local_error(WrapperErrorKind::ParamsMissing)
                     })?,
                     unique: self.symmetric_cipher_unique_identifier.ok_or_else(|| {
-                        error!("Symmetric cipher unique identifier have not been set in the Public Builder even though the symmetric cipher algorithm have been selected");
+                        error!("Symmetric cipher unique identifier have not been set in the Public Builder even though the symmetric cipher algorithm have been selected. Consider using: .with_symmetric_cipher_unique_identifier(&Digest::default())");
                         Error::local_error(WrapperErrorKind::ParamsMissing)
                     })?,
                 })
