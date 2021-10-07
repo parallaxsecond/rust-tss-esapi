@@ -165,6 +165,9 @@ impl SymmetricDefinitionObject {
         key_bits: AesKeyBits::Aes256,
         mode: SymmetricMode::Cfb,
     };
+    pub(crate) fn is_null(&self) -> bool {
+        matches!(self, Self::Null)
+    }
 }
 
 impl Default for SymmetricDefinitionObject {

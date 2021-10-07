@@ -149,13 +149,20 @@ impl PublicRsaParametersBuilder {
         })?;
 
         if self.restricted && self.is_decryption_key {
-            if self.symmetric.is_none() {
-                error!("Symmetric parameter has not been provided even though 'restricted' and 'is_decrypt_key' are set to true");
+            if let Some(symmetric) = self.symmetric {
+                if symmetric.is_null() {
+                    error!("Found symmetric parameter but it was Null but 'restricted' and 'is_decrypt_key' are set to true");
+                    return Err(Error::local_error(WrapperErrorKind::InconsistentParams));
+                }
+            } else {
+                error!("Found symmetric parameter, expected it to be Null nor not set at all because 'restricted' and 'is_decrypt_key' are set to false");
                 return Err(Error::local_error(WrapperErrorKind::ParamsMissing));
             }
-        } else if self.symmetric.is_some() {
-            error!("Found symmetric parameter, expected it to be None because 'restricted' and 'is_decrypt_key' are set to false");
-            return Err(Error::local_error(WrapperErrorKind::InconsistentParams));
+        } else if let Some(symmetric) = self.symmetric {
+            if !symmetric.is_null() {
+                error!("Found symmetric parameter, expected it to be Null nor not set at all because 'restricted' and 'is_decrypt_key' are set to false");
+                return Err(Error::local_error(WrapperErrorKind::InconsistentParams));
+            }
         }
 
         // TODO: Figure out if it actually should be allowed to not provide

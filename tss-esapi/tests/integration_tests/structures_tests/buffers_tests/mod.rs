@@ -6,3 +6,4 @@ mod digest_tests;
 mod max_buffer_tests;
 mod nonce_tests;
 mod public_rsa_exponent_tests;
+mod public_rsa_parameters_tests;
