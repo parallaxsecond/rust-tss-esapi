@@ -329,14 +329,14 @@ impl Public {
         match self {
             Public::Rsa {
                 object_attributes, ..
-            } => *object_attributes,
-            Public::KeyedHash {
+            }
+            | Public::KeyedHash {
                 object_attributes, ..
-            } => *object_attributes,
-            Public::Ecc {
+            }
+            | Public::Ecc {
                 object_attributes, ..
-            } => *object_attributes,
-            Public::SymCipher {
+            }
+            | Public::SymCipher {
                 object_attributes, ..
             } => *object_attributes,
         }
@@ -346,25 +346,31 @@ impl Public {
     pub fn name_hashing_algorithm(&self) -> HashingAlgorithm {
         match self {
             Public::Rsa {
-                object_attributes: _,
+                name_hashing_algorithm,
+                ..
+            }
+            | Public::KeyedHash {
+                name_hashing_algorithm,
+                ..
+            }
+            | Public::Ecc {
+                name_hashing_algorithm,
+                ..
+            }
+            | Public::SymCipher {
                 name_hashing_algorithm,
                 ..
             } => *name_hashing_algorithm,
-            Public::KeyedHash {
-                object_attributes: _,
-                name_hashing_algorithm,
-                ..
-            } => *name_hashing_algorithm,
-            Public::Ecc {
-                object_attributes: _,
-                name_hashing_algorithm,
-                ..
-            } => *name_hashing_algorithm,
-            Public::SymCipher {
-                object_attributes: _,
-                name_hashing_algorithm,
-                ..
-            } => *name_hashing_algorithm,
+        }
+    }
+
+    /// Returns the auth policy digest.
+    pub fn auth_policy(&self) -> &Digest {
+        match self {
+            Public::Rsa { auth_policy, .. }
+            | Public::KeyedHash { auth_policy, .. }
+            | Public::Ecc { auth_policy, .. }
+            | Public::SymCipher { auth_policy, .. } => auth_policy,
         }
     }
 }
