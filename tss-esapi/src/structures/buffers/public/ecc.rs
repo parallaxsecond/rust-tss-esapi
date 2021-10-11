@@ -10,7 +10,7 @@ use log::error;
 use std::convert::{TryFrom, TryInto};
 
 /// Builder for PublicEccParameters.
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, Default)]
 pub struct PublicEccParametersBuilder {
     symmetric: Option<SymmetricDefinitionObject>,
     ecc_scheme: Option<EccScheme>,
@@ -35,7 +35,7 @@ impl PublicEccParametersBuilder {
     }
 
     /// Create parameters for a restricted decryption key (i.e. a storage key)
-    pub fn new_restricted_decryption_key(
+    pub const fn new_restricted_decryption_key(
         symmetric: SymmetricDefinitionObject,
         curve: EccCurve,
     ) -> Self {
@@ -51,7 +51,7 @@ impl PublicEccParametersBuilder {
     }
 
     /// Create parameters for an unrestricted signing key
-    pub fn new_unrestricted_signing_key(scheme: EccScheme, curve: EccCurve) -> Self {
+    pub const fn new_unrestricted_signing_key(scheme: EccScheme, curve: EccCurve) -> Self {
         PublicEccParametersBuilder {
             symmetric: None,
             ecc_scheme: Some(scheme),
@@ -149,14 +149,22 @@ impl PublicEccParametersBuilder {
         })?;
 
         if self.restricted && self.is_decryption_key {
-            if self.symmetric.is_none() {
-                error!("Symmetric should be set for restricted & decryption keys");
+            if let Some(symmetric) = self.symmetric {
+                if symmetric.is_null() {
+                    error!("Found symmetric parameter but it was Null but 'restricted' and 'is_decrypt_key' are set to true");
+                    return Err(Error::local_error(WrapperErrorKind::InconsistentParams));
+                }
+            } else {
+                error!("Found symmetric parameter, expected it to be Null nor not set at all because 'restricted' and 'is_decrypt_key' are set to false");
                 return Err(Error::local_error(WrapperErrorKind::ParamsMissing));
             }
-        } else if self.symmetric.is_some() {
-            error!("Symmetric should not be set for decryption keys that are not restricted");
-            return Err(Error::local_error(WrapperErrorKind::InconsistentParams));
+        } else if let Some(symmetric) = self.symmetric {
+            if !symmetric.is_null() {
+                error!("Found symmetric parameter, expected it to be Null nor not set at all because 'restricted' and 'is_decrypt_key' are set to false");
+                return Err(Error::local_error(WrapperErrorKind::InconsistentParams));
+            }
         }
+
         if self.is_decryption_key && self.is_signing_key {
             error!("Key cannot be decryption and signing key at the same time");
             return Err(Error::local_error(WrapperErrorKind::InconsistentParams));
