@@ -10,6 +10,15 @@
 
 set -euf -o pipefail
 
+#################################################
+# Generate bindings for non-"standard" versions #
+#################################################
+if [[ "$TPM2_TSS_VERSION" != "2.3.3" ]]; then
+	FEATURES="--features=generate-bindings"
+else
+	FEATURES=""
+fi
+
 #################################
 # Run the TPM simulation server #
 #################################
@@ -25,9 +34,9 @@ cargo clippy --all-targets --all-features -- -D clippy::all -D clippy::cargo
 ###################
 # Build the crate #
 ###################
-RUST_BACKTRACE=1 cargo build
+RUST_BACKTRACE=1 cargo build $FEATURES
 
 #################
 # Run the tests #
 #################
-TEST_TCTI=mssim: RUST_BACKTRACE=1 RUST_LOG=info cargo test -- --test-threads=1 --nocapture
+TEST_TCTI=mssim: RUST_BACKTRACE=1 RUST_LOG=info cargo test $FEATURES -- --test-threads=1 --nocapture
