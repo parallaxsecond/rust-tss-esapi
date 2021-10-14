@@ -19,7 +19,7 @@ mod test_duplicate {
     };
 
     #[test]
-    fn test_duplicate() {
+    fn test_duplicate_and_import() {
         let mut context = create_ctx_without_session();
 
         let trial_session = context
@@ -198,7 +198,7 @@ mod test_duplicate {
             .unwrap();
         context.set_sessions((Some(policy_auth_session), None, None));
 
-        let (data, private, secret) = context
+        let (data, duplicate, secret) = context
             .duplicate(
                 object_to_duplicate_handle,
                 new_parent_handle,
@@ -206,6 +206,47 @@ mod test_duplicate {
                 SymmetricDefinitionObject::Null,
             )
             .unwrap();
-        eprintln!("D: {:?}, P: {:?}, S: {:?}", data, private, secret);
+        eprintln!("D: {:?}, P: {:?}, S: {:?}", data, duplicate, secret);
+
+        let public = context
+            .read_public(object_to_duplicate_handle.into())
+            .unwrap()
+            .0;
+
+        let session = context
+            .start_auth_session(
+                None,
+                None,
+                None,
+                SessionType::Hmac,
+                SymmetricDefinition::AES_256_CFB,
+                HashingAlgorithm::Sha256,
+            )
+            .unwrap();
+        let (session_attributes, session_attributes_mask) = SessionAttributesBuilder::new()
+            .with_decrypt(true)
+            .with_encrypt(true)
+            .build();
+        context
+            .tr_sess_set_attributes(
+                session.unwrap(),
+                session_attributes,
+                session_attributes_mask,
+            )
+            .unwrap();
+        context.set_sessions((session, None, None));
+
+        let private = context
+            .import(
+                new_parent_handle,
+                Some(data),
+                public,
+                duplicate,
+                secret,
+                SymmetricDefinitionObject::Null,
+            )
+            .unwrap();
+
+        eprintln!("P: {:?}", private);
     }
 }
