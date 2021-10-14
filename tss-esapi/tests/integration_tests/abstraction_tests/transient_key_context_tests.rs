@@ -83,11 +83,44 @@ fn wrong_auth_size() {
 #[test]
 fn load_bad_sized_key() {
     let mut ctx = create_ctx();
-    assert_eq!(
-        ctx.load_external_rsa_public_key(&[0xDE, 0xAD, 0xBE, 0xEF])
-            .unwrap_err(),
-        Error::WrapperError(ErrorKind::InvalidParam)
-    );
+    let key_params = KeyParams::Rsa {
+        size: RsaKeyBits::Rsa1024,
+        scheme: RsaScheme::create(RsaSchemeAlgorithm::RsaSsa, Some(HashingAlgorithm::Sha256))
+            .expect("Failed to create RSA scheme"),
+        pub_exponent: RsaExponent::default(),
+    };
+    let _ = ctx
+        .load_external_public_key(PublicKey::Rsa(vec![0xDE, 0xAD, 0xBE, 0xEF]), key_params)
+        .unwrap_err();
+}
+
+#[test]
+fn load_with_invalid_params() {
+    let pub_key = vec![
+        0x96, 0xDC, 0x72, 0x77, 0x49, 0x82, 0xFD, 0x2D, 0x06, 0x65, 0x8C, 0xE5, 0x3A, 0xCD, 0xED,
+        0xBD, 0x50, 0xD7, 0x6F, 0x3B, 0xE5, 0x6A, 0x76, 0xED, 0x3E, 0xD8, 0xF9, 0x93, 0x40, 0x55,
+        0x86, 0x6F, 0xBE, 0x76, 0x60, 0xD2, 0x03, 0x23, 0x59, 0x19, 0x8D, 0xFC, 0x51, 0x6A, 0x95,
+        0xC8, 0x5D, 0x5A, 0x89, 0x4D, 0xE5, 0xEA, 0x44, 0x78, 0x29, 0x62, 0xDB, 0x3F, 0xF0, 0xF7,
+        0x49, 0x15, 0xA5, 0xAE, 0x6D, 0x81, 0x8F, 0x06, 0x7B, 0x0B, 0x50, 0x7A, 0x2F, 0xEB, 0x00,
+        0xB6, 0x12, 0xF3, 0x10, 0xAF, 0x4D, 0x4A, 0xA9, 0xD9, 0x81, 0xBB, 0x1E, 0x2B, 0xDF, 0xB9,
+        0x33, 0x3D, 0xD6, 0xB7, 0x8D, 0x23, 0x7C, 0x7F, 0xE7, 0x12, 0x48, 0x4F, 0x26, 0x73, 0xAF,
+        0x63, 0x51, 0xA9, 0xDB, 0xA4, 0xAB, 0xB7, 0x27, 0x00, 0xD7, 0x1C, 0xFC, 0x2F, 0x61, 0x2A,
+        0xB9, 0x5B, 0x66, 0xA0, 0xE0, 0xD8, 0xF3, 0xD9,
+    ];
+
+    let key_params = KeyParams::Ecc {
+        curve: EccCurve::NistP256,
+        scheme: EccScheme::create(
+            EccSchemeAlgorithm::EcDsa,
+            Some(HashingAlgorithm::Sha256),
+            None,
+        )
+        .expect("Failed to create ecc scheme"),
+    };
+    let mut ctx = create_ctx();
+    let _ = ctx
+        .load_external_public_key(PublicKey::Rsa(pub_key), key_params)
+        .unwrap_err();
 }
 
 #[test]
@@ -133,13 +166,15 @@ fn verify() {
     );
 
     let mut ctx = create_ctx();
-    let pub_key = ctx.load_external_rsa_public_key(&pub_key).unwrap();
     let key_params = KeyParams::Rsa {
         size: RsaKeyBits::Rsa1024,
         scheme: RsaScheme::create(RsaSchemeAlgorithm::RsaSsa, Some(HashingAlgorithm::Sha256))
             .expect("Failed to create RSA scheme"),
         pub_exponent: RsaExponent::default(),
     };
+    let pub_key = ctx
+        .load_external_public_key(PublicKey::Rsa(pub_key), key_params)
+        .unwrap();
     let _ = ctx
         .verify_signature(pub_key, key_params, digest, signature)
         .expect("the signature should be valid");
@@ -195,13 +230,15 @@ fn encrypt_decrypt() {
             .expect("Failed to create RSA scheme"),
         pub_exponent: RsaExponent::default(),
     };
-    let (key, auth) = ctx.create_key(key_params, 16).unwrap();
-    let dec_key = key.clone();
+    let (dec_key, auth) = ctx.create_key(key_params, 16).unwrap();
+    let enc_key = ctx
+        .load_external_public_key(dec_key.public().clone(), key_params)
+        .unwrap();
     let message = vec![0x1, 0x2, 0x3];
 
     let ciphertext = ctx
         .rsa_encrypt(
-            key,
+            enc_key,
             key_params,
             None,
             PublicKeyRsa::try_from(message.clone()).unwrap(),
@@ -294,11 +331,9 @@ fn verify_wrong_key() {
         .unwrap();
 
     // Import and verify with the second key
-    let pub_key = match key2.public() {
-        PublicKey::Rsa(pub_key) => pub_key,
-        _ => panic!("Got wrong type of key!"),
-    };
-    let pub_key = ctx.load_external_rsa_public_key(pub_key).unwrap();
+    let pub_key = ctx
+        .load_external_public_key(key2.public().clone(), key_params2)
+        .unwrap();
     if let Error::Tss2Error(error) = ctx
         .verify_signature(
             pub_key,
@@ -332,11 +367,9 @@ fn verify_wrong_digest() {
             Digest::try_from(HASH.to_vec()).unwrap(),
         )
         .unwrap();
-    let pub_key = match key.public() {
-        PublicKey::Rsa(pub_key) => pub_key,
-        _ => panic!("Got wrong type of key!"),
-    };
-    let pub_key = ctx.load_external_rsa_public_key(pub_key).unwrap();
+    let pub_key = ctx
+        .load_external_public_key(key.public().clone(), key_params)
+        .unwrap();
 
     let mut digest_values = HASH.to_vec();
     digest_values[0..4].copy_from_slice(&[0xDE, 0xAD, 0xBE, 0xEF]);
@@ -374,11 +407,9 @@ fn full_test() {
                 Digest::try_from(HASH.to_vec()).unwrap(),
             )
             .unwrap();
-        let pub_key = match key.public() {
-            PublicKey::Rsa(pub_key) => pub_key,
-            _ => panic!("Got wrong type of key!"),
-        };
-        let pub_key = ctx.load_external_rsa_public_key(pub_key).unwrap();
+        let pub_key = ctx
+            .load_external_public_key(key.public().clone(), key_params)
+            .unwrap();
         let _ = ctx
             .verify_signature(
                 pub_key,
@@ -450,9 +481,12 @@ fn full_ecc_test() {
                 Digest::try_from(HASH.to_vec()).unwrap(),
             )
             .unwrap();
+        let pub_key = ctx
+            .load_external_public_key(key.public().clone(), key_params)
+            .unwrap();
         let _ = ctx
             .verify_signature(
-                key,
+                pub_key,
                 key_params,
                 Digest::try_from(HASH.to_vec()).unwrap(),
                 signature,
