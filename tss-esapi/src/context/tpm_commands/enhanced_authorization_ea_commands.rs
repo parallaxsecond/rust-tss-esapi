@@ -335,7 +335,113 @@ impl Context {
         }
     }
 
-    // Missing function: PolicyDuplicationSelect
+    /// Cause conditional gating of a policy based on duplication parent's name.
+    ///
+    /// # Arguments
+    /// * `policy_session` - The [policy session][PolicySession] being extended.
+    /// * `object_name` - The [name][Name] of the object being duplicated.
+    /// * `new_parent_name` - The [name][Name] of the new parent.
+    /// * `include_object` - Flag indicating if `object_name` will be included in policy
+    ///                      calculation.
+    ///
+    /// # Details
+    /// Set `include_object` only when this commend is used in conjunction with
+    /// [`policy_authorize`][Context::policy_authorize].
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// # use std::convert::{TryFrom, TryInto};
+    /// # use tss_esapi::attributes::{ObjectAttributesBuilder, SessionAttributesBuilder};
+    /// # use tss_esapi::constants::{tss::TPM2_CC_Duplicate, SessionType};
+    /// # use tss_esapi::handles::ObjectHandle;
+    /// # use tss_esapi::interface_types::{
+    /// #     algorithm::{HashingAlgorithm, PublicAlgorithm},
+    /// #     key_bits::RsaKeyBits,
+    /// #     resource_handles::Hierarchy,
+    /// #     session_handles::PolicySession,
+    /// # };
+    /// # use tss_esapi::structures::SymmetricDefinition;
+    /// # use tss_esapi::structures::{
+    /// #     PublicBuilder, PublicKeyRsa, PublicRsaParametersBuilder, RsaScheme,
+    /// #     RsaExponent, Name,
+    /// # };
+    /// # use tss_esapi::structures::SymmetricDefinitionObject;
+    /// # use tss_esapi::abstraction::cipher::Cipher;
+    /// # use tss_esapi::{Context, TctiNameConf};
+    /// #
+    /// # let mut context = // ...
+    /// #     Context::new(
+    /// #         TctiNameConf::from_environment_variable().expect("Failed to get TCTI"),
+    /// #     ).expect("Failed to create Context");
+    /// #
+    /// # let trial_session = context
+    /// #     .start_auth_session(
+    /// #         None,
+    /// #         None,
+    /// #         None,
+    /// #         SessionType::Trial,
+    /// #         SymmetricDefinition::AES_256_CFB,
+    /// #         HashingAlgorithm::Sha256,
+    /// #     )
+    /// #     .expect("Start auth session failed")
+    /// #     .expect("Start auth session returned a NONE handle");
+    /// #
+    /// # let (policy_auth_session_attributes, policy_auth_session_attributes_mask) =
+    /// #     SessionAttributesBuilder::new()
+    /// #         .with_decrypt(true)
+    /// #         .with_encrypt(true)
+    /// #         .build();
+    /// # context
+    /// #     .tr_sess_set_attributes(
+    /// #         trial_session,
+    /// #         policy_auth_session_attributes,
+    /// #         policy_auth_session_attributes_mask,
+    /// #     )
+    /// #     .expect("tr_sess_set_attributes call failed");
+    /// #
+    /// # let policy_session = PolicySession::try_from(trial_session)
+    /// #     .expect("Failed to convert auth session into policy session");
+    /// #
+    /// # let object_name: Name = Vec::<u8>::new().try_into().unwrap();
+    /// # let parent_name = object_name.clone();
+    /// #
+    /// context
+    ///     .policy_duplication_select(policy_session, object_name, parent_name, false)
+    ///     .expect("Policy command code");
+    /// #
+    /// # /// Digest of the policy that allows duplication
+    /// # let digest = context
+    /// #     .policy_get_digest(policy_session)
+    /// #     .expect("Could retrieve digest");
+    /// ```
+    pub fn policy_duplication_select(
+        &mut self,
+        policy_session: PolicySession,
+        object_name: Name,
+        new_parent_name: Name,
+        include_object: bool,
+    ) -> Result<()> {
+        let ret = unsafe {
+            Esys_PolicyDuplicationSelect(
+                self.mut_context(),
+                SessionHandle::from(policy_session).into(),
+                self.optional_session_1(),
+                self.optional_session_2(),
+                self.optional_session_3(),
+                &object_name.try_into()?,
+                &new_parent_name.try_into()?,
+                if include_object { 1 } else { 0 },
+            )
+        };
+        let ret = Error::from_tss_rc(ret);
+        if ret.is_success() {
+            Ok(())
+        } else {
+            error!("Error when computing policy duplication select: {}", ret);
+            Err(ret)
+        }
+    }
 
     /// Cause conditional gating of a policy based on an authorized policy
     ///

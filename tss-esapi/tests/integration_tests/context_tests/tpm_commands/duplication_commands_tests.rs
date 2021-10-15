@@ -3,8 +3,9 @@
 mod test_duplicate {
     use crate::common::{create_ctx_with_session, create_ctx_without_session};
     use std::convert::TryFrom;
+    use std::convert::TryInto;
     use tss_esapi::attributes::{ObjectAttributesBuilder, SessionAttributesBuilder};
-    use tss_esapi::constants::{tss::TPM2_CC_Duplicate, SessionType};
+    use tss_esapi::constants::SessionType;
     use tss_esapi::handles::ObjectHandle;
     use tss_esapi::interface_types::{
         algorithm::{HashingAlgorithm, PublicAlgorithm},
@@ -20,51 +21,10 @@ mod test_duplicate {
 
     #[test]
     fn test_duplicate_and_import() {
-        let mut context = create_ctx_without_session();
-
-        let trial_session = context
-            .start_auth_session(
-                None,
-                None,
-                None,
-                SessionType::Trial,
-                SymmetricDefinition::AES_256_CFB,
-                HashingAlgorithm::Sha256,
-            )
-            .expect("Start auth session failed")
-            .expect("Start auth session returned a NONE handle");
-
-        let (policy_auth_session_attributes, policy_auth_session_attributes_mask) =
-            SessionAttributesBuilder::new()
-                .with_decrypt(true)
-                .with_encrypt(true)
-                .build();
-        context
-            .tr_sess_set_attributes(
-                trial_session,
-                policy_auth_session_attributes,
-                policy_auth_session_attributes_mask,
-            )
-            .expect("tr_sess_set_attributes call failed");
-
-        let policy_session = PolicySession::try_from(trial_session)
-            .expect("Failed to convert auth session into policy session");
-
-        context
-            .policy_auth_value(policy_session)
-            .expect("Policy auth value");
-
-        context
-            .policy_command_code(policy_session, TPM2_CC_Duplicate)
-            .expect("Policy command code");
-
-        let digest = context
-            .policy_get_digest(policy_session)
-            .expect("Could retrieve digest");
-
-        drop(context);
         let mut context = create_ctx_with_session();
 
+        // First: create a target parent object.
+        // The key that we will duplicate will be a child of this target parent.
         let parent_object_attributes = ObjectAttributesBuilder::new()
             .with_fixed_tpm(true)
             .with_fixed_parent(true)
@@ -96,10 +56,68 @@ mod test_duplicate {
             .build()
             .expect("public to be valid");
 
-        let parent_of_object_to_duplicate_handle = context
+        let new_parent_handle = context
             .create_primary(Hierarchy::Owner, &public_parent, None, None, None, None)
             .unwrap()
             .key_handle;
+
+        // The name of the parent will be used to restrict duplication to
+        // only this one parent.
+        let parent_name = context.read_public(new_parent_handle).unwrap().1;
+
+        drop(context);
+
+        // Trial session will be used to compute a policy digest.
+        // The policy will allow key duplication to one specified target parent.
+        // The target parent would be selected using "parent_name".
+        let mut context = create_ctx_without_session();
+
+        let trial_session = context
+            .start_auth_session(
+                None,
+                None,
+                None,
+                SessionType::Trial,
+                SymmetricDefinition::AES_256_CFB,
+                HashingAlgorithm::Sha256,
+            )
+            .expect("Start auth session failed")
+            .expect("Start auth session returned a NONE handle");
+
+        let (policy_auth_session_attributes, policy_auth_session_attributes_mask) =
+            SessionAttributesBuilder::new()
+                .with_decrypt(true)
+                .with_encrypt(true)
+                .build();
+        context
+            .tr_sess_set_attributes(
+                trial_session,
+                policy_auth_session_attributes,
+                policy_auth_session_attributes_mask,
+            )
+            .expect("tr_sess_set_attributes call failed");
+
+        let policy_session = PolicySession::try_from(trial_session)
+            .expect("Failed to convert auth session into policy session");
+
+        context
+            .policy_duplication_select(
+                policy_session,
+                Vec::<u8>::new().try_into().unwrap(),
+                parent_name.clone(),
+                false,
+            )
+            .expect("Policy duplication select");
+
+        // Policy digest will be used when constructing the child key.
+        // It will allow the newly constructed key to be duplicated but
+        // only to one specified parent.
+        let digest = context
+            .policy_get_digest(policy_session)
+            .expect("Could retrieve digest");
+
+        drop(context);
+        let mut context = create_ctx_with_session();
 
         // Fixed TPM and Fixed Parent should be "false" for an object
         // to be elligible for duplication
@@ -118,6 +136,7 @@ mod test_duplicate {
             .with_public_algorithm(PublicAlgorithm::Ecc)
             .with_name_hashing_algorithm(HashingAlgorithm::Sha256)
             .with_object_attributes(object_attributes)
+            // Use policy digest computed using the trial session
             .with_auth_policy(&digest)
             .with_ecc_parameters(
                 PublicEccParametersBuilder::new()
@@ -133,6 +152,21 @@ mod test_duplicate {
             .with_ecc_unique_identifier(&EccPoint::default())
             .build()
             .expect("public to be valid");
+
+        // Re-create the new parent again.
+        // Since the key specification did not change it will be the same parent
+        // that was used to get the "parent_name".
+        // In real world the new parent will likely be persisted in the TPM.
+        let new_parent_handle: ObjectHandle = context
+            .create_primary(Hierarchy::Owner, &public_parent, None, None, None, None)
+            .unwrap()
+            .key_handle
+            .into();
+
+        let parent_of_object_to_duplicate_handle = context
+            .create_primary(Hierarchy::Owner, &public_parent, None, None, None, None)
+            .unwrap()
+            .key_handle;
 
         let result = context
             .create(
@@ -154,11 +188,12 @@ mod test_duplicate {
             .unwrap()
             .into();
 
-        let new_parent_handle: ObjectHandle = context
-            .create_primary(Hierarchy::Owner, &public_parent, None, None, None, None)
+        // Object name of the duplicated object is needed to satisfy
+        // real policy session.
+        let object_name = context
+            .read_public(object_to_duplicate_handle.into())
             .unwrap()
-            .key_handle
-            .into();
+            .1;
 
         context.set_sessions((None, None, None));
 
@@ -189,15 +224,14 @@ mod test_duplicate {
         let policy_session = PolicySession::try_from(policy_auth_session)
             .expect("Failed to convert auth session into policy session");
 
+        // Even if object name is not included in the policy digest ("false" as 3rd paremeter)
+        // Correct name needs to be set or the policy will fail.
         context
-            .policy_auth_value(policy_session)
-            .expect("Policy auth value works");
-
-        context
-            .policy_command_code(policy_session, TPM2_CC_Duplicate)
+            .policy_duplication_select(policy_session, object_name, parent_name, false)
             .unwrap();
         context.set_sessions((Some(policy_auth_session), None, None));
 
+        // Duplicate the object to new parent.
         let (data, duplicate, secret) = context
             .duplicate(
                 object_to_duplicate_handle,
@@ -208,6 +242,8 @@ mod test_duplicate {
             .unwrap();
         eprintln!("D: {:?}, P: {:?}, S: {:?}", data, duplicate, secret);
 
+        // Public is also needed when transferring the duplicatee
+        // for integrity validation.
         let public = context
             .read_public(object_to_duplicate_handle.into())
             .unwrap()
@@ -236,6 +272,9 @@ mod test_duplicate {
             .unwrap();
         context.set_sessions((session, None, None));
 
+        // Try to import the duplicated object.
+        // Most parameters (with the exception of public) are passed from
+        // the values returned from the call to `duplicate`.
         let private = context
             .import(
                 new_parent_handle,
