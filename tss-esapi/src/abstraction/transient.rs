@@ -18,7 +18,7 @@ use crate::{
     constants::{tss::*, SessionType, Tss2ResponseCodeKind},
     handles::{KeyHandle, SessionHandle},
     interface_types::{
-        algorithm::{HashingAlgorithm, PublicAlgorithm, RsaSchemeAlgorithm},
+        algorithm::{HashingAlgorithm, PublicAlgorithm},
         ecc::EccCurve,
         key_bits::RsaKeyBits,
         resource_handles::Hierarchy,
@@ -30,10 +30,7 @@ use crate::{
     },
     tcti_ldr::TctiNameConf,
     tss2_esys::*,
-    utils::{
-        create_restricted_decryption_rsa_public,
-        create_unrestricted_signing_rsa_public_with_unique, PublicKey, TpmsContext,
-    },
+    utils::{create_restricted_decryption_rsa_public, PublicKey, TpmsContext},
     Context, Error, Result, WrapperErrorKind as ErrorKind,
 };
 
@@ -159,35 +156,22 @@ impl TransientKeyContext {
         Ok((key_material, key_auth))
     }
 
-    /// Load a previously generated RSA public key.
+    /// Load the public part of a key.
     ///
     /// Returns the key context.
-    ///
-    /// # Constraints
-    /// * `public_key` must be 128, 256, 384 or 512 bytes (i.e. slice elements) long, corresponding to 1024, 2048, 3072 or 4096 bits
-    ///
-    /// # Errors
-    /// * if the public key length is different than 128, 256, 384 or 512 bytes, a `WrongParamSize` wrapper error is returned
-    pub fn load_external_rsa_public_key(&mut self, public_key: &[u8]) -> Result<KeyMaterial> {
-        let rsa_key_bits = RsaKeyBits::try_from(
-            u16::try_from(public_key.len()).map_err(|e| {
-                error!("Failed to convert length of public key to u16: {:?}", e);
-                Error::local_error(ErrorKind::InvalidParam)
-            })? * 8u16,
-        )?;
-        let public = create_unrestricted_signing_rsa_public_with_unique(
-            RsaScheme::create(RsaSchemeAlgorithm::RsaSsa, Some(HashingAlgorithm::Sha256))?,
-            rsa_key_bits,
-            RsaExponent::default(),
-            &PublicKeyRsa::try_from(public_key)?,
-        )?;
+    pub fn load_external_public_key(
+        &mut self,
+        public_key: PublicKey,
+        params: KeyParams,
+    ) -> Result<KeyMaterial> {
+        let public = TransientKeyContext::get_public_from_params(params, Some(public_key.clone()))?;
         self.set_session_attrs()?;
         let key_handle = self
             .context
             .load_external_public(&public, Hierarchy::Owner)?;
         self.context.flush_context(key_handle.into())?;
         Ok(KeyMaterial {
-            public: PublicKey::Rsa(public_key.to_vec()),
+            public: public_key,
             private: vec![],
         })
     }
