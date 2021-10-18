@@ -8,6 +8,7 @@ use enumflags2::BitFlags;
 use log::error;
 use num_traits::{FromPrimitive, ToPrimitive};
 use std::convert::{From, TryFrom};
+use std::iter::FromIterator;
 /// This module contains the PcrSelection struct.
 /// The TSS counterpart of this struct is the
 /// TPMS_PCR_SELECTION.
@@ -19,6 +20,7 @@ pub struct PcrSelection {
 }
 
 impl PcrSelection {
+    /// Creates new PcrSelection
     pub fn new(
         hashing_algorithm: HashingAlgorithm,
         size_of_select: PcrSelectSize,
@@ -27,18 +29,50 @@ impl PcrSelection {
         PcrSelection {
             hashing_algorithm,
             size_of_select,
-            selected_pcrs: selected_pcr_slots.iter().cloned().collect(),
+            selected_pcrs: Self::to_internal_representation(selected_pcr_slots),
         }
     }
 
-    pub fn hashing_algorithm(&self) -> HashingAlgorithm {
+    /// Returns the hashing algorithm for the selection
+    pub const fn hashing_algorithm(&self) -> HashingAlgorithm {
         self.hashing_algorithm
     }
 
-    pub fn selected_pcrs(&self) -> &BitFlags<PcrSlot> {
-        &self.selected_pcrs
+    /// Returns 'Size of Select'
+    ///
+    /// NB! This is not the same as how many [PcrSlot]
+    /// there are in the selection but rather how many
+    /// octets that are needed to hold the bit field
+    /// that indicate what slots that are selected.
+    pub const fn size_of_select(&self) -> PcrSelectSize {
+        self.size_of_select
     }
 
+    /// Returns the selected pcrs.
+    pub fn selected(&self) -> Vec<PcrSlot> {
+        self.selected_pcrs.iter().collect()
+    }
+
+    /// Returns true if the specified [PcrSlot] is selected in
+    /// the [PcrSelection].
+    pub fn is_selected(&self, pcr_slot: PcrSlot) -> bool {
+        self.selected_pcrs.contains(pcr_slot)
+    }
+
+    /// Removes the specified [PcrSlot]s from the selected pcrs.
+    ///
+    /// # Error
+    /// If one of the specified pcr slots does not exist in the selected pcrs.
+    pub fn deselect_exact(&mut self, pcr_slot: PcrSlot) -> Result<()> {
+        self.remove_exact(pcr_slot.into())
+    }
+
+    /// Removes the specified [PcrSlot]s from the selected pcrs.
+    pub fn deselect(&mut self, pcr_slot: PcrSlot) {
+        self.remove(pcr_slot.into())
+    }
+
+    /// Merges another [PcrSelection] into this one.
     pub fn merge(&mut self, other: &Self) -> Result<()> {
         // Check that the hashing algorithm match
         if self.hashing_algorithm != other.hashing_algorithm {
@@ -64,27 +98,47 @@ impl PcrSelection {
     pub fn subtract(&mut self, other: &Self) -> Result<()> {
         // Check that the hashing algorithm match
         if self.hashing_algorithm != other.hashing_algorithm {
-            error!("Error: Found inconsistencies in the hashing algorithm");
+            error!("Mismatched hashing algorithm ");
             return Err(Error::local_error(WrapperErrorKind::InconsistentParams));
         }
         // Check that size of select match.
         if self.size_of_select != other.size_of_select {
-            error!("Error: Found inconsistencies in the size of select");
+            error!("Mismatched size of select");
             return Err(Error::local_error(WrapperErrorKind::InconsistentParams));
         }
-        // Check if the value in other is contained in current select
-        if !self.selected_pcrs.contains(other.selected_pcrs) {
-            error!("Error: Trying to remove item that did not exist");
-            return Err(Error::local_error(WrapperErrorKind::InvalidParam));
-        }
 
-        self.selected_pcrs.remove(other.selected_pcrs);
-        Ok(())
+        self.remove_exact(other.selected_pcrs)
     }
 
     /// Indicates wether the pcr selection is empty.
     pub fn is_empty(&self) -> bool {
         self.selected_pcrs.is_empty()
+    }
+
+    /// Private function for converting a slize of pcr slots to
+    /// internal representation.
+    fn to_internal_representation(pcr_slots: &[PcrSlot]) -> BitFlags<PcrSlot> {
+        BitFlags::<PcrSlot>::from_iter(pcr_slots.iter().copied())
+    }
+
+    /// Removes bitflags from selected pcrs
+    ///
+    /// # Error
+    /// Returns an error if the any of the bit flags does
+    /// not exist in the selected pcrs.
+    fn remove_exact(&mut self, bit_flags: BitFlags<PcrSlot>) -> Result<()> {
+        if self.selected_pcrs.contains(bit_flags) {
+            self.remove(bit_flags);
+            Ok(())
+        } else {
+            error!("Failed to remove item, it does not exist");
+            Err(Error::local_error(WrapperErrorKind::InvalidParam))
+        }
+    }
+
+    /// Removes bitflags from selected pcrs
+    fn remove(&mut self, bit_flags: BitFlags<PcrSlot>) {
+        self.selected_pcrs.remove(bit_flags)
     }
 }
 

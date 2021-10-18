@@ -44,34 +44,3 @@ fn test_add_exceeding_max_limit() {
     }
     digest_list.add(digest).unwrap_err();
 }
-
-#[test]
-fn test_conversion_from_tss_digest_list_with_count_below_min() {
-    // These tests might be removed in the future becuase the
-    // min limit only applies when the DigestList is used as
-    // argument to policy_or.
-    let mut tss_digest_list: TPML_DIGEST = Default::default();
-    let mut tss_digest = TPM2B_DIGEST {
-        size: 32,
-        ..Default::default()
-    };
-    tss_digest.buffer[..32].copy_from_slice(&[1; 32]);
-    tss_digest_list.count = 1;
-    tss_digest_list.digests[0] = tss_digest;
-
-    let _ = DigestList::try_from(tss_digest_list).unwrap_err();
-}
-
-#[test]
-fn test_conversion_to_tss_digest_list_with_count_below_min() {
-    // These tests might be removed in the future becuase the
-    // min limit only applies when the DigestList is used as
-    // argument to policy_or.
-    let mut digest_list: DigestList = Default::default();
-    digest_list
-        .add(Digest::try_from(vec![1, 2, 3, 4, 5, 6, 7]).unwrap())
-        .unwrap();
-    if TPML_DIGEST::try_from(digest_list).is_ok() {
-        panic!("No error regarding a digest list that is to small was reported.");
-    }
-}

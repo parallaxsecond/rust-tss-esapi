@@ -197,6 +197,7 @@ mod test_policy_pcr {
     use crate::common::create_ctx_without_session;
     use std::convert::TryFrom;
     use tss_esapi::{
+        abstraction::pcr::PcrData,
         attributes::SessionAttributesBuilder,
         constants::SessionType,
         interface_types::{
@@ -240,7 +241,15 @@ mod test_policy_pcr {
 
         let (_update_counter, pcr_selection_list_out, pcr_data) = context
             .pcr_read(&pcr_selection_list)
-            .expect("Failed to call policy_pcr");
+            .map(|(update_counter, read_pcr_selections, read_pcr_digests)| {
+                (
+                    update_counter,
+                    read_pcr_selections.clone(),
+                    PcrData::create(&read_pcr_selections, &read_pcr_digests)
+                        .expect("Failed to create PcrData"),
+                )
+            })
+            .expect("Failed to call pcr_read");
 
         assert_eq!(pcr_selection_list, pcr_selection_list_out);
         // Run pcr_policy command.
@@ -255,13 +264,13 @@ mod test_policy_pcr {
                 pcr_data
                     .pcr_bank(HashingAlgorithm::Sha256)
                     .unwrap()
-                    .pcr_value(PcrSlot::Slot0)
+                    .get_digest(PcrSlot::Slot0)
                     .unwrap()
                     .value(),
                 pcr_data
                     .pcr_bank(HashingAlgorithm::Sha256)
                     .unwrap()
-                    .pcr_value(PcrSlot::Slot1)
+                    .get_digest(PcrSlot::Slot1)
                     .unwrap()
                     .value(),
             ]
@@ -682,6 +691,7 @@ mod test_policy_get_digest {
     use crate::common::create_ctx_without_session;
     use std::convert::TryFrom;
     use tss_esapi::{
+        abstraction::pcr::PcrData,
         attributes::SessionAttributesBuilder,
         constants::SessionType,
         interface_types::{
@@ -726,6 +736,14 @@ mod test_policy_get_digest {
             .expect("Failed to convert auth session into policy session");
         let (_update_counter, pcr_selection_list_out, pcr_data) = context
             .pcr_read(&pcr_selection_list)
+            .map(|(update_counter, read_pcr_selections, read_pcr_digests)| {
+                (
+                    update_counter,
+                    read_pcr_selections.clone(),
+                    PcrData::create(&read_pcr_selections, &read_pcr_digests)
+                        .expect("Failed to create PcrData"),
+                )
+            })
             .expect("Failed to call pcr_read");
 
         assert_eq!(pcr_selection_list, pcr_selection_list_out);
@@ -741,13 +759,13 @@ mod test_policy_get_digest {
                 pcr_data
                     .pcr_bank(HashingAlgorithm::Sha256)
                     .unwrap()
-                    .pcr_value(PcrSlot::Slot0)
+                    .get_digest(PcrSlot::Slot0)
                     .unwrap()
                     .value(),
                 pcr_data
                     .pcr_bank(HashingAlgorithm::Sha256)
                     .unwrap()
-                    .pcr_value(PcrSlot::Slot1)
+                    .get_digest(PcrSlot::Slot1)
                     .unwrap()
                     .value(),
             ]

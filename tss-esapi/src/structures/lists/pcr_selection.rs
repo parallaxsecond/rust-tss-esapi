@@ -7,6 +7,7 @@ use crate::{Error, Result, WrapperErrorKind};
 use log::error;
 use std::collections::HashMap;
 use std::convert::TryFrom;
+
 /// A struct representing a pcr selection list. This
 /// corresponds to the TSS TPML_PCR_SELECTION.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -31,11 +32,54 @@ impl PcrSelectionList {
         &self.items
     }
 
+    /// Subtracts other from self
+    pub fn subtract(&mut self, other: &Self) -> Result<()> {
+        if self == other {
+            self.items.clear();
+            return Ok(());
+        }
+
+        if self.is_empty() {
+            error!("Cannot remove items that does not exist");
+            return Err(Error::local_error(WrapperErrorKind::InvalidParam));
+        }
+
+        for other_pcr_selection in other.get_selections() {
+            self.remove_selection(other_pcr_selection)?;
+        }
+
+        self.remove_empty_selections();
+        Ok(())
+    }
+
     /// Function for retrieving the PcrSelectionList from Option<PcrSelectionList>
     ///
     /// This returns an empty list if None is passed
     pub fn list_from_option(pcr_list: Option<PcrSelectionList>) -> PcrSelectionList {
         pcr_list.unwrap_or_else(|| PcrSelectionListBuilder::new().build())
+    }
+
+    /// Private methods for removing pcr selections that are empty.
+    fn remove_empty_selections(&mut self) {
+        self.items.retain(|v| !v.is_empty());
+    }
+
+    /// Private method for removing the items defined in a [PcrSelection]
+    /// from the data in the [PcrSelectionList].
+    fn remove_selection(&mut self, pcr_selection: &PcrSelection) -> Result<()> {
+        pcr_selection.selected().iter().try_for_each(|&pcr_slot| {
+            self.items
+                .iter_mut()
+                .find(|existing_pcr_selection| {
+                    existing_pcr_selection.hashing_algorithm() == pcr_selection.hashing_algorithm()
+                        && existing_pcr_selection.is_selected(pcr_slot)
+                })
+                .ok_or_else(|| {
+                    error!("Cannot remove items from a selection that does not exists");
+                    Error::local_error(WrapperErrorKind::InvalidParam)
+                })
+                .and_then(|existing_pcr_selection| existing_pcr_selection.deselect_exact(pcr_slot))
+        })
     }
 }
 
@@ -54,8 +98,6 @@ impl From<PcrSelectionList> for TPML_PCR_SELECTION {
 impl TryFrom<TPML_PCR_SELECTION> for PcrSelectionList {
     type Error = Error;
     fn try_from(tpml_pcr_selection: TPML_PCR_SELECTION) -> Result<PcrSelectionList> {
-        // let mut ret: PcrSelectionList = Default::default();
-
         let size = tpml_pcr_selection.count as usize;
 
         if size > PcrSelectionList::MAX_SIZE {

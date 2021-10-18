@@ -41,3 +41,40 @@ fn test_conversion_from_tss_pcr_selection() {
     );
     assert_eq!(expected, actual);
 }
+
+#[test]
+fn test_subtract() {
+    let mut pcr_select_1 = PcrSelection::new(
+        HashingAlgorithm::Sha256,
+        PcrSelectSize::TwoBytes,
+        &[PcrSlot::Slot4, PcrSlot::Slot15],
+    );
+
+    let pcr_select_2 = PcrSelection::new(
+        HashingAlgorithm::Sha256,
+        PcrSelectSize::TwoBytes,
+        &[PcrSlot::Slot4],
+    );
+
+    pcr_select_1
+        .subtract(&pcr_select_2)
+        .expect("Failed to subtract pcr_select_2 from pcr_select_1");
+
+    assert_eq!(
+        pcr_select_1.hashing_algorithm(),
+        HashingAlgorithm::Sha256,
+        "The pcr_select_1 did not contain expected HashingAlgorithm after subtract"
+    );
+
+    assert_eq!(
+        pcr_select_1.size_of_select(),
+        PcrSelectSize::TwoBytes,
+        "The pcr_select_1 did not have the expected size of select after subtract"
+    );
+
+    assert_eq!(
+        pcr_select_1.selected(),
+        vec![PcrSlot::Slot15],
+        "The pcr_select_1 did not contain expected PcrSlots after subtract"
+    );
+}

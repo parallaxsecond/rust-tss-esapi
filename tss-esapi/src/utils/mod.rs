@@ -16,17 +16,14 @@ use crate::interface_types::{
     key_bits::RsaKeyBits,
 };
 use crate::structures::{
-    Digest, EccPoint, EccScheme, PcrSlot, Public, PublicBuilder, PublicEccParametersBuilder,
-    PublicKeyRsa, PublicRsaParametersBuilder, RsaExponent, RsaScheme, SymmetricDefinitionObject,
+    EccPoint, EccScheme, Public, PublicBuilder, PublicEccParametersBuilder, PublicKeyRsa,
+    PublicRsaParametersBuilder, RsaExponent, RsaScheme, SymmetricDefinitionObject,
 };
 use crate::tss2_esys::*;
 use crate::{Context, Error, Result, WrapperErrorKind};
-use enumflags2::BitFlags;
-use log::error;
 use zeroize::Zeroize;
 
 use serde::{Deserialize, Serialize};
-use std::collections::BTreeMap;
 use std::convert::{TryFrom, TryInto};
 
 /// Rust native wrapper for `TPMS_CONTEXT` objects.
@@ -293,165 +290,6 @@ impl TryFrom<Public> for PublicKey {
             }),
             _ => Err(Error::local_error(WrapperErrorKind::WrongValueFromTpm)),
         }
-    }
-}
-
-type PcrValue = Digest;
-
-/// Struct for holding PcrSlots and their
-/// corresponding values.
-#[derive(Debug, Clone, Eq, PartialEq)]
-pub struct PcrBank {
-    bank: BTreeMap<PcrSlot, PcrValue>,
-}
-
-impl PcrBank {
-    /// Function for retrieving a pcr value corresponding to a pcr slot.
-    pub fn pcr_value(&self, pcr_slot: PcrSlot) -> Option<&PcrValue> {
-        self.bank.get(&pcr_slot)
-    }
-
-    /// Function for retrieiving the number of pcr slot values in the bank.
-    pub fn len(&self) -> usize {
-        self.bank.len()
-    }
-
-    /// Returns true if there are no pcr slot values in the bank.
-    pub fn is_empty(&self) -> bool {
-        self.bank.is_empty()
-    }
-}
-
-impl<'a> IntoIterator for &'a PcrBank {
-    type Item = (&'a PcrSlot, &'a PcrValue);
-    type IntoIter = ::std::collections::btree_map::Iter<'a, PcrSlot, PcrValue>;
-
-    fn into_iter(self) -> Self::IntoIter {
-        self.bank.iter()
-    }
-}
-
-/// Struct holding pcr banks and their associated
-/// hashing algorithm
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct PcrData {
-    data: Vec<(HashingAlgorithm, PcrBank)>,
-}
-
-impl PcrData {
-    /// Contrustctor that creates a PcrData from
-    /// tss types.
-    pub fn new(
-        tpml_pcr_selections: &TPML_PCR_SELECTION,
-        tpml_digests: &TPML_DIGEST,
-    ) -> Result<Self> {
-        // Check digests
-        let digests_count = tpml_digests.count as usize;
-        if digests_count > 8 {
-            error!("Error: Invalid TPML_DIGEST count(> 8)");
-            return Err(Error::local_error(WrapperErrorKind::InvalidParam));
-        }
-        let digests = &tpml_digests.digests[..digests_count];
-        // Check selections
-        let selections_count = tpml_pcr_selections.count as usize;
-        if selections_count > 16 {
-            error!("Error: Invalid TPML_SELECTIONS count(> 16)");
-            return Err(Error::local_error(WrapperErrorKind::InvalidParam));
-        }
-        let pcr_selections = &tpml_pcr_selections.pcrSelections[..selections_count];
-
-        let mut digest_iter = digests.iter();
-        let mut data = Vec::<(HashingAlgorithm, PcrBank)>::new();
-        for &pcr_selection in pcr_selections {
-            // Parse hash algorithm from selection
-            let parsed_hash_algorithm =
-                HashingAlgorithm::try_from(pcr_selection.hash).map_err(|e| {
-                    error!("Error converting hash to a HashingAlgorithm: {}", e);
-                    Error::local_error(WrapperErrorKind::InvalidParam)
-                })?;
-            // Parse pcr slots from selection
-            let parsed_pcr_slots: BitFlags<PcrSlot> =
-                BitFlags::<PcrSlot>::try_from(u32::from_le_bytes(pcr_selection.pcrSelect))
-                    .map_err(|e| {
-                        error!("Error parsing pcrSelect to a BitFlags<PcrSlot>: {}", e);
-                        Error::local_error(WrapperErrorKind::UnsupportedParam)
-                    })?;
-            // Create PCR bank by mapping the pcr slots to the pcr values
-            let mut parsed_pcr_bank = PcrBank {
-                bank: Default::default(),
-            };
-            for pcr_slot in parsed_pcr_slots.iter() {
-                // Make sure there are still data
-                let digest = match digest_iter.next() {
-                    Some(val) => val,
-                    None => {
-                        error!("Error number of items in selection does not match number of items in data");
-                        return Err(Error::local_error(WrapperErrorKind::InconsistentParams));
-                    }
-                };
-                // Add the value corresponding to the pcr slot.
-                if parsed_pcr_bank
-                    .bank
-                    .insert(pcr_slot, PcrValue::try_from(*digest)?)
-                    .is_some()
-                {
-                    error!("Error trying to insert data into PcrSlot where data have already been inserted");
-                    return Err(Error::local_error(WrapperErrorKind::InconsistentParams));
-                }
-            }
-            data.push((parsed_hash_algorithm, parsed_pcr_bank));
-        }
-        // Make sure all values in the digest have been read.
-        if digest_iter.next().is_some() {
-            error!("Error not all values in the digest have been handled");
-            return Err(Error::local_error(WrapperErrorKind::InconsistentParams));
-        }
-
-        Ok(PcrData { data })
-    }
-
-    /// Function for retrieving the first PCR values associated with hashing_algorithm.
-    pub fn pcr_bank(&self, hashing_algorithm: HashingAlgorithm) -> Option<&PcrBank> {
-        self.data
-            .iter()
-            .find(|(alg, _)| alg == &hashing_algorithm)
-            .map(|(_, bank)| bank)
-    }
-
-    /// Function for retrieving the number of banks in the data.
-    pub fn len(&self) -> usize {
-        self.data.len()
-    }
-
-    /// Returns true if there are no banks in the data.
-    pub fn is_empty(&self) -> bool {
-        self.data.is_empty()
-    }
-}
-
-impl<'a> IntoIterator for PcrData {
-    type Item = (HashingAlgorithm, PcrBank);
-    type IntoIter = ::std::vec::IntoIter<(HashingAlgorithm, PcrBank)>;
-
-    fn into_iter(self) -> Self::IntoIter {
-        self.data.into_iter()
-    }
-}
-
-impl From<PcrData> for TPML_DIGEST {
-    fn from(pcr_data: PcrData) -> Self {
-        let mut tpml_digest: TPML_DIGEST = Default::default();
-
-        for (_, pcr_bank) in pcr_data.into_iter() {
-            for (_, pcr_value) in pcr_bank.into_iter() {
-                let i = tpml_digest.count as usize;
-                let size = pcr_value.value().len() as u16;
-                tpml_digest.digests[i].size = size;
-                tpml_digest.digests[i].buffer[..size as usize].copy_from_slice(pcr_value.value());
-                tpml_digest.count += 1;
-            }
-        }
-        tpml_digest
     }
 }
 

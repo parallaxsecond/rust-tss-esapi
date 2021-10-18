@@ -132,7 +132,7 @@ impl Context {
     /// by the value of the different hashes.
     ///
     /// # Constraints
-    /// * `hash_list` must be at least 2 and at most 8 elements long
+    /// * `digest_list` must be at least 2 and at most 8 elements long
     ///
     /// # Errors
     /// * if the hash list provided is too short or too long, a `WrongParamSize` wrapper error will be returned
@@ -141,7 +141,13 @@ impl Context {
         policy_session: PolicySession,
         digest_list: DigestList,
     ) -> Result<()> {
-        let digest_list = TPML_DIGEST::try_from(digest_list)?;
+        if digest_list.len() < 2 {
+            error!(
+                "The digest list only contains {} digests, it must contain at least 2",
+                digest_list.len()
+            );
+            return Err(Error::local_error(ErrorKind::WrongParamSize));
+        }
 
         let ret = unsafe {
             Esys_PolicyOR(
@@ -150,7 +156,7 @@ impl Context {
                 self.optional_session_1(),
                 self.optional_session_2(),
                 self.optional_session_3(),
-                &digest_list,
+                &TPML_DIGEST::try_from(digest_list)?,
             )
         };
         let ret = Error::from_tss_rc(ret);
