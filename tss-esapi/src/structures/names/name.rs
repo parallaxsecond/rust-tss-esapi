@@ -5,17 +5,26 @@ use crate::{Error, Result, WrapperErrorKind};
 use log::error;
 use std::convert::TryFrom;
 /// Structure holding the data representing names
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[allow(missing_copy_implementations)]
+#[derive(Debug, Clone)]
 pub struct Name {
-    value: Vec<u8>,
+    value: TPM2B_NAME,
 }
 
 impl Name {
     const MAX_SIZE: usize = 68;
     pub fn value(&self) -> &[u8] {
-        &self.value
+        &self.value.name[..self.value.size as usize]
     }
 }
+
+impl PartialEq for Name {
+    fn eq(&self, other: &Self) -> bool {
+        self.value() == other.value()
+    }
+}
+
+impl Eq for Name {}
 
 impl TryFrom<Vec<u8>> for Name {
     type Error = Error;
@@ -24,7 +33,12 @@ impl TryFrom<Vec<u8>> for Name {
             error!("Error: Invalid Vec<u8> size(> {})", Name::MAX_SIZE);
             return Err(Error::local_error(WrapperErrorKind::WrongParamSize));
         }
-        Ok(Name { value: bytes })
+        let size = bytes.len() as u16;
+        let mut name = [0; Name::MAX_SIZE];
+        name.copy_from_slice(&bytes);
+        Ok(Name {
+            value: TPM2B_NAME { size, name },
+        })
     }
 }
 
@@ -36,25 +50,12 @@ impl TryFrom<TPM2B_NAME> for Name {
             error!("Error: Invalid TPM2B_NAME size(> {})", Name::MAX_SIZE);
             return Err(Error::local_error(WrapperErrorKind::InvalidParam));
         }
-        Ok(Name {
-            value: tss_name.name[..size].to_vec(),
-        })
+        Ok(Name { value: tss_name })
     }
 }
 
-impl TryFrom<Name> for TPM2B_NAME {
-    type Error = Error;
-    fn try_from(name: Name) -> Result<TPM2B_NAME> {
-        let size = name.value.len();
-        if size > Name::MAX_SIZE {
-            error!("Error: Invalid TPM2B_NAME size(> {})", Name::MAX_SIZE);
-            return Err(Error::local_error(WrapperErrorKind::WrongParamSize));
-        }
-        let mut tss_name = TPM2B_NAME {
-            size: size as u16,
-            ..Default::default()
-        };
-        tss_name.name[..size].copy_from_slice(name.value());
-        Ok(tss_name)
+impl AsRef<TPM2B_NAME> for Name {
+    fn as_ref(&self) -> &TPM2B_NAME {
+        &self.value
     }
 }

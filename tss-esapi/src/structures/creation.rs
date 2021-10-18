@@ -57,8 +57,8 @@ impl TryFrom<CreationData> for TPMS_CREATION_DATA {
                 None => AlgorithmIdentifier::Null.into(),
                 Some(alg) => alg.into(),
             },
-            parentName: creation_data.parent_name.try_into()?,
-            parentQualifiedName: creation_data.parent_qualified_name.try_into()?,
+            parentName: *creation_data.parent_name.as_ref(),
+            parentQualifiedName: *creation_data.parent_qualified_name.as_ref(),
             outsideInfo: creation_data.outside_info.into(),
         })
     }
