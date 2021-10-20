@@ -54,6 +54,12 @@ impl TryFrom<TPM2B_NAME> for Name {
     }
 }
 
+impl From<Name> for TPM2B_NAME {
+    fn from(name: Name) -> Self {
+        name.value
+    }
+}
+
 impl AsRef<TPM2B_NAME> for Name {
     fn as_ref(&self) -> &TPM2B_NAME {
         &self.value
