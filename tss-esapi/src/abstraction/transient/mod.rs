@@ -39,6 +39,8 @@ use serde::{Deserialize, Serialize};
 use std::convert::{TryFrom, TryInto};
 use zeroize::Zeroize;
 
+mod key_attestation;
+
 /// Parameters for the kinds of keys supported by the context
 #[derive(Debug, Clone, Copy)]
 pub enum KeyParams {
@@ -87,6 +89,13 @@ impl KeyMaterial {
     pub fn private(&self) -> &[u8] {
         &self.private
     }
+}
+
+#[derive(Debug, Clone)]
+pub struct ObjectWrapper {
+    pub material: KeyMaterial,
+    pub params: KeyParams,
+    pub auth: Option<Auth>,
 }
 
 /// Structure offering an abstracted programming experience.

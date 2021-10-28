@@ -1,11 +1,14 @@
 // Copyright 2020 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
-use std::convert::TryFrom;
+use std::convert::{TryFrom, TryInto};
 use tss_esapi::{
-    abstraction::transient::{KeyParams, TransientKeyContextBuilder},
+    abstraction::ek,
+    abstraction::transient::{KeyParams, ObjectWrapper, TransientKeyContextBuilder},
     constants::response_code::Tss2ResponseCodeKind,
     interface_types::{
-        algorithm::{EccSchemeAlgorithm, HashingAlgorithm, RsaSchemeAlgorithm},
+        algorithm::{
+            AsymmetricAlgorithm, EccSchemeAlgorithm, HashingAlgorithm, RsaSchemeAlgorithm,
+        },
         ecc::EccCurve,
         key_bits::RsaKeyBits,
         resource_handles::Hierarchy,
@@ -596,4 +599,82 @@ fn ctx_migration_test() {
     } else {
         panic!("Got wrong type of key from TPM");
     }
+}
+
+#[test]
+fn activate_credential() {
+    // create a Transient key context, generate a key and
+    // obtain the Make Credential parameters
+    let mut ctx = create_ctx();
+    let params = KeyParams::Ecc {
+        curve: EccCurve::NistP256,
+        scheme: EccScheme::create(
+            EccSchemeAlgorithm::EcDsa,
+            Some(HashingAlgorithm::Sha256),
+            None,
+        )
+        .expect("Failed to create ecc scheme"),
+    };
+    let (material, auth) = ctx.create_key(params, 16).unwrap();
+    let obj = ObjectWrapper {
+        material,
+        auth,
+        params,
+    };
+    let make_cred_params = ctx.get_make_cred_params(obj.clone(), None).unwrap();
+
+    drop(ctx);
+
+    // create a normal Context and make the credential
+    let mut basic_ctx = crate::common::create_ctx_with_session();
+
+    // the public part of the EK is used, so we retrieve the parameters
+    let key_pub =
+        ek::create_ek_public_from_default_template(AsymmetricAlgorithm::Rsa, None).unwrap();
+    let key_pub = if let Public::Rsa {
+        object_attributes,
+        name_hashing_algorithm,
+        auth_policy,
+        parameters,
+        ..
+    } = key_pub
+    {
+        Public::Rsa {
+            object_attributes,
+            name_hashing_algorithm,
+            auth_policy,
+            parameters,
+            unique: if let PublicKey::Rsa(val) = make_cred_params.attesting_key_pub().clone() {
+                PublicKeyRsa::try_from(val).unwrap()
+            } else {
+                panic!("Wrong public key type");
+            },
+        }
+    } else {
+        panic!("Wrong Public type");
+    };
+    let pub_handle = basic_ctx
+        .load_external_public(&key_pub, Hierarchy::Owner)
+        .unwrap();
+
+    // Credential to expect back as proof for attestation
+    let credential = vec![0x53; 16];
+
+    let (cred, secret) = basic_ctx
+        .make_credential(
+            pub_handle,
+            credential.clone().try_into().unwrap(),
+            make_cred_params.name().to_vec().try_into().unwrap(),
+        )
+        .unwrap();
+
+    drop(basic_ctx);
+
+    // Create a new Transient key context and activate the credential
+    let mut ctx = create_ctx();
+    let cred_back = ctx
+        .activate_credential(obj, None, cred.value().to_vec(), secret.value().to_vec())
+        .unwrap();
+
+    assert_eq!(cred_back, credential);
 }
