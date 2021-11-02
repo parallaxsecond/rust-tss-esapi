@@ -36,6 +36,7 @@ use crate::{
 
 use log::error;
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 use std::convert::{TryFrom, TryInto};
 use zeroize::Zeroize;
 
@@ -532,10 +533,10 @@ impl TransientKeyContext {
 #[derive(Debug)]
 pub struct TransientKeyContextBuilder {
     tcti_name_conf: TctiNameConf,
-    hierarchy: Hierarchy,
     root_key_size: u16, // TODO: replace with root key PUBLIC definition
     root_key_auth_size: usize,
-    hierarchy_auth: Vec<u8>,
+    root_hierarchy: Hierarchy,
+    hierarchy_auth: HashMap<Hierarchy, Vec<u8>>,
     default_context_cipher: SymmetricDefinitionObject,
     session_hash_alg: HashingAlgorithm,
 }
@@ -545,10 +546,10 @@ impl TransientKeyContextBuilder {
     pub fn new() -> Self {
         TransientKeyContextBuilder {
             tcti_name_conf: TctiNameConf::Device(Default::default()),
-            hierarchy: Hierarchy::Owner,
+            root_hierarchy: Hierarchy::Owner,
             root_key_size: 2048,
             root_key_auth_size: 32,
-            hierarchy_auth: Vec::new(),
+            hierarchy_auth: HashMap::new(),
             default_context_cipher: SymmetricDefinitionObject::AES_256_CFB,
             session_hash_alg: HashingAlgorithm::Sha256,
         }
@@ -560,9 +561,15 @@ impl TransientKeyContextBuilder {
         self
     }
 
+    /// Set the auth values for any hierarchies that will be used
+    pub fn with_hierarchy_auth(mut self, hierarchy: Hierarchy, auth: Vec<u8>) -> Self {
+        let _ = self.hierarchy_auth.insert(hierarchy, auth);
+        self
+    }
+
     /// Define which hierarchy will be used for the keys being managed.
-    pub fn with_hierarchy(mut self, hierarchy: Hierarchy) -> Self {
-        self.hierarchy = hierarchy;
+    pub fn with_root_hierarchy(mut self, hierarchy: Hierarchy) -> Self {
+        self.root_hierarchy = hierarchy;
         self
     }
 
@@ -575,12 +582,6 @@ impl TransientKeyContextBuilder {
     /// Choose authentication value length (in bytes) for primary key.
     pub fn with_root_key_auth_size(mut self, root_key_auth_size: usize) -> Self {
         self.root_key_auth_size = root_key_auth_size;
-        self
-    }
-
-    /// Input the authentication value of the working hierarchy.
-    pub fn with_hierarchy_auth(mut self, hierarchy_auth: Vec<u8>) -> Self {
-        self.hierarchy_auth = hierarchy_auth;
         self
     }
 
@@ -624,7 +625,7 @@ impl TransientKeyContextBuilder {
     /// `Context::set_handle_auth`
     /// * if the root key authentication size is given greater than 32 or if the root key size is
     /// not 1024, 2048, 3072 or 4096, a `InvalidParam` wrapper error is returned
-    pub fn build(self) -> Result<TransientKeyContext> {
+    pub fn build(mut self) -> Result<TransientKeyContext> {
         if self.root_key_auth_size > 32 {
             return Err(Error::local_error(ErrorKind::WrongParamSize));
         }
@@ -640,9 +641,9 @@ impl TransientKeyContextBuilder {
             None
         };
 
-        if !self.hierarchy_auth.is_empty() {
-            let auth_hierarchy = Auth::try_from(self.hierarchy_auth)?;
-            context.tr_set_auth(self.hierarchy.into(), &auth_hierarchy)?;
+        for (hierarchy, auth) in self.hierarchy_auth.drain() {
+            let auth_hierarchy = Auth::try_from(auth)?;
+            context.tr_set_auth(hierarchy.into(), &auth_hierarchy)?;
         }
 
         let session = context
@@ -669,7 +670,7 @@ impl TransientKeyContextBuilder {
 
         let root_key_handle = context
             .create_primary(
-                self.hierarchy,
+                self.root_hierarchy,
                 &create_restricted_decryption_rsa_public(
                     self.default_context_cipher,
                     root_key_rsa_key_bits,

@@ -13,7 +13,7 @@ use std::convert::TryFrom;
 ///
 /// Enum describing the object hierarchies in a TPM 2.0.
 //////////////////////////////////////////////////////////////////////////////////
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum Hierarchy {
     Owner,
     Platform,
