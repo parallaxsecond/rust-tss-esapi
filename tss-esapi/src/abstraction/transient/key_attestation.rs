@@ -4,10 +4,10 @@ use super::{ObjectWrapper, TransientKeyContext};
 use crate::{
     abstraction::ek,
     constants::SessionType,
-    handles::{AuthHandle, SessionHandle},
+    handles::{AuthHandle, KeyHandle, SessionHandle},
     interface_types::{
         algorithm::{AsymmetricAlgorithm, HashingAlgorithm},
-        session_handles::PolicySession,
+        session_handles::{AuthSession, PolicySession},
     },
     structures::{EncryptedSecret, IDObject, SymmetricDefinition},
     tss2_esys::{TPM2B_PUBLIC, TPMT_PUBLIC},
@@ -118,67 +118,14 @@ impl TransientKeyContext {
         let credential_blob = IDObject::try_from(credential_blob)?;
         let secret = EncryptedSecret::try_from(secret)?;
         let object_handle = self.load_key(object.params, object.material, object.auth)?;
-        let session_2;
-        let key_handle = match key {
-            None => {
-                // No key was given, use the EK. This requires using a Policy session
-                session_2 = self
-                    .context
-                    .start_auth_session(
-                        None,
-                        None,
-                        None,
-                        SessionType::Policy,
-                        SymmetricDefinition::AES_128_CFB,
-                        HashingAlgorithm::Sha256,
-                    )
-                    .or_else(|e| {
-                        self.context.flush_context(object_handle.into())?;
-                        Err(e)
-                    })?;
-                let _ = self.context.policy_secret(
-                    PolicySession::try_from(session_2.unwrap())
-                        .expect("Failed to convert auth session to policy session"),
-                    AuthHandle::Endorsement,
-                    Default::default(),
-                    Default::default(),
-                    Default::default(),
-                    None,
-                );
-                ek::create_ek_object(&mut self.context, AsymmetricAlgorithm::Rsa, None).or_else(
-                    |e| {
-                        self.context.flush_context(object_handle.into())?;
-                        self.context
-                            .flush_context(SessionHandle::from(session_2).into())?;
-                        Err(e)
-                    },
-                )?
-            }
-            Some(key) => {
-                // Load key and create a HMAC session for it
-                session_2 = self
-                    .context
-                    .start_auth_session(
-                        None,
-                        None,
-                        None,
-                        SessionType::Hmac,
-                        SymmetricDefinition::AES_128_CFB,
-                        HashingAlgorithm::Sha256,
-                    )
-                    .or_else(|e| {
-                        self.context.flush_context(object_handle.into())?;
-                        Err(e)
-                    })?;
-                self.load_key(key.params, key.material, key.auth)
-                    .or_else(|e| {
-                        self.context.flush_context(object_handle.into())?;
-                        self.context
-                            .flush_context(SessionHandle::from(session_2).into())?;
-                        Err(e)
-                    })?
-            }
-        };
+        let (key_handle, session_2) = match key {
+            Some(key) => self.prepare_key_activate_cred(key),
+            None => self.prepare_ek_activate_cred(),
+        }
+        .or_else(|e| {
+            self.context.flush_context(object_handle.into())?;
+            Err(e)
+        })?;
 
         let (session_1, _, _) = self.context.sessions();
         let credential = self
@@ -199,5 +146,60 @@ impl TransientKeyContext {
         self.context
             .flush_context(SessionHandle::from(session_2).into())?;
         Ok(credential.value().to_vec())
+    }
+
+    // No key was given, use the EK. This requires using a Policy session
+    fn prepare_ek_activate_cred(&mut self) -> Result<(KeyHandle, Option<AuthSession>)> {
+        let session = self.context.start_auth_session(
+            None,
+            None,
+            None,
+            SessionType::Policy,
+            SymmetricDefinition::AES_128_CFB,
+            HashingAlgorithm::Sha256,
+        )?;
+        let _ = self.context.policy_secret(
+            PolicySession::try_from(session.unwrap())
+                .expect("Failed to convert auth session to policy session"),
+            AuthHandle::Endorsement,
+            Default::default(),
+            Default::default(),
+            Default::default(),
+            None,
+        );
+        Ok((
+            ek::create_ek_object(&mut self.context, AsymmetricAlgorithm::Rsa, None).or_else(
+                |e| {
+                    self.context
+                        .flush_context(SessionHandle::from(session).into())?;
+                    Err(e)
+                },
+            )?,
+            session,
+        ))
+    }
+
+    // Load key and create a HMAC session for it
+    fn prepare_key_activate_cred(
+        &mut self,
+        key: ObjectWrapper,
+    ) -> Result<(KeyHandle, Option<AuthSession>)> {
+        let session = self.context.start_auth_session(
+            None,
+            None,
+            None,
+            SessionType::Hmac,
+            SymmetricDefinition::AES_128_CFB,
+            HashingAlgorithm::Sha256,
+        )?;
+        Ok((
+            self.load_key(key.params, key.material, key.auth)
+                .or_else(|e| {
+                    self.context
+                        .flush_context(SessionHandle::from(session).into())?;
+                    Err(e)
+                })?,
+            session,
+        ))
     }
 }
