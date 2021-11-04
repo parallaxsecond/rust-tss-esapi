@@ -11,7 +11,7 @@ mod test_get_capability {
     fn test_get_capability() {
         let mut context = create_ctx_without_session();
         let (res, _more) = context
-            .get_capability(CapabilityType::TPMProperties, TPM2_PT_VENDOR_STRING_1, 4)
+            .get_capability(CapabilityType::TpmProperties, TPM2_PT_VENDOR_STRING_1, 4)
             .unwrap();
         match res {
             CapabilityData::TPMProperties(props) => {

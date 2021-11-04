@@ -364,8 +364,10 @@ pub const TPM2_CAP_AUDIT_COMMANDS: TPM2_CAP = 0x00000004; /* TPM2_CC */
 pub const TPM2_CAP_PCRS: TPM2_CAP = 0x00000005; /* reserved */
 pub const TPM2_CAP_TPM_PROPERTIES: TPM2_CAP = 0x00000006; /* TPM2_PT */
 pub const TPM2_CAP_PCR_PROPERTIES: TPM2_CAP = 0x00000007; /* TPM2_PT_PCR */
-pub const TPM2_CAP_ECC_CURVES: TPM2_CAP = 0x00000008; /* TPM2_ECC_CURVE1 */
-pub const TPM2_CAP_LAST: TPM2_CAP = 0x00000008;
+pub const TPM2_CAP_ECC_CURVES: TPM2_CAP = 0x00000008; /* TPM2_ECC_CURVE */
+pub const TPM2_CAP_AUTH_POLICIES: TPM2_CAP = 0x00000009; /* TPM2_HANDLE */
+pub const TPM2_CAP_ACT: TPM2_CAP = 0x0000000A; /* TPM2_HANDLE */
+pub const TPM2_CAP_LAST: TPM2_CAP = 0x0000000A;
 pub const TPM2_CAP_VENDOR_PROPERTY: TPM2_CAP = 0x00000100; /* manufacturer specific */
 
 pub const TPM2_NT_ORDINARY: TPM2_NT = 0x0; /* Ordinary – contains data that is opaque to the TPM that can only be modified using TPM2_NV_Write(). */

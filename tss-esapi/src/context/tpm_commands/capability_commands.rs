@@ -13,6 +13,33 @@ use std::ptr::null_mut;
 
 impl Context {
     /// Get current capability information about the TPM.
+    ///
+    /// # Warning
+    /// - If [CapabilityType::AuthPolicies] is used but the version of the
+    ///   tpm2-tss library used does not have the 'authPolicies' field
+    ///   in the TPMU_CAPABILITIES defined then the call using this method
+    ///   will fail.
+    ///
+    /// - If [CapabilityType::Act] is used but the the version of the
+    ///   tpm2-tss library used does not have the 'actData' field in the
+    ///   TPMU_CAPABILITIES defined then the call using this method will fail.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// # use tss_esapi::{Context, TctiNameConf};
+    /// # // Create context
+    /// # let mut context =
+    /// #     Context::new(
+    /// #         TctiNameConf::from_environment_variable().expect("Failed to get TCTI"),
+    /// #     ).expect("Failed to create Context");
+    /// #
+    /// use tss_esapi::constants::CapabilityType;
+    ///
+    /// let (_capabilities, _more) = context
+    ///     .get_capability(CapabilityType::Algorithms, 0, 80)
+    ///     .expect("Failed to call get_capability");
+    /// ```
     pub fn get_capability(
         &mut self,
         capability: CapabilityType,

@@ -6,9 +6,9 @@ use std::convert::{From, TryFrom};
 
 use crate::{
     constants::tss::{
-        TPM2_CAP_ALGS, TPM2_CAP_AUDIT_COMMANDS, TPM2_CAP_COMMANDS, TPM2_CAP_ECC_CURVES,
-        TPM2_CAP_HANDLES, TPM2_CAP_PCRS, TPM2_CAP_PCR_PROPERTIES, TPM2_CAP_PP_COMMANDS,
-        TPM2_CAP_TPM_PROPERTIES,
+        TPM2_CAP_ACT, TPM2_CAP_ALGS, TPM2_CAP_AUDIT_COMMANDS, TPM2_CAP_AUTH_POLICIES,
+        TPM2_CAP_COMMANDS, TPM2_CAP_ECC_CURVES, TPM2_CAP_HANDLES, TPM2_CAP_PCRS,
+        TPM2_CAP_PCR_PROPERTIES, TPM2_CAP_PP_COMMANDS, TPM2_CAP_TPM_PROPERTIES,
     },
     tss2_esys::TPM2_CAP,
 };
@@ -20,12 +20,14 @@ pub enum CapabilityType {
     Algorithms = TPM2_CAP_ALGS,
     Handles = TPM2_CAP_HANDLES,
     Command = TPM2_CAP_COMMANDS,
-    PPCommands = TPM2_CAP_PP_COMMANDS,
+    PpCommands = TPM2_CAP_PP_COMMANDS,
     AuditCommands = TPM2_CAP_AUDIT_COMMANDS,
-    AssignedPCR = TPM2_CAP_PCRS,
-    TPMProperties = TPM2_CAP_TPM_PROPERTIES,
-    PCRProperties = TPM2_CAP_PCR_PROPERTIES,
-    ECCCurves = TPM2_CAP_ECC_CURVES,
+    AssignedPcr = TPM2_CAP_PCRS,
+    TpmProperties = TPM2_CAP_TPM_PROPERTIES,
+    PcrProperties = TPM2_CAP_PCR_PROPERTIES,
+    EccCurves = TPM2_CAP_ECC_CURVES,
+    AuthPolicies = TPM2_CAP_AUTH_POLICIES,
+    Act = TPM2_CAP_ACT,
 }
 
 impl From<CapabilityType> for TPM2_CAP {
