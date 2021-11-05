@@ -4,10 +4,10 @@ mod test_verify_signature {
     use crate::common::{create_ctx_with_session, signing_key_pub, HASH};
     use std::convert::{TryFrom, TryInto};
     use tss_esapi::{
-        constants::tss::{TPM2_ALG_NULL, TPM2_RH_NULL, TPM2_ST_HASHCHECK},
+        constants::tss::{TPM2_RH_NULL, TPM2_ST_HASHCHECK},
         interface_types::{algorithm::HashingAlgorithm, resource_handles::Hierarchy},
-        structures::{Auth, Digest, PublicKeyRsa, RsaSignature, Signature},
-        tss2_esys::{TPMT_SIG_SCHEME, TPMT_TK_HASHCHECK},
+        structures::{Auth, Digest, PublicKeyRsa, RsaSignature, Signature, SignatureScheme},
+        tss2_esys::TPMT_TK_HASHCHECK,
     };
 
     #[test]
@@ -28,10 +28,6 @@ mod test_verify_signature {
             .unwrap()
             .key_handle;
 
-        let scheme = TPMT_SIG_SCHEME {
-            scheme: TPM2_ALG_NULL,
-            details: Default::default(),
-        };
         let validation = TPMT_TK_HASHCHECK {
             tag: TPM2_ST_HASHCHECK,
             hierarchy: TPM2_RH_NULL,
@@ -41,7 +37,7 @@ mod test_verify_signature {
             .sign(
                 key_handle,
                 &Digest::try_from(HASH[..32].to_vec()).unwrap(),
-                scheme,
+                SignatureScheme::Null,
                 validation.try_into().unwrap(),
             )
             .unwrap();
@@ -73,10 +69,6 @@ mod test_verify_signature {
             .unwrap()
             .key_handle;
 
-        let scheme = TPMT_SIG_SCHEME {
-            scheme: TPM2_ALG_NULL,
-            details: Default::default(),
-        };
         let validation = TPMT_TK_HASHCHECK {
             tag: TPM2_ST_HASHCHECK,
             hierarchy: TPM2_RH_NULL,
@@ -86,7 +78,7 @@ mod test_verify_signature {
             .sign(
                 key_handle,
                 &Digest::try_from(HASH[..32].to_vec()).unwrap(),
-                scheme,
+                SignatureScheme::Null,
                 validation.try_into().unwrap(),
             )
             .unwrap();
@@ -186,10 +178,10 @@ mod test_sign {
     use crate::common::{create_ctx_with_session, signing_key_pub, HASH};
     use std::convert::{TryFrom, TryInto};
     use tss_esapi::{
-        constants::tss::{TPM2_ALG_NULL, TPM2_RH_NULL, TPM2_ST_HASHCHECK},
+        constants::tss::{TPM2_RH_NULL, TPM2_ST_HASHCHECK},
         interface_types::resource_handles::Hierarchy,
-        structures::{Auth, Digest},
-        tss2_esys::{TPMT_SIG_SCHEME, TPMT_TK_HASHCHECK},
+        structures::{Auth, Digest, SignatureScheme},
+        tss2_esys::TPMT_TK_HASHCHECK,
     };
 
     #[test]
@@ -210,10 +202,6 @@ mod test_sign {
             .unwrap()
             .key_handle;
 
-        let scheme = TPMT_SIG_SCHEME {
-            scheme: TPM2_ALG_NULL,
-            details: Default::default(),
-        };
         let validation = TPMT_TK_HASHCHECK {
             tag: TPM2_ST_HASHCHECK,
             hierarchy: TPM2_RH_NULL,
@@ -223,7 +211,7 @@ mod test_sign {
             .sign(
                 key_handle,
                 &Digest::try_from(HASH[..32].to_vec()).unwrap(),
-                scheme,
+                SignatureScheme::Null,
                 validation.try_into().unwrap(),
             )
             .unwrap();
@@ -247,10 +235,6 @@ mod test_sign {
             .unwrap()
             .key_handle;
 
-        let scheme = TPMT_SIG_SCHEME {
-            scheme: TPM2_ALG_NULL,
-            details: Default::default(),
-        };
         let validation = TPMT_TK_HASHCHECK {
             tag: TPM2_ST_HASHCHECK,
             hierarchy: TPM2_RH_NULL,
@@ -260,7 +244,7 @@ mod test_sign {
             .sign(
                 key_handle,
                 &Digest::try_from(Vec::<u8>::new()).unwrap(),
-                scheme,
+                SignatureScheme::Null,
                 validation.try_into().unwrap(),
             )
             .unwrap_err();
@@ -284,10 +268,6 @@ mod test_sign {
             .unwrap()
             .key_handle;
 
-        let scheme = TPMT_SIG_SCHEME {
-            scheme: TPM2_ALG_NULL,
-            details: Default::default(),
-        };
         let validation = TPMT_TK_HASHCHECK {
             tag: TPM2_ST_HASHCHECK,
             hierarchy: TPM2_RH_NULL,
@@ -297,7 +277,7 @@ mod test_sign {
             .sign(
                 key_handle,
                 &Digest::try_from([0xbb; 40].to_vec()).unwrap(),
-                scheme,
+                SignatureScheme::Null,
                 validation.try_into().unwrap(),
             )
             .unwrap_err();

@@ -4,3 +4,4 @@ mod buffers_tests;
 mod capability_data_tests;
 mod lists_tests;
 mod pcr_tests;
+mod tagged_tests;

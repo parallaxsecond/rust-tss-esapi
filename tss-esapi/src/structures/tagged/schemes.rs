@@ -3,12 +3,12 @@
 use crate::{
     interface_types::algorithm::{
         EccSchemeAlgorithm, HashingAlgorithm, KeyDerivationFunction, KeyedHashSchemeAlgorithm,
-        RsaDecryptAlgorithm, RsaSchemeAlgorithm,
+        RsaDecryptAlgorithm, RsaSchemeAlgorithm, SignatureSchemeAlgorithm,
     },
     structures::schemes::{EcDaaScheme, HashScheme, HmacScheme, XorScheme},
     tss2_esys::{
         TPMT_ECC_SCHEME, TPMT_KDF_SCHEME, TPMT_KEYEDHASH_SCHEME, TPMT_RSA_DECRYPT, TPMT_RSA_SCHEME,
-        TPMU_ASYM_SCHEME, TPMU_KDF_SCHEME, TPMU_SCHEME_KEYEDHASH,
+        TPMT_SIG_SCHEME, TPMU_ASYM_SCHEME, TPMU_KDF_SCHEME, TPMU_SCHEME_KEYEDHASH, TPMU_SIG_SCHEME,
     },
     Error, Result, WrapperErrorKind,
 };
@@ -540,6 +540,162 @@ impl TryFrom<RsaScheme> for RsaDecryptionScheme {
             RsaScheme::Oaep(hash_scheme) => Ok(RsaDecryptionScheme::Oaep(hash_scheme)),
             RsaScheme::Null => Ok(RsaDecryptionScheme::Null),
             _ => Err(Error::local_error(WrapperErrorKind::InvalidParam)),
+        }
+    }
+}
+
+/// Full description of signature schemes.
+///
+/// # Details
+/// Corresponds to `TPMT_SIG_SCHEME`.
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum SignatureScheme {
+    RsaSsa { hash_scheme: HashScheme },
+    RsaPss { hash_scheme: HashScheme },
+    EcDsa { hash_scheme: HashScheme },
+    Sm2 { hash_scheme: HashScheme },
+    EcSchnorr { hash_scheme: HashScheme },
+    EcDaa { ecdaa_scheme: EcDaaScheme },
+    Hmac { hmac_scheme: HmacScheme },
+    Null,
+}
+
+impl SignatureScheme {
+    /// Returns the digest( i.e. hashing algorithm) of a signing scheme.
+    ///
+    /// # Details
+    /// This is intended to provide the functionality of reading
+    /// from the ```anySig``` field in the TPMU_SIG_SCHEME union.
+    ///
+    /// # Error
+    /// Returns an InvalidParam error if the trying to read from
+    /// SignatureScheme that is not a signing scheme.
+    pub fn signing_scheme(&self) -> Result<HashingAlgorithm> {
+        match self {
+            SignatureScheme::RsaSsa { hash_scheme }
+            | SignatureScheme::RsaPss { hash_scheme }
+            | SignatureScheme::EcDsa { hash_scheme }
+            | SignatureScheme::Sm2 { hash_scheme }
+            | SignatureScheme::EcSchnorr { hash_scheme } => Ok(hash_scheme.hashing_algorithm()),
+            SignatureScheme::EcDaa { ecdaa_scheme } => Ok(ecdaa_scheme.hashing_algorithm()),
+            _ => {
+                error!("Cannot access digest for a non signing scheme");
+                Err(Error::local_error(WrapperErrorKind::InvalidParam))
+            }
+        }
+    }
+
+    /// Sets digest( i.e. hashing algorithm) of a signing scheme.
+    ///
+    /// # Details
+    /// This is intended to provide the functionality of writing
+    /// to the ```anySig``` field in the TPMU_SIG_SCHEME union.
+    ///
+    /// # Error
+    /// Returns an InvalidParam error if the trying to read from
+    /// SignatureScheme that is not a signing scheme.
+    pub fn set_signing_scheme(&mut self, hashing_algorithm: HashingAlgorithm) -> Result<()> {
+        match self {
+            SignatureScheme::RsaSsa { hash_scheme }
+            | SignatureScheme::RsaPss { hash_scheme }
+            | SignatureScheme::EcDsa { hash_scheme }
+            | SignatureScheme::Sm2 { hash_scheme }
+            | SignatureScheme::EcSchnorr { hash_scheme } => {
+                *hash_scheme = HashScheme::new(hashing_algorithm);
+                Ok(())
+            }
+            SignatureScheme::EcDaa { ecdaa_scheme } => {
+                *ecdaa_scheme = EcDaaScheme::new(hashing_algorithm, ecdaa_scheme.count());
+                Ok(())
+            }
+            _ => {
+                error!("Cannot access digest for a non signing scheme");
+                Err(Error::local_error(WrapperErrorKind::InvalidParam))
+            }
+        }
+    }
+}
+
+impl From<SignatureScheme> for TPMT_SIG_SCHEME {
+    fn from(native: SignatureScheme) -> TPMT_SIG_SCHEME {
+        match native {
+            SignatureScheme::EcDaa { ecdaa_scheme } => TPMT_SIG_SCHEME {
+                scheme: SignatureSchemeAlgorithm::EcDaa.into(),
+                details: TPMU_SIG_SCHEME {
+                    ecdaa: ecdaa_scheme.into(),
+                },
+            },
+            SignatureScheme::EcDsa { hash_scheme } => TPMT_SIG_SCHEME {
+                scheme: SignatureSchemeAlgorithm::EcDsa.into(),
+                details: TPMU_SIG_SCHEME {
+                    ecdsa: hash_scheme.into(),
+                },
+            },
+            SignatureScheme::EcSchnorr { hash_scheme } => TPMT_SIG_SCHEME {
+                scheme: SignatureSchemeAlgorithm::EcSchnorr.into(),
+                details: TPMU_SIG_SCHEME {
+                    ecschnorr: hash_scheme.into(),
+                },
+            },
+            SignatureScheme::Hmac { hmac_scheme } => TPMT_SIG_SCHEME {
+                scheme: SignatureSchemeAlgorithm::Hmac.into(),
+                details: TPMU_SIG_SCHEME {
+                    hmac: hmac_scheme.into(),
+                },
+            },
+            SignatureScheme::Null => TPMT_SIG_SCHEME {
+                scheme: SignatureSchemeAlgorithm::Null.into(),
+                details: Default::default(),
+            },
+            SignatureScheme::RsaPss { hash_scheme } => TPMT_SIG_SCHEME {
+                scheme: SignatureSchemeAlgorithm::RsaPss.into(),
+                details: TPMU_SIG_SCHEME {
+                    rsapss: hash_scheme.into(),
+                },
+            },
+            SignatureScheme::RsaSsa { hash_scheme } => TPMT_SIG_SCHEME {
+                scheme: SignatureSchemeAlgorithm::RsaSsa.into(),
+                details: TPMU_SIG_SCHEME {
+                    rsassa: hash_scheme.into(),
+                },
+            },
+            SignatureScheme::Sm2 { hash_scheme } => TPMT_SIG_SCHEME {
+                scheme: SignatureSchemeAlgorithm::Sm2.into(),
+                details: TPMU_SIG_SCHEME {
+                    sm2: hash_scheme.into(),
+                },
+            },
+        }
+    }
+}
+
+impl TryFrom<TPMT_SIG_SCHEME> for SignatureScheme {
+    type Error = Error;
+
+    fn try_from(tss: TPMT_SIG_SCHEME) -> Result<Self> {
+        match SignatureSchemeAlgorithm::try_from(tss.scheme)? {
+            SignatureSchemeAlgorithm::EcDaa => Ok(SignatureScheme::EcDaa {
+                ecdaa_scheme: unsafe { tss.details.ecdaa }.try_into()?,
+            }),
+            SignatureSchemeAlgorithm::EcDsa => Ok(SignatureScheme::EcDsa {
+                hash_scheme: unsafe { tss.details.ecdsa }.try_into()?,
+            }),
+            SignatureSchemeAlgorithm::EcSchnorr => Ok(SignatureScheme::EcSchnorr {
+                hash_scheme: unsafe { tss.details.ecschnorr }.try_into()?,
+            }),
+            SignatureSchemeAlgorithm::Hmac => Ok(SignatureScheme::Hmac {
+                hmac_scheme: unsafe { tss.details.hmac }.try_into()?,
+            }),
+            SignatureSchemeAlgorithm::Null => Ok(SignatureScheme::Null),
+            SignatureSchemeAlgorithm::RsaPss => Ok(SignatureScheme::RsaPss {
+                hash_scheme: unsafe { tss.details.rsapss }.try_into()?,
+            }),
+            SignatureSchemeAlgorithm::RsaSsa => Ok(SignatureScheme::RsaSsa {
+                hash_scheme: unsafe { tss.details.rsassa }.try_into()?,
+            }),
+            SignatureSchemeAlgorithm::Sm2 => Ok(SignatureScheme::Sm2 {
+                hash_scheme: unsafe { tss.details.sm2 }.try_into()?,
+            }),
         }
     }
 }
