@@ -22,9 +22,11 @@ use tss_esapi::{
         PublicBuilder, PublicKeyedHashParameters, RsaExponent, RsaScheme, SymmetricDefinition,
     },
     tcti_ldr::TctiNameConf,
-    tss2_esys::TPMS_CLOCK_INFO,
     utils, Context,
 };
+
+mod tss_type_equality;
+pub use tss_type_equality::*;
 
 #[allow(dead_code)]
 pub const HASH: [u8; 64] = [
@@ -307,24 +309,4 @@ pub fn create_public_sealed_object() -> Public {
         .with_keyed_hash_unique_identifier(&Default::default())
         .build()
         .expect("Failed to create public strucuture.")
-}
-
-#[allow(dead_code)]
-pub fn ensure_tpms_clock_info_equality(expected: &TPMS_CLOCK_INFO, actual: &TPMS_CLOCK_INFO) {
-    assert_eq!(
-        expected.clock, actual.clock,
-        "'clock' value in TPMS_CLOCK_INFO, mismatch between aactual and expected",
-    );
-    assert_eq!(
-        expected.resetCount, actual.resetCount,
-        "'resetCount' value in TPMS_CLOCK_INFO, mismatch between aactual and expected",
-    );
-    assert_eq!(
-        expected.restartCount, actual.restartCount,
-        "'restartCount' value in TPMS_CLOCK_INFO, mismatch between aactual and expected",
-    );
-    assert_eq!(
-        expected.safe, actual.safe,
-        "'safe' value in TPMS_CLOCK_INFO, mismatch between aactual and expected",
-    );
 }
