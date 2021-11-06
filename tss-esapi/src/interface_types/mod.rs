@@ -9,3 +9,5 @@ pub mod ecc;
 pub mod key_bits;
 pub mod resource_handles;
 pub mod session_handles;
+mod yes_no;
+pub use yes_no::YesNo;

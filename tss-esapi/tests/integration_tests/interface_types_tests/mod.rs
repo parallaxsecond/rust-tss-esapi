@@ -3,3 +3,4 @@
 mod algorithms_tests;
 mod key_bits_tests;
 mod resource_handles_tests;
+mod yes_no_tests;
