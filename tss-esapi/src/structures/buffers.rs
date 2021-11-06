@@ -1,5 +1,6 @@
 // Copyright 2020 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
+
 #[allow(unused_macros)]
 macro_rules! named_field_buffer_type {
     ($native_type:ident,$MAX:expr,$tss_type:ident,$buffer_field_name:ident) => {
@@ -91,6 +92,7 @@ macro_rules! buffer_type {
     };
 }
 
+pub mod attest;
 pub mod public;
 
 pub mod auth {

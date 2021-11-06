@@ -35,6 +35,7 @@ pub use result::CreatePrimaryKeyResult;
 /////////////////////////////////////////////////////////
 mod buffers;
 pub use self::buffers::{
+    attest::AttestBuffer,
     auth::Auth,
     data::Data,
     digest::Digest,
