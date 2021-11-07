@@ -1,4 +1,6 @@
-use tss_esapi::tss2_esys::{TPMS_CERTIFY_INFO, TPMS_CLOCK_INFO};
+use tss_esapi::tss2_esys::{
+    TPMS_CERTIFY_INFO, TPMS_CLOCK_INFO, TPMS_PCR_SELECTION, TPMS_QUOTE_INFO,
+};
 
 macro_rules! ensure_sized_buffer_field_equality {
     ($expected:ident, $actual:ident, $field_name:ident, $buffer_field_name:ident, $tss_type:ident) => {
@@ -30,18 +32,43 @@ pub fn ensure_tpms_certify_info_equality(expected: &TPMS_CERTIFY_INFO, actual: &
 pub fn ensure_tpms_clock_info_equality(expected: &TPMS_CLOCK_INFO, actual: &TPMS_CLOCK_INFO) {
     assert_eq!(
         expected.clock, actual.clock,
-        "'clock' value in TPMS_CLOCK_INFO, mismatch between aactual and expected",
+        "'clock' value in TPMS_CLOCK_INFO, mismatch between actual and expected",
     );
     assert_eq!(
         expected.resetCount, actual.resetCount,
-        "'resetCount' value in TPMS_CLOCK_INFO, mismatch between aactual and expected",
+        "'resetCount' value in TPMS_CLOCK_INFO, mismatch between actual and expected",
     );
     assert_eq!(
         expected.restartCount, actual.restartCount,
-        "'restartCount' value in TPMS_CLOCK_INFO, mismatch between aactual and expected",
+        "'restartCount' value in TPMS_CLOCK_INFO, mismatch between actual and expected",
     );
     assert_eq!(
         expected.safe, actual.safe,
-        "'safe' value in TPMS_CLOCK_INFO, mismatch between aactual and expected",
+        "'safe' value in TPMS_CLOCK_INFO, mismatch between actual and expected",
+    );
+}
+
+#[allow(dead_code)]
+pub fn ensure_tpms_quote_info_equality(expected: &TPMS_QUOTE_INFO, actual: &TPMS_QUOTE_INFO) {
+    ensure_sized_buffer_field_equality!(expected, actual, pcrDigest, buffer, TPM2B_DIGEST);
+    crate::common::ensure_tpml_pcr_selection_equality(&expected.pcrSelect, &actual.pcrSelect);
+}
+
+#[allow(dead_code)]
+pub fn ensure_tpms_pcr_selection_equality(
+    expected: &TPMS_PCR_SELECTION,
+    actual: &TPMS_PCR_SELECTION,
+) {
+    assert_eq!(
+        expected.hash, actual.hash,
+        "'hash' value in TPMS_PCR_SELECTION, mismatch between actual and expected",
+    );
+    assert_eq!(
+        expected.sizeofSelect, actual.sizeofSelect,
+        "'sizeofSelect' value in TPMS_PCR_SELECTION, mismatch between actual and expected",
+    );
+    assert_eq!(
+        expected.pcrSelect, actual.pcrSelect,
+        "'pcrSelect' value in TPMS_PCR_SELECTION, mismatch between actual and expected",
     );
 }

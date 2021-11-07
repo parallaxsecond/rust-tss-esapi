@@ -25,8 +25,10 @@ use tss_esapi::{
     utils, Context,
 };
 
-mod tss_type_equality;
-pub use tss_type_equality::*;
+mod tpml_types_equality_checks;
+mod tpms_types_equality_checks;
+pub use tpml_types_equality_checks::*;
+pub use tpms_types_equality_checks::*;
 
 #[allow(dead_code)]
 pub const HASH: [u8; 64] = [
