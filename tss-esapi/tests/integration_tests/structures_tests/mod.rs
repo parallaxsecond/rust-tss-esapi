@@ -8,4 +8,5 @@ mod lists_tests;
 mod pcr_tests;
 mod quote_info_tests;
 mod tagged_tests;
+mod time_attest_info_tests;
 mod time_info_tests;
