@@ -1,6 +1,6 @@
 use tss_esapi::tss2_esys::{
-    TPMS_CERTIFY_INFO, TPMS_CLOCK_INFO, TPMS_PCR_SELECTION, TPMS_QUOTE_INFO, TPMS_TIME_ATTEST_INFO,
-    TPMS_TIME_INFO,
+    TPMS_CERTIFY_INFO, TPMS_CLOCK_INFO, TPMS_COMMAND_AUDIT_INFO, TPMS_PCR_SELECTION,
+    TPMS_QUOTE_INFO, TPMS_TIME_ATTEST_INFO, TPMS_TIME_INFO,
 };
 
 macro_rules! ensure_sized_buffer_field_equality {
@@ -93,4 +93,21 @@ pub fn ensure_tpms_time_attest_info_equality(
         expected.firmwareVersion, actual.firmwareVersion,
         "'firmwareVersion' value in TPMS_TIME_ATTEST_INFO, mismatch between actual and expected",
     );
+}
+
+#[allow(dead_code)]
+pub fn ensure_tpms_command_audit_info_equality(
+    expected: &TPMS_COMMAND_AUDIT_INFO,
+    actual: &TPMS_COMMAND_AUDIT_INFO,
+) {
+    assert_eq!(
+        expected.auditCounter, actual.auditCounter,
+        "'auditCounter' value in TPMS_COMMAND_AUDIT_INFO, mismatch between actual and expected",
+    );
+    assert_eq!(
+        expected.digestAlg, actual.digestAlg,
+        "'digestAlg' value in TPMS_COMMAND_AUDIT_INFO, mismatch between actual and expected",
+    );
+    ensure_sized_buffer_field_equality!(expected, actual, auditDigest, buffer, TPM2B_DIGEST);
+    ensure_sized_buffer_field_equality!(expected, actual, commandDigest, buffer, TPM2B_DIGEST);
 }

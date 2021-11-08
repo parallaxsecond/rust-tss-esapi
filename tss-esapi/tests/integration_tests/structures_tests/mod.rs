@@ -4,6 +4,7 @@ mod buffers_tests;
 mod capability_data_tests;
 mod certify_info_tests;
 mod clock_info_tests;
+mod command_audit_info_tests;
 mod lists_tests;
 mod pcr_tests;
 mod quote_info_tests;
