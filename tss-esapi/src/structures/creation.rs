@@ -46,10 +46,9 @@ impl TryFrom<TPM2B_CREATION_DATA> for CreationData {
     }
 }
 
-impl TryFrom<CreationData> for TPMS_CREATION_DATA {
-    type Error = Error;
-    fn try_from(creation_data: CreationData) -> Result<Self> {
-        Ok(TPMS_CREATION_DATA {
+impl From<CreationData> for TPMS_CREATION_DATA {
+    fn from(creation_data: CreationData) -> Self {
+        TPMS_CREATION_DATA {
             pcrSelect: creation_data.pcr_select.into(),
             pcrDigest: creation_data.pcr_digest.into(),
             locality: creation_data.locality,
@@ -57,9 +56,9 @@ impl TryFrom<CreationData> for TPMS_CREATION_DATA {
                 None => AlgorithmIdentifier::Null.into(),
                 Some(alg) => alg.into(),
             },
-            parentName: creation_data.parent_name.try_into()?,
-            parentQualifiedName: creation_data.parent_qualified_name.try_into()?,
+            parentName: creation_data.parent_name.into(),
+            parentQualifiedName: creation_data.parent_qualified_name.into(),
             outsideInfo: creation_data.outside_info.into(),
-        })
+        }
     }
 }

@@ -458,7 +458,6 @@ impl Context {
         key_sign: &Name,
         check_ticket: VerifiedTicket,
     ) -> Result<()> {
-        let tss_key_sign = TPM2B_NAME::try_from(key_sign.clone())?;
         let check_ticket = TPMT_TK_VERIFIED::try_from(check_ticket)?;
         let ret = unsafe {
             Esys_PolicyAuthorize(
@@ -469,7 +468,7 @@ impl Context {
                 self.optional_session_3(),
                 &approved_policy.clone().into(),
                 &policy_ref.clone().into(),
-                &tss_key_sign,
+                key_sign.as_ref(),
                 &check_ticket,
             )
         };

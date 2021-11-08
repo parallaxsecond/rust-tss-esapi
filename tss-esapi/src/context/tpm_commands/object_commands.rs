@@ -298,7 +298,7 @@ impl Context {
                 self.optional_session_2(),
                 self.optional_session_3(),
                 &credential.into(),
-                &object_name.try_into()?,
+                object_name.as_ref(),
                 &mut out_credential_blob,
                 &mut out_secret,
             )
