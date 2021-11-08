@@ -407,7 +407,7 @@ impl Context {
     /// # let parent_name = object_name.clone();
     /// #
     /// context
-    ///     .policy_duplication_select(policy_session, object_name, parent_name, false)
+    ///     .policy_duplication_select(policy_session, &object_name, &parent_name, false)
     ///     .expect("Policy command code");
     /// #
     /// # /// Digest of the policy that allows duplication
@@ -418,8 +418,8 @@ impl Context {
     pub fn policy_duplication_select(
         &mut self,
         policy_session: PolicySession,
-        object_name: Name,
-        new_parent_name: Name,
+        object_name: &Name,
+        new_parent_name: &Name,
         include_object: bool,
     ) -> Result<()> {
         let ret = unsafe {
@@ -429,8 +429,8 @@ impl Context {
                 self.optional_session_1(),
                 self.optional_session_2(),
                 self.optional_session_3(),
-                &object_name.try_into()?,
-                &new_parent_name.try_into()?,
+                object_name.as_ref(),
+                new_parent_name.as_ref(),
                 if include_object { 1 } else { 0 },
             )
         };

@@ -103,8 +103,8 @@ mod test_duplicate {
         context
             .policy_duplication_select(
                 policy_session,
-                Vec::<u8>::new().try_into().unwrap(),
-                parent_name.clone(),
+                &Vec::<u8>::new().try_into().unwrap(),
+                &parent_name,
                 false,
             )
             .expect("Policy duplication select");
@@ -227,7 +227,7 @@ mod test_duplicate {
         // Even if object name is not included in the policy digest ("false" as 3rd paremeter)
         // Correct name needs to be set or the policy will fail.
         context
-            .policy_duplication_select(policy_session, object_name, parent_name, false)
+            .policy_duplication_select(policy_session, &object_name, &parent_name, false)
             .unwrap();
         context.set_sessions((Some(policy_auth_session), None, None));
 
