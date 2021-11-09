@@ -42,6 +42,8 @@ use zeroize::Zeroize;
 
 mod key_attestation;
 
+pub use key_attestation::MakeCredParams;
+
 /// Parameters for the kinds of keys supported by the context
 #[derive(Debug, Clone, Copy)]
 pub enum KeyParams {

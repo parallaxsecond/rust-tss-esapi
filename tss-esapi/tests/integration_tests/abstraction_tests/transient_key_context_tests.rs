@@ -644,7 +644,7 @@ fn activate_credential() {
             name_hashing_algorithm,
             auth_policy,
             parameters,
-            unique: if let PublicKey::Rsa(val) = make_cred_params.attesting_key_pub().clone() {
+            unique: if let PublicKey::Rsa(val) = make_cred_params.attesting_key_pub {
                 PublicKeyRsa::try_from(val).unwrap()
             } else {
                 panic!("Wrong public key type");
@@ -664,7 +664,7 @@ fn activate_credential() {
         .make_credential(
             pub_handle,
             credential.clone().try_into().unwrap(),
-            make_cred_params.name().to_vec().try_into().unwrap(),
+            make_cred_params.name.try_into().unwrap(),
         )
         .unwrap();
 

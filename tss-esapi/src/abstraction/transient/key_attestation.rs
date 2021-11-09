@@ -10,36 +10,23 @@ use crate::{
         session_handles::{AuthSession, PolicySession},
     },
     structures::{EncryptedSecret, IDObject, SymmetricDefinition},
-    tss2_esys::{TPM2B_PUBLIC, TPMT_PUBLIC},
+    tss2_esys::{Tss2_MU_TPM2B_PUBLIC_Marshal, TPM2B_PUBLIC},
     utils::PublicKey,
-    Result,
+    Error, Result,
 };
-use std::convert::{TryFrom, TryInto};
+use log::error;
+use std::convert::TryFrom;
 
 #[derive(Debug)]
 /// Wrapper for the parameters needed by MakeCredential
 pub struct MakeCredParams {
     /// TPM name of the object
-    name: Vec<u8>,
+    pub name: Vec<u8>,
     /// Encoding of the public parameters of the object whose name
     /// will be included in the credential computations
-    public: Vec<u8>,
+    pub public: Vec<u8>,
     /// Public part of the key used to protect the credential
-    attesting_key_pub: PublicKey,
-}
-
-impl MakeCredParams {
-    pub fn name(&self) -> &[u8] {
-        &self.name
-    }
-
-    pub fn public(&self) -> &[u8] {
-        &self.public
-    }
-
-    pub fn attesting_key_pub(&self) -> &PublicKey {
-        &self.attesting_key_pub
-    }
+    pub attesting_key_pub: PublicKey,
 }
 
 impl TransientKeyContext {
@@ -68,29 +55,29 @@ impl TransientKeyContext {
         self.context.flush_context(object_handle.into())?;
 
         let public = TPM2B_PUBLIC::from(object_public);
-        let public = unsafe {
-            std::mem::transmute::<TPMT_PUBLIC, [u8; std::mem::size_of::<TPMT_PUBLIC>()]>(
-                public.publicArea,
+        let mut pub_buf = [0u8; std::mem::size_of::<TPM2B_PUBLIC>()];
+        let mut offset = 0;
+        let result = unsafe {
+            Tss2_MU_TPM2B_PUBLIC_Marshal(
+                &public,
+                &mut pub_buf as *mut u8,
+                pub_buf.len() as u64,
+                &mut offset,
             )
         };
-        let attesting_key_pub = match key {
-            None => {
-                let key_handle =
-                    ek::create_ek_object(&mut self.context, AsymmetricAlgorithm::Rsa, None)?;
-                let (attesting_key_pub, _, _) =
-                    self.context.read_public(key_handle).or_else(|e| {
-                        self.context.flush_context(key_handle.into())?;
-                        Err(e)
-                    })?;
-                self.context.flush_context(key_handle.into())?;
+        let result = Error::from_tss_rc(result);
+        if !result.is_success() {
+            error!("Error in marshalling TPM2B");
+            return Err(result);
+        }
 
-                attesting_key_pub.try_into()?
-            }
+        let attesting_key_pub = match key {
+            None => get_ek_object_public(&mut self.context)?,
             Some(key) => key.material.public,
         };
         Ok(MakeCredParams {
             name: object_name.value().to_vec(),
-            public: public.to_vec(),
+            public: pub_buf.to_vec(),
             attesting_key_pub,
         })
     }
@@ -202,4 +189,15 @@ impl TransientKeyContext {
             session,
         ))
     }
+}
+
+fn get_ek_object_public(context: &mut crate::Context) -> Result<PublicKey> {
+    let key_handle = ek::create_ek_object(context, AsymmetricAlgorithm::Rsa, None)?;
+    let (attesting_key_pub, _, _) = context.read_public(key_handle).or_else(|e| {
+        context.flush_context(key_handle.into())?;
+        Err(e)
+    })?;
+    context.flush_context(key_handle.into())?;
+
+    PublicKey::try_from(attesting_key_pub)
 }
