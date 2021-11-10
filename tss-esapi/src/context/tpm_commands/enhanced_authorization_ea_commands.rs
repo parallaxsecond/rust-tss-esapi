@@ -429,8 +429,8 @@ impl Context {
                 self.optional_session_1(),
                 self.optional_session_2(),
                 self.optional_session_3(),
-                &object_name.try_into()?,
-                &new_parent_name.try_into()?,
+                &object_name.into(),
+                &new_parent_name.into(),
                 if include_object { 1 } else { 0 },
             )
         };

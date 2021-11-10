@@ -35,7 +35,7 @@ impl TryFrom<Vec<u8>> for Name {
         }
         let size = bytes.len() as u16;
         let mut name = [0; Name::MAX_SIZE];
-        name.copy_from_slice(&bytes);
+        name[..bytes.len()].copy_from_slice(&bytes);
         Ok(Name {
             value: TPM2B_NAME { size, name },
         })
