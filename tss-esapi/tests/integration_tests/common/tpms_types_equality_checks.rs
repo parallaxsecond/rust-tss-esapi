@@ -1,6 +1,6 @@
 use tss_esapi::tss2_esys::{
     TPMS_CERTIFY_INFO, TPMS_CLOCK_INFO, TPMS_COMMAND_AUDIT_INFO, TPMS_PCR_SELECTION,
-    TPMS_QUOTE_INFO, TPMS_TIME_ATTEST_INFO, TPMS_TIME_INFO,
+    TPMS_QUOTE_INFO, TPMS_SESSION_AUDIT_INFO, TPMS_TIME_ATTEST_INFO, TPMS_TIME_INFO,
 };
 
 macro_rules! ensure_sized_buffer_field_equality {
@@ -110,4 +110,16 @@ pub fn ensure_tpms_command_audit_info_equality(
     );
     ensure_sized_buffer_field_equality!(expected, actual, auditDigest, buffer, TPM2B_DIGEST);
     ensure_sized_buffer_field_equality!(expected, actual, commandDigest, buffer, TPM2B_DIGEST);
+}
+
+#[allow(dead_code)]
+pub fn ensure_tpms_session_audit_info_equality(
+    expected: &TPMS_SESSION_AUDIT_INFO,
+    actual: &TPMS_SESSION_AUDIT_INFO,
+) {
+    assert_eq!(
+        expected.exclusiveSession, actual.exclusiveSession,
+        "'exclusiveSession' value in TPMS_SESSION_AUDIT_INFO, mismatch between actual and expected",
+    );
+    ensure_sized_buffer_field_equality!(expected, actual, sessionDigest, buffer, TPM2B_DIGEST);
 }
