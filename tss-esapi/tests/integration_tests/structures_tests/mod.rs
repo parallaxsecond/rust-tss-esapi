@@ -7,6 +7,7 @@ mod clock_info_tests;
 mod command_audit_info_tests;
 mod creation_info_tests;
 mod lists_tests;
+mod nv_certify_info_tests;
 mod pcr_tests;
 mod quote_info_tests;
 mod session_audit_info_tests;

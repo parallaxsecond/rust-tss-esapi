@@ -1,7 +1,7 @@
 use tss_esapi::tss2_esys::{
     TPMS_CERTIFY_INFO, TPMS_CLOCK_INFO, TPMS_COMMAND_AUDIT_INFO, TPMS_CREATION_INFO,
-    TPMS_PCR_SELECTION, TPMS_QUOTE_INFO, TPMS_SESSION_AUDIT_INFO, TPMS_TIME_ATTEST_INFO,
-    TPMS_TIME_INFO,
+    TPMS_NV_CERTIFY_INFO, TPMS_PCR_SELECTION, TPMS_QUOTE_INFO, TPMS_SESSION_AUDIT_INFO,
+    TPMS_TIME_ATTEST_INFO, TPMS_TIME_INFO,
 };
 
 macro_rules! ensure_sized_buffer_field_equality {
@@ -132,4 +132,17 @@ pub fn ensure_tpms_creation_info_equality(
 ) {
     ensure_sized_buffer_field_equality!(expected, actual, objectName, name, TPM2B_NAME);
     ensure_sized_buffer_field_equality!(expected, actual, creationHash, buffer, TPM2B_DIGEST);
+}
+
+#[allow(dead_code)]
+pub fn ensure_tpms_nv_certify_info_equality(
+    expected: &TPMS_NV_CERTIFY_INFO,
+    actual: &TPMS_NV_CERTIFY_INFO,
+) {
+    ensure_sized_buffer_field_equality!(expected, actual, indexName, name, TPM2B_NAME);
+    assert_eq!(
+        expected.offset, actual.offset,
+        "'offset' value in TPMS_NV_CERTIFY_INFO, mismatch between actual and expected",
+    );
+    ensure_sized_buffer_field_equality!(expected, actual, nvContents, buffer, TPM2B_MAX_NV_BUFFER);
 }
