@@ -1,5 +1,7 @@
 // Copyright 2021 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
+mod attest_info_test;
+mod attest_tests;
 mod buffers_tests;
 mod capability_data_tests;
 mod certify_info_tests;

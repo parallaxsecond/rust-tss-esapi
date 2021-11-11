@@ -1,7 +1,13 @@
-use tss_esapi::tss2_esys::{
-    TPMS_CERTIFY_INFO, TPMS_CLOCK_INFO, TPMS_COMMAND_AUDIT_INFO, TPMS_CREATION_INFO,
-    TPMS_NV_CERTIFY_INFO, TPMS_PCR_SELECTION, TPMS_QUOTE_INFO, TPMS_SESSION_AUDIT_INFO,
-    TPMS_TIME_ATTEST_INFO, TPMS_TIME_INFO,
+use tss_esapi::{
+    constants::tss::{
+        TPM2_ST_ATTEST_CERTIFY, TPM2_ST_ATTEST_COMMAND_AUDIT, TPM2_ST_ATTEST_CREATION,
+        TPM2_ST_ATTEST_NV, TPM2_ST_ATTEST_QUOTE, TPM2_ST_ATTEST_SESSION_AUDIT, TPM2_ST_ATTEST_TIME,
+    },
+    tss2_esys::{
+        TPMS_ATTEST, TPMS_CERTIFY_INFO, TPMS_CLOCK_INFO, TPMS_COMMAND_AUDIT_INFO,
+        TPMS_CREATION_INFO, TPMS_NV_CERTIFY_INFO, TPMS_PCR_SELECTION, TPMS_QUOTE_INFO,
+        TPMS_SESSION_AUDIT_INFO, TPMS_TIME_ATTEST_INFO, TPMS_TIME_INFO,
+    },
 };
 
 macro_rules! ensure_sized_buffer_field_equality {
@@ -145,4 +151,59 @@ pub fn ensure_tpms_nv_certify_info_equality(
         "'offset' value in TPMS_NV_CERTIFY_INFO, mismatch between actual and expected",
     );
     ensure_sized_buffer_field_equality!(expected, actual, nvContents, buffer, TPM2B_MAX_NV_BUFFER);
+}
+
+#[allow(dead_code)]
+pub fn ensure_tpms_attest_equality(expected: &TPMS_ATTEST, actual: &TPMS_ATTEST) {
+    assert_eq!(
+        expected.magic, actual.magic,
+        "'magic' value in TPMS_ATTEST, mismatch between actual and expected"
+    );
+    assert_eq!(
+        expected.type_, actual.type_,
+        "'type_' value in TPMS_ATTEST, mismatch between actual and expected",
+    );
+    ensure_sized_buffer_field_equality!(expected, actual, qualifiedSigner, name, TPM2B_NAME);
+    ensure_sized_buffer_field_equality!(expected, actual, extraData, buffer, TPM2B_DATA);
+    ensure_tpms_clock_info_equality(&expected.clockInfo, &actual.clockInfo);
+    assert_eq!(
+        expected.firmwareVersion, actual.firmwareVersion,
+        "'firmwareVersion' value in TPMS_ATTEST, mismatch between actual and expected",
+    );
+    match expected.type_ {
+        TPM2_ST_ATTEST_CERTIFY => {
+            ensure_tpms_certify_info_equality(unsafe { &expected.attested.certify }, unsafe {
+                &actual.attested.certify
+            });
+        }
+        TPM2_ST_ATTEST_QUOTE => {
+            ensure_tpms_quote_info_equality(unsafe { &expected.attested.quote }, unsafe {
+                &actual.attested.quote
+            });
+        }
+        TPM2_ST_ATTEST_SESSION_AUDIT => ensure_tpms_session_audit_info_equality(
+            unsafe { &expected.attested.sessionAudit },
+            unsafe { &actual.attested.sessionAudit },
+        ),
+        TPM2_ST_ATTEST_COMMAND_AUDIT => ensure_tpms_command_audit_info_equality(
+            unsafe { &expected.attested.commandAudit },
+            unsafe { &actual.attested.commandAudit },
+        ),
+        TPM2_ST_ATTEST_TIME => {
+            ensure_tpms_time_attest_info_equality(unsafe { &expected.attested.time }, unsafe {
+                &actual.attested.time
+            })
+        }
+        TPM2_ST_ATTEST_CREATION => {
+            ensure_tpms_creation_info_equality(unsafe { &expected.attested.creation }, unsafe {
+                &actual.attested.creation
+            })
+        }
+        TPM2_ST_ATTEST_NV => {
+            ensure_tpms_nv_certify_info_equality(unsafe { &expected.attested.nv }, unsafe {
+                &actual.attested.nv
+            })
+        }
+        _ => panic!("'type_' value in TPMS_ATTEST contained invalid or unsupported value"),
+    }
 }
