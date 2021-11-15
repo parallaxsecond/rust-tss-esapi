@@ -62,7 +62,7 @@ pub enum WrapperErrorKind {
     InconsistentParams,
     /// Returned when the value of a parameter is not yet supported.
     UnsupportedParam,
-    /// Returend when the value of a parameter is invalid for that type.
+    /// Returned when the value of a parameter is invalid for that type.
     InvalidParam,
     /// Returned when the TPM returns an invalid value from a call.
     WrongValueFromTpm,
@@ -72,6 +72,8 @@ pub enum WrapperErrorKind {
     /// Returned when a handle is required to be in a specific state
     /// (i.g. Open, Flushed, Closed) but it is not.
     InvalidHandleState,
+    /// An unexpected internal error occurred.
+    InternalError,
 }
 
 impl std::fmt::Display for WrapperErrorKind {
@@ -97,6 +99,9 @@ impl std::fmt::Display for WrapperErrorKind {
             WrapperErrorKind::WrongValueFromTpm => write!(f, "the TPM returned an invalid value."),
             WrapperErrorKind::MissingAuthSession => write!(f, "Missing authorization session"),
             WrapperErrorKind::InvalidHandleState => write!(f, "Invalid handle state"),
+            WrapperErrorKind::InternalError => {
+                write!(f, "an unexpected error occurred within the crate")
+            }
         }
     }
 }

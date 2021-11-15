@@ -12,10 +12,10 @@ use crate::{
     structures::{EncryptedSecret, IDObject, SymmetricDefinition},
     tss2_esys::{Tss2_MU_TPMT_PUBLIC_Marshal, TPM2B_PUBLIC, TPMT_PUBLIC},
     utils::PublicKey,
-    Error, Result,
+    Error, Result, WrapperErrorKind,
 };
 use log::error;
-use std::convert::TryFrom;
+use std::convert::{TryFrom, TryInto};
 
 #[derive(Debug)]
 /// Wrapper for the parameters needed by MakeCredential
@@ -62,7 +62,9 @@ impl TransientKeyContext {
             Tss2_MU_TPMT_PUBLIC_Marshal(
                 &public.publicArea,
                 &mut pub_buf as *mut u8,
-                pub_buf.len() as u64,
+                std::mem::size_of::<TPMT_PUBLIC>()
+                    .try_into()
+                    .map_err(|_| Error::local_error(WrapperErrorKind::InternalError))?,
                 &mut offset,
             )
         };
