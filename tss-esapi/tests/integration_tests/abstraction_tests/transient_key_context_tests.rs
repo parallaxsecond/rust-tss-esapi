@@ -678,3 +678,154 @@ fn activate_credential() {
 
     assert_eq!(cred_back, credential);
 }
+
+#[test]
+fn make_cred_params_name() {
+    // create a Transient key context, generate a key and
+    // obtain the Make Credential parameters
+    let mut ctx = create_ctx();
+    let params = KeyParams::Ecc {
+        curve: EccCurve::NistP256,
+        scheme: EccScheme::create(
+            EccSchemeAlgorithm::EcDsa,
+            Some(HashingAlgorithm::Sha256),
+            None,
+        )
+        .expect("Failed to create ecc scheme"),
+    };
+    let (material, auth) = ctx.create_key(params, 16).unwrap();
+    let obj = ObjectWrapper {
+        material,
+        auth,
+        params,
+    };
+    let make_cred_params = ctx.get_make_cred_params(obj, None).unwrap();
+
+    // Verify that the name provided in the parameters is
+    // consistent with the public buffer
+    use sha2::Digest;
+    let mut hasher = sha2::Sha256::new();
+    hasher.update(make_cred_params.public);
+    let hash = hasher.finalize();
+    // The first 2 bytes of the name represent the hash algorithm used
+    assert_eq!(make_cred_params.name[2..], hash[..]);
+}
+
+#[test]
+fn activate_credential_wrong_key() {
+    // create a Transient key context, generate two keys and
+    // obtain the Make Credential parameters for the first one
+    let mut ctx = create_ctx();
+    let params = KeyParams::Ecc {
+        curve: EccCurve::NistP256,
+        scheme: EccScheme::create(
+            EccSchemeAlgorithm::EcDsa,
+            Some(HashingAlgorithm::Sha256),
+            None,
+        )
+        .expect("Failed to create ecc scheme"),
+    };
+    // "Good" key (for which the credential will be generated)
+    let (material, auth) = ctx.create_key(params, 16).unwrap();
+    let obj = ObjectWrapper {
+        material,
+        auth,
+        params,
+    };
+    let make_cred_params = ctx.get_make_cred_params(obj, None).unwrap();
+
+    // "Wrong" key (which will be used instead of the good key in attestation)
+    let (material, auth) = ctx.create_key(params, 16).unwrap();
+    let wrong_obj = ObjectWrapper {
+        material,
+        auth,
+        params,
+    };
+
+    drop(ctx);
+
+    // create a normal Context and make the credential
+    let mut basic_ctx = crate::common::create_ctx_with_session();
+
+    // the public part of the EK is used, so we retrieve the parameters
+    let key_pub =
+        ek::create_ek_public_from_default_template(AsymmetricAlgorithm::Rsa, None).unwrap();
+    let key_pub = if let Public::Rsa {
+        object_attributes,
+        name_hashing_algorithm,
+        auth_policy,
+        parameters,
+        ..
+    } = key_pub
+    {
+        Public::Rsa {
+            object_attributes,
+            name_hashing_algorithm,
+            auth_policy,
+            parameters,
+            unique: if let PublicKey::Rsa(val) = make_cred_params.attesting_key_pub {
+                PublicKeyRsa::try_from(val).unwrap()
+            } else {
+                panic!("Wrong public key type");
+            },
+        }
+    } else {
+        panic!("Wrong Public type");
+    };
+    let pub_handle = basic_ctx
+        .load_external_public(&key_pub, Hierarchy::Owner)
+        .unwrap();
+
+    // Credential to expect back as proof for attestation
+    let credential = vec![0x53; 16];
+
+    let (cred, secret) = basic_ctx
+        .make_credential(
+            pub_handle,
+            credential.try_into().unwrap(),
+            make_cred_params.name.try_into().unwrap(),
+        )
+        .unwrap();
+
+    drop(basic_ctx);
+
+    // Create a new Transient key context and activate the credential
+    let mut ctx = create_ctx();
+    let _ = ctx
+        .activate_credential(
+            wrong_obj,
+            None,
+            cred.value().to_vec(),
+            secret.value().to_vec(),
+        )
+        .unwrap_err();
+}
+
+#[test]
+fn activate_credential_wrong_data() {
+    let mut ctx = create_ctx();
+    let params = KeyParams::Ecc {
+        curve: EccCurve::NistP256,
+        scheme: EccScheme::create(
+            EccSchemeAlgorithm::EcDsa,
+            Some(HashingAlgorithm::Sha256),
+            None,
+        )
+        .expect("Failed to create ecc scheme"),
+    };
+    // "Good" key (for which the credential will be generated)
+    let (material, auth) = ctx.create_key(params, 16).unwrap();
+    let obj = ObjectWrapper {
+        material,
+        auth,
+        params,
+    };
+
+    let _ = ctx
+        .activate_credential(obj.clone(), None, vec![], vec![])
+        .unwrap_err();
+
+    let _ = ctx
+        .activate_credential(obj, None, vec![0xaa; 52], vec![0x55; 256])
+        .unwrap_err();
+}

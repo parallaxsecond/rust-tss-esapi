@@ -27,6 +27,7 @@ primal = "0.3.0"
 
 [dev-dependencies]
 env_logger = "0.7.1"
+sha2 = "0.9.8"
 
 [features]
 generate-bindings = ["tss-esapi-sys/generate-bindings"]
