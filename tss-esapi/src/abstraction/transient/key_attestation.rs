@@ -10,7 +10,7 @@ use crate::{
         session_handles::{AuthSession, PolicySession},
     },
     structures::{EncryptedSecret, IDObject, SymmetricDefinition},
-    tss2_esys::{Tss2_MU_TPM2B_PUBLIC_Marshal, TPM2B_PUBLIC},
+    tss2_esys::{Tss2_MU_TPMT_PUBLIC_Marshal, TPM2B_PUBLIC, TPMT_PUBLIC},
     utils::PublicKey,
     Error, Result,
 };
@@ -54,12 +54,13 @@ impl TransientKeyContext {
             })?;
         self.context.flush_context(object_handle.into())?;
 
+        // Name of objects is derived from their publicArea, i.e. the marshaled TPMT_PUBLIC
         let public = TPM2B_PUBLIC::from(object_public);
-        let mut pub_buf = [0u8; std::mem::size_of::<TPM2B_PUBLIC>()];
+        let mut pub_buf = [0u8; std::mem::size_of::<TPMT_PUBLIC>()];
         let mut offset = 0;
         let result = unsafe {
-            Tss2_MU_TPM2B_PUBLIC_Marshal(
-                &public,
+            Tss2_MU_TPMT_PUBLIC_Marshal(
+                &public.publicArea,
                 &mut pub_buf as *mut u8,
                 pub_buf.len() as u64,
                 &mut offset,
@@ -70,6 +71,8 @@ impl TransientKeyContext {
             error!("Error in marshalling TPM2B");
             return Err(result);
         }
+        // `offset` will be small, so no risk in the conversion below
+        let public = pub_buf[..offset as usize].to_vec();
 
         let attesting_key_pub = match key {
             None => get_ek_object_public(&mut self.context)?,
@@ -77,7 +80,7 @@ impl TransientKeyContext {
         };
         Ok(MakeCredParams {
             name: object_name.value().to_vec(),
-            public: pub_buf.to_vec(),
+            public,
             attesting_key_pub,
         })
     }
