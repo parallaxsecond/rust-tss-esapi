@@ -19,8 +19,22 @@ use std::convert::{TryFrom, TryInto};
 
 #[derive(Debug)]
 /// Wrapper for the parameters needed by MakeCredential
+///
+/// The 3rd party requesting proof that the key is indeed backed
+/// by a TPM would perform a MakeCredential and would thus require
+/// `name` and `attesting_key_pub` as inputs for that operation.
+///
+/// `public` is not strictly needed, however it is returned as a
+/// convenience block of data. Since the MakeCredential operation
+/// bakes into the encrypted credential the identity of the key to
+/// be attested via its `name`, the correctness of the `name` must
+/// be verifiable by the said 3rd party. `public` bridges this gap:
+///
+/// * it includes all the public parameters of the attested key
+/// * can be hashed (in its marshaled form) with the name hash
+/// (found by unmarshaling it) to obtain `name`
 pub struct MakeCredParams {
-    /// TPM name of the object
+    /// TPM name of the object being attested
     pub name: Vec<u8>,
     /// Encoding of the public parameters of the object whose name
     /// will be included in the credential computations

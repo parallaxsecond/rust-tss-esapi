@@ -790,8 +790,10 @@ fn activate_credential_wrong_key() {
     drop(basic_ctx);
 
     // Create a new Transient key context and activate the credential
+    // Validation fails within the TPM because the credential HMAC is
+    // associated with a different object (so the integrity check fails).
     let mut ctx = create_ctx();
-    let _ = ctx
+    let e = ctx
         .activate_credential(
             wrong_obj,
             None,
@@ -799,6 +801,11 @@ fn activate_credential_wrong_key() {
             secret.value().to_vec(),
         )
         .unwrap_err();
+    if let Error::Tss2Error(e) = e {
+        assert_eq!(e.kind(), Some(Tss2ResponseCodeKind::Integrity));
+    } else {
+        panic!("Got crate error ({}) when expecting an error from TPM.", e);
+    }
 }
 
 #[test]
@@ -821,11 +828,23 @@ fn activate_credential_wrong_data() {
         params,
     };
 
-    let _ = ctx
+    // No data (essentially wrong size)
+    let e = ctx
         .activate_credential(obj.clone(), None, vec![], vec![])
         .unwrap_err();
+    if let Error::Tss2Error(e) = e {
+        assert_eq!(e.kind(), Some(Tss2ResponseCodeKind::Size));
+    } else {
+        panic!("Got crate error ({}) when expecting an error from TPM.", e);
+    }
 
-    let _ = ctx
+    // Correct size but gibberish
+    let e = ctx
         .activate_credential(obj, None, vec![0xaa; 52], vec![0x55; 256])
         .unwrap_err();
+    if let Error::Tss2Error(e) = e {
+        assert_eq!(e.kind(), Some(Tss2ResponseCodeKind::Value));
+    } else {
+        panic!("Got crate error ({}) when expecting an error from TPM.", e);
+    }
 }
