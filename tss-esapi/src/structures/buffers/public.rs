@@ -8,6 +8,7 @@ use crate::{
     attributes::ObjectAttributes,
     interface_types::algorithm::{HashingAlgorithm, PublicAlgorithm},
     structures::{Digest, EccPoint, PublicKeyRsa, SymmetricCipherParameters},
+    traits::{Marshall, UnMarshall},
     tss2_esys::{TPM2B_PUBLIC, TPMT_PUBLIC},
     Error, Result, WrapperErrorKind,
 };
@@ -18,7 +19,9 @@ use rsa::PublicRsaParameters;
 
 use log::error;
 use std::convert::{TryFrom, TryInto};
-use tss_esapi_sys::{TPMU_PUBLIC_ID, TPMU_PUBLIC_PARMS};
+use tss_esapi_sys::{
+    Tss2_MU_TPMT_PUBLIC_Marshal, Tss2_MU_TPMT_PUBLIC_Unmarshal, TPMU_PUBLIC_ID, TPMU_PUBLIC_PARMS,
+};
 
 /// A builder for the [Public] type.
 #[derive(Debug, Clone)]
@@ -290,7 +293,7 @@ impl PublicBuilder {
 /// Enum representing the Public structure.
 ///
 /// # Details
-/// This corresponds to TPM2B_PUBLIC
+/// This corresponds to TPMT_PUBLIC
 #[derive(Debug, Clone, PartialEq)]
 pub enum Public {
     Rsa {
@@ -375,7 +378,7 @@ impl Public {
     }
 }
 
-impl From<Public> for TPM2B_PUBLIC {
+impl From<Public> for TPMT_PUBLIC {
     fn from(public: Public) -> Self {
         match public {
             Public::Rsa {
@@ -384,20 +387,15 @@ impl From<Public> for TPM2B_PUBLIC {
                 auth_policy,
                 parameters,
                 unique,
-            } => TPM2B_PUBLIC {
-                size: std::mem::size_of::<TPMT_PUBLIC>()
-                    .try_into()
-                    .expect("Failed to convert usize to u16"), // should not fail on valid targets
-                publicArea: TPMT_PUBLIC {
-                    type_: PublicAlgorithm::Rsa.into(),
-                    nameAlg: name_hashing_algorithm.into(),
-                    objectAttributes: object_attributes.into(),
-                    authPolicy: auth_policy.into(),
-                    parameters: TPMU_PUBLIC_PARMS {
-                        rsaDetail: parameters.into(),
-                    },
-                    unique: TPMU_PUBLIC_ID { rsa: unique.into() },
+            } => TPMT_PUBLIC {
+                type_: PublicAlgorithm::Rsa.into(),
+                nameAlg: name_hashing_algorithm.into(),
+                objectAttributes: object_attributes.into(),
+                authPolicy: auth_policy.into(),
+                parameters: TPMU_PUBLIC_PARMS {
+                    rsaDetail: parameters.into(),
                 },
+                unique: TPMU_PUBLIC_ID { rsa: unique.into() },
             },
             Public::KeyedHash {
                 object_attributes,
@@ -405,21 +403,16 @@ impl From<Public> for TPM2B_PUBLIC {
                 auth_policy,
                 parameters,
                 unique,
-            } => TPM2B_PUBLIC {
-                size: std::mem::size_of::<TPMT_PUBLIC>()
-                    .try_into()
-                    .expect("Failed to convert usize to u16"), // should not fail on valid targets
-                publicArea: TPMT_PUBLIC {
-                    type_: PublicAlgorithm::KeyedHash.into(),
-                    nameAlg: name_hashing_algorithm.into(),
-                    objectAttributes: object_attributes.into(),
-                    authPolicy: auth_policy.into(),
-                    parameters: TPMU_PUBLIC_PARMS {
-                        keyedHashDetail: parameters.into(),
-                    },
-                    unique: TPMU_PUBLIC_ID {
-                        keyedHash: unique.into(),
-                    },
+            } => TPMT_PUBLIC {
+                type_: PublicAlgorithm::KeyedHash.into(),
+                nameAlg: name_hashing_algorithm.into(),
+                objectAttributes: object_attributes.into(),
+                authPolicy: auth_policy.into(),
+                parameters: TPMU_PUBLIC_PARMS {
+                    keyedHashDetail: parameters.into(),
+                },
+                unique: TPMU_PUBLIC_ID {
+                    keyedHash: unique.into(),
                 },
             },
             Public::Ecc {
@@ -428,20 +421,15 @@ impl From<Public> for TPM2B_PUBLIC {
                 auth_policy,
                 parameters,
                 unique,
-            } => TPM2B_PUBLIC {
-                size: std::mem::size_of::<TPMT_PUBLIC>()
-                    .try_into()
-                    .expect("Failed to convert usize to u16"), // should not fail on valid targets
-                publicArea: TPMT_PUBLIC {
-                    type_: PublicAlgorithm::Ecc.into(),
-                    nameAlg: name_hashing_algorithm.into(),
-                    objectAttributes: object_attributes.into(),
-                    authPolicy: auth_policy.into(),
-                    parameters: TPMU_PUBLIC_PARMS {
-                        eccDetail: parameters.into(),
-                    },
-                    unique: TPMU_PUBLIC_ID { ecc: unique.into() },
+            } => TPMT_PUBLIC {
+                type_: PublicAlgorithm::Ecc.into(),
+                nameAlg: name_hashing_algorithm.into(),
+                objectAttributes: object_attributes.into(),
+                authPolicy: auth_policy.into(),
+                parameters: TPMU_PUBLIC_PARMS {
+                    eccDetail: parameters.into(),
                 },
+                unique: TPMU_PUBLIC_ID { ecc: unique.into() },
             },
             Public::SymCipher {
                 object_attributes,
@@ -449,21 +437,64 @@ impl From<Public> for TPM2B_PUBLIC {
                 auth_policy,
                 parameters,
                 unique,
-            } => TPM2B_PUBLIC {
-                size: std::mem::size_of::<TPMT_PUBLIC>()
-                    .try_into()
-                    .expect("Failed to convert usize to u16"), // should not fail on valid targets
-                publicArea: TPMT_PUBLIC {
-                    type_: PublicAlgorithm::SymCipher.into(),
-                    nameAlg: name_hashing_algorithm.into(),
-                    objectAttributes: object_attributes.into(),
-                    authPolicy: auth_policy.into(),
-                    parameters: TPMU_PUBLIC_PARMS {
-                        symDetail: parameters.into(),
-                    },
-                    unique: TPMU_PUBLIC_ID { sym: unique.into() },
+            } => TPMT_PUBLIC {
+                type_: PublicAlgorithm::SymCipher.into(),
+                nameAlg: name_hashing_algorithm.into(),
+                objectAttributes: object_attributes.into(),
+                authPolicy: auth_policy.into(),
+                parameters: TPMU_PUBLIC_PARMS {
+                    symDetail: parameters.into(),
                 },
+                unique: TPMU_PUBLIC_ID { sym: unique.into() },
             },
+        }
+    }
+}
+
+impl TryFrom<TPMT_PUBLIC> for Public {
+    type Error = Error;
+
+    fn try_from(tpmt_public: TPMT_PUBLIC) -> Result<Self> {
+        match PublicAlgorithm::try_from(tpmt_public.type_)? {
+            PublicAlgorithm::Rsa => Ok(Public::Rsa {
+                object_attributes: tpmt_public.objectAttributes.into(),
+                name_hashing_algorithm: tpmt_public.nameAlg.try_into()?,
+                auth_policy: tpmt_public.authPolicy.try_into()?,
+                parameters: unsafe { tpmt_public.parameters.rsaDetail }.try_into()?,
+                unique: unsafe { tpmt_public.unique.rsa }.try_into()?,
+            }),
+            PublicAlgorithm::KeyedHash => Ok(Public::KeyedHash {
+                object_attributes: tpmt_public.objectAttributes.into(),
+                name_hashing_algorithm: tpmt_public.nameAlg.try_into()?,
+                auth_policy: tpmt_public.authPolicy.try_into()?,
+                parameters: unsafe { tpmt_public.parameters.keyedHashDetail }.try_into()?,
+                unique: unsafe { tpmt_public.unique.keyedHash }.try_into()?,
+            }),
+            PublicAlgorithm::Ecc => Ok(Public::Ecc {
+                object_attributes: tpmt_public.objectAttributes.into(),
+                name_hashing_algorithm: tpmt_public.nameAlg.try_into()?,
+                auth_policy: tpmt_public.authPolicy.try_into()?,
+                parameters: unsafe { tpmt_public.parameters.eccDetail }.try_into()?,
+                unique: unsafe { tpmt_public.unique.ecc }.try_into()?,
+            }),
+            PublicAlgorithm::SymCipher => Ok(Public::SymCipher {
+                object_attributes: tpmt_public.objectAttributes.into(),
+                name_hashing_algorithm: tpmt_public.nameAlg.try_into()?,
+                auth_policy: tpmt_public.authPolicy.try_into()?,
+                parameters: unsafe { tpmt_public.parameters.symDetail }.try_into()?,
+                unique: unsafe { tpmt_public.unique.sym }.try_into()?,
+            }),
+        }
+    }
+}
+
+impl From<Public> for TPM2B_PUBLIC {
+    fn from(public: Public) -> Self {
+        TPM2B_PUBLIC {
+            size: std::mem::size_of::<TPMT_PUBLIC>()
+                .try_into()
+                .expect("Failed to convert usize to u16"), // should not fail on valid targets
+            publicArea: public.into(),
         }
     }
 }
@@ -472,36 +503,62 @@ impl TryFrom<TPM2B_PUBLIC> for Public {
     type Error = Error;
 
     fn try_from(tpm2b_public: TPM2B_PUBLIC) -> Result<Self> {
-        match PublicAlgorithm::try_from(tpm2b_public.publicArea.type_)? {
-            PublicAlgorithm::Rsa => Ok(Public::Rsa {
-                object_attributes: tpm2b_public.publicArea.objectAttributes.into(),
-                name_hashing_algorithm: tpm2b_public.publicArea.nameAlg.try_into()?,
-                auth_policy: tpm2b_public.publicArea.authPolicy.try_into()?,
-                parameters: unsafe { tpm2b_public.publicArea.parameters.rsaDetail }.try_into()?,
-                unique: unsafe { tpm2b_public.publicArea.unique.rsa }.try_into()?,
-            }),
-            PublicAlgorithm::KeyedHash => Ok(Public::KeyedHash {
-                object_attributes: tpm2b_public.publicArea.objectAttributes.into(),
-                name_hashing_algorithm: tpm2b_public.publicArea.nameAlg.try_into()?,
-                auth_policy: tpm2b_public.publicArea.authPolicy.try_into()?,
-                parameters: unsafe { tpm2b_public.publicArea.parameters.keyedHashDetail }
-                    .try_into()?,
-                unique: unsafe { tpm2b_public.publicArea.unique.keyedHash }.try_into()?,
-            }),
-            PublicAlgorithm::Ecc => Ok(Public::Ecc {
-                object_attributes: tpm2b_public.publicArea.objectAttributes.into(),
-                name_hashing_algorithm: tpm2b_public.publicArea.nameAlg.try_into()?,
-                auth_policy: tpm2b_public.publicArea.authPolicy.try_into()?,
-                parameters: unsafe { tpm2b_public.publicArea.parameters.eccDetail }.try_into()?,
-                unique: unsafe { tpm2b_public.publicArea.unique.ecc }.try_into()?,
-            }),
-            PublicAlgorithm::SymCipher => Ok(Public::SymCipher {
-                object_attributes: tpm2b_public.publicArea.objectAttributes.into(),
-                name_hashing_algorithm: tpm2b_public.publicArea.nameAlg.try_into()?,
-                auth_policy: tpm2b_public.publicArea.authPolicy.try_into()?,
-                parameters: unsafe { tpm2b_public.publicArea.parameters.symDetail }.try_into()?,
-                unique: unsafe { tpm2b_public.publicArea.unique.sym }.try_into()?,
-            }),
+        Self::try_from(tpm2b_public.publicArea)
+    }
+}
+
+impl Marshall for Public {
+    const BUFFER_SIZE: usize = std::mem::size_of::<TPMT_PUBLIC>();
+
+    fn marshall(&self) -> Result<Vec<u8>> {
+        let tpmt_public = TPMT_PUBLIC::from(self.clone());
+        let mut offset = 0;
+        let mut buffer = Vec::with_capacity(Self::BUFFER_SIZE);
+
+        let ret = unsafe {
+            Tss2_MU_TPMT_PUBLIC_Marshal(
+                &tpmt_public,
+                buffer.as_mut_ptr(),
+                buffer.capacity().try_into().map_err(|e| {
+                    error!("Failed to convert size of buffer to TSS size_t type: {}", e);
+                    Error::local_error(WrapperErrorKind::InvalidParam)
+                })?,
+                &mut offset,
+            )
+        };
+        let ret = Error::from_tss_rc(ret);
+        if ret.is_success() {
+            unsafe {
+                buffer.set_len(offset as usize);
+            }
+            Ok(buffer)
+        } else {
+            Err(ret)
+        }
+    }
+}
+
+impl UnMarshall for Public {
+    fn unmarshall(public_buffer: &[u8]) -> Result<Self> {
+        let mut tpmt_public = TPMT_PUBLIC::default();
+        let mut offset = 0;
+
+        let ret = unsafe {
+            Tss2_MU_TPMT_PUBLIC_Unmarshal(
+                public_buffer.as_ptr(),
+                public_buffer.len().try_into().map_err(|e| {
+                    error!("Failed to convert length of marshalled data: {}", e);
+                    Error::local_error(WrapperErrorKind::InvalidParam)
+                })?,
+                &mut offset,
+                &mut tpmt_public,
+            )
+        };
+        let ret = Error::from_tss_rc(ret);
+        if ret.is_success() {
+            Ok(tpmt_public.try_into()?)
+        } else {
+            Err(ret)
         }
     }
 }
