@@ -10,7 +10,7 @@ use log::error;
 use std::convert::{TryFrom, TryInto};
 
 /// Builder for PublicEccParameters.
-#[derive(Copy, Clone, Debug, Default)]
+#[derive(Copy, Clone, Debug, Default, PartialEq)]
 pub struct PublicEccParametersBuilder {
     symmetric: Option<SymmetricDefinitionObject>,
     ecc_scheme: Option<EccScheme>,
@@ -214,7 +214,7 @@ impl PublicEccParametersBuilder {
 ///
 /// # Details
 /// This corresponds to TPMS_ECC_PARMS.
-#[derive(Clone, Debug, Copy)]
+#[derive(Clone, Debug, Copy, PartialEq)]
 pub struct PublicEccParameters {
     symmetric_definition_object: SymmetricDefinitionObject,
     ecc_scheme: EccScheme,

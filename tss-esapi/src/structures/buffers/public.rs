@@ -291,7 +291,7 @@ impl PublicBuilder {
 ///
 /// # Details
 /// This corresponds to TPM2B_PUBLIC
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum Public {
     Rsa {
         object_attributes: ObjectAttributes,
