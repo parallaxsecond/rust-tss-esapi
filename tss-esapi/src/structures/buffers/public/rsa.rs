@@ -259,9 +259,7 @@ impl RsaExponent {
 
 impl Default for RsaExponent {
     fn default() -> RsaExponent {
-        RsaExponent {
-            value: (1 << 16) + 1,
-        }
+        RsaExponent { value: 0 }
     }
 }
 
