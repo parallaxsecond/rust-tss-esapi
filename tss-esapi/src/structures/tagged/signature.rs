@@ -12,7 +12,7 @@ use std::convert::{TryFrom, TryInto};
 ///
 /// # Details
 /// This corresponds TPMT_SIGNATURE
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum Signature {
     RsaSsa(RsaSignature),
     RsaPss(RsaSignature),
