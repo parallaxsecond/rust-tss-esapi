@@ -10,3 +10,4 @@ mod public_ecc_parameters_tests;
 mod public_marshall_tests;
 mod public_rsa_exponent_tests;
 mod public_rsa_parameters_tests;
+mod signature_tests;

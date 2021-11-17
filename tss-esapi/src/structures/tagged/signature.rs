@@ -1,10 +1,14 @@
+use log::error;
+use tss_esapi_sys::{Tss2_MU_TPMT_SIGNATURE_Marshal, Tss2_MU_TPMT_SIGNATURE_Unmarshal};
+
 // Copyright 2021 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
 use crate::{
     interface_types::algorithm::SignatureSchemeAlgorithm,
     structures::{EccSignature, HashAgile, RsaSignature},
+    traits::{Marshall, UnMarshall},
     tss2_esys::{TPMT_SIGNATURE, TPMU_SIGNATURE},
-    Error, Result,
+    Error, Result, WrapperErrorKind,
 };
 use std::convert::{TryFrom, TryInto};
 
@@ -122,6 +126,62 @@ impl TryFrom<TPMT_SIGNATURE> for Signature {
                 unsafe { tpmt_signature.signature.hmac }.try_into()?,
             )),
             SignatureSchemeAlgorithm::Null => Ok(Signature::Null),
+        }
+    }
+}
+
+impl Marshall for Signature {
+    const BUFFER_SIZE: usize = std::mem::size_of::<TPMT_SIGNATURE>();
+
+    fn marshall(&self) -> Result<Vec<u8>> {
+        let tpmt_sig = TPMT_SIGNATURE::try_from(self.clone())?;
+        let mut offset = 0;
+        let mut buffer = Vec::with_capacity(Self::BUFFER_SIZE);
+
+        let ret = unsafe {
+            Tss2_MU_TPMT_SIGNATURE_Marshal(
+                &tpmt_sig,
+                buffer.as_mut_ptr(),
+                buffer.capacity().try_into().map_err(|e| {
+                    error!("Failed to convert size of buffer to TSS size_t type: {}", e);
+                    Error::local_error(WrapperErrorKind::InvalidParam)
+                })?,
+                &mut offset,
+            )
+        };
+        let ret = Error::from_tss_rc(ret);
+        if ret.is_success() {
+            unsafe {
+                buffer.set_len(offset as usize);
+            }
+            Ok(buffer)
+        } else {
+            Err(ret)
+        }
+    }
+}
+
+impl UnMarshall for Signature {
+    fn unmarshall(public_buffer: &[u8]) -> Result<Self> {
+        let mut tpmt_sig = TPMT_SIGNATURE::default();
+        let mut offset = 0;
+
+        let ret = unsafe {
+            Tss2_MU_TPMT_SIGNATURE_Unmarshal(
+                public_buffer.as_ptr(),
+                public_buffer.len().try_into().map_err(|e| {
+                    error!("Failed to convert length of marshalled data: {}", e);
+                    Error::local_error(WrapperErrorKind::InvalidParam)
+                })?,
+                &mut offset,
+                &mut tpmt_sig,
+            )
+        };
+        let ret = Error::from_tss_rc(ret);
+        if ret.is_success() {
+            Ok(tpmt_sig.try_into()?)
+        } else {
+            Err(ret)
         }
     }
 }
