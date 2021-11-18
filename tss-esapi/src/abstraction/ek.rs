@@ -24,9 +24,11 @@ use std::convert::TryFrom;
 const RSA_2048_EK_CERTIFICATE_NV_INDEX: u32 = 0x01c00002;
 const ECC_P256_EK_CERTIFICATE_NV_INDEX: u32 = 0x01c0000a;
 
-// Source: TCG EK Credential Profile for TPM Family 2.0; Level 0 Version 2.3 Revision 2
-// Appendix B.3.3 and B.3.4
-fn create_ek_public_from_default_template<IKC: IntoKeyCustomization>(
+/// Get the [`Public`] representing a default Endorsement Key
+///
+/// Source: TCG EK Credential Profile for TPM Family 2.0; Level 0 Version 2.3 Revision 2
+/// Appendix B.3.3 and B.3.4
+pub fn create_ek_public_from_default_template<IKC: IntoKeyCustomization>(
     alg: AsymmetricAlgorithm,
     key_customization: IKC,
 ) -> Result<Public> {

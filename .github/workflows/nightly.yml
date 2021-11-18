@@ -51,5 +51,3 @@ jobs:
         run: docker run -v $(pwd):/tmp/rust-tss-esapi -w /tmp/rust-tss-esapi/tss-esapi --security-opt seccomp=unconfined ubuntucontainer /tmp/rust-tss-esapi/tss-esapi/tests/coverage.sh
       - name: Collect coverage results
         run: bash <(curl -s https://codecov.io/bash)
-      - name: Run the cross-compilation script
-        run: docker run -v $(pwd):/tmp/rust-tss-esapi -w /tmp/rust-tss-esapi/tss-esapi ubuntucontainer /tmp/rust-tss-esapi/tss-esapi/tests/cross-compile.sh

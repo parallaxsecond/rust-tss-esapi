@@ -22,6 +22,8 @@ jobs:
         run: docker build -t ubuntucontainer tss-esapi/tests/ --file tss-esapi/tests/Dockerfile-ubuntu
       - name: Run the container
         run: docker run -v $(pwd):/tmp/rust-tss-esapi -w /tmp/rust-tss-esapi/tss-esapi ubuntucontainer /tmp/rust-tss-esapi/tss-esapi/tests/all-ubuntu.sh
+      - name: Run the cross-compilation script
+        run: docker run -v $(pwd):/tmp/rust-tss-esapi -w /tmp/rust-tss-esapi/tss-esapi ubuntucontainer /tmp/rust-tss-esapi/tss-esapi/tests/cross-compile.sh
 
   tests-ubuntu-v3:
     name: Ubuntu tests on v3.x.y of tpm2-tss
