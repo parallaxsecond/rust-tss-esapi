@@ -843,7 +843,11 @@ fn activate_credential_wrong_data() {
         .activate_credential(obj, None, vec![0xaa; 52], vec![0x55; 256])
         .unwrap_err();
     if let Error::Tss2Error(e) = e {
-        assert_eq!(e.kind(), Some(Tss2ResponseCodeKind::Value));
+        // IBM software TPM returns Value, swtpm returns Failure...
+        assert!(matches!(
+            e.kind(),
+            Some(Tss2ResponseCodeKind::Value) | Some(Tss2ResponseCodeKind::Failure)
+        ));
     } else {
         panic!("Got crate error ({}) when expecting an error from TPM.", e);
     }
