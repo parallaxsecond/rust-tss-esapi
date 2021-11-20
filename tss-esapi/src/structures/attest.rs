@@ -5,6 +5,7 @@ use crate::{
     constants::tss::TPM2_GENERATED_VALUE,
     interface_types::structure_tags::AttestationType,
     structures::{AttestInfo, ClockInfo, Data, Name},
+    traits::{Marshall, UnMarshall},
     tss2_esys::TPMS_ATTEST,
     Error, Result, WrapperErrorKind,
 };
@@ -114,5 +115,64 @@ impl TryFrom<TPMS_ATTEST> for Attest {
                 }
             },
         })
+    }
+}
+
+impl Marshall for Attest {
+    const BUFFER_SIZE: usize = std::mem::size_of::<TPMS_ATTEST>();
+
+    fn marshall(&self) -> Result<Vec<u8>> {
+        let mut buffer = vec![0; Self::BUFFER_SIZE];
+        let mut offset = 0;
+
+        let ret = Error::from_tss_rc(unsafe {
+            crate::tss2_esys::Tss2_MU_TPMS_ATTEST_Marshal(
+                &self.clone().into(),
+                buffer.as_mut_ptr(),
+                Self::BUFFER_SIZE.try_into().map_err(|e| {
+                    error!("Failed to convert size of buffer to TSS size_t type: {}", e);
+                    Error::local_error(WrapperErrorKind::InvalidParam)
+                })?,
+                &mut offset,
+            )
+        });
+
+        if !ret.is_success() {
+            return Err(ret);
+        }
+
+        let checked_offset = usize::try_from(offset).map_err(|e| {
+            error!("Failed to parse offset as usize: {}", e);
+            Error::local_error(WrapperErrorKind::InvalidParam)
+        })?;
+
+        buffer.truncate(checked_offset);
+
+        Ok(buffer)
+    }
+}
+
+impl UnMarshall for Attest {
+    fn unmarshall(marshalled_data: &[u8]) -> Result<Self> {
+        let mut dest = TPMS_ATTEST::default();
+        let mut offset = 0;
+
+        let ret = Error::from_tss_rc(unsafe {
+            crate::tss2_esys::Tss2_MU_TPMS_ATTEST_Unmarshal(
+                marshalled_data.as_ptr(),
+                marshalled_data.len().try_into().map_err(|e| {
+                    error!("Failed to convert length of marshalled data: {}", e);
+                    Error::local_error(WrapperErrorKind::InvalidParam)
+                })?,
+                &mut offset,
+                &mut dest,
+            )
+        });
+
+        if !ret.is_success() {
+            return Err(ret);
+        }
+
+        Attest::try_from(dest)
     }
 }

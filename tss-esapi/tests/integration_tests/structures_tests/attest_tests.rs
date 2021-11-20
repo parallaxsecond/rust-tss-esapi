@@ -7,6 +7,7 @@ use tss_esapi::{
         Attest, AttestInfo, ClockInfo, Data, Digest, MaxNvBuffer, Name, PcrSelectionListBuilder,
         PcrSlot, TimeAttestInfo,
     },
+    traits::{Marshall, UnMarshall},
     tss2_esys::{
         TPMS_ATTEST, TPMS_CERTIFY_INFO, TPMS_CLOCK_INFO, TPMS_COMMAND_AUDIT_INFO,
         TPMS_CREATION_INFO, TPMS_NV_CERTIFY_INFO, TPMS_QUOTE_INFO, TPMS_SESSION_AUDIT_INFO,
@@ -315,6 +316,105 @@ fn test_attest_with_nv_creation_info_into_tpm_type_conversions() {
     let actual_tpms_attest: TPMS_ATTEST = attest.into();
 
     crate::common::ensure_tpms_attest_equality(&expected_tpms_attest, &actual_tpms_attest);
+}
+
+#[test]
+fn test_marshall_and_unmarshall() {
+    let expected_index_name =
+        Name::try_from(vec![0xf0u8; 68]).expect("Failed to create index name");
+    let expected_offset = 12u16;
+    let expected_nv_contents =
+        MaxNvBuffer::try_from(vec![0xfc; 2048]).expect("Failed to create nv contents");
+    let expected_attest_info = AttestInfo::Nv {
+        info: TPMS_NV_CERTIFY_INFO {
+            indexName: expected_index_name.clone().into(),
+            offset: expected_offset,
+            nvContents: expected_nv_contents.clone().into(),
+        }
+        .try_into()
+        .expect("Failed to convert TPMS_NV_CERTIFY_INFO to NvCreationInfo"),
+    };
+
+    let expected_qualified_signer =
+        Name::try_from(vec![0x0eu8; 64]).expect("Failed to create qualified name");
+    let expected_extra_data =
+        Data::try_from(vec![0x0du8; 64]).expect("Failed to create extra data");
+    let expected_clock_info = ClockInfo::try_from(TPMS_CLOCK_INFO {
+        clock: 1u64,
+        resetCount: 2u32,
+        restartCount: 3u32,
+        safe: YesNo::Yes.into(),
+    })
+    .expect("Failed to create clock info");
+    let expected_firmware_version = 1u64;
+
+    let expected_tpms_attest = TPMS_ATTEST {
+        magic: TPM2_GENERATED_VALUE,
+        type_: AttestationType::Nv.into(),
+        qualifiedSigner: expected_qualified_signer.clone().into(),
+        extraData: expected_extra_data.clone().into(),
+        clockInfo: expected_clock_info.into(),
+        firmwareVersion: expected_firmware_version,
+        attested: expected_attest_info.into(),
+    };
+
+    let attest =
+        Attest::try_from(expected_tpms_attest).expect("Failed to convert TPMS_ATTEST to Attest");
+
+    let marshalled_attest = attest.marshall().expect("Failed to marshall data");
+    assert!(
+        !marshalled_attest.is_empty(),
+        "The marshalled attest did not contain any data"
+    );
+
+    let un_marshalled_data =
+        Attest::unmarshall(&marshalled_attest).expect("Failed to unmarshall data");
+
+    assert_eq!(
+        AttestationType::Nv,
+        un_marshalled_data.attestation_type(),
+        "UnMarshalled Attest did not contain expected value for 'attestation type'"
+    );
+    assert_eq!(
+        &expected_qualified_signer,
+        un_marshalled_data.qualified_signer(),
+        "UnMarshalled Attest did not contain expected value for 'qualified signer'"
+    );
+    assert_eq!(
+        &expected_extra_data,
+        un_marshalled_data.extra_data(),
+        "UnMarshalled Attest did not contain expected value for 'extra data'",
+    );
+    assert_eq!(
+        &expected_clock_info,
+        un_marshalled_data.clock_info(),
+        "UnMarshalled Attest did not contain expected value for 'clock info'",
+    );
+    assert_eq!(
+        expected_firmware_version,
+        un_marshalled_data.firmware_version(),
+        "UnMarshalled Attest did not contain expected value for 'firmware version'",
+    );
+
+    if let AttestInfo::Nv { info } = un_marshalled_data.attested() {
+        assert_eq!(
+            &expected_index_name,
+            info.index_name(),
+            "NvCreationInfo, in the UnMarshalled data, did not contain expected value for index name",
+        );
+        assert_eq!(
+            expected_offset,
+            info.offset(),
+            "NvCreationInfo, in the UnMarshalled data, did not contain expected value for offset",
+        );
+        assert_eq!(
+            &expected_nv_contents,
+            info.nv_contents(),
+            "NvCreationInfo, in the UnMarshalled data, did not contain expected value for nv contents",
+        );
+    } else {
+        panic!("UnMarshalled Attest did not contain expected value for 'attest info'");
+    }
 }
 
 fn create_validated_test_parameters(

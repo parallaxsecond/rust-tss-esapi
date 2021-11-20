@@ -1,7 +1,10 @@
 // Copyright 2021 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::{tss2_esys::TPM2B_ATTEST, Error, Result, WrapperErrorKind};
+use crate::{
+    structures::Attest, traits::UnMarshall, tss2_esys::TPM2B_ATTEST, Error, Result,
+    WrapperErrorKind,
+};
 use log::error;
 use std::{convert::TryFrom, ops::Deref};
 use zeroize::Zeroizing;
@@ -82,5 +85,13 @@ impl From<AttestBuffer> for TPM2B_ATTEST {
         };
         buffer.attestationData[..native.0.len()].copy_from_slice(&native.0);
         buffer
+    }
+}
+
+impl TryFrom<AttestBuffer> for Attest {
+    type Error = Error;
+
+    fn try_from(buf: AttestBuffer) -> Result<Self> {
+        Attest::unmarshall(&buf.0)
     }
 }
