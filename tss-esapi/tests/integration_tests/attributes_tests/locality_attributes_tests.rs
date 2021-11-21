@@ -19,7 +19,7 @@ fn test_conversions() {
             1u8.checked_shl(locality.into())
                 .expect("Unable to create locality value"),
             tpma_locality,
-            "Locality did not convert inte expected TPMA_LOCALITY value"
+            "Locality did not convert into expected TPMA_LOCALITY value"
         );
         assert_eq!(
             expected_locality_attributes,
@@ -37,7 +37,7 @@ fn test_conversions() {
         let tpma_locality: TPMA_LOCALITY = expected_locality_attributes.into();
         assert_eq!(
             locality, tpma_locality,
-            "Locality did not convert inte expected TPMA_LOCALITY value"
+            "Locality did not convert into expected TPMA_LOCALITY value"
         );
 
         assert_eq!(
@@ -160,6 +160,28 @@ fn test_invalid_locality() {
                 .build(),
             "Locality builder did not produce expected error when using locality {}",
             locality
+        );
+    }
+}
+
+#[test]
+fn test_invalid_extended_locality() {
+    for locality in 0u8..=4u8 {
+        let locality_attributes = LocalityAttributesBuilder::new()
+            .with_locality(locality)
+            .build()
+            .expect("Failed to get local attributes as extended");
+
+        assert!(
+            !locality_attributes.is_extended(),
+            "The non extended locality {} is unexpectedly indicating that it is extended",
+            locality
+        );
+
+        assert_eq!(
+            Err(Error::WrapperError(WrapperErrorKind::InvalidParam)),
+            locality_attributes.as_extended(),
+            "Calling as_extended() on locality {} that is not extended, did not result in the expected error", locality,
         );
     }
 }

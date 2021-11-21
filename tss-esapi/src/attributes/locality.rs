@@ -97,7 +97,7 @@ impl LocalityAttributesBuilder {
         let mut locality_attributes = LocalityAttributes(0);
         for locality in self.localities {
             if locality_attributes.is_extended() {
-                print!("Failed to add locality {} to locality attributes because a value that requires extended has been added", locality);
+                error!("Locality attribute {new} and locality attribute {prev} cannot be combined because locality attribute {prev} is extended", new=locality, prev=locality_attributes.0);
                 return Err(Error::local_error(WrapperErrorKind::InvalidParam));
             }
             match locality {
@@ -108,14 +108,14 @@ impl LocalityAttributesBuilder {
                 4 => locality_attributes.set_locality_four(true),
                 5..=31 => {
                     error!(
-                        "{} is an invalid locality and cannot be added to locality attributes",
-                        locality
+                        "Locality attribute {new} is invalid and cannot be combined with other locality attributes",
+                        new=locality
                     );
                     return Err(Error::local_error(WrapperErrorKind::InvalidParam));
                 }
                 32.. => {
                     if locality_attributes.0 != 0 {
-                        error!("locality attribute {} requires extended locality attributes and cannot not be combined with other locality attributes", locality);
+                        error!("Locality attribute {new} is extended and cannot be combined with locality attribute(s) {old}", new=locality, old=locality_attributes.0);
                         return Err(Error::local_error(WrapperErrorKind::InvalidParam));
                     }
                     locality_attributes.0 = locality;

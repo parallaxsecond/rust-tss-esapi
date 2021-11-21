@@ -2,10 +2,11 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use crate::{
+    attributes::LocalityAttributes,
     constants::AlgorithmIdentifier,
     interface_types::algorithm::HashingAlgorithm,
     structures::{Data, Digest, Name, PcrSelectionList},
-    tss2_esys::{TPM2B_CREATION_DATA, TPMA_LOCALITY, TPMS_CREATION_DATA},
+    tss2_esys::{TPM2B_CREATION_DATA, TPMS_CREATION_DATA},
     Error, Result,
 };
 use std::convert::{TryFrom, TryInto};
@@ -14,7 +15,7 @@ use std::convert::{TryFrom, TryInto};
 pub struct CreationData {
     pcr_select: PcrSelectionList,
     pcr_digest: Digest,
-    locality: TPMA_LOCALITY,
+    locality: LocalityAttributes,
     parent_name_alg: Option<HashingAlgorithm>,
     parent_name: Name,
     parent_qualified_name: Name,
@@ -27,7 +28,7 @@ impl TryFrom<TPMS_CREATION_DATA> for CreationData {
         Ok(CreationData {
             pcr_select: tss_creation_data.pcrSelect.try_into()?,
             pcr_digest: tss_creation_data.pcrDigest.try_into()?,
-            locality: tss_creation_data.locality,
+            locality: tss_creation_data.locality.into(),
             parent_name_alg: match AlgorithmIdentifier::try_from(tss_creation_data.parentNameAlg)? {
                 AlgorithmIdentifier::Null => None,
                 alg => Some(HashingAlgorithm::try_from(alg)?),
@@ -51,7 +52,7 @@ impl From<CreationData> for TPMS_CREATION_DATA {
         TPMS_CREATION_DATA {
             pcrSelect: creation_data.pcr_select.into(),
             pcrDigest: creation_data.pcr_digest.into(),
-            locality: creation_data.locality,
+            locality: creation_data.locality.into(),
             parentNameAlg: match creation_data.parent_name_alg {
                 None => AlgorithmIdentifier::Null.into(),
                 Some(alg) => alg.into(),

@@ -1,6 +1,7 @@
 // Copyright 2021 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
 use crate::{
+    attributes::LocalityAttributes,
     handles::{AuthHandle, ObjectHandle, SessionHandle},
     interface_types::session_handles::PolicySession,
     structures::{
@@ -204,7 +205,7 @@ impl Context {
     pub fn policy_locality(
         &mut self,
         policy_session: PolicySession,
-        locality: TPMA_LOCALITY,
+        locality: LocalityAttributes,
     ) -> Result<()> {
         let ret = unsafe {
             Esys_PolicyLocality(
@@ -213,7 +214,7 @@ impl Context {
                 self.optional_session_1(),
                 self.optional_session_2(),
                 self.optional_session_3(),
-                locality,
+                locality.into(),
             )
         };
         let ret = Error::from_tss_rc(ret);
