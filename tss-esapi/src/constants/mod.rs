@@ -47,15 +47,20 @@ pub mod response_code;
 /// NV Storage -> TPM_NT section of the specfication
 pub mod nv_index_type;
 
+/// Representation of the constants defined in
+/// Constants -> TPM_ECC_CURVE section of the specification.
+pub mod ecc;
+
+/// Representation of the constants defined in
+/// Constants -> TPM_CC section of the specification.
+pub mod command_code;
+
 pub use capabilities::CapabilityType;
+pub use command_code::CommandCode;
+pub use ecc::EccCurveIdentifier;
 pub use nv_index_type::NvIndexType;
 pub use property_tag::PropertyTag;
 pub use response_code::{ResponseCode, Tss2ResponseCode, Tss2ResponseCodeKind};
 pub use session_type::SessionType;
 pub use startup_type::StartupType;
 pub use structure_tags::StructureTag;
-
-/// Representation of the constants defined in
-/// Constants -> TPM_ECC_CURVE section of the specification.
-mod ecc;
-pub use ecc::EccCurveIdentifier;
