@@ -290,7 +290,7 @@ mod test_policy_locality {
     use crate::common::create_ctx_without_session;
     use std::convert::TryFrom;
     use tss_esapi::{
-        attributes::SessionAttributesBuilder,
+        attributes::{LocalityAttributes, SessionAttributesBuilder},
         constants::SessionType,
         interface_types::{algorithm::HashingAlgorithm, session_handles::PolicySession},
         structures::SymmetricDefinition,
@@ -324,7 +324,9 @@ mod test_policy_locality {
         let trial_policy_session = PolicySession::try_from(trial_policy_auth_session)
             .expect("Failed to convert auth session into policy session");
         // There should be no errors setting an Or for a TRIAL session
-        context.policy_locality(trial_policy_session, 3).unwrap();
+        context
+            .policy_locality(trial_policy_session, LocalityAttributes::LOCALITY_THREE)
+            .unwrap();
     }
 }
 

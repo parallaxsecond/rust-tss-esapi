@@ -15,6 +15,9 @@ pub mod session;
 /// the specfication.
 pub mod nv_index;
 
+pub mod locality;
+
+pub use locality::{LocalityAttributes, LocalityAttributesBuilder};
 pub use nv_index::{NvIndexAttributes, NvIndexAttributesBuilder};
 pub use object::{ObjectAttributes, ObjectAttributesBuilder};
 pub use session::{SessionAttributes, SessionAttributesBuilder, SessionAttributesMask};
