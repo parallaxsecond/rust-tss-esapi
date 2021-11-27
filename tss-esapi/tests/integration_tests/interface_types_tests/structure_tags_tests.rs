@@ -53,8 +53,8 @@ mod attestation_type_tests {
     fn test_invalid_conversions() {
         assert_eq!(
             Err(Error::WrapperError(WrapperErrorKind::InvalidParam)),
-            AttestationType::try_from(StructureTag::Reserved1),
-            "Expected an error when converting StructureTag Reserved1 into AttestationType",
+            AttestationType::try_from(StructureTag::FuManifest),
+            "Expected an error when converting StructureTag FuManifest into AttestationType",
         )
     }
 }

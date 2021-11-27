@@ -4,8 +4,11 @@ mod test_quote {
     use crate::common::{create_ctx_with_session, signing_key_pub};
     use std::convert::TryFrom;
     use tss_esapi::{
-        interface_types::{algorithm::HashingAlgorithm, resource_handles::Hierarchy},
-        structures::{Data, PcrSelectionListBuilder, PcrSlot, SignatureScheme},
+        interface_types::{
+            algorithm::HashingAlgorithm, resource_handles::Hierarchy,
+            structure_tags::AttestationType,
+        },
+        structures::{AttestInfo, Data, PcrSelectionListBuilder, PcrSlot, SignatureScheme},
     };
 
     #[test]
@@ -23,14 +26,33 @@ mod test_quote {
             .unwrap()
             .key_handle;
 
-        let res = context
+        let (attest, _signature) = context
             .quote(
                 key_handle,
                 &Data::try_from(qualifying_data).unwrap(),
                 SignatureScheme::Null,
-                pcr_selection_list,
+                pcr_selection_list.clone(),
             )
             .expect("Failed to get a quote");
-        assert!(res.0.size != 0);
+
+        assert_eq!(
+            AttestationType::Quote,
+            attest.attestation_type(),
+            "Attestation type of the returned value is not indicating Quote"
+        );
+
+        match attest.attested() {
+            AttestInfo::Quote { info } => {
+                assert!(info.pcr_digest().len() != 0, "Digest in QuoteInfo is empty");
+                assert_eq!(
+                    &pcr_selection_list,
+                    info.pcr_selection(),
+                    "QuoteInfo selection list did not match the input selection list"
+                );
+            }
+            _ => {
+                panic!("Attested did not contain the expected variant.")
+            }
+        }
     }
 }
