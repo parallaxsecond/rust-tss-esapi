@@ -41,7 +41,7 @@ impl Context {
     /// ```rust
     /// # use std::convert::{TryFrom, TryInto};
     /// # use tss_esapi::attributes::{ObjectAttributesBuilder, SessionAttributesBuilder};
-    /// # use tss_esapi::constants::{tss::TPM2_CC_Duplicate, SessionType};
+    /// # use tss_esapi::constants::{CommandCode, SessionType};
     /// # use tss_esapi::handles::ObjectHandle;
     /// # use tss_esapi::interface_types::{
     /// #     algorithm::{HashingAlgorithm, PublicAlgorithm},
@@ -96,7 +96,7 @@ impl Context {
     /// #     .expect("Policy auth value");
     /// #
     /// # context
-    /// #     .policy_command_code(policy_session, TPM2_CC_Duplicate)
+    /// #     .policy_command_code(policy_session, CommandCode::Duplicate)
     /// #     .expect("Policy command code");
     /// #
     /// # /// Digest of the policy that allows duplication
@@ -280,7 +280,7 @@ impl Context {
     /// #     .expect("Policy auth value");
     /// #
     /// # context
-    /// #     .policy_command_code(policy_session, TPM2_CC_Duplicate)
+    /// #     .policy_command_code(policy_session, CommandCode::Duplicate)
     /// #     .unwrap();
     /// #
     /// # context.set_sessions((Some(policy_auth_session), None, None));
@@ -363,7 +363,7 @@ impl Context {
     /// ```rust
     /// # use std::convert::{TryFrom, TryInto};
     /// # use tss_esapi::attributes::{ObjectAttributesBuilder, SessionAttributesBuilder};
-    /// # use tss_esapi::constants::{tss::TPM2_CC_Duplicate, SessionType};
+    /// # use tss_esapi::constants::{CommandCode, SessionType};
     /// # use tss_esapi::handles::ObjectHandle;
     /// # use tss_esapi::interface_types::{
     /// #     algorithm::{HashingAlgorithm, PublicAlgorithm},
@@ -418,7 +418,7 @@ impl Context {
     /// #     .expect("Policy auth value");
     /// #
     /// # context
-    /// #     .policy_command_code(policy_session, TPM2_CC_Duplicate)
+    /// #     .policy_command_code(policy_session, CommandCode::Duplicate)
     /// #     .expect("Policy command code");
     /// #
     /// # /// Digest of the policy that allows duplication
@@ -602,7 +602,7 @@ impl Context {
     /// #     .expect("Policy auth value");
     /// #
     /// # context
-    /// #     .policy_command_code(policy_session, TPM2_CC_Duplicate)
+    /// #     .policy_command_code(policy_session, CommandCode::Duplicate)
     /// #     .unwrap();
     /// #
     /// # context.set_sessions((Some(policy_auth_session), None, None));

@@ -335,7 +335,7 @@ mod test_policy_command_code {
     use std::convert::TryFrom;
     use tss_esapi::{
         attributes::SessionAttributesBuilder,
-        constants::{tss::TPM2_CC_Unseal, SessionType},
+        constants::{CommandCode, SessionType},
         interface_types::{algorithm::HashingAlgorithm, session_handles::PolicySession},
         structures::SymmetricDefinition,
     };
@@ -369,7 +369,7 @@ mod test_policy_command_code {
             .expect("Failed to convert auth session into policy session");
         // There should be no errors setting an Or for a TRIAL session
         context
-            .policy_command_code(trial_policy_session, TPM2_CC_Unseal)
+            .policy_command_code(trial_policy_session, CommandCode::Unseal)
             .unwrap();
     }
 }
