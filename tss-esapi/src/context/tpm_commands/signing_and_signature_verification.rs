@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 use crate::{
     handles::KeyHandle,
-    structures::{Digest, HashcheckTicket, Signature, VerifiedTicket},
+    structures::{Digest, HashcheckTicket, Signature, SignatureScheme, VerifiedTicket},
     tss2_esys::*,
     Context, Error, Result,
 };
@@ -50,7 +50,7 @@ impl Context {
         &mut self,
         key_handle: KeyHandle,
         digest: &Digest,
-        scheme: TPMT_SIG_SCHEME,
+        scheme: SignatureScheme,
         validation: HashcheckTicket,
     ) -> Result<Signature> {
         let mut signature = null_mut();
@@ -63,7 +63,7 @@ impl Context {
                 self.optional_session_2(),
                 self.optional_session_3(),
                 &digest.clone().into(),
-                &scheme,
+                &scheme.into(),
                 &validation,
                 &mut signature,
             )

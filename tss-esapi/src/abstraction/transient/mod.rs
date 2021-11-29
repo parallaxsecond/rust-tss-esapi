@@ -26,7 +26,7 @@ use crate::{
     structures::{
         Auth, CreateKeyResult, Data, Digest, EccPoint, EccScheme, Public, PublicBuilder,
         PublicEccParametersBuilder, PublicKeyRsa, PublicRsaParametersBuilder, RsaExponent,
-        RsaScheme, Signature, SymmetricDefinitionObject, VerifiedTicket,
+        RsaScheme, Signature, SignatureScheme, SymmetricDefinitionObject, VerifiedTicket,
     },
     tcti_ldr::TctiNameConf,
     tss2_esys::*,
@@ -276,10 +276,6 @@ impl TransientKeyContext {
     ) -> Result<Signature> {
         let key_handle = self.load_key(key_params, key_material, key_auth)?;
 
-        let scheme = TPMT_SIG_SCHEME {
-            scheme: TPM2_ALG_NULL,
-            details: Default::default(),
-        };
         let validation = TPMT_TK_HASHCHECK {
             tag: TPM2_ST_HASHCHECK,
             hierarchy: TPM2_RH_NULL,
@@ -288,7 +284,12 @@ impl TransientKeyContext {
         self.set_session_attrs()?;
         let signature = self
             .context
-            .sign(key_handle, &digest, scheme, validation.try_into()?)
+            .sign(
+                key_handle,
+                &digest,
+                SignatureScheme::Null,
+                validation.try_into()?,
+            )
             .or_else(|e| {
                 self.context.flush_context(key_handle.into())?;
                 Err(e)

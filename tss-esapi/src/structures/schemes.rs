@@ -17,6 +17,11 @@ impl HashScheme {
     pub const fn new(hashing_algorithm: HashingAlgorithm) -> HashScheme {
         HashScheme { hashing_algorithm }
     }
+
+    /// Returns the hashing algorithm
+    pub const fn hashing_algorithm(&self) -> HashingAlgorithm {
+        self.hashing_algorithm
+    }
 }
 
 impl TryFrom<TPMS_SCHEME_HASH> for HashScheme {

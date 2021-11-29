@@ -116,13 +116,14 @@ pub use tickets::Ticket;
 pub use tickets::VerifiedTicket;
 
 mod schemes;
-pub use schemes::{HashScheme, HmacScheme, XorScheme};
+pub use schemes::{EcDaaScheme, HashScheme, HmacScheme, XorScheme};
 
 mod tagged;
 pub use tagged::{
     parameters::PublicParameters,
     schemes::{
         EccScheme, KeyDerivationFunctionScheme, KeyedHashScheme, RsaDecryptionScheme, RsaScheme,
+        SignatureScheme,
     },
     signature::Signature,
     symmetric::{SymmetricDefinition, SymmetricDefinitionObject},
