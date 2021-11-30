@@ -1,7 +1,7 @@
 // Copyright 2020 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
 use crate::{
-    constants::tss::*,
+    constants::{tss::*, CommandCode},
     handles::TpmHandle,
     structures::{PcrSelect, PcrSelectionList},
     tss2_esys::*,
@@ -16,8 +16,8 @@ pub enum CapabilityData {
     Algorithms(HashMap<TPM2_ALG_ID, TPMA_ALGORITHM>),
     Handles(Vec<TpmHandle>),
     Commands(Vec<TPMA_CC>),
-    PPCommands(Vec<TPM2_CC>),
-    AuditCommands(Vec<TPM2_CC>),
+    PPCommands(Vec<CommandCode>),
+    AuditCommands(Vec<CommandCode>),
     AssignedPCR(PcrSelectionList),
     TPMProperties(HashMap<TPM2_PT, u32>),
     PCRProperties(HashMap<TPM2_PT_PCR, PcrSelect>),
@@ -87,7 +87,7 @@ fn cd_from_pp_commands(props: TPML_CC) -> Result<CapabilityData> {
     data.reserve_exact(props.count as usize);
 
     for i in 0..props.count {
-        data.push(props.commandCodes[i as usize]);
+        data.push(CommandCode::try_from(props.commandCodes[i as usize])?);
     }
 
     Ok(CapabilityData::PPCommands(data))
@@ -102,7 +102,7 @@ fn cd_from_audit_commands(props: TPML_CC) -> Result<CapabilityData> {
     data.reserve_exact(props.count as usize);
 
     for i in 0..props.count {
-        data.push(props.commandCodes[i as usize]);
+        data.push(CommandCode::try_from(props.commandCodes[i as usize])?);
     }
 
     Ok(CapabilityData::AuditCommands(data))

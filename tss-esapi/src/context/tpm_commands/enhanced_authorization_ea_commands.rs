@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 use crate::{
     attributes::LocalityAttributes,
+    constants::CommandCode,
     handles::{AuthHandle, ObjectHandle, SessionHandle},
     interface_types::session_handles::PolicySession,
     structures::{
@@ -236,7 +237,7 @@ impl Context {
     pub fn policy_command_code(
         &mut self,
         policy_session: PolicySession,
-        code: TPM2_CC,
+        code: CommandCode,
     ) -> Result<()> {
         let ret = unsafe {
             Esys_PolicyCommandCode(
@@ -245,7 +246,7 @@ impl Context {
                 self.optional_session_1(),
                 self.optional_session_2(),
                 self.optional_session_3(),
-                code,
+                code.into(),
             )
         };
         let ret = Error::from_tss_rc(ret);
@@ -354,7 +355,7 @@ impl Context {
     /// ```rust
     /// # use std::convert::{TryFrom, TryInto};
     /// # use tss_esapi::attributes::{ObjectAttributesBuilder, SessionAttributesBuilder};
-    /// # use tss_esapi::constants::{tss::TPM2_CC_Duplicate, SessionType};
+    /// # use tss_esapi::constants::{CommandCode, SessionType};
     /// # use tss_esapi::handles::ObjectHandle;
     /// # use tss_esapi::interface_types::{
     /// #     algorithm::{HashingAlgorithm, PublicAlgorithm},
