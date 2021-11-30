@@ -8,7 +8,7 @@ use tss_esapi::{
     Error, WrapperErrorKind,
 };
 
-use std::convert::TryInto;
+use std::convert::{TryFrom, TryInto};
 
 #[test]
 fn test_conversions() {
@@ -83,6 +83,56 @@ fn test_conversions() {
 }
 
 #[test]
+fn test_valid_conversion_vector() {
+    let expected_command_codes = vec![
+        CommandCode::ChangeEps,
+        CommandCode::ChangePps,
+        CommandCode::Clear,
+    ];
+    let mut command_code_list = CommandCodeList::new();
+    for command_code in expected_command_codes.iter() {
+        command_code_list
+            .add(*command_code)
+            .expect("Failed to add command code to command code list");
+    }
+
+    assert_eq!(
+        expected_command_codes.len(),
+        command_code_list.len(),
+        "The created command code list did not contain the expected number of elements"
+    );
+
+    expected_command_codes
+        .iter()
+        .zip(command_code_list.as_ref().iter())
+        .for_each(|(expected, actual)| {
+            assert_eq!(
+                expected, actual,
+                "The created command code list did not contain the expected value"
+            )
+        });
+
+    let actual_command_codes: Vec<CommandCode> = command_code_list
+        .try_into()
+        .expect("Failed to convert CommandCodeList to Vec<CommandCode>");
+
+    assert_eq!(
+        expected_command_codes.len(),
+        actual_command_codes.len(),
+        "The Vec<CommandCode> converted from CommandCodeList did not contain the expected number of elements"
+    );
+
+    expected_command_codes
+        .iter()
+        .zip(actual_command_codes.iter())
+        .for_each(|(expected, actual)| {
+            assert_eq!(
+                expected, actual, "Command code in command code list converted from TPML_CC did not match the expected value"
+            )
+        });
+}
+
+#[test]
 fn test_invalid_conversions() {
     let mut command_code_list = CommandCodeList::new();
     for _ in 0..CommandCodeList::MAX_SIZE {
@@ -95,5 +145,32 @@ fn test_invalid_conversions() {
         Err(Error::WrapperError(WrapperErrorKind::WrongParamSize)),
         command_code_list.add(CommandCode::ChangeEps),
         "Adding more command codes to command code list then it supports did not produce the expected error"
+    );
+}
+
+#[test]
+fn test_invalid_conversion_from_tpml_cc() {
+    let invalid_value = TPML_CC {
+        count: CommandCodeList::MAX_SIZE as u32 + 1u32,
+        commandCodes: [0; 256],
+    };
+
+    assert_eq!(
+        Error::WrapperError(WrapperErrorKind::InvalidParam),
+        CommandCodeList::try_from(invalid_value).expect_err(
+            "Converting a TPML_CC with invalid values to ComandCodeList did not produce an error"
+        ),
+        "Converting invalid TPML_CC did not produce the expected error",
+    );
+}
+
+#[test]
+fn test_invalid_conversions_from_vector() {
+    assert_eq!(
+        Error::WrapperError(WrapperErrorKind::InvalidParam),
+        CommandCodeList::try_from(vec![CommandCode::ChangeEps; CommandCodeList::MAX_SIZE + 1]).expect_err(
+            "Converting Vec<CommandCode> of invalid length to CommandCodeList did not produce an error"
+        ),
+        "Converting invalid Vec<CommandCode> did not produce the expected error",
     );
 }

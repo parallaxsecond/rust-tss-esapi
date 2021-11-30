@@ -7,7 +7,7 @@ use crate::{
     Error, Result, WrapperErrorKind,
 };
 use log::error;
-use std::convert::TryFrom;
+use std::{convert::TryFrom, ops::Deref};
 
 /// A list of command codes.
 #[derive(Debug, Clone, Default)]
@@ -92,5 +92,13 @@ impl From<CommandCodeList> for Vec<CommandCode> {
 impl AsRef<[CommandCode]> for CommandCodeList {
     fn as_ref(&self) -> &[CommandCode] {
         self.command_codes.as_slice()
+    }
+}
+
+impl Deref for CommandCodeList {
+    type Target = Vec<CommandCode>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.command_codes
     }
 }
