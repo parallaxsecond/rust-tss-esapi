@@ -9,6 +9,10 @@ use num_traits::{FromPrimitive, ToPrimitive};
 use std::convert::TryFrom;
 use structure::CommandCodeStructure;
 
+/// Enum representing the command code constants.
+///
+/// # Details
+/// This corresponds to the TPM2_CC constants.
 #[derive(FromPrimitive, ToPrimitive, Copy, Clone, Debug, PartialEq, Eq, Hash)]
 #[repr(u32)]
 pub enum CommandCode {
