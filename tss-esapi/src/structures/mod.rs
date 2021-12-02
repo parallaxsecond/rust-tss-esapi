@@ -204,3 +204,7 @@ pub use attest_info::AttestInfo;
 /////////////////////////////////////////////////////////
 mod attest;
 pub use attest::Attest;
+/// Tagged Property
+/////////////////////////////////////////////////////////
+mod tagged_property;
+pub use tagged_property::TaggedProperty;
