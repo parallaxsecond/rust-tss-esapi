@@ -130,7 +130,7 @@ impl Ticket for HashcheckTicket {
 
     /// Get the tag associated with the hashcheck ticket.
     fn tag(&self) -> StructureTag {
-        Self::POSSIBLE_TAGS[0]
+        self.tag
     }
 
     /// Get the hierarchy associated with the verification ticket.
@@ -160,7 +160,7 @@ impl Ticket for VerifiedTicket {
     const POSSIBLE_TAGS: &'static [StructureTag] = &[StructureTag::Verified];
     /// Get the tag associated with the verification ticket.
     fn tag(&self) -> StructureTag {
-        Self::POSSIBLE_TAGS[0]
+        self.tag
     }
     /// Get the hierarchy associated with the verification ticket.
     fn hierarchy(&self) -> Hierarchy {
@@ -189,7 +189,7 @@ impl Ticket for CreationTicket {
 
     /// Get the tag associated with the creation ticket.
     fn tag(&self) -> StructureTag {
-        Self::POSSIBLE_TAGS[0]
+        self.tag
     }
 
     /// Get the hierarchy associated with the verification ticket.

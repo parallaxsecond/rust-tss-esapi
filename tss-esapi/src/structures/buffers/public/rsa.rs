@@ -220,7 +220,7 @@ impl PublicRsaParametersBuilder {
 }
 
 /// Strucure used to hold the value of a RSA exponent
-#[derive(Clone, Debug, Copy, PartialEq, Eq)]
+#[derive(Default, Clone, Debug, Copy, PartialEq, Eq)]
 pub struct RsaExponent {
     value: u32,
 }
@@ -254,12 +254,6 @@ impl RsaExponent {
     /// Function for checking if a value is valid rsa exponent.
     pub fn is_valid(value: u32) -> bool {
         (value > 2 && primal::is_prime(value.into())) || value == 0
-    }
-}
-
-impl Default for RsaExponent {
-    fn default() -> RsaExponent {
-        RsaExponent { value: 0 }
     }
 }
 
