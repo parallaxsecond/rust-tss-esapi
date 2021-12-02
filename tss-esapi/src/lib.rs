@@ -113,4 +113,5 @@ pub mod interface_types;
 pub mod nv;
 pub mod structures;
 pub mod tcti_ldr;
+pub mod traits;
 pub mod utils;

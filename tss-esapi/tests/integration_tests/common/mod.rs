@@ -25,6 +25,11 @@ use tss_esapi::{
     utils, Context,
 };
 
+mod tpml_types_equality_checks;
+mod tpms_types_equality_checks;
+pub use tpml_types_equality_checks::*;
+pub use tpms_types_equality_checks::*;
+
 #[allow(dead_code)]
 pub const HASH: [u8; 64] = [
     0x69, 0x3E, 0xDB, 0x1B, 0x22, 0x79, 0x03, 0xF4, 0xC0, 0xBF, 0xD6, 0x91, 0x76, 0x37, 0x84, 0x69,

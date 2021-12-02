@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 use crate::{
     handles::KeyHandle,
-    structures::{Data, PcrSelectionList, Signature, SignatureScheme},
+    structures::{Attest, AttestBuffer, Data, PcrSelectionList, Signature, SignatureScheme},
     tss2_esys::*,
     Context, Error, Result,
 };
@@ -25,7 +25,7 @@ impl Context {
         qualifying_data: &Data,
         signing_scheme: SignatureScheme,
         pcr_selection_list: PcrSelectionList,
-    ) -> Result<(TPM2B_ATTEST, Signature)> {
+    ) -> Result<(Attest, Signature)> {
         let mut quoted = null_mut();
         let mut signature = null_mut();
         let ret = unsafe {
@@ -45,9 +45,12 @@ impl Context {
         let ret = Error::from_tss_rc(ret);
 
         if ret.is_success() {
-            let quoted = unsafe { MBox::<TPM2B_ATTEST>::from_raw(quoted) };
+            let quoted = unsafe { MBox::from_raw(quoted) };
             let signature = unsafe { MBox::from_raw(signature) };
-            Ok((*quoted, Signature::try_from(*signature)?))
+            Ok((
+                Attest::try_from(AttestBuffer::try_from(*quoted)?)?,
+                Signature::try_from(*signature)?,
+            ))
         } else {
             error!("Error in quoting PCR: {}", ret);
             Err(ret)
