@@ -4,3 +4,4 @@ pub mod command_code;
 pub mod digest;
 pub mod digest_values;
 pub mod pcr_selection;
+pub mod tagged_tpm_property;
