@@ -12,19 +12,31 @@ pub struct DigestList {
 }
 
 impl DigestList {
-    // minimum is two for TPM2_PolicyOR().
-    pub const MIN_SIZE: usize = 2;
     pub const MAX_SIZE: usize = 8;
-    pub fn new() -> Self {
+
+    /// Creates a nnew empty DigestList
+    pub const fn new() -> Self {
         DigestList {
             digests: Vec::new(),
         }
     }
 
+    /// Returns the values in the digest list.
     pub fn value(&self) -> &[Digest] {
         &self.digests
     }
 
+    /// Returns the number of digests in the digestlist
+    pub fn len(&self) -> usize {
+        self.digests.len()
+    }
+
+    /// Indicates if the digest list contains any digests.
+    pub fn is_empty(&self) -> bool {
+        self.digests.is_empty()
+    }
+
+    /// Adds a new digest to the digest list.
     pub fn add(&mut self, dig: Digest) -> Result<()> {
         if self.digests.len() >= DigestList::MAX_SIZE {
             error!("Error: Exceeded maximum count(> {})", DigestList::MAX_SIZE);
@@ -39,13 +51,7 @@ impl TryFrom<TPML_DIGEST> for DigestList {
     type Error = Error;
     fn try_from(tpml_digest: TPML_DIGEST) -> Result<Self> {
         let digests_count = tpml_digest.count as usize;
-        if digests_count < DigestList::MIN_SIZE {
-            error!(
-                "Error: Invalid TPML_DIGEST count(< {})",
-                DigestList::MIN_SIZE
-            );
-            return Err(Error::local_error(WrapperErrorKind::InvalidParam));
-        }
+
         if digests_count > DigestList::MAX_SIZE {
             error!(
                 "Error: Invalid TPML_DIGEST count(> {})",
@@ -53,22 +59,18 @@ impl TryFrom<TPML_DIGEST> for DigestList {
             );
             return Err(Error::local_error(WrapperErrorKind::InvalidParam));
         }
-        let digests = &tpml_digest.digests[..digests_count];
-        let digests: Result<Vec<Digest>> = digests.iter().map(|x| Digest::try_from(*x)).collect();
-        Ok(DigestList { digests: digests? })
+
+        tpml_digest.digests[..digests_count]
+            .iter()
+            .map(|&tss_digest| Digest::try_from(tss_digest))
+            .collect::<Result<Vec<Digest>>>()
+            .map(|digests| DigestList { digests })
     }
 }
 
 impl TryFrom<DigestList> for TPML_DIGEST {
     type Error = Error;
     fn try_from(digest_list: DigestList) -> Result<Self> {
-        if digest_list.digests.len() < DigestList::MIN_SIZE {
-            error!(
-                "Error: Invalid digest list size(< {})",
-                DigestList::MIN_SIZE
-            );
-            return Err(Error::local_error(WrapperErrorKind::WrongParamSize));
-        }
         if digest_list.digests.len() > DigestList::MAX_SIZE {
             error!(
                 "Error: Invalid digest list size(> {})",
@@ -78,8 +80,8 @@ impl TryFrom<DigestList> for TPML_DIGEST {
         }
 
         let mut tss_digest_list: TPML_DIGEST = Default::default();
-        for digest in digest_list.digests.iter() {
-            tss_digest_list.digests[tss_digest_list.count as usize] = digest.clone().into();
+        for digest in digest_list.digests {
+            tss_digest_list.digests[tss_digest_list.count as usize] = digest.into();
             tss_digest_list.count += 1;
         }
         Ok(tss_digest_list)

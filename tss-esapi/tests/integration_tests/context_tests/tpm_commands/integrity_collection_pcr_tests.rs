@@ -4,6 +4,7 @@ mod test_pcr_extend_reset {
     use crate::common::create_ctx_with_session;
     use std::convert::TryFrom;
     use tss_esapi::{
+        abstraction::pcr::PcrData,
         handles::PcrHandle,
         interface_types::algorithm::HashingAlgorithm,
         structures::{Digest, DigestValues, PcrSelectionListBuilder, PcrSlot},
@@ -26,15 +27,27 @@ mod test_pcr_extend_reset {
             .with_selection(HashingAlgorithm::Sha256, &[PcrSlot::Slot16])
             .build();
         // pcr_read is NO_SESSIONS
-        let (_, _, pcr_data) =
-            context.execute_without_session(|ctx| ctx.pcr_read(&pcr_selection_list).unwrap());
-        let pcr_sha1_bank = pcr_data.pcr_bank(HashingAlgorithm::Sha1).unwrap();
-        let pcr_sha256_bank = pcr_data.pcr_bank(HashingAlgorithm::Sha256).unwrap();
-        let pcr_sha1_value = pcr_sha1_bank.pcr_value(PcrSlot::Slot16).unwrap();
-        let pcr_sha256_value = pcr_sha256_bank.pcr_value(PcrSlot::Slot16).unwrap();
+        let (_, read_pcr_selections, read_pcr_digests) = context.execute_without_session(|ctx| {
+            ctx.pcr_read(&pcr_selection_list)
+                .expect("Failed to call pcr_read")
+        });
+
         // Needs to have the length of associated with the hashing algorithm
-        assert_eq!(pcr_sha1_value.value(), [0; 20]);
-        assert_eq!(pcr_sha256_value.value(), [0; 32]);
+        read_pcr_selections
+            .get_selections()
+            .iter()
+            .zip(read_pcr_digests.value().iter())
+            .for_each(|(pcr_selection, digest)| {
+                if pcr_selection.hashing_algorithm() == HashingAlgorithm::Sha1 {
+                    assert_eq!(digest.len(), 20);
+                    assert_eq!(digest.value(), [0; 20]);
+                } else if pcr_selection.hashing_algorithm() == HashingAlgorithm::Sha256 {
+                    assert_eq!(digest.len(), 32);
+                    assert_eq!(digest.value(), [0; 32]);
+                } else {
+                    panic!("Read pcr selections contained unexpected HashingAlgorithm");
+                }
+            });
 
         // Extend both sha256 and sha1
         let mut vals = DigestValues::new();
@@ -59,12 +72,8 @@ mod test_pcr_extend_reset {
         });
 
         // Read PCR contents
-        let (_, _, pcr_data) =
+        let (_, read_pcr_selections_2, read_pcr_digests_2) =
             context.execute_without_session(|ctx| ctx.pcr_read(&pcr_selection_list).unwrap());
-        let pcr_sha1_bank = pcr_data.pcr_bank(HashingAlgorithm::Sha1).unwrap();
-        let pcr_sha256_bank = pcr_data.pcr_bank(HashingAlgorithm::Sha256).unwrap();
-        let pcr_sha1_value = pcr_sha1_bank.pcr_value(PcrSlot::Slot16).unwrap();
-        let pcr_sha256_value = pcr_sha256_bank.pcr_value(PcrSlot::Slot16).unwrap();
         // Needs to have the length of associated with the hashing algorithm
         /*
           Right Hand Side determined by:
@@ -77,21 +86,35 @@ mod test_pcr_extend_reset {
           >>> res = ["0x"+a+b for a,b in zip(it, it)]
           >>> ", ".join(res)
         */
-        assert_eq!(
-            pcr_sha1_value.value(),
-            [
-                0x5f, 0x42, 0x0e, 0x04, 0x95, 0x8b, 0x2e, 0x3f, 0x18, 0x07, 0x39, 0x1e, 0x99, 0xd9,
-                0x49, 0x2c, 0x67, 0xaa, 0xef, 0xfd
-            ]
-        );
-        assert_eq!(
-            pcr_sha256_value.value(),
-            [
-                0x0b, 0x8f, 0x4c, 0x5b, 0x6a, 0xdc, 0x4c, 0x08, 0x7a, 0xb9, 0xf4, 0x3a, 0xae, 0xb6,
-                0x00, 0x70, 0x84, 0xc2, 0x64, 0xad, 0xca, 0xa3, 0xcb, 0x07, 0x17, 0x6b, 0x79, 0x23,
-                0x42, 0x85, 0x04, 0x12
-            ]
-        );
+
+        read_pcr_selections_2
+            .get_selections()
+            .iter()
+            .zip(read_pcr_digests_2.value().iter())
+            .for_each(|(pcr_selection, digest)| {
+                if pcr_selection.hashing_algorithm() == HashingAlgorithm::Sha1 {
+                    assert_eq!(digest.len(), 20);
+                    assert_eq!(
+                        digest.value(),
+                        [
+                            0x5f, 0x42, 0x0e, 0x04, 0x95, 0x8b, 0x2e, 0x3f, 0x18, 0x07, 0x39, 0x1e,
+                            0x99, 0xd9, 0x49, 0x2c, 0x67, 0xaa, 0xef, 0xfd
+                        ]
+                    );
+                } else if pcr_selection.hashing_algorithm() == HashingAlgorithm::Sha256 {
+                    assert_eq!(digest.len(), 32);
+                    assert_eq!(
+                        digest.value(),
+                        [
+                            0x0b, 0x8f, 0x4c, 0x5b, 0x6a, 0xdc, 0x4c, 0x08, 0x7a, 0xb9, 0xf4, 0x3a,
+                            0xae, 0xb6, 0x00, 0x70, 0x84, 0xc2, 0x64, 0xad, 0xca, 0xa3, 0xcb, 0x07,
+                            0x17, 0x6b, 0x79, 0x23, 0x42, 0x85, 0x04, 0x12
+                        ]
+                    );
+                } else {
+                    panic!("Read pcr selections contained unexpected HashingAlgorithm");
+                }
+            });
 
         // Now reset it again to test it's again zeroes
         context.execute_with_session(pcr_ses, |ctx| ctx.pcr_reset(PcrHandle::Pcr16).unwrap());
@@ -101,12 +124,20 @@ mod test_pcr_extend_reset {
             .with_selection(HashingAlgorithm::Sha1, &[PcrSlot::Slot16])
             .with_selection(HashingAlgorithm::Sha256, &[PcrSlot::Slot16])
             .build();
-        let (_, _, pcr_data) =
-            context.execute_without_session(|ctx| ctx.pcr_read(&pcr_selection_list).unwrap());
+        let pcr_data = context
+            .execute_without_session(|ctx| {
+                ctx.pcr_read(&pcr_selection_list).map(
+                    |(_, read_pcr_selections, read_pcr_digests)| {
+                        PcrData::create(&read_pcr_selections, &read_pcr_digests)
+                            .expect("Failed to create PcrData")
+                    },
+                )
+            })
+            .expect("Failed to call pcr_read");
         let pcr_sha1_bank = pcr_data.pcr_bank(HashingAlgorithm::Sha1).unwrap();
         let pcr_sha256_bank = pcr_data.pcr_bank(HashingAlgorithm::Sha256).unwrap();
-        let pcr_sha1_value = pcr_sha1_bank.pcr_value(PcrSlot::Slot16).unwrap();
-        let pcr_sha256_value = pcr_sha256_bank.pcr_value(PcrSlot::Slot16).unwrap();
+        let pcr_sha1_value = pcr_sha1_bank.get_digest(PcrSlot::Slot16).unwrap();
+        let pcr_sha256_value = pcr_sha256_bank.get_digest(PcrSlot::Slot16).unwrap();
         // Needs to have the length of associated with the hashing algorithm
         assert_eq!(pcr_sha1_value.value(), [0; 20]);
         assert_eq!(pcr_sha256_value.value(), [0; 32]);
@@ -118,7 +149,7 @@ mod test_pcr_read {
     use tss_esapi::{
         interface_types::algorithm::HashingAlgorithm,
         structures::{PcrSelectionListBuilder, PcrSlot},
-        tss2_esys::{TPM2_ALG_ID, TPM2_SHA256_DIGEST_SIZE, TPML_PCR_SELECTION},
+        tss2_esys::{TPM2_SHA256_DIGEST_SIZE, TPML_PCR_SELECTION},
     };
 
     #[test]
@@ -133,20 +164,18 @@ mod test_pcr_read {
         assert_eq!(pcr_selection_list.len(), 1);
         assert_eq!(input.count as usize, pcr_selection_list.len());
         assert_eq!(input.pcrSelections[0].sizeofSelect, 3);
-        assert_eq!(
-            input.pcrSelections[0].hash,
-            Into::<TPM2_ALG_ID>::into(HashingAlgorithm::Sha256)
-        );
+        assert_eq!(input.pcrSelections[0].hash, HashingAlgorithm::Sha256.into());
         assert_eq!(input.pcrSelections[0].pcrSelect[0], 0b0000_0001);
         assert_eq!(input.pcrSelections[0].pcrSelect[1], 0b0000_0000);
         assert_eq!(input.pcrSelections[0].pcrSelect[2], 0b0000_0000);
         // Read the pcr slots.
-        let (update_counter, pcr_selection_list_out, pcr_data) =
-            context.pcr_read(&pcr_selection_list).unwrap();
+        let (update_counter, read_pcr_selections, read_pcr_digests) = context
+            .pcr_read(&pcr_selection_list)
+            .expect("Failed to call pcr_read");
 
         // Verify that the selected slots have been read.
         assert_ne!(update_counter, 0);
-        let output: TPML_PCR_SELECTION = pcr_selection_list_out.into();
+        let output: TPML_PCR_SELECTION = read_pcr_selections.into();
         assert_eq!(output.count, input.count);
         assert_eq!(
             output.pcrSelections[0].sizeofSelect,
@@ -167,13 +196,13 @@ mod test_pcr_read {
         );
 
         // Only the specified in the selection should be present.
-        assert_eq!(pcr_data.len(), output.count as usize);
-        let pcr_bank = pcr_data.pcr_bank(HashingAlgorithm::Sha256).unwrap();
-        // Only one value selected
-        assert_eq!(pcr_bank.len(), 1);
-        let pcr_value = pcr_bank.pcr_value(PcrSlot::Slot0).unwrap();
+        assert_eq!(read_pcr_digests.len(), 1);
+        assert_eq!(read_pcr_digests.len(), output.count as usize);
         // Needs to have the length of associated with the hashing algorithm
-        assert_eq!(pcr_value.value().len(), TPM2_SHA256_DIGEST_SIZE as usize);
+        assert_eq!(
+            read_pcr_digests.value()[0].len(),
+            TPM2_SHA256_DIGEST_SIZE as usize
+        );
     }
 
     #[test]

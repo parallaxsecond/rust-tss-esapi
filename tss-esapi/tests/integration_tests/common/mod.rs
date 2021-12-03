@@ -8,7 +8,7 @@ use std::{
 };
 
 use tss_esapi::{
-    abstraction::cipher::Cipher,
+    abstraction::{cipher::Cipher, pcr::PcrData},
     attributes::{ObjectAttributesBuilder, SessionAttributesBuilder},
     constants::SessionType,
     interface_types::{
@@ -161,8 +161,17 @@ pub fn get_pcr_policy_digest(
         .with_selection(HashingAlgorithm::Sha256, &[PcrSlot::Slot0, PcrSlot::Slot1])
         .build();
 
-    let (_update_counter, pcr_selection_list_out, pcr_data) =
-        context.pcr_read(&pcr_selection_list).unwrap();
+    let (_update_counter, pcr_selection_list_out, pcr_data) = context
+        .pcr_read(&pcr_selection_list)
+        .map(|(update_counter, read_pcr_selections, read_pcr_digests)| {
+            (
+                update_counter,
+                read_pcr_selections.clone(),
+                PcrData::create(&read_pcr_selections, &read_pcr_digests)
+                    .expect("Failed to create PcrData"),
+            )
+        })
+        .expect("Failed to call pcr_read");
 
     assert_eq!(pcr_selection_list, pcr_selection_list_out);
     // Run pcr_policy command.
@@ -176,13 +185,13 @@ pub fn get_pcr_policy_digest(
         pcr_data
             .pcr_bank(HashingAlgorithm::Sha256)
             .unwrap()
-            .pcr_value(PcrSlot::Slot0)
+            .get_digest(PcrSlot::Slot0)
             .unwrap()
             .value(),
         pcr_data
             .pcr_bank(HashingAlgorithm::Sha256)
             .unwrap()
-            .pcr_value(PcrSlot::Slot1)
+            .get_digest(PcrSlot::Slot1)
             .unwrap()
             .value(),
     ]

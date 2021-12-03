@@ -2,9 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 use crate::{
     handles::PcrHandle,
-    structures::{DigestValues, PcrSelectionList},
+    structures::{DigestList, DigestValues, PcrSelectionList},
     tss2_esys::*,
-    utils::PcrData,
     Context, Error, Result,
 };
 use log::error;
@@ -149,16 +148,16 @@ impl Context {
     ///     .with_selection(HashingAlgorithm::Sha256, &[PcrSlot::Slot0, PcrSlot::Slot1])
     ///     .build();
     ///
-    /// let (update_counter, read_pcr_list, pcr_data) = context.pcr_read(&pcr_selection_list)
+    /// let (update_counter, read_pcr_list, digest_list) = context.pcr_read(&pcr_selection_list)
     ///     .expect("Call to pcr_read failed");
     /// ```
     pub fn pcr_read(
         &mut self,
         pcr_selection_list: &PcrSelectionList,
-    ) -> Result<(u32, PcrSelectionList, PcrData)> {
+    ) -> Result<(u32, PcrSelectionList, DigestList)> {
         let mut pcr_update_counter: u32 = 0;
         let mut tss_pcr_selection_list_out_ptr = null_mut();
-        let mut tss_digest_ptr = null_mut();
+        let mut tss_digest_list_out_ptr = null_mut();
         let ret = unsafe {
             Esys_PCR_Read(
                 self.mut_context(),
@@ -168,7 +167,7 @@ impl Context {
                 &pcr_selection_list.clone().into(),
                 &mut pcr_update_counter,
                 &mut tss_pcr_selection_list_out_ptr,
-                &mut tss_digest_ptr,
+                &mut tss_digest_list_out_ptr,
             )
         };
         let ret = Error::from_tss_rc(ret);
@@ -176,11 +175,12 @@ impl Context {
         if ret.is_success() {
             let tss_pcr_selection_list_out =
                 unsafe { MBox::<TPML_PCR_SELECTION>::from_raw(tss_pcr_selection_list_out_ptr) };
-            let tss_digest = unsafe { MBox::<TPML_DIGEST>::from_raw(tss_digest_ptr) };
+            let tss_digest_list_out =
+                unsafe { MBox::<TPML_DIGEST>::from_raw(tss_digest_list_out_ptr) };
             Ok((
                 pcr_update_counter,
                 PcrSelectionList::try_from(*tss_pcr_selection_list_out)?,
-                PcrData::new(tss_pcr_selection_list_out.as_ref(), tss_digest.as_ref())?,
+                DigestList::try_from(*tss_digest_list_out)?,
             ))
         } else {
             error!("Error when reading PCR: {}", ret);

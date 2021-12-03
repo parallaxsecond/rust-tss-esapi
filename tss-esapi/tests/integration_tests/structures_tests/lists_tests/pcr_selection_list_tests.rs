@@ -5,6 +5,7 @@ use tss_esapi::{
     interface_types::algorithm::HashingAlgorithm,
     structures::{PcrSelectSize, PcrSelection, PcrSelectionList, PcrSlot},
     tss2_esys::{TPML_PCR_SELECTION, TPMS_PCR_SELECTION},
+    Error, WrapperErrorKind,
 };
 
 #[test]
@@ -37,9 +38,6 @@ fn from_tpml_retains_order() {
     );
     let selection_4 = TPMS_PCR_SELECTION::try_from(selection_4).unwrap();
 
-    let empty_selection = PcrSelection::new(HashingAlgorithm::Sha1, PcrSelectSize::ThreeBytes, &[]);
-    let empty_selection = TPMS_PCR_SELECTION::try_from(empty_selection).unwrap();
-
     let tpml_selections = TPML_PCR_SELECTION {
         count: 4,
         pcrSelections: [
@@ -47,18 +45,18 @@ fn from_tpml_retains_order() {
             selection_2,
             selection_3,
             selection_4,
-            empty_selection,
-            empty_selection,
-            empty_selection,
-            empty_selection,
-            empty_selection,
-            empty_selection,
-            empty_selection,
-            empty_selection,
-            empty_selection,
-            empty_selection,
-            empty_selection,
-            empty_selection,
+            TPMS_PCR_SELECTION::default(),
+            TPMS_PCR_SELECTION::default(),
+            TPMS_PCR_SELECTION::default(),
+            TPMS_PCR_SELECTION::default(),
+            TPMS_PCR_SELECTION::default(),
+            TPMS_PCR_SELECTION::default(),
+            TPMS_PCR_SELECTION::default(),
+            TPMS_PCR_SELECTION::default(),
+            TPMS_PCR_SELECTION::default(),
+            TPMS_PCR_SELECTION::default(),
+            TPMS_PCR_SELECTION::default(),
+            TPMS_PCR_SELECTION::default(),
         ],
     };
 
@@ -75,18 +73,374 @@ fn from_tpml_retains_order() {
 
     assert_eq!(sel_1.hashing_algorithm(), HashingAlgorithm::Sha256);
     assert!(!sel_1.is_empty());
-    assert!(sel_1.selected_pcrs().contains(PcrSlot::Slot10));
-    assert!(!sel_1.selected_pcrs().contains(PcrSlot::Slot11));
+    assert!(sel_1.is_selected(PcrSlot::Slot10));
+    assert!(!sel_1.is_selected(PcrSlot::Slot11));
 
     assert_eq!(sel_2.hashing_algorithm(), HashingAlgorithm::Sha256);
     assert!(!sel_2.is_empty());
-    assert!(sel_2.selected_pcrs().contains(PcrSlot::Slot11));
+    assert!(sel_2.is_selected(PcrSlot::Slot11));
 
     assert_eq!(sel_3.hashing_algorithm(), HashingAlgorithm::Sha1);
     assert!(!sel_3.is_empty());
-    assert!(sel_3.selected_pcrs().contains(PcrSlot::Slot16));
+    assert!(sel_3.is_selected(PcrSlot::Slot16));
 
     assert_eq!(sel_4.hashing_algorithm(), HashingAlgorithm::Sha1);
     assert!(!sel_4.is_empty());
-    assert!(sel_4.selected_pcrs().contains(PcrSlot::Slot2));
+    assert!(sel_4.is_selected(PcrSlot::Slot2));
+}
+
+#[test]
+fn test_subtract() {
+    let pcr_selection_1 = PcrSelection::new(
+        HashingAlgorithm::Sha256,
+        PcrSelectSize::ThreeBytes,
+        &[PcrSlot::Slot10],
+    );
+    let tpms_pcr_selection_1 = TPMS_PCR_SELECTION::try_from(pcr_selection_1)
+        .expect("Failed to create tpms_pcr_selection_1");
+
+    let pcr_selection_2 = PcrSelection::new(
+        HashingAlgorithm::Sha256,
+        PcrSelectSize::ThreeBytes,
+        &[PcrSlot::Slot11],
+    );
+    let tpms_pcr_selection_2 = TPMS_PCR_SELECTION::try_from(pcr_selection_2)
+        .expect("Failed to create tpms_pcr_selection_2");
+
+    let tpms_pcr_selection_3 = TPMS_PCR_SELECTION::try_from(PcrSelection::new(
+        HashingAlgorithm::Sha1,
+        PcrSelectSize::ThreeBytes,
+        &[PcrSlot::Slot16],
+    ))
+    .expect("Failed to create tpms_pcr_selection_3");
+
+    let tpms_pcr_selection_4 = TPMS_PCR_SELECTION::try_from(PcrSelection::new(
+        HashingAlgorithm::Sha1,
+        PcrSelectSize::ThreeBytes,
+        &[PcrSlot::Slot2],
+    ))
+    .expect("Failed to create tpms_pcr_selection_4");
+
+    let mut selection_list_1 = PcrSelectionList::try_from(TPML_PCR_SELECTION {
+        count: 4,
+        pcrSelections: [
+            tpms_pcr_selection_1,
+            tpms_pcr_selection_2,
+            tpms_pcr_selection_3,
+            tpms_pcr_selection_4,
+            TPMS_PCR_SELECTION::default(),
+            TPMS_PCR_SELECTION::default(),
+            TPMS_PCR_SELECTION::default(),
+            TPMS_PCR_SELECTION::default(),
+            TPMS_PCR_SELECTION::default(),
+            TPMS_PCR_SELECTION::default(),
+            TPMS_PCR_SELECTION::default(),
+            TPMS_PCR_SELECTION::default(),
+            TPMS_PCR_SELECTION::default(),
+            TPMS_PCR_SELECTION::default(),
+            TPMS_PCR_SELECTION::default(),
+            TPMS_PCR_SELECTION::default(),
+        ],
+    })
+    .expect("Failed to convert selection list 1");
+
+    let selection_list_2 = PcrSelectionList::try_from(TPML_PCR_SELECTION {
+        count: 2,
+        pcrSelections: [
+            tpms_pcr_selection_3,
+            tpms_pcr_selection_4,
+            TPMS_PCR_SELECTION::default(),
+            TPMS_PCR_SELECTION::default(),
+            TPMS_PCR_SELECTION::default(),
+            TPMS_PCR_SELECTION::default(),
+            TPMS_PCR_SELECTION::default(),
+            TPMS_PCR_SELECTION::default(),
+            TPMS_PCR_SELECTION::default(),
+            TPMS_PCR_SELECTION::default(),
+            TPMS_PCR_SELECTION::default(),
+            TPMS_PCR_SELECTION::default(),
+            TPMS_PCR_SELECTION::default(),
+            TPMS_PCR_SELECTION::default(),
+            TPMS_PCR_SELECTION::default(),
+            TPMS_PCR_SELECTION::default(),
+        ],
+    })
+    .expect("Failed to convert selection list 2");
+
+    selection_list_1
+        .subtract(&selection_list_2)
+        .expect("Failed to subtract selection_list_2 from selection_list_1");
+    let selected_pcrs = selection_list_1.get_selections();
+    assert_eq!(
+        selected_pcrs.len(),
+        2,
+        "There are more pcr selections in the pcr selection list then expected"
+    );
+    assert_eq!(
+        selected_pcrs[0], pcr_selection_1,
+        "The first selection does not have expected values"
+    );
+    assert_eq!(
+        selected_pcrs[1], pcr_selection_2,
+        "The second selection does not have expected values"
+    );
+}
+
+#[test]
+fn test_subtract_overlapping_without_remaining() {
+    let tpms_pcr_selection_1 = TPMS_PCR_SELECTION::try_from(PcrSelection::new(
+        HashingAlgorithm::Sha256,
+        PcrSelectSize::ThreeBytes,
+        &[PcrSlot::Slot10],
+    ))
+    .expect("Failed to create tpms_pcr_selection_1");
+
+    let tpms_pcr_selection_2 = TPMS_PCR_SELECTION::try_from(PcrSelection::new(
+        HashingAlgorithm::Sha256,
+        PcrSelectSize::ThreeBytes,
+        &[PcrSlot::Slot11],
+    ))
+    .expect("Failed to create tpms_pcr_selection_2");
+
+    let tpms_pcr_selection_3 = TPMS_PCR_SELECTION::try_from(PcrSelection::new(
+        HashingAlgorithm::Sha256,
+        PcrSelectSize::ThreeBytes,
+        &[PcrSlot::Slot10, PcrSlot::Slot11],
+    ))
+    .expect("Failed to create tpms_pcr_selection_3");
+
+    let mut selection_list_1 = PcrSelectionList::try_from(TPML_PCR_SELECTION {
+        count: 2,
+        pcrSelections: [
+            tpms_pcr_selection_1,
+            tpms_pcr_selection_2,
+            TPMS_PCR_SELECTION::default(),
+            TPMS_PCR_SELECTION::default(),
+            TPMS_PCR_SELECTION::default(),
+            TPMS_PCR_SELECTION::default(),
+            TPMS_PCR_SELECTION::default(),
+            TPMS_PCR_SELECTION::default(),
+            TPMS_PCR_SELECTION::default(),
+            TPMS_PCR_SELECTION::default(),
+            TPMS_PCR_SELECTION::default(),
+            TPMS_PCR_SELECTION::default(),
+            TPMS_PCR_SELECTION::default(),
+            TPMS_PCR_SELECTION::default(),
+            TPMS_PCR_SELECTION::default(),
+            TPMS_PCR_SELECTION::default(),
+        ],
+    })
+    .expect("Failed to convert selection list 1");
+
+    let selection_list_2 = PcrSelectionList::try_from(TPML_PCR_SELECTION {
+        count: 1,
+        pcrSelections: [
+            tpms_pcr_selection_3,
+            TPMS_PCR_SELECTION::default(),
+            TPMS_PCR_SELECTION::default(),
+            TPMS_PCR_SELECTION::default(),
+            TPMS_PCR_SELECTION::default(),
+            TPMS_PCR_SELECTION::default(),
+            TPMS_PCR_SELECTION::default(),
+            TPMS_PCR_SELECTION::default(),
+            TPMS_PCR_SELECTION::default(),
+            TPMS_PCR_SELECTION::default(),
+            TPMS_PCR_SELECTION::default(),
+            TPMS_PCR_SELECTION::default(),
+            TPMS_PCR_SELECTION::default(),
+            TPMS_PCR_SELECTION::default(),
+            TPMS_PCR_SELECTION::default(),
+            TPMS_PCR_SELECTION::default(),
+        ],
+    })
+    .expect("Failed to convert selection list 2");
+
+    selection_list_1
+        .subtract(&selection_list_2)
+        .expect("Failed to subtract selection_list_2 from selection_list_1");
+    let selected_pcrs = selection_list_1.get_selections();
+    assert_eq!(
+        selected_pcrs.len(),
+        0,
+        "There are more pcr selections in the pcr selection list then expected"
+    );
+}
+
+#[test]
+fn test_subtract_overlapping_with_remaining() {
+    let tpms_pcr_selection_1 = TPMS_PCR_SELECTION::try_from(PcrSelection::new(
+        HashingAlgorithm::Sha256,
+        PcrSelectSize::ThreeBytes,
+        &[PcrSlot::Slot10],
+    ))
+    .expect("Failed to create tpms_pcr_selection_1");
+
+    let tpms_pcr_selection_2 = TPMS_PCR_SELECTION::try_from(PcrSelection::new(
+        HashingAlgorithm::Sha256,
+        PcrSelectSize::ThreeBytes,
+        &[PcrSlot::Slot11],
+    ))
+    .expect("Failed to create tpms_pcr_selection_2");
+
+    let expected = PcrSelection::new(
+        HashingAlgorithm::Sha256,
+        PcrSelectSize::ThreeBytes,
+        &[PcrSlot::Slot12],
+    );
+    let tpms_pcr_selection_3 =
+        TPMS_PCR_SELECTION::try_from(expected).expect("Failed to create tpms_pcr_selection_2");
+
+    let tpms_pcr_selection_4 = TPMS_PCR_SELECTION::try_from(PcrSelection::new(
+        HashingAlgorithm::Sha256,
+        PcrSelectSize::ThreeBytes,
+        &[PcrSlot::Slot10, PcrSlot::Slot11],
+    ))
+    .expect("Failed to create tpms_pcr_selection_3");
+
+    let mut selection_list_1 = PcrSelectionList::try_from(TPML_PCR_SELECTION {
+        count: 3,
+        pcrSelections: [
+            tpms_pcr_selection_1,
+            tpms_pcr_selection_2,
+            tpms_pcr_selection_3,
+            TPMS_PCR_SELECTION::default(),
+            TPMS_PCR_SELECTION::default(),
+            TPMS_PCR_SELECTION::default(),
+            TPMS_PCR_SELECTION::default(),
+            TPMS_PCR_SELECTION::default(),
+            TPMS_PCR_SELECTION::default(),
+            TPMS_PCR_SELECTION::default(),
+            TPMS_PCR_SELECTION::default(),
+            TPMS_PCR_SELECTION::default(),
+            TPMS_PCR_SELECTION::default(),
+            TPMS_PCR_SELECTION::default(),
+            TPMS_PCR_SELECTION::default(),
+            TPMS_PCR_SELECTION::default(),
+        ],
+    })
+    .expect("Failed to convert selection list 1");
+
+    let selection_list_2 = PcrSelectionList::try_from(TPML_PCR_SELECTION {
+        count: 1,
+        pcrSelections: [
+            tpms_pcr_selection_4,
+            TPMS_PCR_SELECTION::default(),
+            TPMS_PCR_SELECTION::default(),
+            TPMS_PCR_SELECTION::default(),
+            TPMS_PCR_SELECTION::default(),
+            TPMS_PCR_SELECTION::default(),
+            TPMS_PCR_SELECTION::default(),
+            TPMS_PCR_SELECTION::default(),
+            TPMS_PCR_SELECTION::default(),
+            TPMS_PCR_SELECTION::default(),
+            TPMS_PCR_SELECTION::default(),
+            TPMS_PCR_SELECTION::default(),
+            TPMS_PCR_SELECTION::default(),
+            TPMS_PCR_SELECTION::default(),
+            TPMS_PCR_SELECTION::default(),
+            TPMS_PCR_SELECTION::default(),
+        ],
+    })
+    .expect("Failed to convert selection list 2");
+
+    selection_list_1
+        .subtract(&selection_list_2)
+        .expect("Failed to subtract selection_list_2 from selection_list_1");
+    let selected_pcrs = selection_list_1.get_selections();
+    assert_eq!(
+        selected_pcrs.len(),
+        1,
+        "There are more pcr selections in the pcr selection list then expected"
+    );
+    assert_eq!(
+        selected_pcrs[0], expected,
+        "The first selection does not have expected values"
+    );
+}
+
+#[test]
+fn test_invalid_subtraction() {
+    let pcr_selection_1 = PcrSelection::new(
+        HashingAlgorithm::Sha256,
+        PcrSelectSize::ThreeBytes,
+        &[PcrSlot::Slot10],
+    );
+    let tpms_pcr_selection_1 = TPMS_PCR_SELECTION::try_from(pcr_selection_1)
+        .expect("Failed to create tpms_pcr_selection_1");
+
+    let pcr_selection_2 = PcrSelection::new(
+        HashingAlgorithm::Sha256,
+        PcrSelectSize::ThreeBytes,
+        &[PcrSlot::Slot11],
+    );
+    let tpms_pcr_selection_2 = TPMS_PCR_SELECTION::try_from(pcr_selection_2)
+        .expect("Failed to create tpms_pcr_selection_2");
+
+    let tpms_pcr_selection_3 = TPMS_PCR_SELECTION::try_from(PcrSelection::new(
+        HashingAlgorithm::Sha1,
+        PcrSelectSize::ThreeBytes,
+        &[PcrSlot::Slot16],
+    ))
+    .expect("Failed to create tpms_pcr_selection_3");
+
+    let tpms_pcr_selection_4 = TPMS_PCR_SELECTION::try_from(PcrSelection::new(
+        HashingAlgorithm::Sha1,
+        PcrSelectSize::ThreeBytes,
+        &[PcrSlot::Slot2],
+    ))
+    .expect("Failed to create tpms_pcr_selection_4");
+
+    let mut selection_list_1 = PcrSelectionList::try_from(TPML_PCR_SELECTION {
+        count: 2,
+        pcrSelections: [
+            tpms_pcr_selection_1,
+            tpms_pcr_selection_2,
+            TPMS_PCR_SELECTION::default(),
+            TPMS_PCR_SELECTION::default(),
+            TPMS_PCR_SELECTION::default(),
+            TPMS_PCR_SELECTION::default(),
+            TPMS_PCR_SELECTION::default(),
+            TPMS_PCR_SELECTION::default(),
+            TPMS_PCR_SELECTION::default(),
+            TPMS_PCR_SELECTION::default(),
+            TPMS_PCR_SELECTION::default(),
+            TPMS_PCR_SELECTION::default(),
+            TPMS_PCR_SELECTION::default(),
+            TPMS_PCR_SELECTION::default(),
+            TPMS_PCR_SELECTION::default(),
+            TPMS_PCR_SELECTION::default(),
+        ],
+    })
+    .expect("Failed to convert selection list 1");
+
+    let selection_list_2 = PcrSelectionList::try_from(TPML_PCR_SELECTION {
+        count: 4,
+        pcrSelections: [
+            tpms_pcr_selection_1,
+            tpms_pcr_selection_2,
+            tpms_pcr_selection_3,
+            tpms_pcr_selection_4,
+            TPMS_PCR_SELECTION::default(),
+            TPMS_PCR_SELECTION::default(),
+            TPMS_PCR_SELECTION::default(),
+            TPMS_PCR_SELECTION::default(),
+            TPMS_PCR_SELECTION::default(),
+            TPMS_PCR_SELECTION::default(),
+            TPMS_PCR_SELECTION::default(),
+            TPMS_PCR_SELECTION::default(),
+            TPMS_PCR_SELECTION::default(),
+            TPMS_PCR_SELECTION::default(),
+            TPMS_PCR_SELECTION::default(),
+            TPMS_PCR_SELECTION::default(),
+        ],
+    })
+    .expect("Failed to convert selection list 2");
+
+    let subtract_result = selection_list_1.subtract(&selection_list_2);
+
+    assert_eq!(
+        subtract_result,
+        Err(Error::WrapperError(WrapperErrorKind::InvalidParam)),
+        "PcrSelectionList subtract method did not produce expected error for invalid parameters"
+    );
 }

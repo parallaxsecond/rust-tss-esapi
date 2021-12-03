@@ -133,6 +133,11 @@ impl PcrSelect {
     }
 
     /// Returns the size of the select.
+    ///
+    /// NB! This is not the same as how many [PcrSlot]
+    /// there are in the select but rather how many
+    /// octets that are needed to hold the bit field
+    /// that indicate what slots that are selected.
     pub fn size_of_select(&self) -> PcrSelectSize {
         self.size_of_select
     }

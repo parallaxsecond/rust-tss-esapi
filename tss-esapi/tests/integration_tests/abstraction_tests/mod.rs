@@ -3,4 +3,6 @@
 mod ak_tests;
 mod ek_tests;
 mod nv_tests;
+mod pcr_data_tests;
+mod pcr_tests;
 mod transient_key_context_tests;
