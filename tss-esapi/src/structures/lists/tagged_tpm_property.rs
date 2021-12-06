@@ -2,8 +2,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use crate::{
-    constants::PropertyTag, structures::TaggedProperty, tss2_esys::TPML_TAGGED_TPM_PROPERTY, Error,
-    Result, WrapperErrorKind,
+    constants::PropertyTag,
+    structures::TaggedProperty,
+    tss2_esys::{TPML_TAGGED_TPM_PROPERTY, TPMS_TAGGED_PROPERTY},
+    Error, Result, WrapperErrorKind,
 };
 use log::error;
 use std::{convert::TryFrom, iter::IntoIterator, ops::Deref};
@@ -18,13 +20,23 @@ pub struct TaggedTpmPropertyList {
 }
 
 impl TaggedTpmPropertyList {
-    pub const MAX_SIZE: usize = 127;
+    pub const MAX_SIZE: usize = Self::calculate_max_size();
 
     /// Finds a [TaggedProperty] in the list matching the provided `property_tag`.
     pub fn find(&self, property_tag: PropertyTag) -> Option<&TaggedProperty> {
         self.tagged_tpm_properties
             .iter()
             .find(|tp| tp.property() == property_tag)
+    }
+
+    /// Private function that calculates the maximum number
+    /// elements allowed in internal storage.
+    const fn calculate_max_size() -> usize {
+        // According to the specification the size is vendor specific.
+        // So if someone is using modified values in their TSS libraries
+        // it is picked up here.
+        (std::mem::size_of::<TPML_TAGGED_TPM_PROPERTY>() - std::mem::size_of::<u32>())
+            / std::mem::size_of::<TPMS_TAGGED_PROPERTY>()
     }
 }
 
