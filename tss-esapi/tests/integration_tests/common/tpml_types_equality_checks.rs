@@ -1,3 +1,5 @@
+// Copyright 2021 Contributors to the Parsec project.
+// SPDX-License-Identifier: Apache-2.0
 use tss_esapi::tss2_esys::{TPML_ALG_PROPERTY, TPML_PCR_SELECTION, TPML_TAGGED_TPM_PROPERTY};
 
 macro_rules! ensure_list_equality {

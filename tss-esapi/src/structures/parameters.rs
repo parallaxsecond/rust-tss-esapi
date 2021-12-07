@@ -11,7 +11,7 @@ use std::convert::{TryFrom, TryInto};
 ///
 /// # Details
 /// Corresponds to TPMS_SYMCIPHER_PARMS
-#[derive(Clone, Debug, Copy)]
+#[derive(Clone, Debug, Copy, PartialEq, Eq)]
 pub struct SymmetricCipherParameters {
     symmetric_definition_object: SymmetricDefinitionObject,
 }

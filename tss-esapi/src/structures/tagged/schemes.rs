@@ -19,7 +19,7 @@ use std::convert::{TryFrom, TryInto};
 ///
 /// # Details
 /// This corresponds to TPMT_SCHEME_KEYEDHASH.
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum KeyedHashScheme {
     Xor { xor_scheme: XorScheme },
     Hmac { hmac_scheme: HmacScheme },
@@ -76,7 +76,7 @@ impl TryFrom<TPMT_KEYEDHASH_SCHEME> for KeyedHashScheme {
 /// This corresponds to TPMT_RSA_SCHEME.
 /// This uses a subset of the TPMU_ASYM_SCHEME
 /// that has the TPMI_ALG_RSA_SCHEME as selector.
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum RsaScheme {
     RsaSsa(HashScheme),
     RsaEs,
@@ -211,7 +211,7 @@ impl TryFrom<TPMT_RSA_SCHEME> for RsaScheme {
 /// This corresponds to TPMT_ECC_SCHEME.
 /// This uses a subset of the TPMU_ASYM_SCHEME
 /// that has the TPMI_ALG_ECC_SCHEME as selector.
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum EccScheme {
     EcDsa(HashScheme),
     EcDh(HashScheme),
@@ -375,7 +375,7 @@ impl TryFrom<TPMT_ECC_SCHEME> for EccScheme {
 ///
 /// # Details
 /// This corresponds to TPMT_KDF_SCHEME.
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum KeyDerivationFunctionScheme {
     Kdf1Sp800_56a(HashScheme),
     Kdf2(HashScheme),

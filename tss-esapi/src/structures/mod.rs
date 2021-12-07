@@ -35,26 +35,10 @@ pub use result::CreatePrimaryKeyResult;
 /////////////////////////////////////////////////////////
 mod buffers;
 pub use self::buffers::{
-    attest::AttestBuffer,
-    auth::Auth,
-    data::Data,
-    digest::Digest,
-    ecc_parameter::EccParameter,
-    encrypted_secret::EncryptedSecret,
-    id_object::IDObject,
-    initial_value::InitialValue,
-    max_buffer::MaxBuffer,
-    max_nv_buffer::MaxNvBuffer,
-    nonce::Nonce,
-    private::Private,
-    public::{
-        ecc::{PublicEccParameters, PublicEccParametersBuilder},
-        keyed_hash::PublicKeyedHashParameters,
-        rsa::{PublicRsaParameters, PublicRsaParametersBuilder, RsaExponent},
-        Public, PublicBuilder,
-    },
-    public_key_rsa::PublicKeyRsa,
-    sensitive_data::SensitiveData,
+    attest::AttestBuffer, auth::Auth, data::Data, digest::Digest, ecc_parameter::EccParameter,
+    encrypted_secret::EncryptedSecret, id_object::IDObject, initial_value::InitialValue,
+    max_buffer::MaxBuffer, max_nv_buffer::MaxNvBuffer, nonce::Nonce, private::Private,
+    public::PublicBuffer, public_key_rsa::PublicKeyRsa, sensitive_data::SensitiveData,
     timeout::Timeout,
 };
 /////////////////////////////////////////////////////////
@@ -137,6 +121,12 @@ pub use schemes::{EcDaaScheme, HashScheme, HmacScheme, XorScheme};
 mod tagged;
 pub use tagged::{
     parameters::PublicParameters,
+    public::{
+        ecc::{PublicEccParameters, PublicEccParametersBuilder},
+        keyed_hash::PublicKeyedHashParameters,
+        rsa::{PublicRsaParameters, PublicRsaParametersBuilder, RsaExponent},
+        Public, PublicBuilder,
+    },
     schemes::{
         EccScheme, KeyDerivationFunctionScheme, KeyedHashScheme, RsaDecryptionScheme, RsaScheme,
         SignatureScheme,

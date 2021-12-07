@@ -9,24 +9,32 @@ use std::{
 
 use tss_esapi::{
     abstraction::{cipher::Cipher, pcr::PcrData},
+    attributes::ObjectAttributes,
     attributes::{ObjectAttributesBuilder, SessionAttributesBuilder},
     constants::SessionType,
     interface_types::{
+        algorithm::SymmetricMode,
         algorithm::{HashingAlgorithm, PublicAlgorithm, RsaSchemeAlgorithm},
         key_bits::RsaKeyBits,
+        key_bits::{AesKeyBits, Sm4KeyBits},
         resource_handles::Hierarchy,
         session_handles::PolicySession,
     },
     structures::{
-        Digest, KeyedHashScheme, MaxBuffer, PcrSelectionListBuilder, PcrSlot, Public,
-        PublicBuilder, PublicKeyedHashParameters, RsaExponent, RsaScheme, SymmetricDefinition,
+        Digest, EccParameter, EccPoint, EccScheme, HashScheme, HmacScheme,
+        KeyDerivationFunctionScheme, KeyedHashScheme, MaxBuffer, PcrSelectionListBuilder, PcrSlot,
+        Public, PublicBuilder, PublicEccParameters, PublicKeyRsa, PublicKeyedHashParameters,
+        PublicRsaParameters, RsaExponent, RsaScheme, SymmetricCipherParameters,
+        SymmetricDefinition, SymmetricDefinitionObject,
     },
     tcti_ldr::TctiNameConf,
     utils, Context,
 };
 
+mod marshall;
 mod tpml_types_equality_checks;
 mod tpms_types_equality_checks;
+pub use marshall::*;
 pub use tpml_types_equality_checks::*;
 pub use tpms_types_equality_checks::*;
 
@@ -62,6 +70,60 @@ pub const KEY: [u8; 512] = [
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0,
 ];
+
+pub fn publics() -> [Public; 4] {
+    [
+        Public::Rsa {
+            object_attributes: ObjectAttributes::new_fixed_signing_key(),
+            name_hashing_algorithm: HashingAlgorithm::Sha256,
+            auth_policy: Digest::try_from(vec![0x55; 16]).unwrap(),
+            parameters: PublicRsaParameters::new(
+                SymmetricDefinitionObject::Aes {
+                    key_bits: AesKeyBits::Aes192,
+                    mode: SymmetricMode::Cfb,
+                },
+                RsaScheme::RsaSsa(HashScheme::new(HashingAlgorithm::Sha256)),
+                RsaKeyBits::Rsa2048,
+                RsaExponent::default(),
+            ),
+            unique: PublicKeyRsa::default(),
+        },
+        Public::Ecc {
+            object_attributes: ObjectAttributes::new_fixed_signing_key(),
+            name_hashing_algorithm: HashingAlgorithm::Sha256,
+            auth_policy: Digest::try_from(vec![0x55; 16]).unwrap(),
+            parameters: PublicEccParameters::new(
+                SymmetricDefinitionObject::Camellia {
+                    key_bits: tss_esapi::interface_types::key_bits::CamelliaKeyBits::Camellia128,
+                    mode: SymmetricMode::Cfb,
+                },
+                EccScheme::EcDsa(HashScheme::new(HashingAlgorithm::Sha384)),
+                tss_esapi::interface_types::ecc::EccCurve::NistP192,
+                KeyDerivationFunctionScheme::Null,
+            ),
+            unique: EccPoint::new(EccParameter::default(), EccParameter::default()),
+        },
+        Public::KeyedHash {
+            object_attributes: ObjectAttributes::new_fixed_signing_key(),
+            name_hashing_algorithm: HashingAlgorithm::Sha256,
+            auth_policy: Digest::try_from(vec![0x55; 16]).unwrap(),
+            parameters: PublicKeyedHashParameters::new(KeyedHashScheme::Hmac {
+                hmac_scheme: HmacScheme::new(HashingAlgorithm::Sha256),
+            }),
+            unique: Digest::try_from(vec![0x01; 16]).unwrap(),
+        },
+        Public::SymCipher {
+            object_attributes: ObjectAttributes::new_fixed_signing_key(),
+            name_hashing_algorithm: HashingAlgorithm::Sha256,
+            auth_policy: Digest::try_from(vec![0x55; 16]).unwrap(),
+            parameters: SymmetricCipherParameters::new(SymmetricDefinitionObject::Sm4 {
+                key_bits: Sm4KeyBits::Sm4_128,
+                mode: SymmetricMode::Cfb,
+            }),
+            unique: Digest::try_from(vec![0x44; 16]).unwrap(),
+        },
+    ]
+}
 
 static LOG_INIT: Once = Once::new();
 #[allow(dead_code)]

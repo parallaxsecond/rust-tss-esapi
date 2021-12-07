@@ -214,7 +214,7 @@ impl PublicEccParametersBuilder {
 ///
 /// # Details
 /// This corresponds to TPMS_ECC_PARMS.
-#[derive(Clone, Debug, Copy)]
+#[derive(Clone, Debug, Copy, PartialEq, Eq)]
 pub struct PublicEccParameters {
     symmetric_definition_object: SymmetricDefinitionObject,
     ecc_scheme: EccScheme,

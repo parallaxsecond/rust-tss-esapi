@@ -10,12 +10,11 @@ use crate::{
         session_handles::{AuthSession, PolicySession},
     },
     structures::{EncryptedSecret, IDObject, SymmetricDefinition},
-    tss2_esys::{Tss2_MU_TPMT_PUBLIC_Marshal, TPM2B_PUBLIC, TPMT_PUBLIC},
+    traits::Marshall,
     utils::PublicKey,
-    Error, Result, WrapperErrorKind,
+    Result,
 };
-use log::error;
-use std::convert::{TryFrom, TryInto};
+use std::convert::TryFrom;
 
 #[derive(Debug)]
 /// Wrapper for the parameters needed by MakeCredential
@@ -69,26 +68,7 @@ impl TransientKeyContext {
         self.context.flush_context(object_handle.into())?;
 
         // Name of objects is derived from their publicArea, i.e. the marshaled TPMT_PUBLIC
-        let public = TPM2B_PUBLIC::from(object_public);
-        let mut pub_buf = [0u8; std::mem::size_of::<TPMT_PUBLIC>()];
-        let mut offset = 0;
-        let result = unsafe {
-            Tss2_MU_TPMT_PUBLIC_Marshal(
-                &public.publicArea,
-                &mut pub_buf as *mut u8,
-                std::mem::size_of::<TPMT_PUBLIC>()
-                    .try_into()
-                    .map_err(|_| Error::local_error(WrapperErrorKind::InternalError))?,
-                &mut offset,
-            )
-        };
-        let result = Error::from_tss_rc(result);
-        if !result.is_success() {
-            error!("Error in marshalling TPM2B");
-            return Err(result);
-        }
-        // `offset` will be small, so no risk in the conversion below
-        let public = pub_buf[..offset as usize].to_vec();
+        let public = object_public.marshall()?;
 
         let attesting_key_pub = match key {
             None => get_ek_object_public(&mut self.context)?,

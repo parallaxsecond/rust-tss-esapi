@@ -1,507 +1,168 @@
 // Copyright 2021 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
-pub mod ecc;
-pub mod keyed_hash;
-pub mod rsa;
 
 use crate::{
-    attributes::ObjectAttributes,
-    interface_types::algorithm::{HashingAlgorithm, PublicAlgorithm},
-    structures::{Digest, EccPoint, PublicKeyRsa, SymmetricCipherParameters},
+    structures::Public,
+    traits::{Marshall, UnMarshall},
     tss2_esys::{TPM2B_PUBLIC, TPMT_PUBLIC},
     Error, Result, WrapperErrorKind,
 };
-
-use ecc::PublicEccParameters;
-use keyed_hash::PublicKeyedHashParameters;
-use rsa::PublicRsaParameters;
-
 use log::error;
-use std::convert::{TryFrom, TryInto};
-use tss_esapi_sys::{TPMU_PUBLIC_ID, TPMU_PUBLIC_PARMS};
+use std::{
+    convert::{TryFrom, TryInto},
+    ops::Deref,
+};
+use zeroize::Zeroize;
 
-/// A builder for the [Public] type.
-#[derive(Debug, Clone)]
-pub struct PublicBuilder {
-    public_algorithm: Option<PublicAlgorithm>,
-    object_attributes: Option<ObjectAttributes>,
-    name_hashing_algorithm: Option<HashingAlgorithm>,
-    auth_policy: Option<Digest>,
-    rsa_parameters: Option<PublicRsaParameters>,
-    rsa_unique_identifier: Option<PublicKeyRsa>,
-    keyed_hash_parameters: Option<PublicKeyedHashParameters>,
-    keyed_hash_unique_identifier: Option<Digest>,
-    ecc_parameters: Option<PublicEccParameters>,
-    ecc_unique_identifier: Option<EccPoint>,
-    symmetric_cipher_parameters: Option<SymmetricCipherParameters>,
-    symmetric_cipher_unique_identifier: Option<Digest>,
-}
-
-impl PublicBuilder {
-    /// Creates a new [PublicBuilder]
-    ///
-    /// # Details
-    /// Builds the [Public] type using the provided parameters. Parameters
-    /// associated with other algorithms then the provided public algorithm
-    /// will be ignored.
-    pub const fn new() -> Self {
-        PublicBuilder {
-            public_algorithm: None,
-            object_attributes: None,
-            name_hashing_algorithm: None,
-            auth_policy: None,
-            rsa_parameters: None,
-            rsa_unique_identifier: None,
-            keyed_hash_parameters: None,
-            keyed_hash_unique_identifier: None,
-            ecc_parameters: None,
-            ecc_unique_identifier: None,
-            symmetric_cipher_parameters: None,
-            symmetric_cipher_unique_identifier: None,
-        }
-    }
-
-    /// Adds the public algorithm for the [Public] structure
-    /// to the builder.
-    pub const fn with_public_algorithm(mut self, public_algorithm: PublicAlgorithm) -> Self {
-        self.public_algorithm = Some(public_algorithm);
-        self
-    }
-
-    /// Adds the attributes of the [Public] structure
-    /// to the builder
-    pub const fn with_object_attributes(mut self, object_attributes: ObjectAttributes) -> Self {
-        self.object_attributes = Some(object_attributes);
-        self
-    }
-
-    /// Adds the name hash algorithm for the [Public] structure
-    /// to the builder.
-    pub const fn with_name_hashing_algorithm(
-        mut self,
-        name_hashing_algorithm: HashingAlgorithm,
-    ) -> Self {
-        self.name_hashing_algorithm = Some(name_hashing_algorithm);
-        self
-    }
-
-    /// Adds the auth policy for the [Public] structure
-    /// to the builder
-    pub fn with_auth_policy(mut self, auth_policy: &Digest) -> Self {
-        self.auth_policy = Some(auth_policy.clone());
-        self
-    }
-
-    /// Adds the RSA parameters for the [Public] structure
-    /// to the builder.
-    ///
-    /// # Details
-    /// This is required if the public algorithm is set to
-    /// [Rsa][`crate::interface_types::algorithm::PublicAlgorithm::Rsa].
-    pub fn with_rsa_parameters(mut self, rsa_parameters: PublicRsaParameters) -> Self {
-        self.rsa_parameters = Some(rsa_parameters);
-        self
-    }
-
-    /// Adds the RSA unique identifier for the [Public] structure
-    /// to the builder.
-    ///
-    /// # Details
-    /// This is required if the public algorithm is set to
-    /// [Rsa][`crate::interface_types::algorithm::PublicAlgorithm::Rsa].
-    ///
-    /// The unique identifier is the public key.
-    pub fn with_rsa_unique_identifier(mut self, rsa_unique_identifier: &PublicKeyRsa) -> Self {
-        self.rsa_unique_identifier = Some(rsa_unique_identifier.clone());
-        self
-    }
-
-    /// Adds the keyed hash parameters for the [Public] structure
-    /// to the builder.
-    ///
-    /// # Details
-    /// This is required if the public algorithm is set to
-    /// [KeyedHash][`crate::interface_types::algorithm::PublicAlgorithm::KeyedHash].
-    pub fn with_keyed_hash_parameters(
-        mut self,
-        keyed_hash_parameters: PublicKeyedHashParameters,
-    ) -> Self {
-        self.keyed_hash_parameters = Some(keyed_hash_parameters);
-        self
-    }
-
-    /// Adds the keyed hash unique identifier for the [Public] structure
-    /// to the builder.
-    ///
-    /// # Details
-    /// This is required if the public algorithm is set to
-    /// [KeyedHash][`crate::interface_types::algorithm::PublicAlgorithm::KeyedHash].
-    pub fn with_keyed_hash_unique_identifier(
-        mut self,
-        keyed_hash_unique_identifier: &Digest,
-    ) -> Self {
-        self.keyed_hash_unique_identifier = Some(keyed_hash_unique_identifier.clone());
-        self
-    }
-
-    /// Adds the ECC parameters for the [Public] structure
-    /// to the builder.
-    ///
-    /// # Details
-    /// This is required if the public algorithm is set to
-    /// [Ecc][`crate::interface_types::algorithm::PublicAlgorithm::Ecc].
-    pub const fn with_ecc_parameters(mut self, ecc_parameters: PublicEccParameters) -> Self {
-        self.ecc_parameters = Some(ecc_parameters);
-        self
-    }
-
-    /// Adds the ECC unique identifier for the [Public] structure
-    /// to the builder.
-    ///
-    /// # Details
-    /// This is required if the public algorithm is set to
-    /// [Ecc][`crate::interface_types::algorithm::PublicAlgorithm::Ecc].
-    ///
-    /// The unique identifier is a ecc point.
-    pub fn with_ecc_unique_identifier(mut self, ecc_unique_identifier: &EccPoint) -> Self {
-        self.ecc_unique_identifier = Some(ecc_unique_identifier.clone());
-        self
-    }
-
-    /// Adds the symmetric cipher parameters for the [Public] structure
-    /// to the builder.
-    ///
-    /// # Details
-    /// This is required if the public algorithm is set to
-    /// [SymCipher][`crate::interface_types::algorithm::PublicAlgorithm::SymCipher].
-    pub const fn with_symmetric_cipher_parameters(
-        mut self,
-        symmetric_cipher_parameters: SymmetricCipherParameters,
-    ) -> Self {
-        self.symmetric_cipher_parameters = Some(symmetric_cipher_parameters);
-        self
-    }
-
-    /// Adds the symmetric cipher unique identifier for the [Public] structure
-    /// to the builder.
-    ///
-    /// # Details
-    /// This is required if the public algorithm is set to
-    /// [SymCipher][`crate::interface_types::algorithm::PublicAlgorithm::SymCipher].
-    pub fn with_symmetric_cipher_unique_identifier(
-        mut self,
-        symmetric_cipher_unique_identifier: &Digest,
-    ) -> Self {
-        self.symmetric_cipher_unique_identifier = Some(symmetric_cipher_unique_identifier.clone());
-        self
-    }
-
-    /// Builds the [Public] structure.
-    ///
-    /// # Errors
-    /// Will return error if the public algorithm, object attributes or name
-    /// hashing algorithm have not been set or if the parameters and unique identifier
-    /// does not match the selected public algorithm.
-    pub fn build(self) -> Result<Public> {
-        let algorithm = self.public_algorithm.ok_or_else(|| {
-            error!("Algorithm is required and has not been set in the PublicBuilder");
-            Error::local_error(WrapperErrorKind::ParamsMissing)
-        })?;
-
-        let object_attributes = self.object_attributes.ok_or_else(|| {
-            error!("ObjectAttributes is required and has not been set in the PublicBuilder");
-            Error::local_error(WrapperErrorKind::ParamsMissing)
-        })?;
-
-        let name_hashing_algorithm = self.name_hashing_algorithm.ok_or_else(|| {
-            error!(
-                "The name hashing algorithm is required and has not been set in the PublicBuilder"
-            );
-            Error::local_error(WrapperErrorKind::ParamsMissing)
-        })?;
-
-        let auth_policy = self.auth_policy.unwrap_or_default();
-
-        match algorithm {
-            PublicAlgorithm::Rsa => {
-                Ok(Public::Rsa {
-                    object_attributes,
-                    name_hashing_algorithm,
-                    auth_policy,
-                    parameters: self.rsa_parameters.ok_or_else(|| {
-                        error!("RSA parameters have not been set in the PublicBuilder even though the RSA algorithm had been selected.");
-                        Error::local_error(WrapperErrorKind::ParamsMissing)
-                    })?,
-                    unique: self.rsa_unique_identifier.ok_or_else(|| {
-                        error!("RSA unique identifier has not been set in the PublicBuilder even though the RSA algorithm had been selected. Consider using: .with_rsa_unique_identifier(&PublicKeyRsa::default())");
-                        Error::local_error(WrapperErrorKind::ParamsMissing)
-                    })?,
-                })
-            },
-            PublicAlgorithm::KeyedHash => {
-                Ok(Public::KeyedHash {
-                    object_attributes,
-                    name_hashing_algorithm,
-                    auth_policy,
-                    parameters: self.keyed_hash_parameters.ok_or_else(|| {
-                        error!("Keyed hash parameters have not been set in the Public Builder even though the keyed hash algorithm have been selected");
-                        Error::local_error(WrapperErrorKind::ParamsMissing)
-                    })?,
-                    unique: self.keyed_hash_unique_identifier.ok_or_else(|| {
-                        error!("Keyed hash unique identifier have not been set in the Public Builder even though the keyed hash algorithm have been selected. Consider using: .with_keyed_hash_unique_identifier(&Digest::default())");
-                        Error::local_error(WrapperErrorKind::ParamsMissing)
-                    })?,
-                })
-            },
-            PublicAlgorithm::Ecc => {
-                Ok(Public::Ecc {
-                    object_attributes,
-                    name_hashing_algorithm,
-                    auth_policy,
-                    parameters: self.ecc_parameters.ok_or_else(|| {
-                        error!("ECC parameters have not been set in the Public Builder even though the ECC algorithm have been selected");
-                        Error::local_error(WrapperErrorKind::ParamsMissing)
-                    })?,
-                    unique: self.ecc_unique_identifier.ok_or_else(|| {
-                        error!("ECC unique identifier have not been set in the Public Builder even though the ECC algorithm have been selected. Consider using: .with_ecc_unique_identifier(&EccPoint::default())");
-                        Error::local_error(WrapperErrorKind::ParamsMissing)
-                    })?,
-                })
-            }
-            PublicAlgorithm::SymCipher => {
-                Ok(Public::SymCipher {
-                    object_attributes,
-                    name_hashing_algorithm,
-                    auth_policy,
-                    parameters: self.symmetric_cipher_parameters.ok_or_else(|| {
-                        error!("Symmetric cipher parameters have not been set in the Public Builder even though the symmetric cipher algorithm have been selected");
-                        Error::local_error(WrapperErrorKind::ParamsMissing)
-                    })?,
-                    unique: self.symmetric_cipher_unique_identifier.ok_or_else(|| {
-                        error!("Symmetric cipher unique identifier have not been set in the Public Builder even though the symmetric cipher algorithm have been selected. Consider using: .with_symmetric_cipher_unique_identifier(&Digest::default())");
-                        Error::local_error(WrapperErrorKind::ParamsMissing)
-                    })?,
-                })
-            }
-        }
-    }
-}
-
-/// Enum representing the Public structure.
+/// Public data buffer.
 ///
 /// # Details
-/// This corresponds to TPM2B_PUBLIC
-#[derive(Debug, Clone)]
-pub enum Public {
-    Rsa {
-        object_attributes: ObjectAttributes,
-        name_hashing_algorithm: HashingAlgorithm,
-        auth_policy: Digest,
-        parameters: PublicRsaParameters,
-        unique: PublicKeyRsa,
-    },
-    KeyedHash {
-        object_attributes: ObjectAttributes,
-        name_hashing_algorithm: HashingAlgorithm,
-        auth_policy: Digest,
-        parameters: PublicKeyedHashParameters,
-        unique: Digest,
-    },
-    Ecc {
-        object_attributes: ObjectAttributes,
-        name_hashing_algorithm: HashingAlgorithm,
-        auth_policy: Digest,
-        parameters: PublicEccParameters,
-        unique: EccPoint,
-    },
-    SymCipher {
-        object_attributes: ObjectAttributes,
-        name_hashing_algorithm: HashingAlgorithm,
-        auth_policy: Digest,
-        parameters: SymmetricCipherParameters,
-        unique: Digest,
-    },
-}
+/// Corresponds to `TPM2B_PUBLIC`. The contents of
+/// the buffer can be unmarshalled into a [Public]
+/// structure.
+#[derive(Debug, Clone, PartialEq, Eq, Zeroize)]
+#[zeroize(drop)]
+pub struct PublicBuffer(Vec<u8>);
 
-impl Public {
-    /// Returns the object attributes
-    pub fn object_attributes(&self) -> ObjectAttributes {
-        match self {
-            Public::Rsa {
-                object_attributes, ..
-            }
-            | Public::KeyedHash {
-                object_attributes, ..
-            }
-            | Public::Ecc {
-                object_attributes, ..
-            }
-            | Public::SymCipher {
-                object_attributes, ..
-            } => *object_attributes,
-        }
-    }
+impl PublicBuffer {
+    pub const MAX_SIZE: usize = std::mem::size_of::<TPMT_PUBLIC>();
 
-    /// Returns the name hashing algorithm
-    pub fn name_hashing_algorithm(&self) -> HashingAlgorithm {
-        match self {
-            Public::Rsa {
-                name_hashing_algorithm,
-                ..
-            }
-            | Public::KeyedHash {
-                name_hashing_algorithm,
-                ..
-            }
-            | Public::Ecc {
-                name_hashing_algorithm,
-                ..
-            }
-            | Public::SymCipher {
-                name_hashing_algorithm,
-                ..
-            } => *name_hashing_algorithm,
-        }
-    }
-
-    /// Returns the auth policy digest.
-    pub fn auth_policy(&self) -> &Digest {
-        match self {
-            Public::Rsa { auth_policy, .. }
-            | Public::KeyedHash { auth_policy, .. }
-            | Public::Ecc { auth_policy, .. }
-            | Public::SymCipher { auth_policy, .. } => auth_policy,
-        }
+    pub fn value(&self) -> &[u8] {
+        &self.0
     }
 }
 
-impl From<Public> for TPM2B_PUBLIC {
-    fn from(public: Public) -> Self {
-        match public {
-            Public::Rsa {
-                object_attributes,
-                name_hashing_algorithm,
-                auth_policy,
-                parameters,
-                unique,
-            } => TPM2B_PUBLIC {
-                size: std::mem::size_of::<TPMT_PUBLIC>()
-                    .try_into()
-                    .expect("Failed to convert usize to u16"), // should not fail on valid targets
-                publicArea: TPMT_PUBLIC {
-                    type_: PublicAlgorithm::Rsa.into(),
-                    nameAlg: name_hashing_algorithm.into(),
-                    objectAttributes: object_attributes.into(),
-                    authPolicy: auth_policy.into(),
-                    parameters: TPMU_PUBLIC_PARMS {
-                        rsaDetail: parameters.into(),
-                    },
-                    unique: TPMU_PUBLIC_ID { rsa: unique.into() },
-                },
-            },
-            Public::KeyedHash {
-                object_attributes,
-                name_hashing_algorithm,
-                auth_policy,
-                parameters,
-                unique,
-            } => TPM2B_PUBLIC {
-                size: std::mem::size_of::<TPMT_PUBLIC>()
-                    .try_into()
-                    .expect("Failed to convert usize to u16"), // should not fail on valid targets
-                publicArea: TPMT_PUBLIC {
-                    type_: PublicAlgorithm::KeyedHash.into(),
-                    nameAlg: name_hashing_algorithm.into(),
-                    objectAttributes: object_attributes.into(),
-                    authPolicy: auth_policy.into(),
-                    parameters: TPMU_PUBLIC_PARMS {
-                        keyedHashDetail: parameters.into(),
-                    },
-                    unique: TPMU_PUBLIC_ID {
-                        keyedHash: unique.into(),
-                    },
-                },
-            },
-            Public::Ecc {
-                object_attributes,
-                name_hashing_algorithm,
-                auth_policy,
-                parameters,
-                unique,
-            } => TPM2B_PUBLIC {
-                size: std::mem::size_of::<TPMT_PUBLIC>()
-                    .try_into()
-                    .expect("Failed to convert usize to u16"), // should not fail on valid targets
-                publicArea: TPMT_PUBLIC {
-                    type_: PublicAlgorithm::Ecc.into(),
-                    nameAlg: name_hashing_algorithm.into(),
-                    objectAttributes: object_attributes.into(),
-                    authPolicy: auth_policy.into(),
-                    parameters: TPMU_PUBLIC_PARMS {
-                        eccDetail: parameters.into(),
-                    },
-                    unique: TPMU_PUBLIC_ID { ecc: unique.into() },
-                },
-            },
-            Public::SymCipher {
-                object_attributes,
-                name_hashing_algorithm,
-                auth_policy,
-                parameters,
-                unique,
-            } => TPM2B_PUBLIC {
-                size: std::mem::size_of::<TPMT_PUBLIC>()
-                    .try_into()
-                    .expect("Failed to convert usize to u16"), // should not fail on valid targets
-                publicArea: TPMT_PUBLIC {
-                    type_: PublicAlgorithm::SymCipher.into(),
-                    nameAlg: name_hashing_algorithm.into(),
-                    objectAttributes: object_attributes.into(),
-                    authPolicy: auth_policy.into(),
-                    parameters: TPMU_PUBLIC_PARMS {
-                        symDetail: parameters.into(),
-                    },
-                    unique: TPMU_PUBLIC_ID { sym: unique.into() },
-                },
-            },
-        }
+impl Deref for PublicBuffer {
+    type Target = Vec<u8>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
     }
 }
 
-impl TryFrom<TPM2B_PUBLIC> for Public {
+impl TryFrom<Vec<u8>> for PublicBuffer {
     type Error = Error;
 
-    fn try_from(tpm2b_public: TPM2B_PUBLIC) -> Result<Self> {
-        match PublicAlgorithm::try_from(tpm2b_public.publicArea.type_)? {
-            PublicAlgorithm::Rsa => Ok(Public::Rsa {
-                object_attributes: tpm2b_public.publicArea.objectAttributes.into(),
-                name_hashing_algorithm: tpm2b_public.publicArea.nameAlg.try_into()?,
-                auth_policy: tpm2b_public.publicArea.authPolicy.try_into()?,
-                parameters: unsafe { tpm2b_public.publicArea.parameters.rsaDetail }.try_into()?,
-                unique: unsafe { tpm2b_public.publicArea.unique.rsa }.try_into()?,
-            }),
-            PublicAlgorithm::KeyedHash => Ok(Public::KeyedHash {
-                object_attributes: tpm2b_public.publicArea.objectAttributes.into(),
-                name_hashing_algorithm: tpm2b_public.publicArea.nameAlg.try_into()?,
-                auth_policy: tpm2b_public.publicArea.authPolicy.try_into()?,
-                parameters: unsafe { tpm2b_public.publicArea.parameters.keyedHashDetail }
-                    .try_into()?,
-                unique: unsafe { tpm2b_public.publicArea.unique.keyedHash }.try_into()?,
-            }),
-            PublicAlgorithm::Ecc => Ok(Public::Ecc {
-                object_attributes: tpm2b_public.publicArea.objectAttributes.into(),
-                name_hashing_algorithm: tpm2b_public.publicArea.nameAlg.try_into()?,
-                auth_policy: tpm2b_public.publicArea.authPolicy.try_into()?,
-                parameters: unsafe { tpm2b_public.publicArea.parameters.eccDetail }.try_into()?,
-                unique: unsafe { tpm2b_public.publicArea.unique.ecc }.try_into()?,
-            }),
-            PublicAlgorithm::SymCipher => Ok(Public::SymCipher {
-                object_attributes: tpm2b_public.publicArea.objectAttributes.into(),
-                name_hashing_algorithm: tpm2b_public.publicArea.nameAlg.try_into()?,
-                auth_policy: tpm2b_public.publicArea.authPolicy.try_into()?,
-                parameters: unsafe { tpm2b_public.publicArea.parameters.symDetail }.try_into()?,
-                unique: unsafe { tpm2b_public.publicArea.unique.sym }.try_into()?,
-            }),
+    fn try_from(bytes: Vec<u8>) -> Result<Self> {
+        if bytes.len() > Self::MAX_SIZE {
+            error!("Error: Invalid Vec<u8> size(> {})", Self::MAX_SIZE);
+            return Err(Error::local_error(WrapperErrorKind::WrongParamSize));
         }
+        Ok(PublicBuffer(bytes))
+    }
+}
+
+impl TryFrom<&[u8]> for PublicBuffer {
+    type Error = Error;
+
+    fn try_from(bytes: &[u8]) -> Result<Self> {
+        if bytes.len() > Self::MAX_SIZE {
+            error!("Error: Invalid &[u8] size(> {})", Self::MAX_SIZE);
+            return Err(Error::local_error(WrapperErrorKind::WrongParamSize));
+        }
+        Ok(PublicBuffer(bytes.to_vec()))
+    }
+}
+
+impl TryFrom<TPM2B_PUBLIC> for PublicBuffer {
+    type Error = Error;
+
+    fn try_from(tss: TPM2B_PUBLIC) -> Result<Self> {
+        let size = tss.size as usize;
+        if size > Self::MAX_SIZE {
+            error!("Error: Invalid buffer size(> {})", Self::MAX_SIZE);
+            return Err(Error::local_error(WrapperErrorKind::WrongParamSize));
+        }
+        let public = Public::try_from(tss.publicArea)?;
+        Ok(PublicBuffer(public.marshall()?))
+    }
+}
+
+impl TryFrom<PublicBuffer> for TPM2B_PUBLIC {
+    type Error = Error;
+
+    fn try_from(native: PublicBuffer) -> Result<Self> {
+        let mut buffer = TPM2B_PUBLIC {
+            size: native.0.len() as u16,
+            ..Default::default()
+        };
+        let public = Public::unmarshall(&native.0)?;
+        buffer.publicArea = public.into();
+        Ok(buffer)
+    }
+}
+
+impl TryFrom<PublicBuffer> for Public {
+    type Error = Error;
+
+    fn try_from(buf: PublicBuffer) -> Result<Self> {
+        Public::unmarshall(&buf.0)
+    }
+}
+
+impl TryFrom<Public> for PublicBuffer {
+    type Error = Error;
+
+    fn try_from(public: Public) -> Result<PublicBuffer> {
+        Ok(PublicBuffer(public.marshall()?))
+    }
+}
+
+impl Marshall for PublicBuffer {
+    const BUFFER_SIZE: usize = std::mem::size_of::<TPM2B_PUBLIC>();
+
+    fn marshall(&self) -> Result<Vec<u8>> {
+        let mut buffer = vec![0; Self::BUFFER_SIZE];
+        let mut offset = 0;
+
+        let ret = Error::from_tss_rc(unsafe {
+            crate::tss2_esys::Tss2_MU_TPM2B_PUBLIC_Marshal(
+                &self.clone().try_into()?,
+                buffer.as_mut_ptr(),
+                Self::BUFFER_SIZE.try_into().map_err(|e| {
+                    error!("Failed to convert size of buffer to TSS size_t type: {}", e);
+                    Error::local_error(WrapperErrorKind::InvalidParam)
+                })?,
+                &mut offset,
+            )
+        });
+
+        if !ret.is_success() {
+            return Err(ret);
+        }
+
+        let checked_offset = usize::try_from(offset).map_err(|e| {
+            error!("Failed to parse offset as usize: {}", e);
+            Error::local_error(WrapperErrorKind::InvalidParam)
+        })?;
+
+        buffer.truncate(checked_offset);
+
+        Ok(buffer)
+    }
+}
+
+impl UnMarshall for PublicBuffer {
+    fn unmarshall(marshalled_data: &[u8]) -> Result<Self> {
+        let mut dest = TPM2B_PUBLIC::default();
+        let mut offset = 0;
+
+        let ret = Error::from_tss_rc(unsafe {
+            crate::tss2_esys::Tss2_MU_TPM2B_PUBLIC_Unmarshal(
+                marshalled_data.as_ptr(),
+                marshalled_data.len().try_into().map_err(|e| {
+                    error!("Failed to convert length of marshalled data: {}", e);
+                    Error::local_error(WrapperErrorKind::InvalidParam)
+                })?,
+                &mut offset,
+                &mut dest,
+            )
+        });
+
+        if !ret.is_success() {
+            return Err(ret);
+        }
+
+        PublicBuffer::try_from(dest)
     }
 }

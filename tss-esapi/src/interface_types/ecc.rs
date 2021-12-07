@@ -6,7 +6,7 @@ use std::convert::TryFrom;
 ///
 /// # Details
 /// This corresponds to TPMI_ECC_CURVE
-#[derive(Debug, Copy, Clone, PartialEq)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum EccCurve {
     NistP192,
     NistP224,

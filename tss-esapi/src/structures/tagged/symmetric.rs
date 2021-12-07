@@ -136,7 +136,7 @@ impl TryFrom<TPMT_SYM_DEF> for SymmetricDefinition {
 ///
 /// # Details
 /// This corresponds to TPMT_SYM_DEF_OBJECT
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum SymmetricDefinitionObject {
     // TDOD: Investigate why TDES is missing.
     Aes {
