@@ -280,22 +280,22 @@ impl Context {
     /// # context
     /// #     .flush_context(ObjectHandle::from(transient_object_handle))
     /// #     .expect("Failed to flush context");
-    /// # // Close the persistant_handle returned by evict_control
+    /// # // Close the persistent_handle returned by evict_control
     /// # context
     /// #     .tr_close(&mut persistent_object_handle)
     /// #     .expect("Failed to close persistent handle");
     /// # // Retrieve the handle from the tpm again.
-    /// # let retireved_persistant_handle = context.execute_without_session(|ctx| {
+    /// # let retireved_persistent_handle = context.execute_without_session(|ctx| {
     /// #     ctx.tr_from_tpm_public(TpmHandle::Persistent(persistent_tpm_handle))
     /// #         .expect("Failed to load the persistent handle")
     /// # });
     /// # // Evict the persitent handle from the tpm
     /// # let _ = context.execute_with_session(Some(AuthSession::Password), |ctx| {
     /// #   ctx
-    /// #       .evict_control(Provision::Owner, retireved_persistant_handle, persistent)
+    /// #       .evict_control(Provision::Owner, retireved_persistent_handle, persistent)
     /// #       .expect("Failed to evict persistent handle")
     /// # });
-    /// # assert_ne!(retireved_persistant_handle, ObjectHandle::None);
+    /// # assert_ne!(retireved_persistent_handle, ObjectHandle::None);
     /// ```
     ///
     /// Make persistent object transient
@@ -399,12 +399,12 @@ impl Context {
     /// # context
     /// #     .flush_context(ObjectHandle::from(transient_object_handle))
     /// #     .expect("Failed to flush context");
-    /// # // Close the persistant_handle returned by evict_control
+    /// # // Close the persistent_handle returned by evict_control
     /// # context
     /// #     .tr_close(&mut persistent_object_handle)
     /// #     .expect("Failed to close persistent handle");
     /// # // Retrieve the handle from the tpm again.
-    /// # let retireved_persistant_handle = context.execute_without_session(|ctx| {
+    /// # let retrieved_persistent_handle = context.execute_without_session(|ctx| {
     /// #     ctx.tr_from_tpm_public(TpmHandle::Persistent(persistent_tpm_handle))
     /// #         .expect("Failed to load the persistent handle")
     /// # });
@@ -412,10 +412,10 @@ impl Context {
     /// // An authorization session is required!
     /// let _ = context.execute_with_session(Some(AuthSession::Password), |ctx| {
     ///     ctx
-    ///         .evict_control(Provision::Owner, retireved_persistant_handle, persistent)
+    ///         .evict_control(Provision::Owner, retrieved_persistent_handle, persistent)
     ///         .expect("Failed to evict persistent handle")
     /// });
-    /// # assert_ne!(retireved_persistant_handle, ObjectHandle::None);
+    /// # assert_ne!(retrieved_persistent_handle, ObjectHandle::None);
     /// ```
     pub fn evict_control(
         &mut self,

@@ -38,8 +38,8 @@ impl From<Persistent> for PersistentTpmHandle {
 }
 
 impl From<PersistentTpmHandle> for Persistent {
-    fn from(persistant_tpm_handle: PersistentTpmHandle) -> Persistent {
-        Persistent::Persistent(persistant_tpm_handle)
+    fn from(persistent_tpm_handle: PersistentTpmHandle) -> Persistent {
+        Persistent::Persistent(persistent_tpm_handle)
     }
 }
 
