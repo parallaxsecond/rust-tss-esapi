@@ -1,9 +1,9 @@
 // Copyright 2020 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
 use crate::{
-    constants::{tss::*, CommandCode},
+    constants::tss::*,
     handles::TpmHandle,
-    structures::{PcrSelect, PcrSelectionList},
+    structures::{CommandCodeList, PcrSelect, PcrSelectionList},
     tss2_esys::*,
     Error, Result, WrapperErrorKind,
 };
@@ -16,8 +16,8 @@ pub enum CapabilityData {
     Algorithms(HashMap<TPM2_ALG_ID, TPMA_ALGORITHM>),
     Handles(Vec<TpmHandle>),
     Commands(Vec<TPMA_CC>),
-    PPCommands(Vec<CommandCode>),
-    AuditCommands(Vec<CommandCode>),
+    PpCommands(CommandCodeList),
+    AuditCommands(CommandCodeList),
     AssignedPCR(PcrSelectionList),
     TPMProperties(HashMap<TPM2_PT, u32>),
     PCRProperties(HashMap<TPM2_PT_PCR, PcrSelect>),
@@ -79,33 +79,15 @@ fn cd_from_command(props: TPML_CCA) -> Result<CapabilityData> {
 }
 
 fn cd_from_pp_commands(props: TPML_CC) -> Result<CapabilityData> {
-    if props.count > TPM2_MAX_CAP_CC {
-        return Err(Error::WrapperError(WrapperErrorKind::InvalidParam));
-    }
-
-    let mut data = Vec::new();
-    data.reserve_exact(props.count as usize);
-
-    for i in 0..props.count {
-        data.push(CommandCode::try_from(props.commandCodes[i as usize])?);
-    }
-
-    Ok(CapabilityData::PPCommands(data))
+    Ok(CapabilityData::PpCommands(CommandCodeList::try_from(
+        props,
+    )?))
 }
 
 fn cd_from_audit_commands(props: TPML_CC) -> Result<CapabilityData> {
-    if props.count > TPM2_MAX_CAP_CC {
-        return Err(Error::WrapperError(WrapperErrorKind::InvalidParam));
-    }
-
-    let mut data = Vec::new();
-    data.reserve_exact(props.count as usize);
-
-    for i in 0..props.count {
-        data.push(CommandCode::try_from(props.commandCodes[i as usize])?);
-    }
-
-    Ok(CapabilityData::AuditCommands(data))
+    Ok(CapabilityData::AuditCommands(CommandCodeList::try_from(
+        props,
+    )?))
 }
 
 fn cd_from_assigned_pcrs(props: TPML_PCR_SELECTION) -> Result<CapabilityData> {

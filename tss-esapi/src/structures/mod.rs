@@ -101,6 +101,11 @@ pub use self::pcr_selection_list::PcrSelectionListBuilder;
 pub mod pcr_selection_list {
     pub use super::lists::pcr_selection::*;
 }
+
+pub use self::command_code_list::CommandCodeList;
+pub mod command_code_list {
+    pub use super::lists::command_code::*;
+}
 /////////////////////////////////////////////////////////
 /// The parameters section
 /////////////////////////////////////////////////////////
