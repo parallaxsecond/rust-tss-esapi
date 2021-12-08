@@ -40,7 +40,7 @@ macro_rules! named_field_buffer_type {
 
             fn try_from(bytes: Vec<u8>) -> Result<Self> {
                 if bytes.len() > Self::MAX_SIZE {
-                    error!("Error: Invalid Vec<u8> size(> {})", Self::MAX_SIZE);
+                    error!("Invalid Vec<u8> size(> {})", Self::MAX_SIZE);
                     return Err(Error::local_error(WrapperErrorKind::WrongParamSize));
                 }
                 Ok($native_type(bytes.into()))
@@ -52,7 +52,7 @@ macro_rules! named_field_buffer_type {
 
             fn try_from(bytes: &[u8]) -> Result<Self> {
                 if bytes.len() > Self::MAX_SIZE {
-                    error!("Error: Invalid &[u8] size(> {})", Self::MAX_SIZE);
+                    error!("Invalid &[u8] size(> {})", Self::MAX_SIZE);
                     return Err(Error::local_error(WrapperErrorKind::WrongParamSize));
                 }
                 Ok($native_type(bytes.to_vec().into()))
@@ -65,7 +65,7 @@ macro_rules! named_field_buffer_type {
             fn try_from(tss: $tss_type) -> Result<Self> {
                 let size = tss.size as usize;
                 if size > Self::MAX_SIZE {
-                    error!("Error: Invalid buffer size(> {})", Self::MAX_SIZE);
+                    error!("Invalid buffer size(> {})", Self::MAX_SIZE);
                     return Err(Error::local_error(WrapperErrorKind::WrongParamSize));
                 }
                 Ok($native_type(tss.$buffer_field_name[..size].to_vec().into()))

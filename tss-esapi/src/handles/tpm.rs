@@ -95,7 +95,7 @@ impl TryFrom<TPM2_HANDLE> for TpmHandle {
                 attached_component::AttachedComponentTpmHandle::new(tss_tpm_handle)?,
             )),
             _ => {
-                error!("Error: Invalid TPM handle type {}", most_significant_byte);
+                error!("Invalid TPM handle type {}", most_significant_byte);
                 Err(Error::local_error(WrapperErrorKind::InvalidParam))
             }
         }
@@ -114,7 +114,7 @@ macro_rules! create_tpm_handle_type {
             pub fn new(value: u32) -> Result<$handle_type_name> {
                 if value.to_be_bytes()[0] != $tpm_handle_type_id {
                     error!(
-                        "Error: TPM Handle ID of the input value did not match the {} (!={})",
+                        "TPM Handle ID of the input value did not match the {} (!={})",
                         stringify!($handle_type_name),
                         $tpm_handle_type_id
                     );
@@ -123,7 +123,7 @@ macro_rules! create_tpm_handle_type {
                 // Add +1 to include tpm_handle_type_last in the range
                 if !($tpm_handle_type_first..($tpm_handle_type_last + 1)).contains(&value) {
                     error!(
-                        "Error: TPM Handle ID is not in range ({}..{})",
+                        "TPM Handle ID is not in range ({}..{})",
                         $tpm_handle_type_first, $tpm_handle_type_last
                     );
                     return Err(Error::local_error(WrapperErrorKind::InvalidParam));

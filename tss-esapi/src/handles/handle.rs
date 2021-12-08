@@ -141,7 +141,7 @@ macro_rules! impl_basic_multiple_constant_values_handle {
             fn try_from(tss_esys_handle: ESYS_TR) -> Result<$constant_handle_type> {
                 $constant_handle_type::from_u32(tss_esys_handle).ok_or_else(|| {
                     error!(
-                        "Error: failed to convert handle into {}",
+                        "failed to convert handle into {}",
                         std::stringify!($constant_handle_type)
                     );
                     Error::local_error(WrapperErrorKind::InvalidParam)
@@ -168,7 +168,7 @@ macro_rules! impl_multiple_constant_values_handle_conversion {
             fn try_from(other_handle: $handle_type_other) -> Result<$constant_handle_type> {
                 $constant_handle_type::from_u32(other_handle.value()).ok_or_else(|| {
                     error!(
-                        "Error: failed to convert handle into {}",
+                        "failed to convert handle into {}",
                         std::stringify!($constant_handle_type)
                     );
                     Error::local_error(WrapperErrorKind::InvalidParam)

@@ -39,7 +39,7 @@ impl DigestList {
     /// Adds a new digest to the digest list.
     pub fn add(&mut self, dig: Digest) -> Result<()> {
         if self.digests.len() >= DigestList::MAX_SIZE {
-            error!("Error: Exceeded maximum count(> {})", DigestList::MAX_SIZE);
+            error!("Exceeded maximum count(> {})", DigestList::MAX_SIZE);
             return Err(Error::local_error(WrapperErrorKind::WrongParamSize));
         }
         self.digests.push(dig);
@@ -53,10 +53,7 @@ impl TryFrom<TPML_DIGEST> for DigestList {
         let digests_count = tpml_digest.count as usize;
 
         if digests_count > DigestList::MAX_SIZE {
-            error!(
-                "Error: Invalid TPML_DIGEST count(> {})",
-                DigestList::MAX_SIZE
-            );
+            error!("Invalid TPML_DIGEST count(> {})", DigestList::MAX_SIZE);
             return Err(Error::local_error(WrapperErrorKind::InvalidParam));
         }
 
@@ -72,10 +69,7 @@ impl TryFrom<DigestList> for TPML_DIGEST {
     type Error = Error;
     fn try_from(digest_list: DigestList) -> Result<Self> {
         if digest_list.digests.len() > DigestList::MAX_SIZE {
-            error!(
-                "Error: Invalid digest list size(> {})",
-                DigestList::MAX_SIZE
-            );
+            error!("Invalid digest list size(> {})", DigestList::MAX_SIZE);
             return Err(Error::local_error(WrapperErrorKind::WrongParamSize));
         }
 
