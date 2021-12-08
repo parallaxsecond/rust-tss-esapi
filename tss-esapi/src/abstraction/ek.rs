@@ -131,7 +131,7 @@ pub fn create_ek_object<IKC: IntoKeyCustomization>(
         .key_handle)
 }
 
-/// Retreive the Endorsement Key public certificate from the TPM
+/// Retrieve the Endorsement Key public certificate from the TPM
 pub fn retrieve_ek_pubcert(context: &mut Context, alg: AsymmetricAlgorithm) -> Result<Vec<u8>> {
     let nv_idx = match alg {
         AsymmetricAlgorithm::Rsa => RSA_2048_EK_CERTIFICATE_NV_INDEX,

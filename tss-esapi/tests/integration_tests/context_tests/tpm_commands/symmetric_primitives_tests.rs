@@ -221,7 +221,7 @@ mod test_hmac {
             ))
             .with_keyed_hash_unique_identifier(&Default::default())
             .build()
-            .expect("Failed to build public strucuture for key.");
+            .expect("Failed to build public structure for key.");
 
         let key = context
             .create_primary(Hierarchy::Owner, &key_pub, None, None, None, None)

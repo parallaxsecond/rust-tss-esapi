@@ -224,7 +224,7 @@ mod test_duplicate {
         let policy_session = PolicySession::try_from(policy_auth_session)
             .expect("Failed to convert auth session into policy session");
 
-        // Even if object name is not included in the policy digest ("false" as 3rd paremeter)
+        // Even if object name is not included in the policy digest ("false" as 3rd parameter)
         // Correct name needs to be set or the policy will fail.
         context
             .policy_duplication_select(policy_session, object_name, parent_name, false)

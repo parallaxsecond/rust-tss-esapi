@@ -3,6 +3,19 @@ name: Continuous Integration
 on: [push, pull_request]
 
 jobs:
+  # Use the following command to fix words locally:
+  # codespell --ignore-words-list "crate,daa,keypair" --skip "*/target,*-sys" --write-changes
+  check-spelling:
+    name: Check spelling
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check spelling
+        uses: codespell-project/actions-codespell@master
+        with:
+          ignore_words_list: "crate,daa,keypair"
+          path: tss-esapi
+          skip: "*/target,*-sys"
+
   formatting:
     name: Check formatting
     runs-on: ubuntu-latest

@@ -248,7 +248,7 @@ pub mod pcr {
     impl_multiple_constant_values_handle_conversion!(PcrHandle, ObjectHandle);
 }
 
-/// Macro for implmeneting conversion between handles.
+/// Macro for implementing conversion between handles.
 macro_rules! impl_handle_conversion {
     ($handle_type_self:ident, $handle_type_other:ident) => {
         impl From<$handle_type_self> for $handle_type_other {

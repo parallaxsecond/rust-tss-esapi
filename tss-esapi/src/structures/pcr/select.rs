@@ -142,7 +142,7 @@ impl PcrSelect {
         self.size_of_select
     }
 
-    /// Returns the sekected PCRs in the select.
+    /// Returns the selected PCRs in the select.
     pub fn selected_pcrs(&self) -> Vec<PcrSlot> {
         self.selected_pcrs.iter().collect()
     }

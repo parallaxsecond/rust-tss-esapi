@@ -244,7 +244,7 @@ pub fn get_pcr_policy_digest(
             .policy_pcr(trial_policy_session, &hashed_data, pcr_selection_list)
             .expect("Failed to call policy pcr");
 
-        // There is now a policy digest that can be retrived and used.
+        // There is now a policy digest that can be retrieved and used.
         let digest = context
             .policy_get_digest(trial_policy_session)
             .expect("Failed to call policy_get_digest");
@@ -288,7 +288,7 @@ pub fn get_pcr_policy_digest(
             .policy_pcr(policy_session, &hashed_data, pcr_selection_list)
             .expect("Failed to call policy_pcr");
 
-        // There is now a policy digest that can be retrived and used.
+        // There is now a policy digest that can be retrieved and used.
         let digest = context
             .policy_get_digest(policy_session)
             .expect("Failed to call policy_get_digest");
@@ -319,5 +319,5 @@ pub fn create_public_sealed_object() -> Public {
         .with_keyed_hash_parameters(PublicKeyedHashParameters::new(KeyedHashScheme::Null))
         .with_keyed_hash_unique_identifier(&Default::default())
         .build()
-        .expect("Failed to create public strucuture.")
+        .expect("Failed to create public structure.")
 }

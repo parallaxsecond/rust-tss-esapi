@@ -117,7 +117,7 @@ impl Context {
         }
     }
 
-    /// Create a new ESYS context based on the TAB Ressource Manager Daemon.
+    /// Create a new ESYS context based on the TAB Resource Manager Daemon.
     /// The TABRMD will make sure that multiple users can use the TPM safely.
     ///
     /// # Errors
@@ -213,7 +213,7 @@ impl Context {
     /// // Use password session for auth
     /// context.set_sessions((Some(AuthSession::Password), None, None));
     ///
-    /// // Retreive sessions in use
+    /// // Retrieve sessions in use
     /// let (session_1, session_2, session_3) = context.sessions();
     /// assert_eq!(Some(AuthSession::Password), session_1);
     /// assert_eq!(None, session_2);
@@ -349,7 +349,7 @@ impl Context {
     ///     .expect("Value is not supported");
     /// ```
     pub fn get_tpm_property(&mut self, property: PropertyTag) -> Result<Option<u32>> {
-        // Return cahced value if it exists
+        // Return cached value if it exists
         if let Some(&val) = self.cached_tpm_properties.get(&property) {
             return Ok(Some(val));
         }

@@ -27,22 +27,22 @@ fn test_conversions() {
     assert_eq!(
         expected_clock,
         clock_info.clock(),
-        "'clock' value missmatch between actual and expected values"
+        "'clock' value mismatch between actual and expected values"
     );
     assert_eq!(
         expected_reset_count,
         clock_info.reset_count(),
-        "'reset count' value missmatch between actual and expected values"
+        "'reset count' value mismatch between actual and expected values"
     );
     assert_eq!(
         expected_restart_count,
         clock_info.restart_count(),
-        "'restart count' value missmatch between actual and expected values"
+        "'restart count' value mismatch between actual and expected values"
     );
     assert_eq!(
         bool::from(expected_safe),
         clock_info.safe(),
-        "'safe' value missmatch between actual and expected values"
+        "'safe' value mismatch between actual and expected values"
     );
 
     let actual_tpms_clock_info: TPMS_CLOCK_INFO = clock_info.into();

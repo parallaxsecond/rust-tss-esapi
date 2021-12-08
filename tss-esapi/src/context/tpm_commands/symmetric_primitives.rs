@@ -16,7 +16,7 @@ use std::convert::TryFrom;
 use std::ptr::null_mut;
 
 impl Context {
-    // Missing function: EncryptDecrypt, depricated use EncryptDecrypt2 instead.
+    // Missing function: EncryptDecrypt, deprecated use EncryptDecrypt2 instead.
 
     /// Performs symmetric encryption or decryption of the data using
     /// the key associated with the `key_handle`
@@ -221,7 +221,7 @@ impl Context {
             ))
         } else {
             error!(
-                "Error failed to peform encrypt or decrypt operations {}",
+                "Error failed to perform encrypt or decrypt operations {}",
                 ret
             );
             Err(ret)
@@ -301,7 +301,7 @@ impl Context {
                 HashcheckTicket::try_from(*validation)?,
             ))
         } else {
-            error!("Error failed to peform hash operation: {}", ret);
+            error!("Error failed to perform hash operation: {}", ret);
             Err(ret)
         }
     }

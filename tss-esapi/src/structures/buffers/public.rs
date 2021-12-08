@@ -75,7 +75,7 @@ impl PublicBuilder {
         self
     }
 
-    /// Adds the name hash algorithm for the [Public] strucutre
+    /// Adds the name hash algorithm for the [Public] structure
     /// to the builder.
     pub const fn with_name_hashing_algorithm(
         mut self,
@@ -85,7 +85,7 @@ impl PublicBuilder {
         self
     }
 
-    /// Adds the auth policy for the [Public] strucutre
+    /// Adds the auth policy for the [Public] structure
     /// to the builder
     pub fn with_auth_policy(mut self, auth_policy: &Digest) -> Self {
         self.auth_policy = Some(auth_policy.clone());

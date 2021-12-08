@@ -25,13 +25,13 @@ fn test_conversion() {
     assert_eq!(
         &expected_object_name,
         creation_info.object_name(),
-        "The CommandAuditInfo converted from TPMS_CREATION_INFO did not conatin correct value for 'object name'",
+        "The CommandAuditInfo converted from TPMS_CREATION_INFO did not contain correct value for 'object name'",
     );
 
     assert_eq!(
         &expected_creation_hash,
         creation_info.creation_hash(),
-        "The CommandAuditInfo converted from TPMS_CREATION_INFO did not conatin correct value for 'creation hash'",
+        "The CommandAuditInfo converted from TPMS_CREATION_INFO did not contain correct value for 'creation hash'",
     );
 
     let actual_tpms_creation_info: TPMS_CREATION_INFO = creation_info.into();

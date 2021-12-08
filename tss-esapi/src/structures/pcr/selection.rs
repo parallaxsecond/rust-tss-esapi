@@ -110,7 +110,7 @@ impl PcrSelection {
         self.remove_exact(other.selected_pcrs)
     }
 
-    /// Indicates wether the pcr selection is empty.
+    /// Indicates whether the pcr selection is empty.
     pub fn is_empty(&self) -> bool {
         self.selected_pcrs.is_empty()
     }

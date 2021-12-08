@@ -79,7 +79,7 @@ impl NvIndexAttributes {
     ///
     /// # Errors
     /// Returns an error if some attributes are missing
-    /// or are in conflict with eachother.
+    /// or are in conflict with each other.
     pub fn validate(&self) -> Result<()> {
         // "At least one of TPMA_NV_PPREAD, TPMA_NV_OWNERREAD,
         // TPMA_NV_AUTHREAD, or TPMA_NV_POLICYREAD shall be SET."
@@ -92,7 +92,7 @@ impl NvIndexAttributes {
         // TPMA_NV_AUTHWRITE, or TPMA_NV_POLICYWRITE shall be SET."
         if !(self.pp_write() | self.owner_write() | self.auth_write() | self.policy_write()) {
             error!(
-                "Non of the attributes PPWRITE, OWERWRITE, AUTHWRITE, POLICYWRITE have been set"
+                "Non of the attributes PPWRITE, OWNERWRITE, AUTHWRITE, POLICYWRITE have been set"
             );
             return Err(Error::local_error(WrapperErrorKind::ParamsMissing));
         }
@@ -371,7 +371,7 @@ impl NvIndexAttributesBuilder {
     ///
     /// # Errors
     /// Returns an error if some attributes are missing
-    /// or are in conflict with eachother.
+    /// or are in conflict with each other.
     pub fn build(self) -> Result<NvIndexAttributes> {
         self.nv_index_attributes.validate()?;
         Ok(self.nv_index_attributes)

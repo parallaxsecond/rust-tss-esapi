@@ -353,7 +353,7 @@ impl Context {
     ///                      calculation.
     ///
     /// # Details
-    /// Set `include_object` only when this commend is used in conjunction with
+    /// Set `include_object` only when this command is used in conjunction with
     /// [`policy_authorize`][Context::policy_authorize].
     ///
     /// # Example
@@ -535,7 +535,7 @@ impl Context {
         }
     }
 
-    /// Function for retriving the current policy digest for
+    /// Function for retrieving the current policy digest for
     /// the session.
     pub fn policy_get_digest(&mut self, policy_session: PolicySession) -> Result<Digest> {
         let mut policy_digest_ptr = null_mut();
@@ -555,7 +555,7 @@ impl Context {
             Ok(Digest::try_from(*policy_digest)?)
         } else {
             error!(
-                "Error failed to peform policy get digest operation: {}.",
+                "Error failed to perform policy get digest operation: {}.",
                 ret
             );
             Err(ret)

@@ -215,6 +215,6 @@ fn test_invalid_conversions() {
     assert_eq!(
         Err(Error::WrapperError(WrapperErrorKind::InvalidParam)),
         CommandCode::try_from(NON_EXISTING),
-        "A value representing a non exisitng command code did not produce the expected error"
+        "A value representing a non existing command code did not produce the expected error"
     );
 }

@@ -210,7 +210,7 @@ impl ObjectAttributesBuilder {
     ///
     /// # Errors
     /// Returns an error if some attributes are missing
-    /// or are in conflict with eachother.
+    /// or are in conflict with each other.
     pub fn build(self) -> Result<ObjectAttributes> {
         Ok(self.object_attributes)
     }

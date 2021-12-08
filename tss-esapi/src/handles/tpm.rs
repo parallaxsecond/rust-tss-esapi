@@ -114,7 +114,7 @@ macro_rules! create_tpm_handle_type {
             pub fn new(value: u32) -> Result<$handle_type_name> {
                 if value.to_be_bytes()[0] != $tpm_handle_type_id {
                     error!(
-                        "Errro: TPM Handle ID of the input value did not match the {} (!={})",
+                        "Error: TPM Handle ID of the input value did not match the {} (!={})",
                         stringify!($handle_type_name),
                         $tpm_handle_type_id
                     );

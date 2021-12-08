@@ -615,7 +615,7 @@ impl TransientKeyContextBuilder {
     ///
     /// # Warning
     /// It is the responsibility of the client to ensure that the context can be initialized
-    /// safely, threading-wise by chosing the correct TCTI. See the Warning notice of the Context
+    /// safely, threading-wise by choosing the correct TCTI. See the Warning notice of the Context
     /// structure for more information.
     ///
     /// # Constraints

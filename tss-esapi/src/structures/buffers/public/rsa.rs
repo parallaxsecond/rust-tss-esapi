@@ -128,7 +128,7 @@ impl PublicRsaParametersBuilder {
         self
     }
 
-    /// Build an object given the previously provded parameters.
+    /// Build an object given the previously provided parameters.
     ///
     /// The only mandatory parameter is the asymmetric scheme.
     ///
@@ -219,7 +219,7 @@ impl PublicRsaParametersBuilder {
     }
 }
 
-/// Strucure used to hold the value of a RSA exponent
+/// Structure used to hold the value of a RSA exponent
 #[derive(Default, Clone, Debug, Copy, PartialEq, Eq)]
 pub struct RsaExponent {
     value: u32,

@@ -30,22 +30,22 @@ fn test_conversion() {
     assert_eq!(
         expected_audit_counter,
         command_audit_info.audit_counter(),
-        "The CommandAuditInfo converted from TPMS_COMMAND_AUDIT_INFO did not conatin correct value for 'audit counter'",
+        "The CommandAuditInfo converted from TPMS_COMMAND_AUDIT_INFO did not contain correct value for 'audit counter'",
     );
     assert_eq!(
         expected_hashing_algorithm,
         command_audit_info.hashing_algorithm(),
-        "The CommandAuditInfo converted from TPMS_COMMAND_AUDIT_INFO did not conatin correct value for 'hashing algorithm'",
+        "The CommandAuditInfo converted from TPMS_COMMAND_AUDIT_INFO did not contain correct value for 'hashing algorithm'",
     );
     assert_eq!(
         &expected_audit_digest,
         command_audit_info.audit_digest(),
-        "The CommandAuditInfo converted from TPMS_COMMAND_AUDIT_INFO did not conatin correct value for 'audit digest'",
+        "The CommandAuditInfo converted from TPMS_COMMAND_AUDIT_INFO did not contain correct value for 'audit digest'",
     );
     assert_eq!(
         &expected_command_digest,
         command_audit_info.command_digest(),
-        "The CommandAuditInfo converted from TPMS_COMMAND_AUDIT_INFO did not conatin correct value for 'command digest'",
+        "The CommandAuditInfo converted from TPMS_COMMAND_AUDIT_INFO did not contain correct value for 'command digest'",
     );
 
     let actual_tpms_command_audit_info: TPMS_COMMAND_AUDIT_INFO = command_audit_info.into();

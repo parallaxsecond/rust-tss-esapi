@@ -61,7 +61,7 @@ pub mod startup {
         tss2_esys::TPM2_SU,
     };
 
-    /// Enum repsenting the diffrent TPM Startup Type values.
+    /// Enum repsenting the different TPM Startup Type values.
     #[derive(FromPrimitive, ToPrimitive, Debug, Copy, Clone, PartialEq, Eq)]
     #[repr(u16)]
     pub enum StartupType {

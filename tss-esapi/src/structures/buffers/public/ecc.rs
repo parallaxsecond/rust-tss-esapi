@@ -123,7 +123,7 @@ impl PublicEccParametersBuilder {
         self
     }
 
-    /// Build an object given the previously provded parameters.
+    /// Build an object given the previously provided parameters.
     ///
     /// The only mandatory parameters are the asymmetric scheme and the elliptic curve.
     ///

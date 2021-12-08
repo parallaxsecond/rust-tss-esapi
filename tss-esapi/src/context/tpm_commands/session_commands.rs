@@ -46,7 +46,7 @@ impl Context {
     ///         HashingAlgorithm::Sha256,
     ///     )
     ///     .expect("Failed to create session")
-    ///     .expect("Recived invalid handle");
+    ///     .expect("Received invalid handle");
     /// ```
     #[allow(clippy::too_many_arguments)]
     pub fn start_auth_session(

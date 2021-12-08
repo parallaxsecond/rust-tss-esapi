@@ -99,7 +99,7 @@ impl Context {
     ///         HashingAlgorithm::Sha256,
     ///     )
     ///     .expect("Failed to create session")
-    ///     .expect("Recived invalid handle");
+    ///     .expect("Received invalid handle");
     /// let (session_attributes, session_attributes_mask) = SessionAttributesBuilder::new()
     ///     .with_decrypt(true)
     ///     .with_encrypt(true)
@@ -152,7 +152,7 @@ impl Context {
     }
 
     /// Evicts persistent objects or allows certain transient objects
-    /// to be made peristent.
+    /// to be made persistent.
     ///
     /// # Details
     /// In order to be able to perform this action an authorization
@@ -162,10 +162,10 @@ impl Context {
     /// * `auth` - An a handle used for authorization that is limited to the ones
     ///            specified in [Provision].
     /// * `object_handle` - The handle of a loaded object.
-    /// * `persistant` - If the `object_handle` is transient object then this
-    ///                  then this will become the persistant handle of that
-    ///                  object. If the `object_handle` refers to a persistant
-    ///                  object then this shall be the persistant handle of that
+    /// * `persistent` - If the `object_handle` is transient object then this
+    ///                  then this will become the persistent handle of that
+    ///                  object. If the `object_handle` refers to a persistent
+    ///                  object then this shall be the persistent handle of that
     ///                  object.
     ///
     /// # Returns
@@ -173,13 +173,13 @@ impl Context {
     /// persistent and the returned [ObjectHandle] will refer to the persistent
     /// object.
     ///
-    /// If the input `object_handle` refers to a presistent object the returned
+    /// If the input `object_handle` refers to a persistent object the returned
     /// value will be ObjectHandle::None and the input `object_handle` will not
     /// be valid after this call is made.
     ///
     /// # Example
     ///
-    /// Make transient object peristent:
+    /// Make transient object persistent:
     /// ```rust
     /// # use tss_esapi::{
     /// #     Context, tcti_ldr::TctiNameConf, Result,
@@ -206,7 +206,7 @@ impl Context {
     /// # // Create persistent TPM handle with
     /// # let persistent_tpm_handle =
     /// #    PersistentTpmHandle::new(u32::from_be_bytes([0x81, 0x00, 0x00, 0x01]))
-    /// #        .expect("Failed to create Persistant TPM handle");
+    /// #        .expect("Failed to create Persistent TPM handle");
     /// # // -----> REMOVE ANY PREVIOUS HANDLES <---------------
     /// # let mut property = TPM2_PERSISTENT_FIRST;
     /// # while let Ok((capability_data, more_data_available)) =
@@ -283,11 +283,11 @@ impl Context {
     /// # // Close the persistant_handle returned by evict_control
     /// # context
     /// #     .tr_close(&mut persistent_object_handle)
-    /// #     .expect("Failed to close persistant handle");
+    /// #     .expect("Failed to close persistent handle");
     /// # // Retrieve the handle from the tpm again.
     /// # let retireved_persistant_handle = context.execute_without_session(|ctx| {
     /// #     ctx.tr_from_tpm_public(TpmHandle::Persistent(persistent_tpm_handle))
-    /// #         .expect("Failed to load the persistant handle")
+    /// #         .expect("Failed to load the persistent handle")
     /// # });
     /// # // Evict the persitent handle from the tpm
     /// # let _ = context.execute_with_session(Some(AuthSession::Password), |ctx| {
@@ -325,7 +325,7 @@ impl Context {
     /// # // Create persistent TPM handle with
     /// # let persistent_tpm_handle =
     /// #    PersistentTpmHandle::new(u32::from_be_bytes([0x81, 0x00, 0x00, 0x01]))
-    /// #        .expect("Failed to create Persistant TPM handle");
+    /// #        .expect("Failed to create Persistent TPM handle");
     /// # // -----> REMOVE ANY PREVIOUS HANDLES <---------------
     /// # let mut property = TPM2_PERSISTENT_FIRST;
     /// # while let Ok((capability_data, more_data_available)) =
@@ -402,11 +402,11 @@ impl Context {
     /// # // Close the persistant_handle returned by evict_control
     /// # context
     /// #     .tr_close(&mut persistent_object_handle)
-    /// #     .expect("Failed to close persistant handle");
+    /// #     .expect("Failed to close persistent handle");
     /// # // Retrieve the handle from the tpm again.
     /// # let retireved_persistant_handle = context.execute_without_session(|ctx| {
     /// #     ctx.tr_from_tpm_public(TpmHandle::Persistent(persistent_tpm_handle))
-    /// #         .expect("Failed to load the persistant handle")
+    /// #         .expect("Failed to load the persistent handle")
     /// # });
     /// // Evict the persitent handle from the tpm
     /// // An authorization session is required!

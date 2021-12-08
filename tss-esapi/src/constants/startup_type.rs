@@ -9,7 +9,7 @@ use log::error;
 use num_derive::{FromPrimitive, ToPrimitive};
 use num_traits::{FromPrimitive, ToPrimitive};
 use std::convert::TryFrom;
-/// Enum repsenting the diffrent TPM Startup Type values.
+/// Enum repsenting the different TPM Startup Type values.
 #[derive(FromPrimitive, ToPrimitive, Debug, Copy, Clone, PartialEq, Eq)]
 #[repr(u16)]
 pub enum StartupType {

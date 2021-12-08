@@ -9,7 +9,7 @@ use crate::{
     Error, Result, WrapperErrorKind,
 };
 use std::convert::{TryFrom, TryInto};
-/// Enum repsesnting the symmetic algorithm definition.
+/// Enum repsesnting the symmetric algorithm definition.
 ///
 /// # Details
 /// This corresponds to TPMT_SYM_DEF.

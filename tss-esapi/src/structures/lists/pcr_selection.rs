@@ -175,7 +175,7 @@ impl PcrSelectionListBuilder {
     /// If no size of select have been provided then it will
     /// be defaulted to 3. This may not be the correct size for
     /// the current platform. The correct values can be obtained
-    /// by quering the tpm for its capabilities.
+    /// by querying the tpm for its capabilities.
     pub fn build(self) -> PcrSelectionList {
         let size_of_select = self.size_of_select.unwrap_or_default();
         PcrSelectionList {
