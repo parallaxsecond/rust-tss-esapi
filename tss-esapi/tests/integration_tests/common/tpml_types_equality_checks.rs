@@ -1,4 +1,4 @@
-use tss_esapi::tss2_esys::{TPML_PCR_SELECTION, TPML_TAGGED_TPM_PROPERTY};
+use tss_esapi::tss2_esys::{TPML_ALG_PROPERTY, TPML_PCR_SELECTION, TPML_TAGGED_TPM_PROPERTY};
 
 macro_rules! ensure_list_equality {
     ($name:ident, $list_type:ident, $items_field_name:ident, $item_equality_func:ident) => {
@@ -32,4 +32,11 @@ ensure_list_equality!(
     TPML_TAGGED_TPM_PROPERTY,
     tpmProperty,
     ensure_tpms_tagged_property_equality
+);
+
+ensure_list_equality!(
+    ensure_tpml_alg_property_equality,
+    TPML_ALG_PROPERTY,
+    algProperties,
+    ensure_tpms_alg_property_equality
 );

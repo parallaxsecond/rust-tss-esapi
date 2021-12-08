@@ -111,6 +111,11 @@ pub use self::tagged_tpm_property_list::TaggedTpmPropertyList;
 pub mod tagged_tpm_property_list {
     pub use super::lists::tagged_tpm_property::*;
 }
+
+pub use algorithm_property_list::AlgorithmPropertyList;
+pub mod algorithm_property_list {
+    pub use super::lists::algorithm_property::*;
+}
 /////////////////////////////////////////////////////////
 /// The parameters section
 /////////////////////////////////////////////////////////
