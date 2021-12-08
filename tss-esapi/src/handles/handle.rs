@@ -309,6 +309,7 @@ pub mod nv_index {
 /// Key handle module
 pub mod key {
     use super::object::ObjectHandle;
+    use crate::tss2_esys::ESYS_TR_RH_NULL;
     impl_basic_handle!(
         /// Key Handle
         ///
@@ -317,6 +318,7 @@ pub mod key {
         KeyHandle
     );
     impl_handle_conversion!(KeyHandle, ObjectHandle);
+    add_constant_handle!(KeyHandle, Null, ESYS_TR_RH_NULL);
 }
 
 /// Session handle module

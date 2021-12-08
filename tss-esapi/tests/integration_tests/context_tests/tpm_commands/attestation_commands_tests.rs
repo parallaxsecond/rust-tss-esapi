@@ -1,14 +1,22 @@
 // Copyright 2021 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
 mod test_quote {
-    use crate::common::{create_ctx_with_session, signing_key_pub};
+    use crate::common::{create_ctx_with_session, decryption_key_pub, signing_key_pub};
     use std::convert::TryFrom;
     use tss_esapi::{
+        constants::StructureTag,
+        handles::KeyHandle,
         interface_types::{
-            algorithm::HashingAlgorithm, resource_handles::Hierarchy,
+            algorithm::{HashingAlgorithm, SignatureSchemeAlgorithm},
+            resource_handles::Hierarchy,
+            session_handles::AuthSession,
             structure_tags::AttestationType,
         },
-        structures::{AttestInfo, Data, PcrSelectionListBuilder, PcrSlot, SignatureScheme},
+        structures::{
+            AttestInfo, Data, HashScheme, MaxBuffer, PcrSelectionListBuilder, PcrSlot,
+            SignatureScheme, Ticket,
+        },
+        traits::Marshall,
     };
 
     #[test]
@@ -54,5 +62,107 @@ mod test_quote {
                 panic!("Attested did not contain the expected variant.")
             }
         }
+    }
+
+    #[test]
+    fn certify() {
+        let mut context = create_ctx_with_session();
+        let qualifying_data = vec![0xff; 16];
+
+        let sign_key_handle = context
+            .create_primary(Hierarchy::Owner, &signing_key_pub(), None, None, None, None)
+            .unwrap()
+            .key_handle;
+        let obj_key_handle = context
+            .create_primary(
+                Hierarchy::Owner,
+                &decryption_key_pub(),
+                None,
+                None,
+                None,
+                None,
+            )
+            .unwrap()
+            .key_handle;
+
+        let (attest, signature) = context
+            .execute_with_sessions(
+                (
+                    Some(AuthSession::Password),
+                    Some(AuthSession::Password),
+                    None,
+                ),
+                |ctx| {
+                    ctx.certify(
+                        obj_key_handle.into(),
+                        sign_key_handle,
+                        &Data::try_from(qualifying_data.clone()).unwrap(),
+                        SignatureScheme::Null,
+                    )
+                },
+            )
+            .expect("Failed to certify object handle");
+
+        // Verify the signature is valid for the attestation data
+
+        let data = MaxBuffer::try_from(attest.marshall().unwrap())
+            .expect("Failed to get data buffer from attestation data");
+        let (digest, _) = context
+            .hash(&data, HashingAlgorithm::Sha256, Hierarchy::Null)
+            .expect("Failed to hash data");
+
+        let ticket = context
+            .execute_with_nullauth_session(|ctx| {
+                ctx.verify_signature(sign_key_handle, &digest, signature)
+            })
+            .expect("Failed to verify signature");
+        assert_eq!(ticket.tag(), StructureTag::Verified);
+
+        // Verify the attestation data is as expected
+
+        assert_eq!(attest.attestation_type(), AttestationType::Certify);
+        assert!(matches!(attest.attested(), AttestInfo::Certify { .. }));
+        assert_eq!(attest.extra_data().value(), qualifying_data);
+    }
+
+    #[test]
+    fn certify_null() {
+        let mut context = create_ctx_with_session();
+        let qualifying_data = vec![0xff; 16];
+        let sign_scheme = SignatureScheme::RsaPss {
+            hash_scheme: HashScheme::new(HashingAlgorithm::Sha256),
+        };
+
+        let obj_key_handle = context
+            .create_primary(
+                Hierarchy::Owner,
+                &decryption_key_pub(),
+                None,
+                None,
+                None,
+                None,
+            )
+            .unwrap()
+            .key_handle;
+
+        let (_attest, signature) = context
+            .execute_with_sessions(
+                (
+                    Some(AuthSession::Password),
+                    Some(AuthSession::Password),
+                    None,
+                ),
+                |ctx| {
+                    ctx.certify(
+                        obj_key_handle.into(),
+                        KeyHandle::Null,
+                        &Data::try_from(qualifying_data).unwrap(),
+                        sign_scheme,
+                    )
+                },
+            )
+            .expect("Failed to certify object handle");
+
+        assert_eq!(signature.algorithm(), SignatureSchemeAlgorithm::Null);
     }
 }
