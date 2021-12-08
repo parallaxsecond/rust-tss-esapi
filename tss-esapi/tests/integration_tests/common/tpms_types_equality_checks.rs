@@ -4,9 +4,10 @@ use tss_esapi::{
         TPM2_ST_ATTEST_NV, TPM2_ST_ATTEST_QUOTE, TPM2_ST_ATTEST_SESSION_AUDIT, TPM2_ST_ATTEST_TIME,
     },
     tss2_esys::{
-        TPMS_ATTEST, TPMS_CERTIFY_INFO, TPMS_CLOCK_INFO, TPMS_COMMAND_AUDIT_INFO,
-        TPMS_CREATION_INFO, TPMS_NV_CERTIFY_INFO, TPMS_PCR_SELECTION, TPMS_QUOTE_INFO,
-        TPMS_SESSION_AUDIT_INFO, TPMS_TAGGED_PROPERTY, TPMS_TIME_ATTEST_INFO, TPMS_TIME_INFO,
+        TPMS_ALG_PROPERTY, TPMS_ATTEST, TPMS_CERTIFY_INFO, TPMS_CLOCK_INFO,
+        TPMS_COMMAND_AUDIT_INFO, TPMS_CREATION_INFO, TPMS_NV_CERTIFY_INFO, TPMS_PCR_SELECTION,
+        TPMS_QUOTE_INFO, TPMS_SESSION_AUDIT_INFO, TPMS_TAGGED_PROPERTY, TPMS_TIME_ATTEST_INFO,
+        TPMS_TIME_INFO,
     },
 };
 
@@ -221,5 +222,17 @@ pub fn ensure_tpms_tagged_property_equality(
     assert_eq!(
         expected.value, actual.value,
         "'value' value in TPMS_TAGGED_PROPERTY, mismatch between actual and expected",
+    );
+}
+
+#[allow(dead_code)]
+pub fn ensure_tpms_alg_property_equality(expected: &TPMS_ALG_PROPERTY, actual: &TPMS_ALG_PROPERTY) {
+    assert_eq!(
+        expected.alg, actual.alg,
+        "'alg' value in TPMS_ALG_PROPERTY, mismatch between actual and expected"
+    );
+    assert_eq!(
+        expected.algProperties, actual.algProperties,
+        "'algProperties' value in TPMS_ALG_PROPERTY, mismatch between actual and expected"
     );
 }
