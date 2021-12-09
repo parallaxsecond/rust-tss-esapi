@@ -106,6 +106,11 @@ pub use self::command_code_list::CommandCodeList;
 pub mod command_code_list {
     pub use super::lists::command_code::*;
 }
+
+pub use self::tagged_tpm_property_list::TaggedTpmPropertyList;
+pub mod tagged_tpm_property_list {
+    pub use super::lists::tagged_tpm_property::*;
+}
 /////////////////////////////////////////////////////////
 /// The parameters section
 /////////////////////////////////////////////////////////
@@ -204,3 +209,7 @@ pub use attest_info::AttestInfo;
 /////////////////////////////////////////////////////////
 mod attest;
 pub use attest::Attest;
+/// Tagged Property
+/////////////////////////////////////////////////////////
+mod tagged_property;
+pub use tagged_property::TaggedProperty;

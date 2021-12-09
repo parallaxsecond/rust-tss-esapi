@@ -15,7 +15,6 @@ use handle_manager::HandleManager;
 use log::{error, info};
 use mbox::MBox;
 use std::collections::HashMap;
-use std::convert::TryFrom;
 use std::ptr::null_mut;
 
 /// Safe abstraction over an ESYS_CONTEXT.
@@ -358,15 +357,17 @@ impl Context {
         let (capabs, _) = self.execute_without_session(|ctx| {
             ctx.get_capability(CapabilityType::TpmProperties, property.into(), 4)
         })?;
+
         let props = match capabs {
-            CapabilityData::TPMProperties(props) => props,
+            CapabilityData::TpmProperties(props) => props,
             _ => return Err(Error::WrapperError(ErrorKind::WrongValueFromTpm)),
         };
-        for (key, val) in props.iter() {
-            if let Ok(key) = PropertyTag::try_from(*key) {
-                // If we are returned a property we don't know, just ignore it
-                let _ = self.cached_tpm_properties.insert(key, *val);
-            }
+
+        for tagged_property in props {
+            // If we are returned a property we don't know, just ignore it
+            let _ = self
+                .cached_tpm_properties
+                .insert(tagged_property.property(), tagged_property.value());
         }
 
         if let Some(val) = self.cached_tpm_properties.get(&property) {

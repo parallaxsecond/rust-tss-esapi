@@ -14,7 +14,7 @@ mod test_get_capability {
             .get_capability(CapabilityType::TpmProperties, TPM2_PT_VENDOR_STRING_1, 4)
             .unwrap();
         match res {
-            CapabilityData::TPMProperties(props) => {
+            CapabilityData::TpmProperties(props) => {
                 assert_ne!(props.len(), 0);
             }
             _ => panic!("Invalid properties returned"),

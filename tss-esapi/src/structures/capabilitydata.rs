@@ -3,7 +3,7 @@
 use crate::{
     constants::tss::*,
     handles::TpmHandle,
-    structures::{CommandCodeList, PcrSelect, PcrSelectionList},
+    structures::{CommandCodeList, PcrSelect, PcrSelectionList, TaggedTpmPropertyList},
     tss2_esys::*,
     Error, Result, WrapperErrorKind,
 };
@@ -19,7 +19,7 @@ pub enum CapabilityData {
     PpCommands(CommandCodeList),
     AuditCommands(CommandCodeList),
     AssignedPCR(PcrSelectionList),
-    TPMProperties(HashMap<TPM2_PT, u32>),
+    TpmProperties(TaggedTpmPropertyList),
     PCRProperties(HashMap<TPM2_PT_PCR, PcrSelect>),
     ECCCurves(Vec<TPM2_ECC_CURVE>),
     // These are in the TPM TMU_CAPABILITIES, but are not defined by esapi-2.4.1
@@ -95,18 +95,7 @@ fn cd_from_assigned_pcrs(props: TPML_PCR_SELECTION) -> Result<CapabilityData> {
 }
 
 fn cd_from_tpm_properties(props: TPML_TAGGED_TPM_PROPERTY) -> Result<CapabilityData> {
-    if props.count > max_cap_size::<TPMS_TAGGED_PROPERTY>() {
-        return Err(Error::WrapperError(WrapperErrorKind::InvalidParam));
-    }
-
-    let mut data = HashMap::new();
-
-    for i in 0..props.count {
-        let prop = props.tpmProperty[i as usize];
-        let _ = data.insert(prop.property, prop.value);
-    }
-
-    Ok(CapabilityData::TPMProperties(data))
+    Ok(CapabilityData::TpmProperties(props.try_into()?))
 }
 
 fn cd_from_pcr_properties(props: TPML_TAGGED_PCR_PROPERTY) -> Result<CapabilityData> {
