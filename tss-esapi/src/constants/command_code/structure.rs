@@ -223,7 +223,7 @@ impl TryFrom<TPM2_CC> for CommandCodeStructure {
             return Err(Error::local_error(WrapperErrorKind::UnsupportedParam));
         }
         if command_code_structure.reserved() != 0 || command_code_structure.res() != 0 {
-            error!("Encounted non zero reserved bits");
+            error!("Encountered non zero reserved bits");
             return Err(Error::local_error(WrapperErrorKind::InvalidParam));
         }
         Ok(command_code_structure)

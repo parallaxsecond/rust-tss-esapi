@@ -85,7 +85,7 @@ fn test_valid_to_tpml_digest_conversion() {
             );
             assert_eq!(
                 tpm2b_digest.buffer[0], value,
-                "Thw converted digest did not contain expected values"
+                "The converted digest did not contain expected values"
             );
         }
     }

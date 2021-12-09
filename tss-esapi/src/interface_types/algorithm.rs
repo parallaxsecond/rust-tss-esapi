@@ -396,7 +396,7 @@ impl TryFrom<TPMI_ALG_SIG_SCHEME> for SignatureSchemeAlgorithm {
     }
 }
 
-// A convinience conversion into AsymmetricAlgorithm
+// A convenience conversion into AsymmetricAlgorithm
 // that is associated with the signature scheme.
 impl TryFrom<SignatureSchemeAlgorithm> for AsymmetricAlgorithm {
     type Error = Error;
@@ -412,7 +412,7 @@ impl TryFrom<SignatureSchemeAlgorithm> for AsymmetricAlgorithm {
                 // HMAC is for symmetric algorithms
                 //
                 // Null could be converted into AsymmetricAlgorithm::Null
-                // but I do not know if that is usefull.
+                // but I do not know if that is useful.
                 Err(Error::local_error(WrapperErrorKind::InvalidParam))
             }
         }

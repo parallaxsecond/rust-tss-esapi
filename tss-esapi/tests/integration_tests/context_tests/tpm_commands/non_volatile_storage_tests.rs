@@ -46,7 +46,7 @@ mod test_nv_define_space {
             .build()
             .unwrap();
 
-        // Failes because attributes dont match hierarchy auth.
+        // Fails because attributes dont match hierarchy auth.
         let _ = context
             .nv_define_space(Provision::Platform, None, &owner_nv_public)
             .unwrap_err();
@@ -148,7 +148,7 @@ mod test_nv_undefine_space {
             .nv_define_space(Provision::Owner, None, &owner_nv_public)
             .expect("Call to nv_define_space failed");
 
-        // Succedes
+        // Succeeds
         let _ = context
             .nv_undefine_space(Provision::Owner, owner_nv_index_handle)
             .expect("Call to nv_undefine_space failed");

@@ -42,7 +42,7 @@ impl TryFrom<TPM2_CAP> for CapabilityType {
     fn try_from(tpm_capability_type: TPM2_CAP) -> Result<CapabilityType> {
         CapabilityType::from_u32(tpm_capability_type).ok_or_else(|| {
             error!(
-                "Error: value = {} did not match any CapabilityType.",
+                "value = {} did not match any CapabilityType.",
                 tpm_capability_type
             );
             Error::local_error(WrapperErrorKind::InvalidParam)

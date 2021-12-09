@@ -49,7 +49,7 @@ fn test_pcr_read_all() {
     assert_eq!(
         pcr_data
             .pcr_bank(HashingAlgorithm::Sha256)
-            .expect("PcrData did not conatin expected PcrBank")
+            .expect("PcrData did not contain expected PcrBank")
             .len(),
         24,
         "PcrData did not contain expected amount of digests"
@@ -122,7 +122,7 @@ fn test_pcr_read_all() {
             assert_eq!(dl.len(), 8);
             let d = pcr_data
                 .pcr_bank(HashingAlgorithm::Sha256)
-                .expect("PcrData did not conatin expected PcrBank")
+                .expect("PcrData did not contain expected PcrBank")
                 .into_iter()
                 .skip(idx * 8)
                 .take(8);

@@ -30,7 +30,7 @@ impl TryFrom<Vec<u8>> for Name {
     type Error = Error;
     fn try_from(bytes: Vec<u8>) -> Result<Self> {
         if bytes.len() > Name::MAX_SIZE {
-            error!("Error: Invalid Vec<u8> size(> {})", Name::MAX_SIZE);
+            error!("Invalid Vec<u8> size(> {})", Name::MAX_SIZE);
             return Err(Error::local_error(WrapperErrorKind::WrongParamSize));
         }
         let size = bytes.len() as u16;
@@ -47,7 +47,7 @@ impl TryFrom<TPM2B_NAME> for Name {
     fn try_from(tss_name: TPM2B_NAME) -> Result<Self> {
         let size = tss_name.size as usize;
         if size > Name::MAX_SIZE {
-            error!("Error: Invalid TPM2B_NAME size(> {})", Name::MAX_SIZE);
+            error!("Invalid TPM2B_NAME size(> {})", Name::MAX_SIZE);
             return Err(Error::local_error(WrapperErrorKind::InvalidParam));
         }
         Ok(Name { value: tss_name })

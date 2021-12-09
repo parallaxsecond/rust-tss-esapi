@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 /// The structures module attempts as far as possible to
-/// reflect the specifcations way of defining structures
+/// reflect the specifications way of defining structures
 /// see:
 ///
 /// Trusted Platform Module Library

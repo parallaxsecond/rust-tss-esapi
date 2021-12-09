@@ -60,7 +60,7 @@ macro_rules! impl_ticket_try_froms {
                 let len = tss_ticket.digest.size.into();
                 if len > TPM2B_DIGEST_BUFFER_SIZE {
                     error!(
-                        "Error: Invalid digest size.(Digest size: {0} > Digest buffer size: {1})",
+                        "Invalid digest size. (Digest size: {0} > Digest buffer size: {1})",
                         len, TPM2B_DIGEST_BUFFER_SIZE,
                     );
                     return Err(Error::local_error(WrapperErrorKind::InvalidParam));

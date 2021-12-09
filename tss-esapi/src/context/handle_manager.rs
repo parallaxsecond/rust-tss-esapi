@@ -13,9 +13,9 @@ pub enum HandleDropAction {
 }
 
 /// The HandleManager is responsible for storing
-/// the handles used by Context iand thier states.
+/// the handles used by Context iand their states.
 /// In order to make sure the correct handles get
-/// flushed and closed when the Context is droped.
+/// flushed and closed when the Context is dropped.
 #[derive(Debug)]
 pub struct HandleManager {
     open_handles: HashMap<ObjectHandle, HandleDropAction>,

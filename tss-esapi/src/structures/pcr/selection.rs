@@ -76,12 +76,12 @@ impl PcrSelection {
     pub fn merge(&mut self, other: &Self) -> Result<()> {
         // Check that the hashing algorithm match
         if self.hashing_algorithm != other.hashing_algorithm {
-            error!("Error: Found inconsistencies in the hashing algorithm");
+            error!("Found inconsistencies in the hashing algorithm");
             return Err(Error::local_error(WrapperErrorKind::InconsistentParams));
         }
         // Check that size of select match.
         if self.size_of_select != other.size_of_select {
-            error!("Error: Found inconsistencies in the size of select");
+            error!("Found inconsistencies in the size of select");
             return Err(Error::local_error(WrapperErrorKind::InconsistentParams));
         }
         self.selected_pcrs |= other.selected_pcrs;
@@ -110,7 +110,7 @@ impl PcrSelection {
         self.remove_exact(other.selected_pcrs)
     }
 
-    /// Indicates wether the pcr selection is empty.
+    /// Indicates whether the pcr selection is empty.
     pub fn is_empty(&self) -> bool {
         self.selected_pcrs.is_empty()
     }

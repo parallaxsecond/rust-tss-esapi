@@ -2,14 +2,14 @@
 // SPDX-License-Identifier: Apache-2.0
 
 /// This module contains both the constants defined in the TSS specification (tss module)
-/// but also the internal representaion of the TSS constants.
+/// but also the internal representation of the TSS constants.
 
 /// Representation of the constants defined in the
-/// Constants -> TPM_ALG_ID section of the specfication
+/// Constants -> TPM_ALG_ID section of the specification
 mod algorithm;
 pub use algorithm::AlgorithmIdentifier;
 
-/// The contants defined in the TSS specification.
+/// The constants defined in the TSS specification.
 #[allow(
     non_snake_case,
     non_camel_case_types,
@@ -21,30 +21,30 @@ pub use algorithm::AlgorithmIdentifier;
 pub mod tss;
 
 /// Representation of the constants defined in the
-/// Constants -> TPM_ST section of the specfication
+/// Constants -> TPM_ST section of the specification
 pub mod structure_tags;
 
 /// Representation of the constants defined in the
-/// Constants -> TPM_PT section of the specfication
+/// Constants -> TPM_PT section of the specification
 pub mod property_tag;
 
 /// Representation of the constants defined in the
-/// Constants -> TPM_SU section of the specfication
+/// Constants -> TPM_SU section of the specification
 pub mod startup_type;
 
 /// Representation of the constants defined in the
-/// Constants -> TPM_SE section of the specfication
+/// Constants -> TPM_SE section of the specification
 pub mod session_type;
 
 /// Representation of the constants defined in the
-/// Constants -> TPM_CAP section of the specfication
+/// Constants -> TPM_CAP section of the specification
 pub mod capabilities;
 
 /// Representation of the return code TSS2_RC (TPM_RC)
 pub mod response_code;
 
 /// Representation of the constants defined in the
-/// NV Storage -> TPM_NT section of the specfication
+/// NV Storage -> TPM_NT section of the specification
 pub mod nv_index_type;
 
 /// Representation of the constants defined in

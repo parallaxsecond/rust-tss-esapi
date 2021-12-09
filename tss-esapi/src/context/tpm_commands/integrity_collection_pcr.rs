@@ -49,7 +49,7 @@ impl Context {
     /// #         tss_esapi::interface_types::algorithm::HashingAlgorithm::Sha256,
     /// #     )
     /// #     .expect("Failed to create session")
-    /// #     .expect("Recived invalid handle");
+    /// #     .expect("Received invalid handle");
     /// # let (session_attributes, session_attributes_mask) = SessionAttributesBuilder::new()
     /// #     .with_decrypt(true)
     /// #     .with_encrypt(true)
@@ -195,7 +195,7 @@ impl Context {
     /// Resets the value in a PCR.
     ///
     /// # Arguments
-    /// * `pcr_handle` -  A [PcrHandle] to the PCR slot that is to be resetted.
+    /// * `pcr_handle` -  A [PcrHandle] to the PCR slot that is to be reset.
     ///
     /// # Details
     /// If the attributes of the PCR indicates that it is allowed
@@ -230,7 +230,7 @@ impl Context {
     /// #         HashingAlgorithm::Sha256,
     /// #     )
     /// #     .expect("Failed to create session")
-    /// #     .expect("Recived invalid handle");
+    /// #     .expect("Received invalid handle");
     /// # let (session_attributes, session_attributes_mask) = SessionAttributesBuilder::new()
     /// #     .with_decrypt(true)
     /// #     .with_encrypt(true)

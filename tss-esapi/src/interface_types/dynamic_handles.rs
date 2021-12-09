@@ -3,7 +3,7 @@
 
 use crate::handles::{NvIndexTpmHandle, PcrTpmHandle, PersistentTpmHandle, TransientTpmHandle};
 
-/// Can be created with either a persistant
+/// Can be created with either a persistent
 /// or transient TPM handle.
 #[derive(Debug, Copy, Clone)]
 pub enum Object {
@@ -21,7 +21,7 @@ pub enum Parent {
 }
 
 ///
-/// Enum representing the Persistant DH interface type
+/// Enum representing the Persistent DH interface type
 /// (TPMI_DH_PERSISTENT)
 ///
 #[derive(Debug, Copy, Clone)]
@@ -38,8 +38,8 @@ impl From<Persistent> for PersistentTpmHandle {
 }
 
 impl From<PersistentTpmHandle> for Persistent {
-    fn from(persistant_tpm_handle: PersistentTpmHandle) -> Persistent {
-        Persistent::Persistent(persistant_tpm_handle)
+    fn from(persistent_tpm_handle: PersistentTpmHandle) -> Persistent {
+        Persistent::Persistent(persistent_tpm_handle)
     }
 }
 

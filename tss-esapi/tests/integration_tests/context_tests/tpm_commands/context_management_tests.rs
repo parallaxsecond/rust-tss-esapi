@@ -264,24 +264,24 @@ mod test_evict_control {
         context
             .flush_context(ObjectHandle::from(primary_key_handle))
             .expect("Failed to flush context");
-        // Close the persistant_handle returned by evict_control
+        // Close the persistent_handle returned by evict_control
         context
             .tr_close(&mut persistent_primary_key_handle)
-            .expect("Failed to close persistant handle");
+            .expect("Failed to close persistent handle");
 
         // Retrieve the handle from the tpm again.
-        let retireved_persistant_handle = context.execute_without_session(|ctx| {
+        let retrieved_persistent_handle = context.execute_without_session(|ctx| {
             ctx.tr_from_tpm_public(TpmHandle::Persistent(persistent_tpm_handle))
-                .expect("Failed to load the persistant handle")
+                .expect("Failed to load the persistent handle")
         });
 
         // Evict the persitent handle from the tpm
         context
-            .evict_control(Provision::Owner, retireved_persistant_handle, persistent)
+            .evict_control(Provision::Owner, retrieved_persistent_handle, persistent)
             .expect("Failed to evict persistent handle");
 
         context.clear_sessions();
 
-        assert_ne!(retireved_persistant_handle, ObjectHandle::None);
+        assert_ne!(retrieved_persistent_handle, ObjectHandle::None);
     }
 }

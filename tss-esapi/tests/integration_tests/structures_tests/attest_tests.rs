@@ -128,7 +128,7 @@ fn test_attest_with_session_audit_info_into_tpm_type_conversions() {
         assert_eq!(
             expected_exclusive_session,
             info.exlusive_session().into(),
-            "SessionAuditInfo did not contain expected exlusive session",
+            "SessionAuditInfo did not contain expected exclusive session",
         );
         assert_eq!(
             &expected_session_digest,

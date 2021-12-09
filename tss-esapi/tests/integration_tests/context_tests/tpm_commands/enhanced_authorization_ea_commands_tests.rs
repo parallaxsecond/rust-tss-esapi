@@ -59,7 +59,7 @@ mod test_policy_signed {
             RsaSignature::create(
                 HashingAlgorithm::Sha256,
                 PublicKeyRsa::try_from(vec![0xab; 32])
-                    .expect("Failed to create Public RSA key strucutre for RSA signature"),
+                    .expect("Failed to create Public RSA key structure for RSA signature"),
             )
             .expect("Failed to create RSA signature"),
         );
@@ -786,7 +786,7 @@ mod test_policy_get_digest {
             .policy_pcr(trial_policy_session, &hashed_data, pcr_selection_list)
             .unwrap();
 
-        // There is now a policy digest that can be retrived and used.
+        // There is now a policy digest that can be retrieved and used.
         let retrieved_policy_digest = context.policy_get_digest(trial_policy_session).unwrap();
 
         // The algorithm is SHA256 so the expected size of the digest should be 32.

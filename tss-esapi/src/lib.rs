@@ -69,7 +69,7 @@
 //! * thread safety is ensured by the required mutability of the `Context` structure within the
 //! methods implemented on it; thus, in an otherwise safe app commands cannot be dispatched in
 //! parallel for the same context; whether multithreading with multiple context objects is possible
-//! depends on the TCTI used and this is the responsability of the crate client to establish.
+//! depends on the TCTI used and this is the responsibility of the crate client to establish.
 //! * the `unsafe` keyword is used to denote methods that could panic, crash or cause undefined
 //! behaviour. Whenever this is the case, the properties that need to be checked against
 //! parameters before passing them in will be stated in the documentation of the method.
@@ -80,7 +80,7 @@
 //! * the `Mbox` crate is trusted to perform operations safely on the pointers provided to it, if
 //! the pointers are trusted to be valid.
 //! * methods not marked `unsafe` are trusted to behave safely, potentially returning appropriate
-//! erorr messages when encountering any problems.
+//! error messages when encountering any problems.
 //! * whenever `unwrap`, `expect`, `panic` or derivatives of these are used, they need to be
 //! thoroughly documented and justified - preferably `unwrap` and `expect` should *never* fail
 //! during normal operation.
