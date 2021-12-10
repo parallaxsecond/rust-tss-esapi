@@ -3,7 +3,9 @@
 use crate::{
     constants::tss::*,
     handles::TpmHandle,
-    structures::{CommandCodeList, PcrSelect, PcrSelectionList, TaggedTpmPropertyList},
+    structures::{
+        AlgorithmPropertyList, CommandCodeList, PcrSelect, PcrSelectionList, TaggedTpmPropertyList,
+    },
     tss2_esys::*,
     Error, Result, WrapperErrorKind,
 };
@@ -13,7 +15,7 @@ use std::mem::size_of;
 
 #[derive(Debug, Clone)]
 pub enum CapabilityData {
-    Algorithms(HashMap<TPM2_ALG_ID, TPMA_ALGORITHM>),
+    Algorithms(AlgorithmPropertyList),
     Handles(Vec<TpmHandle>),
     Commands(Vec<TPMA_CC>),
     PpCommands(CommandCodeList),
@@ -33,18 +35,7 @@ fn max_cap_size<T>() -> u32 {
 }
 
 fn cd_from_alg_properties(props: TPML_ALG_PROPERTY) -> Result<CapabilityData> {
-    if props.count > max_cap_size::<TPMS_ALG_PROPERTY>() {
-        return Err(Error::WrapperError(WrapperErrorKind::InvalidParam));
-    }
-
-    let mut data = HashMap::new();
-
-    for i in 0..props.count {
-        let prop = props.algProperties[i as usize];
-        let _ = data.insert(prop.alg, prop.algProperties);
-    }
-
-    Ok(CapabilityData::Algorithms(data))
+    Ok(CapabilityData::Algorithms(props.try_into()?))
 }
 
 fn cd_from_handles(props: TPML_HANDLE) -> Result<CapabilityData> {

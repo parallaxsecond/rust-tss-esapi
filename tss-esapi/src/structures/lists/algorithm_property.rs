@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use crate::{
-    constants::{tss::TPM2_MAX_CAP_BUFFER, AlgorithmIdentifier},
+    constants::AlgorithmIdentifier,
     structures::AlgorithmProperty,
-    tss2_esys::{TPM2_CAP, TPML_ALG_PROPERTY, TPMS_ALG_PROPERTY},
+    tss2_esys::{TPM2_CAP, TPM2_MAX_CAP_BUFFER, TPML_ALG_PROPERTY, TPMS_ALG_PROPERTY},
     Error, Result, WrapperErrorKind,
 };
 use log::error;
