@@ -2,7 +2,6 @@ use tss_esapi::tss2_esys::{TPML_ALG_PROPERTY, TPML_PCR_SELECTION, TPML_TAGGED_TP
 
 macro_rules! ensure_list_equality {
     ($name:ident, $list_type:ident, $items_field_name:ident, $item_equality_func:ident) => {
-        #[allow(dead_code)]
         pub fn $name(expected: &$list_type, actual: &$list_type) {
             assert_eq!(
                 expected.count,
