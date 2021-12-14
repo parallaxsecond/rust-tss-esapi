@@ -4,9 +4,10 @@ use tss_esapi::{
         TPM2_ST_ATTEST_NV, TPM2_ST_ATTEST_QUOTE, TPM2_ST_ATTEST_SESSION_AUDIT, TPM2_ST_ATTEST_TIME,
     },
     tss2_esys::{
-        TPMS_ATTEST, TPMS_CERTIFY_INFO, TPMS_CLOCK_INFO, TPMS_COMMAND_AUDIT_INFO,
-        TPMS_CREATION_INFO, TPMS_NV_CERTIFY_INFO, TPMS_PCR_SELECTION, TPMS_QUOTE_INFO,
-        TPMS_SESSION_AUDIT_INFO, TPMS_TAGGED_PROPERTY, TPMS_TIME_ATTEST_INFO, TPMS_TIME_INFO,
+        TPMS_ALG_PROPERTY, TPMS_ATTEST, TPMS_CERTIFY_INFO, TPMS_CLOCK_INFO,
+        TPMS_COMMAND_AUDIT_INFO, TPMS_CREATION_INFO, TPMS_NV_CERTIFY_INFO, TPMS_PCR_SELECTION,
+        TPMS_QUOTE_INFO, TPMS_SESSION_AUDIT_INFO, TPMS_TAGGED_PROPERTY, TPMS_TIME_ATTEST_INFO,
+        TPMS_TIME_INFO,
     },
 };
 
@@ -30,13 +31,11 @@ macro_rules! ensure_sized_buffer_field_equality {
     };
 }
 
-#[allow(dead_code)]
 pub fn ensure_tpms_certify_info_equality(expected: &TPMS_CERTIFY_INFO, actual: &TPMS_CERTIFY_INFO) {
     ensure_sized_buffer_field_equality!(expected, actual, name, name, TPM2B_NAME);
     ensure_sized_buffer_field_equality!(expected, actual, qualifiedName, name, TPM2B_NAME);
 }
 
-#[allow(dead_code)]
 pub fn ensure_tpms_clock_info_equality(expected: &TPMS_CLOCK_INFO, actual: &TPMS_CLOCK_INFO) {
     assert_eq!(
         expected.clock, actual.clock,
@@ -56,13 +55,11 @@ pub fn ensure_tpms_clock_info_equality(expected: &TPMS_CLOCK_INFO, actual: &TPMS
     );
 }
 
-#[allow(dead_code)]
 pub fn ensure_tpms_quote_info_equality(expected: &TPMS_QUOTE_INFO, actual: &TPMS_QUOTE_INFO) {
     ensure_sized_buffer_field_equality!(expected, actual, pcrDigest, buffer, TPM2B_DIGEST);
     crate::common::ensure_tpml_pcr_selection_equality(&expected.pcrSelect, &actual.pcrSelect);
 }
 
-#[allow(dead_code)]
 pub fn ensure_tpms_pcr_selection_equality(
     expected: &TPMS_PCR_SELECTION,
     actual: &TPMS_PCR_SELECTION,
@@ -81,7 +78,6 @@ pub fn ensure_tpms_pcr_selection_equality(
     );
 }
 
-#[allow(dead_code)]
 pub fn ensure_tpms_time_info_equality(expected: &TPMS_TIME_INFO, actual: &TPMS_TIME_INFO) {
     assert_eq!(
         expected.time, actual.time,
@@ -90,7 +86,6 @@ pub fn ensure_tpms_time_info_equality(expected: &TPMS_TIME_INFO, actual: &TPMS_T
     ensure_tpms_clock_info_equality(&expected.clockInfo, &actual.clockInfo);
 }
 
-#[allow(dead_code)]
 pub fn ensure_tpms_time_attest_info_equality(
     expected: &TPMS_TIME_ATTEST_INFO,
     actual: &TPMS_TIME_ATTEST_INFO,
@@ -102,7 +97,6 @@ pub fn ensure_tpms_time_attest_info_equality(
     );
 }
 
-#[allow(dead_code)]
 pub fn ensure_tpms_command_audit_info_equality(
     expected: &TPMS_COMMAND_AUDIT_INFO,
     actual: &TPMS_COMMAND_AUDIT_INFO,
@@ -119,7 +113,6 @@ pub fn ensure_tpms_command_audit_info_equality(
     ensure_sized_buffer_field_equality!(expected, actual, commandDigest, buffer, TPM2B_DIGEST);
 }
 
-#[allow(dead_code)]
 pub fn ensure_tpms_session_audit_info_equality(
     expected: &TPMS_SESSION_AUDIT_INFO,
     actual: &TPMS_SESSION_AUDIT_INFO,
@@ -131,7 +124,6 @@ pub fn ensure_tpms_session_audit_info_equality(
     ensure_sized_buffer_field_equality!(expected, actual, sessionDigest, buffer, TPM2B_DIGEST);
 }
 
-#[allow(dead_code)]
 pub fn ensure_tpms_creation_info_equality(
     expected: &TPMS_CREATION_INFO,
     actual: &TPMS_CREATION_INFO,
@@ -140,7 +132,6 @@ pub fn ensure_tpms_creation_info_equality(
     ensure_sized_buffer_field_equality!(expected, actual, creationHash, buffer, TPM2B_DIGEST);
 }
 
-#[allow(dead_code)]
 pub fn ensure_tpms_nv_certify_info_equality(
     expected: &TPMS_NV_CERTIFY_INFO,
     actual: &TPMS_NV_CERTIFY_INFO,
@@ -153,7 +144,6 @@ pub fn ensure_tpms_nv_certify_info_equality(
     ensure_sized_buffer_field_equality!(expected, actual, nvContents, buffer, TPM2B_MAX_NV_BUFFER);
 }
 
-#[allow(dead_code)]
 pub fn ensure_tpms_attest_equality(expected: &TPMS_ATTEST, actual: &TPMS_ATTEST) {
     assert_eq!(
         expected.magic, actual.magic,
@@ -208,7 +198,6 @@ pub fn ensure_tpms_attest_equality(expected: &TPMS_ATTEST, actual: &TPMS_ATTEST)
     }
 }
 
-#[allow(dead_code)]
 pub fn ensure_tpms_tagged_property_equality(
     expected: &TPMS_TAGGED_PROPERTY,
     actual: &TPMS_TAGGED_PROPERTY,
@@ -221,5 +210,16 @@ pub fn ensure_tpms_tagged_property_equality(
     assert_eq!(
         expected.value, actual.value,
         "'value' value in TPMS_TAGGED_PROPERTY, mismatch between actual and expected",
+    );
+}
+
+pub fn ensure_tpms_alg_property_equality(expected: &TPMS_ALG_PROPERTY, actual: &TPMS_ALG_PROPERTY) {
+    assert_eq!(
+        expected.alg, actual.alg,
+        "'alg' value in TPMS_ALG_PROPERTY, mismatch between actual and expected"
+    );
+    assert_eq!(
+        expected.algProperties, actual.algProperties,
+        "'algProperties' value in TPMS_ALG_PROPERTY, mismatch between actual and expected"
     );
 }

@@ -17,6 +17,9 @@ pub mod nv_index;
 
 pub mod locality;
 
+pub mod algorithm;
+
+pub use algorithm::AlgorithmAttributes;
 pub use locality::{LocalityAttributes, LocalityAttributesBuilder};
 pub use nv_index::{NvIndexAttributes, NvIndexAttributesBuilder};
 pub use object::{ObjectAttributes, ObjectAttributesBuilder};
