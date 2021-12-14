@@ -45,7 +45,11 @@ impl TryFrom<Vec<u8>> for PublicBuffer {
 
     fn try_from(bytes: Vec<u8>) -> Result<Self> {
         if bytes.len() > Self::MAX_SIZE {
-            error!("Error: Invalid Vec<u8> size(> {})", Self::MAX_SIZE);
+            error!(
+                "Error: Invalid Vec<u8> size ({} > {})",
+                bytes.len(),
+                Self::MAX_SIZE
+            );
             return Err(Error::local_error(WrapperErrorKind::WrongParamSize));
         }
         Ok(PublicBuffer(bytes))
@@ -57,7 +61,11 @@ impl TryFrom<&[u8]> for PublicBuffer {
 
     fn try_from(bytes: &[u8]) -> Result<Self> {
         if bytes.len() > Self::MAX_SIZE {
-            error!("Error: Invalid &[u8] size(> {})", Self::MAX_SIZE);
+            error!(
+                "Error: Invalid &[u8] size ({} > {})",
+                bytes.len(),
+                Self::MAX_SIZE
+            );
             return Err(Error::local_error(WrapperErrorKind::WrongParamSize));
         }
         Ok(PublicBuffer(bytes.to_vec()))
@@ -70,7 +78,7 @@ impl TryFrom<TPM2B_PUBLIC> for PublicBuffer {
     fn try_from(tss: TPM2B_PUBLIC) -> Result<Self> {
         let size = tss.size as usize;
         if size > Self::MAX_SIZE {
-            error!("Error: Invalid buffer size(> {})", Self::MAX_SIZE);
+            error!("Error: Invalid buffer size ({} > {})", size, Self::MAX_SIZE);
             return Err(Error::local_error(WrapperErrorKind::WrongParamSize));
         }
         let public = Public::try_from(tss.publicArea)?;

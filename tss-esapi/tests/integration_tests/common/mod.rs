@@ -21,11 +21,11 @@ use tss_esapi::{
         session_handles::PolicySession,
     },
     structures::{
-        Digest, EccParameter, EccPoint, EccScheme, HashScheme, HmacScheme,
+        Digest, EccParameter, EccPoint, EccScheme, EccSignature, HashAgile, HashScheme, HmacScheme,
         KeyDerivationFunctionScheme, KeyedHashScheme, MaxBuffer, PcrSelectionListBuilder, PcrSlot,
         Public, PublicBuilder, PublicEccParameters, PublicKeyRsa, PublicKeyedHashParameters,
-        PublicRsaParameters, RsaExponent, RsaScheme, SymmetricCipherParameters,
-        SymmetricDefinition, SymmetricDefinitionObject,
+        PublicRsaParameters, RsaExponent, RsaScheme, RsaSignature, Signature,
+        SymmetricCipherParameters, SymmetricDefinition, SymmetricDefinitionObject,
     },
     tcti_ldr::TctiNameConf,
     utils, Context,
@@ -122,6 +122,31 @@ pub fn publics() -> [Public; 4] {
             }),
             unique: Digest::try_from(vec![0x44; 16]).unwrap(),
         },
+    ]
+}
+
+pub fn signatures() -> [Signature; 4] {
+    [
+        Signature::RsaSsa(
+            RsaSignature::create(
+                HashingAlgorithm::Sha256,
+                PublicKeyRsa::try_from(vec![0xaa; 256]).expect("Failed to create signature data"),
+            )
+            .expect("Failed to create signature"),
+        ),
+        Signature::EcDsa(
+            EccSignature::create(
+                HashingAlgorithm::Sha3_256,
+                EccParameter::try_from(vec![0x33; 64]).expect("Failed to create s value"),
+                EccParameter::try_from(vec![0x00; 64]).expect("Failed to create s value"),
+            )
+            .expect("Failed to create signature"),
+        ),
+        Signature::Hmac(HashAgile::new(
+            HashingAlgorithm::Sha384,
+            Digest::try_from(vec![0xde; 48]).expect("Failed to create digest"),
+        )),
+        Signature::Null,
     ]
 }
 
