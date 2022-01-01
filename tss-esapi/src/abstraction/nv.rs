@@ -1,11 +1,14 @@
 // Copyright 2020 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
 
-use std::{convert::TryFrom, io::Read};
+use std::{
+    convert::{TryFrom, TryInto},
+    io::Read,
+};
 
 use crate::{
     constants::{tss::*, CapabilityType, PropertyTag},
-    handles::{NvIndexHandle, NvIndexTpmHandle, TpmHandle},
+    handles::{AuthHandle, NvIndexHandle, NvIndexTpmHandle, TpmHandle},
     interface_types::resource_handles::NvAuth,
     structures::{CapabilityData, MaxNvBuffer, Name, NvPublic},
     Context, Error, Result, WrapperErrorKind,
@@ -81,16 +84,25 @@ pub fn list(context: &mut Context) -> Result<Vec<(NvPublic, Name)>> {
 /// This builder exposes the ability to determine how a [`NvReaderWriter`] is opened, and is typically used by
 /// calling [`NvOpenOptions::new`], chaining method calls to set each option and then calling [`NvOpenOptions::open`].
 #[derive(Debug, Clone, Default)]
-// The type is going to get more complex in the future
-#[allow(missing_copy_implementations)]
-pub struct NvOpenOptions {}
+pub struct NvOpenOptions {
+    nv_public: Option<NvPublic>,
+}
 
 impl NvOpenOptions {
     /// Creates a new blank set of options for opening a non-volatile storage index
     ///
     /// All options are initially set to `false`/`None`.
     pub fn new() -> Self {
-        Self {}
+        Self { nv_public: None }
+    }
+
+    /// Sets the public attributes to use when creating the non-volatile storage index
+    ///
+    /// If the public attributes are `None` then the non-volatile storage index will be opened or otherwise
+    /// it will be created.
+    pub fn with_nv_public(&mut self, nv_public: Option<NvPublic>) -> &mut Self {
+        self.nv_public = nv_public;
+        self
     }
 
     /// Opens a non-volatile storage index using the options specified by `self`
@@ -106,13 +118,30 @@ impl NvOpenOptions {
             .get_tpm_property(PropertyTag::NvBufferMax)?
             .unwrap_or(MaxNvBuffer::MAX_SIZE as u32) as usize;
 
-        let nv_idx = TpmHandle::NvIndex(nv_index_handle);
-        let nv_idx = context
-            .execute_without_session(|ctx| ctx.tr_from_tpm_public(nv_idx))?
-            .into();
-        let data_size = context
-            .execute_without_session(|ctx| ctx.nv_read_public(nv_idx))
-            .map(|(nvpub, _)| nvpub.data_size())?;
+        let (data_size, nv_idx) = match &self.nv_public {
+            None => {
+                let nv_idx = TpmHandle::NvIndex(nv_index_handle);
+                let nv_idx = context
+                    .execute_without_session(|ctx| ctx.tr_from_tpm_public(nv_idx))?
+                    .into();
+                (
+                    context
+                        .execute_without_session(|ctx| ctx.nv_read_public(nv_idx))
+                        .map(|(nvpub, _)| nvpub.data_size())?,
+                    nv_idx,
+                )
+            }
+            Some(nv_public) => {
+                if nv_public.nv_index() != nv_index_handle {
+                    return Err(Error::WrapperError(WrapperErrorKind::InconsistentParams));
+                }
+                let auth_handle = AuthHandle::from(auth_handle);
+                (
+                    nv_public.data_size(),
+                    context.nv_define_space(auth_handle.try_into()?, None, nv_public.clone())?,
+                )
+            }
+        };
 
         Ok(NvReaderWriter {
             context,
@@ -165,6 +194,61 @@ impl Read for NvReaderWriter<'_> {
         self.offset += size as usize;
 
         Ok(size.into())
+    }
+}
+
+impl std::io::Write for NvReaderWriter<'_> {
+    fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
+        if self.data_size < self.offset {
+            return Ok(0);
+        }
+
+        let desired_size = std::cmp::min(buf.len(), self.data_size - self.offset);
+        let size = std::cmp::min(self.buffer_size, desired_size) as u16;
+
+        let data = buf[0..size.into()]
+            .try_into()
+            .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))?;
+        self.context
+            .nv_write(self.auth_handle, self.nv_idx, data, self.offset as u16)
+            .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))?;
+        self.offset += size as usize;
+
+        Ok(size.into())
+    }
+
+    fn flush(&mut self) -> std::io::Result<()> {
+        // Data isn't buffered
+        Ok(())
+    }
+}
+
+impl std::io::Seek for NvReaderWriter<'_> {
+    fn seek(&mut self, pos: std::io::SeekFrom) -> std::io::Result<u64> {
+        let inv_input_err = |_| {
+            std::io::Error::new(
+                std::io::ErrorKind::InvalidInput,
+                "invalid seek to a negative or overflowing position",
+            )
+        };
+        let (base, offset) = match pos {
+            std::io::SeekFrom::Start(offset) => {
+                (usize::try_from(offset).map_err(inv_input_err)?, 0)
+            }
+            std::io::SeekFrom::End(offset) => (self.data_size, offset),
+            std::io::SeekFrom::Current(offset) => (self.offset, offset),
+        };
+        let new_offset = i64::try_from(base)
+            .map_err(inv_input_err)?
+            .checked_add(offset)
+            .ok_or_else(|| {
+                std::io::Error::new(
+                    std::io::ErrorKind::InvalidInput,
+                    "invalid seek to a negative or overflowing position",
+                )
+            })?;
+        self.offset = new_offset.try_into().map_err(inv_input_err)?;
+        self.offset.try_into().map_err(inv_input_err)
     }
 }
 
