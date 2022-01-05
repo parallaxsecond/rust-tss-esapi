@@ -38,8 +38,9 @@ pub use self::buffers::{
     attest::AttestBuffer, auth::Auth, data::Data, digest::Digest, ecc_parameter::EccParameter,
     encrypted_secret::EncryptedSecret, id_object::IDObject, initial_value::InitialValue,
     max_buffer::MaxBuffer, max_nv_buffer::MaxNvBuffer, nonce::Nonce, private::Private,
-    public::PublicBuffer, public_key_rsa::PublicKeyRsa, sensitive_data::SensitiveData,
-    timeout::Timeout,
+    private_key_rsa::PrivateKeyRsa, private_vendor_specific::PrivateVendorSpecific,
+    public::PublicBuffer, public_key_rsa::PublicKeyRsa, sensitive::SensitiveBuffer,
+    sensitive_data::SensitiveData, symmetric_key::SymmetricKey, timeout::Timeout,
 };
 /////////////////////////////////////////////////////////
 /// The creation section
@@ -131,6 +132,7 @@ pub use tagged::{
         EccScheme, KeyDerivationFunctionScheme, KeyedHashScheme, RsaDecryptionScheme, RsaScheme,
         SignatureScheme,
     },
+    sensitive::Sensitive,
     signature::Signature,
     symmetric::{SymmetricDefinition, SymmetricDefinitionObject},
 };

@@ -6,7 +6,7 @@ use crate::{
     interface_types::resource_handles::Hierarchy,
     structures::{
         Auth, CreateKeyResult, CreationData, CreationTicket, Data, Digest, EncryptedSecret,
-        IDObject, Name, PcrSelectionList, Private, Public, SensitiveData,
+        IDObject, Name, PcrSelectionList, Private, Public, Sensitive, SensitiveData,
     },
     tss2_esys::*,
     Context, Error, Result,
@@ -137,7 +137,7 @@ impl Context {
     /// Load an external key into the TPM and return its new handle.
     pub fn load_external(
         &mut self,
-        private: &TPM2B_SENSITIVE,
+        private: Sensitive,
         public: &Public,
         hierarchy: Hierarchy,
     ) -> Result<KeyHandle> {
@@ -148,7 +148,7 @@ impl Context {
                 self.optional_session_1(),
                 self.optional_session_2(),
                 self.optional_session_3(),
-                private,
+                &private.try_into()?,
                 &public.clone().try_into()?,
                 if cfg!(tpm2_tss_version = "3") {
                     ObjectHandle::from(hierarchy).into()

@@ -24,7 +24,7 @@ use tss_esapi::{
         Digest, EccParameter, EccPoint, EccScheme, EccSignature, HashAgile, HashScheme, HmacScheme,
         KeyDerivationFunctionScheme, KeyedHashScheme, MaxBuffer, PcrSelectionListBuilder, PcrSlot,
         Public, PublicBuilder, PublicEccParameters, PublicKeyRsa, PublicKeyedHashParameters,
-        PublicRsaParameters, RsaExponent, RsaScheme, RsaSignature, Signature,
+        PublicRsaParameters, RsaExponent, RsaScheme, RsaSignature, Sensitive, Signature,
         SymmetricCipherParameters, SymmetricDefinition, SymmetricDefinitionObject,
     },
     tcti_ldr::TctiNameConf,
@@ -47,7 +47,7 @@ pub const HASH: [u8; 64] = [
 ];
 
 #[allow(dead_code)]
-pub const KEY: [u8; 512] = [
+pub const KEY: [u8; 256] = [
     231, 97, 201, 180, 0, 1, 185, 150, 85, 90, 174, 188, 105, 133, 188, 3, 206, 5, 222, 71, 185, 1,
     209, 243, 36, 130, 250, 116, 17, 0, 24, 4, 25, 225, 250, 198, 245, 210, 140, 23, 139, 169, 15,
     193, 4, 145, 52, 138, 149, 155, 238, 36, 74, 152, 179, 108, 200, 248, 250, 100, 115, 214, 166,
@@ -60,15 +60,7 @@ pub const KEY: [u8; 512] = [
     180, 111, 18, 192, 136, 222, 11, 99, 41, 248, 205, 253, 209, 56, 214, 32, 225, 3, 49, 161, 58,
     57, 190, 69, 86, 95, 185, 184, 155, 76, 8, 122, 104, 81, 222, 234, 246, 40, 98, 182, 90, 160,
     111, 74, 102, 36, 148, 99, 69, 207, 214, 104, 87, 128, 238, 26, 121, 107, 166, 4, 64, 5, 210,
-    164, 162, 189, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0,
+    164, 162, 189,
 ];
 
 pub fn publics() -> [Public; 4] {
@@ -147,6 +139,31 @@ pub fn signatures() -> [Signature; 4] {
             Digest::try_from(vec![0xde; 48]).expect("Failed to create digest"),
         )),
         Signature::Null,
+    ]
+}
+
+pub fn sensitives() -> [Sensitive; 4] {
+    [
+        Sensitive::Rsa {
+            auth_value: Default::default(),
+            seed_value: Default::default(),
+            sensitive: KEY.to_vec().try_into().unwrap(),
+        },
+        Sensitive::Ecc {
+            auth_value: vec![0x00; 8].try_into().unwrap(),
+            seed_value: Default::default(),
+            sensitive: vec![0x11; 32].try_into().unwrap(),
+        },
+        Sensitive::Bits {
+            auth_value: Default::default(),
+            seed_value: vec![0x00; 8].try_into().unwrap(),
+            sensitive: vec![0x11; 8].try_into().unwrap(),
+        },
+        Sensitive::Symmetric {
+            auth_value: vec![0xde; 8].try_into().unwrap(),
+            seed_value: HASH.to_vec().try_into().unwrap(),
+            sensitive: vec![0x11; 16].try_into().unwrap(),
+        },
     ]
 }
 
