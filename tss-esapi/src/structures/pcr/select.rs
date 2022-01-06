@@ -7,7 +7,7 @@ use enumflags2::_internal::RawBitFlags;
 use log::error;
 use num_derive::{FromPrimitive, ToPrimitive};
 use num_traits::{FromPrimitive, ToPrimitive};
-use std::convert::{From, TryFrom};
+use std::convert::TryFrom;
 /// This module contains necessary representations
 /// of the items belonging to the TPMS_PCR_SELECT
 /// structure.
@@ -151,25 +151,31 @@ impl PcrSelect {
 impl TryFrom<TPMS_PCR_SELECT> for PcrSelect {
     type Error = Error;
     fn try_from(tss_pcr_select: TPMS_PCR_SELECT) -> Result<Self> {
-        Ok(PcrSelect {
-            // Parse the sizeofSelect into a SelectSize.
-            size_of_select: PcrSelectSize::from_u8(tss_pcr_select.sizeofSelect).ok_or_else(
-                || {
-                    error!(
-                        "Error converting sizeofSelect to a SelectSize: Invalid value {}",
-                        tss_pcr_select.sizeofSelect
-                    );
-                    Error::local_error(WrapperErrorKind::InvalidParam)
-                },
-            )?,
-            // Parse selected pcrs into BitFlags
-            selected_pcrs: BitFlags::<PcrSlot>::try_from(u32::from_le_bytes(
-                tss_pcr_select.pcrSelect,
-            ))
+        // Parse the sizeofSelect into a SelectSize.
+        let size_of_select =
+            PcrSelectSize::from_u8(tss_pcr_select.sizeofSelect).ok_or_else(|| {
+                error!(
+                    "Error converting sizeofSelect to a SelectSize: Invalid value {}",
+                    tss_pcr_select.sizeofSelect
+                );
+                Error::local_error(WrapperErrorKind::InvalidParam)
+            })?;
+
+        // Select only the octets indicated by sizeofSelect
+        let mut selected_octets = [0u8; TPM2_PCR_SELECT_MAX as usize];
+        selected_octets[..tss_pcr_select.sizeofSelect as usize]
+            .copy_from_slice(&tss_pcr_select.pcrSelect[..tss_pcr_select.sizeofSelect as usize]);
+
+        // Parse selected pcrs into BitFlags
+        let selected_pcrs = BitFlags::<PcrSlot>::try_from(u32::from_le_bytes(selected_octets))
             .map_err(|e| {
                 error!("Error parsing pcrSelect to a BitFlags<PcrSlot>: {}.", e);
                 Error::local_error(WrapperErrorKind::UnsupportedParam)
-            })?,
+            })?;
+
+        Ok(PcrSelect {
+            size_of_select,
+            selected_pcrs,
         })
     }
 }

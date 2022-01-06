@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 use crate::interface_types::algorithm::HashingAlgorithm;
 use crate::structures::{PcrSelectSize, PcrSlot};
-use crate::tss2_esys::TPMS_PCR_SELECTION;
+use crate::tss2_esys::{TPM2_PCR_SELECT_MAX, TPMS_PCR_SELECTION};
 use crate::{Error, Result, WrapperErrorKind};
 use enumflags2::BitFlags;
 use log::error;
@@ -144,31 +144,39 @@ impl PcrSelection {
 
 impl TryFrom<TPMS_PCR_SELECTION> for PcrSelection {
     type Error = Error;
+
     fn try_from(tss_pcr_selection: TPMS_PCR_SELECTION) -> Result<Self> {
-        Ok(PcrSelection {
-            // Parse hashing algorithm.
-            hashing_algorithm: HashingAlgorithm::try_from(tss_pcr_selection.hash).map_err(|e| {
+        // Parse hashing algorithm.
+        let hashing_algorithm =
+            HashingAlgorithm::try_from(tss_pcr_selection.hash).map_err(|e| {
                 error!("Error converting hash to a HashingAlgorithm: {}", e);
                 Error::local_error(WrapperErrorKind::InvalidParam)
-            })?,
-            // Parse the sizeofSelect into a SelectSize.
-            size_of_select: PcrSelectSize::from_u8(tss_pcr_selection.sizeofSelect).ok_or_else(
-                || {
-                    error!(
-                        "Error converting sizeofSelect to a SelectSize: Invalid value {}",
-                        tss_pcr_selection.sizeofSelect
-                    );
-                    Error::local_error(WrapperErrorKind::InvalidParam)
-                },
-            )?,
-            // Parse selected pcrs into BitFlags
-            selected_pcrs: BitFlags::<PcrSlot>::try_from(u32::from_le_bytes(
-                tss_pcr_selection.pcrSelect,
-            ))
+            })?;
+        // Parse the sizeofSelect into a SelectSize.
+        let size_of_select =
+            PcrSelectSize::from_u8(tss_pcr_selection.sizeofSelect).ok_or_else(|| {
+                error!(
+                    "Error converting sizeofSelect to a SelectSize: Invalid value {}",
+                    tss_pcr_selection.sizeofSelect
+                );
+                Error::local_error(WrapperErrorKind::InvalidParam)
+            })?;
+        // Select only the octets indicated by sizeofSelect
+        let mut selected_octets = [0u8; TPM2_PCR_SELECT_MAX as usize];
+        selected_octets[..tss_pcr_selection.sizeofSelect as usize].copy_from_slice(
+            &tss_pcr_selection.pcrSelect[..tss_pcr_selection.sizeofSelect as usize],
+        );
+        // Parse selected pcrs into BitFlags
+        let selected_pcrs = BitFlags::<PcrSlot>::try_from(u32::from_le_bytes(selected_octets))
             .map_err(|e| {
                 error!("Error parsing pcrSelect to a BitFlags<PcrSlot>: {}", e);
                 Error::local_error(WrapperErrorKind::UnsupportedParam)
-            })?,
+            })?;
+
+        Ok(PcrSelection {
+            hashing_algorithm,
+            size_of_select,
+            selected_pcrs,
         })
     }
 }

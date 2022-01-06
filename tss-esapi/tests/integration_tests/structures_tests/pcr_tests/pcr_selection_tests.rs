@@ -43,6 +43,26 @@ fn test_conversion_from_tss_pcr_selection() {
 }
 
 #[test]
+fn test_size_of_select_handling() {
+    let actual = PcrSelection::try_from(TPMS_PCR_SELECTION {
+        hash: TPM2_ALG_SHA256,
+        sizeofSelect: 2,
+        pcrSelect: [16, 128, 5, 1],
+    })
+    .expect("Failed to convert TPMS_PCR_SELECTION into a PcrSelection");
+
+    // Size of select is 2 so the values in octet 3 and 4
+    // should not appear in the converted pcr selection.
+
+    let expected = PcrSelection::new(
+        HashingAlgorithm::Sha256,
+        PcrSelectSize::TwoBytes,
+        &[PcrSlot::Slot4, PcrSlot::Slot15],
+    );
+    assert_eq!(expected, actual);
+}
+
+#[test]
 fn test_subtract() {
     let mut pcr_select_1 = PcrSelection::new(
         HashingAlgorithm::Sha256,

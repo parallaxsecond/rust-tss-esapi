@@ -120,21 +120,38 @@ fn test_multiple_conversions() {
 
 #[test]
 fn test_conversion_of_data_with_invalid_pcr_select_bit_flags() {
+    let expected_hash_algorithm = HashingAlgorithm::Sha256;
+    let expected_pcr_slots = [PcrSlot::Slot0, PcrSlot::Slot8, PcrSlot::Slot16];
     let mut tpml_pcr_selection: TPML_PCR_SELECTION = PcrSelectionListBuilder::new()
-        .with_selection(
-            HashingAlgorithm::Sha256,
-            &[PcrSlot::Slot0, PcrSlot::Slot8, PcrSlot::Slot16],
-        )
+        .with_selection(expected_hash_algorithm, &expected_pcr_slots)
         .build()
         .into();
 
-    // Size of select is 3 the maximum value supported.
-    // Setting a value in the fourth octet is creating
-    // a none supported bit flag
+    // Size of select is 3 indicating that only 3 first octets
+    // should be parsed. Setting a value in the fourth
+    // octet should not in any way affect the result.
     tpml_pcr_selection.pcrSelections[0].pcrSelect[3] = 1;
 
-    // The try_from should then fail.
-    PcrSelectionList::try_from(tpml_pcr_selection).unwrap_err();
+    let pcr_selection_list = PcrSelectionList::try_from(tpml_pcr_selection)
+        .expect("Failed to parse TPML_PCR_SELECTION as PcrSelectionList");
+
+    assert_eq!(
+        pcr_selection_list.len(),
+        1,
+        "The converted pcr selection list contained more items then expected"
+    );
+
+    assert_eq!(
+        pcr_selection_list.get_selections()[0].size_of_select(),
+        PcrSelectSize::ThreeBytes,
+        "PcrSelection in index 0, in the converted pcr selection list, contained an unexpected 'size of select' value",
+    );
+
+    assert_eq!(
+        &pcr_selection_list.get_selections()[0].selected(),
+        &expected_pcr_slots,
+        "PcrSelection in index 0, in the converted pcr selection list, contained one or more unexpected PcrSlot values",
+    );
 }
 
 #[test]
