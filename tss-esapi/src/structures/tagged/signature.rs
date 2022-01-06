@@ -135,7 +135,7 @@ impl Marshall for Signature {
     fn marshall(&self) -> Result<Vec<u8>> {
         let tpmt_sig = TPMT_SIGNATURE::try_from(self.clone())?;
         let mut offset = 0;
-        let mut buffer = Vec::with_capacity(Self::BUFFER_SIZE);
+        let mut buffer = vec![0; Self::BUFFER_SIZE];
 
         let ret = unsafe {
             Tss2_MU_TPMT_SIGNATURE_Marshal(
