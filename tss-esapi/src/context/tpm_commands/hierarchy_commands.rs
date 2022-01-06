@@ -61,7 +61,7 @@ impl Context {
                 self.optional_session_2(),
                 self.optional_session_3(),
                 &sensitive_create,
-                &public.clone().into(),
+                &public.clone().try_into()?,
                 &outside_info.cloned().unwrap_or_default().into(),
                 &creation_pcrs.into(),
                 &mut esys_prim_key_handle,

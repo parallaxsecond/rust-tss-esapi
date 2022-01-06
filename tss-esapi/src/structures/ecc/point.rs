@@ -9,7 +9,7 @@ use std::convert::{TryFrom, TryInto};
 ///
 /// # Details
 /// This corresponds to TPMS_ECC_POINT
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct EccPoint {
     x: EccParameter,
     y: EccParameter,

@@ -10,7 +10,7 @@ use log::error;
 use std::convert::{TryFrom, TryInto};
 
 /// Type holding RSA signature information.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct RsaSignature {
     hashing_algorithm: HashingAlgorithm,
     signature: PublicKeyRsa,
@@ -70,7 +70,7 @@ impl TryFrom<TPMS_SIGNATURE_RSA> for RsaSignature {
 }
 
 /// Type holding ECC signature information.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct EccSignature {
     hashing_algorithm: HashingAlgorithm,
     signature_r: EccParameter,

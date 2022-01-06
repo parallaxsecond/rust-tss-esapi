@@ -6,7 +6,7 @@ use crate::tss2_esys::{TPMT_HA, TPMU_HA};
 use crate::{Error, Result, WrapperErrorKind};
 use std::convert::{TryFrom, TryInto};
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct HashAgile {
     algorithm: HashingAlgorithm,
     digest: Digest,

@@ -9,7 +9,7 @@ use std::convert::{TryFrom, TryInto};
 /// Corresponds to TPMS_KEYEDHASH_PARMS
 ///
 /// These keyed hash parameters are specific to the [`crate::structures::Public`] type.
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct PublicKeyedHashParameters {
     keyed_hash_scheme: KeyedHashScheme,
 }

@@ -9,7 +9,7 @@ use crate::{
 };
 use log::error;
 
-use std::convert::TryFrom;
+use std::convert::{TryFrom, TryInto};
 use std::ptr::null_mut;
 
 impl Context {
@@ -671,7 +671,7 @@ impl Context {
                 self.optional_session_2(),
                 self.optional_session_3(),
                 &encryption_key.unwrap_or_default().into(),
-                &public.into(),
+                &public.try_into()?,
                 &duplicate.into(),
                 &encrypted_secret.into(),
                 &symmetric_alg.into(),

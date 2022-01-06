@@ -287,7 +287,7 @@ impl TryFrom<UINT32> for RsaExponent {
 /// This corresponds to TPMS_RSA_PARMS
 ///
 /// These rsa parameters are specific to the [`crate::structures::Public`] type.
-#[derive(Clone, Debug, Copy)]
+#[derive(Clone, Debug, Copy, PartialEq, Eq)]
 pub struct PublicRsaParameters {
     symmetric_definition_object: SymmetricDefinitionObject,
     rsa_scheme: RsaScheme,

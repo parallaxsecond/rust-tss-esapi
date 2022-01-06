@@ -71,7 +71,7 @@ impl Context {
                 self.optional_session_2(),
                 self.optional_session_3(),
                 &sensitive_create,
-                &public.clone().into(),
+                &public.clone().try_into()?,
                 &outside_info.cloned().unwrap_or_default().into(),
                 &creation_pcrs.into(),
                 &mut out_private_ptr,
@@ -118,7 +118,7 @@ impl Context {
                 self.optional_session_2(),
                 self.optional_session_3(),
                 &private.into(),
-                &public.clone().into(),
+                &public.clone().try_into()?,
                 &mut esys_key_handle,
             )
         };
@@ -149,7 +149,7 @@ impl Context {
                 self.optional_session_2(),
                 self.optional_session_3(),
                 private,
-                &public.clone().into(),
+                &public.clone().try_into()?,
                 if cfg!(tpm2_tss_version = "3") {
                     ObjectHandle::from(hierarchy).into()
                 } else {
@@ -186,7 +186,7 @@ impl Context {
                 self.optional_session_2(),
                 self.optional_session_3(),
                 null(),
-                &public.clone().into(),
+                &public.clone().try_into()?,
                 if cfg!(tpm2_tss_version = "3") {
                     ObjectHandle::from(hierarchy).into()
                 } else {
