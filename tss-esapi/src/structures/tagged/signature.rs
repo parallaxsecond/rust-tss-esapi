@@ -150,9 +150,12 @@ impl Marshall for Signature {
         };
         let ret = Error::from_tss_rc(ret);
         if ret.is_success() {
-            unsafe {
-                buffer.set_len(offset as usize);
-            }
+            let checked_offset = usize::try_from(offset).map_err(|e| {
+                error!("Failed to parse offset as usize: {}", e);
+                Error::local_error(WrapperErrorKind::InvalidParam)
+            })?;
+
+            buffer.truncate(checked_offset);
             Ok(buffer)
         } else {
             Err(ret)
