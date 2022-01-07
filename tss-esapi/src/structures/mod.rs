@@ -56,9 +56,14 @@ pub use self::hash::agile::HashAgile;
 /// The pcr section
 /////////////////////////////////////////////////////////
 mod pcr;
+
+pub use self::pcr_slot::PcrSlot;
+pub mod pcr_slot {
+    pub use super::pcr::slot::*;
+}
+
 pub use self::pcr_select::PcrSelect;
 pub use self::pcr_select::PcrSelectSize;
-pub use self::pcr_select::PcrSlot;
 pub mod pcr_select {
     pub use super::pcr::select::*;
 }
