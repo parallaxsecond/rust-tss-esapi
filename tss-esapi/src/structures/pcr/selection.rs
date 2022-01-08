@@ -6,7 +6,6 @@ use crate::tss2_esys::{TPM2_PCR_SELECT_MAX, TPMS_PCR_SELECTION};
 use crate::{Error, Result, WrapperErrorKind};
 use enumflags2::BitFlags;
 use log::error;
-use num_traits::{FromPrimitive, ToPrimitive};
 use std::convert::{From, TryFrom};
 use std::iter::FromIterator;
 /// This module contains the PcrSelection struct.
@@ -152,20 +151,16 @@ impl TryFrom<TPMS_PCR_SELECTION> for PcrSelection {
                 error!("Error converting hash to a HashingAlgorithm: {}", e);
                 Error::local_error(WrapperErrorKind::InvalidParam)
             })?;
+
         // Parse the sizeofSelect into a SelectSize.
-        let size_of_select =
-            PcrSelectSize::from_u8(tss_pcr_selection.sizeofSelect).ok_or_else(|| {
-                error!(
-                    "Error converting sizeofSelect to a SelectSize: Invalid value {}",
-                    tss_pcr_selection.sizeofSelect
-                );
-                Error::local_error(WrapperErrorKind::InvalidParam)
-            })?;
+        let size_of_select = PcrSelectSize::try_from(tss_pcr_selection.sizeofSelect)?;
+
         // Select only the octets indicated by sizeofSelect
         let mut selected_octets = [0u8; TPM2_PCR_SELECT_MAX as usize];
-        selected_octets[..tss_pcr_selection.sizeofSelect as usize].copy_from_slice(
-            &tss_pcr_selection.pcrSelect[..tss_pcr_selection.sizeofSelect as usize],
-        );
+        let number_of_selected_octets: usize = size_of_select.into();
+        selected_octets[..number_of_selected_octets]
+            .copy_from_slice(&tss_pcr_selection.pcrSelect[..number_of_selected_octets]);
+
         // Parse selected pcrs into BitFlags
         let selected_pcrs = BitFlags::<PcrSlot>::try_from(u32::from_le_bytes(selected_octets))
             .map_err(|e| {
@@ -185,7 +180,7 @@ impl From<PcrSelection> for TPMS_PCR_SELECTION {
     fn from(pcr_selection: PcrSelection) -> Self {
         TPMS_PCR_SELECTION {
             hash: pcr_selection.hashing_algorithm.into(),
-            sizeofSelect: pcr_selection.size_of_select.to_u8().unwrap(),
+            sizeofSelect: pcr_selection.size_of_select.into(),
             pcrSelect: pcr_selection.selected_pcrs.bits().to_le_bytes(),
         }
     }

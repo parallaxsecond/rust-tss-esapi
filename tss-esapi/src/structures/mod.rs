@@ -63,7 +63,6 @@ pub mod pcr_slot {
 }
 
 pub use self::pcr_select::PcrSelect;
-pub use self::pcr_select::PcrSelectSize;
 pub mod pcr_select {
     pub use super::pcr::select::*;
 }
@@ -71,6 +70,11 @@ pub mod pcr_select {
 pub use self::pcr_selection::PcrSelection;
 pub mod pcr_selection {
     pub use super::pcr::selection::*;
+}
+
+pub use self::pcr_select_size::PcrSelectSize;
+pub mod pcr_select_size {
+    pub use super::pcr::select_size::*;
 }
 /////////////////////////////////////////////////////////
 /// The lists section
