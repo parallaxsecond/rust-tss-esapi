@@ -20,7 +20,7 @@ fn test_invalid_conversions() {
     assert_eq!(
         Err(Error::WrapperError(WrapperErrorKind::InvalidParam)),
         CapabilityType::try_from(INVALID_CAPABILTY_TYPE_VALUE),
-        "Expected an error when converting TPM2_ALG_RSA to CapabilityType"
+        "Expected an error when converting 0xFFFFFFFF to a CapabilityType"
     );
 }
 

@@ -4,7 +4,7 @@ use crate::{constants::tss::*, tss2_esys::TPM2_PT, Error, Result, WrapperErrorKi
 use log::error;
 use num_derive::{FromPrimitive, ToPrimitive};
 use num_traits::{FromPrimitive, ToPrimitive};
-use std::convert::{From, TryFrom};
+use std::convert::TryFrom;
 
 #[derive(FromPrimitive, ToPrimitive, Debug, Clone, Copy, PartialEq, Eq, Hash)]
 #[repr(u32)]
@@ -90,12 +90,9 @@ impl From<PropertyTag> for TPM2_PT {
 
 impl TryFrom<TPM2_PT> for PropertyTag {
     type Error = Error;
-    fn try_from(tpm_property_tag: TPM2_PT) -> Result<PropertyTag> {
-        PropertyTag::from_u32(tpm_property_tag).ok_or_else(|| {
-            error!(
-                "value = {} did not match any PropertyTag.",
-                tpm_property_tag
-            );
+    fn try_from(tpm_pt: TPM2_PT) -> Result<PropertyTag> {
+        PropertyTag::from_u32(tpm_pt).ok_or_else(|| {
+            error!("value = {} did not match any PropertyTag.", tpm_pt);
             Error::local_error(WrapperErrorKind::InvalidParam)
         })
     }
