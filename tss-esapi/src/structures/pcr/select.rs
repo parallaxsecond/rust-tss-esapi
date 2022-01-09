@@ -19,7 +19,6 @@ use std::convert::TryFrom;
 /// number of PCR required by the platform-specific
 /// specification with which the TPM is compliant or by the implementer if
 /// not adhering to a platform-specific specification.
-
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub struct PcrSelect {
     size_of_select: PcrSelectSize,
