@@ -6,7 +6,7 @@ use crate::{
     interface_types::resource_handles::Hierarchy,
     structures::{
         Auth, CreateKeyResult, CreationData, CreationTicket, Data, Digest, EncryptedSecret,
-        IDObject, Name, PcrSelectionList, Private, Public, Sensitive, SensitiveData,
+        IdObject, Name, PcrSelectionList, Private, Public, Sensitive, SensitiveData,
     },
     tss2_esys::*,
     Context, Error, Result,
@@ -249,7 +249,7 @@ impl Context {
         &mut self,
         activate_handle: KeyHandle,
         key_handle: KeyHandle,
-        credential_blob: IDObject,
+        credential_blob: IdObject,
         secret: EncryptedSecret,
     ) -> Result<Digest> {
         let mut out_cert_info_ptr = null_mut();
@@ -279,7 +279,7 @@ impl Context {
         }
     }
 
-    /// Perform actions to create a [IDObject] containing an activation credential.
+    /// Perform actions to create a [IdObject] containing an activation credential.
     ///
     /// This does not use any TPM secrets, and is really just a convenience function.
     pub fn make_credential(
@@ -287,7 +287,7 @@ impl Context {
         key_handle: KeyHandle,
         credential: Digest,
         object_name: Name,
-    ) -> Result<(IDObject, EncryptedSecret)> {
+    ) -> Result<(IdObject, EncryptedSecret)> {
         let mut out_credential_blob = null_mut();
         let mut out_secret = null_mut();
         let ret = unsafe {
@@ -312,7 +312,7 @@ impl Context {
             let out_secret = unsafe { MBox::<TPM2B_ENCRYPTED_SECRET>::from_raw(out_secret) };
 
             Ok((
-                IDObject::try_from(*out_credential_blob)?,
+                IdObject::try_from(*out_credential_blob)?,
                 EncryptedSecret::try_from(*out_secret)?,
             ))
         } else {

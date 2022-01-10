@@ -9,7 +9,7 @@ use crate::{
         algorithm::{AsymmetricAlgorithm, HashingAlgorithm},
         session_handles::{AuthSession, PolicySession},
     },
-    structures::{EncryptedSecret, IDObject, SymmetricDefinition},
+    structures::{EncryptedSecret, IdObject, SymmetricDefinition},
     traits::Marshall,
     utils::PublicKey,
     Result,
@@ -101,7 +101,7 @@ impl TransientKeyContext {
         credential_blob: Vec<u8>,
         secret: Vec<u8>,
     ) -> Result<Vec<u8>> {
-        let credential_blob = IDObject::try_from(credential_blob)?;
+        let credential_blob = IdObject::try_from(credential_blob)?;
         let secret = EncryptedSecret::try_from(secret)?;
         let object_handle = self.load_key(object.params, object.material, object.auth)?;
         let (key_handle, session_2) = match key {

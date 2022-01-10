@@ -36,7 +36,7 @@ pub use result::CreatePrimaryKeyResult;
 mod buffers;
 pub use self::buffers::{
     attest::AttestBuffer, auth::Auth, data::Data, digest::Digest, ecc_parameter::EccParameter,
-    encrypted_secret::EncryptedSecret, id_object::IDObject, initial_value::InitialValue,
+    encrypted_secret::EncryptedSecret, id_object::IdObject, initial_value::InitialValue,
     max_buffer::MaxBuffer, max_nv_buffer::MaxNvBuffer, nonce::Nonce, private::Private,
     private_key_rsa::PrivateKeyRsa, private_vendor_specific::PrivateVendorSpecific,
     public::PublicBuffer, public_key_rsa::PublicKeyRsa, sensitive::SensitiveBuffer,

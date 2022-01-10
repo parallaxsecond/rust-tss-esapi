@@ -182,7 +182,7 @@ pub mod encrypted_secret {
 }
 
 pub mod id_object {
-    named_field_buffer_type!(IDObject, 256, TPM2B_ID_OBJECT, credential);
+    named_field_buffer_type!(IdObject, 256, TPM2B_ID_OBJECT, credential);
 }
 
 pub mod initial_value {
