@@ -154,8 +154,8 @@ impl TransientKeyContext {
             ..
         } = self.context.create(
             self.root_key_handle,
-            &TransientKeyContext::get_public_from_params(key_params, None)?,
-            key_auth.as_ref(),
+            TransientKeyContext::get_public_from_params(key_params, None)?,
+            key_auth.clone(),
             None,
             None,
             None,
@@ -180,7 +180,7 @@ impl TransientKeyContext {
         self.set_session_attrs()?;
         let key_handle = self
             .context
-            .load_external_public(&public, Hierarchy::Owner)?;
+            .load_external_public(public, Hierarchy::Owner)?;
         self.context.flush_context(key_handle.into())?;
         Ok(KeyMaterial {
             public: public_key,
@@ -286,7 +286,7 @@ impl TransientKeyContext {
             .context
             .sign(
                 key_handle,
-                &digest,
+                digest,
                 SignatureScheme::Null,
                 validation.try_into()?,
             )
@@ -317,7 +317,7 @@ impl TransientKeyContext {
         self.set_session_attrs()?;
         let verified = self
             .context
-            .verify_signature(key_handle, &digest, signature)
+            .verify_signature(key_handle, digest, signature)
             .or_else(|e| {
                 self.context.flush_context(key_handle.into())?;
                 Err(e)
@@ -341,7 +341,7 @@ impl TransientKeyContext {
     ) -> Result<KeyMaterial> {
         self.set_session_attrs()?;
         let key_handle = self.context.context_load(context).map(KeyHandle::from)?;
-        if let Some(key_auth_value) = &auth {
+        if let Some(key_auth_value) = auth.clone() {
             self.context
                 .tr_set_auth(key_handle.into(), key_auth_value)
                 .or_else(|e| {
@@ -466,7 +466,7 @@ impl TransientKeyContext {
                             .with_restricted(false)
                             .build()?,
                     )
-                    .with_rsa_unique_identifier(&unique);
+                    .with_rsa_unique_identifier(unique);
             }
             KeyParams::Ecc { scheme, curve } => {
                 let unique = pub_key
@@ -484,7 +484,7 @@ impl TransientKeyContext {
                         PublicEccParametersBuilder::new_unrestricted_signing_key(scheme, curve)
                             .build()?,
                     )
-                    .with_ecc_unique_identifier(&unique);
+                    .with_ecc_unique_identifier(unique);
             }
         }
         pub_builder.build()
@@ -504,16 +504,16 @@ impl TransientKeyContext {
         self.set_session_attrs()?;
         let key_handle = if material.private.is_empty() {
             self.context
-                .load_external_public(&public, Hierarchy::Owner)?
+                .load_external_public(public, Hierarchy::Owner)?
         } else {
             self.context
-                .load(self.root_key_handle, material.private.try_into()?, &public)
+                .load(self.root_key_handle, material.private.try_into()?, public)
                 .map(KeyHandle::from)?
         };
         let key_auth_value = auth.unwrap_or_default();
         if !key_auth_value.is_empty() {
             self.context
-                .tr_set_auth(key_handle.into(), &key_auth_value)
+                .tr_set_auth(key_handle.into(), key_auth_value)
                 .or_else(|e| {
                     self.context.flush_context(key_handle.into())?;
                     Err(e)
@@ -646,7 +646,7 @@ impl TransientKeyContextBuilder {
 
         for (hierarchy, auth) in self.hierarchy_auth.drain() {
             let auth_hierarchy = Auth::try_from(auth)?;
-            context.tr_set_auth(hierarchy.into(), &auth_hierarchy)?;
+            context.tr_set_auth(hierarchy.into(), auth_hierarchy)?;
         }
 
         let session = context
@@ -674,12 +674,12 @@ impl TransientKeyContextBuilder {
         let root_key_handle = context
             .create_primary(
                 self.root_hierarchy,
-                &create_restricted_decryption_rsa_public(
+                create_restricted_decryption_rsa_public(
                     self.default_context_cipher,
                     root_key_rsa_key_bits,
                     RsaExponent::ZERO_EXPONENT,
                 )?,
-                root_key_auth.as_ref(),
+                root_key_auth,
                 None,
                 None,
                 None,

@@ -64,7 +64,7 @@ fn test_create_and_use_ak() {
         ek_rsa,
         HashingAlgorithm::Sha256,
         SignatureSchemeAlgorithm::RsaPss,
-        Some(&ak_auth),
+        Some(ak_auth.clone()),
         None,
     )
     .unwrap();
@@ -72,7 +72,7 @@ fn test_create_and_use_ak() {
     let loaded_ak = ak::load_ak(
         &mut context,
         ek_rsa,
-        Some(&ak_auth),
+        Some(ak_auth),
         att_key.out_private,
         att_key.out_public,
     )
@@ -162,7 +162,7 @@ fn test_create_custom_ak() {
         ek_rsa,
         HashingAlgorithm::Sha256,
         SignatureSchemeAlgorithm::RsaPss,
-        Some(&ak_auth),
+        Some(ak_auth.clone()),
         None,
     )
     .unwrap();
@@ -178,7 +178,7 @@ fn test_create_custom_ak() {
         ek_rsa,
         HashingAlgorithm::Sha256,
         SignatureSchemeAlgorithm::RsaPss,
-        Some(&ak_auth),
+        Some(ak_auth),
         &StClearKeys,
     )
     .unwrap();

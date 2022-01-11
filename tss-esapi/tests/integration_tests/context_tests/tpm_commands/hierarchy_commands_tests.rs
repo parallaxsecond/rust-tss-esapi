@@ -16,8 +16,8 @@ mod test_create_primary {
         let key_handle = context
             .create_primary(
                 Hierarchy::Owner,
-                &decryption_key_pub(),
-                Some(&key_auth),
+                decryption_key_pub(),
+                Some(key_auth),
                 None,
                 None,
                 None,
@@ -69,7 +69,7 @@ mod test_change_auth {
         let prim_key_handle = context
             .create_primary(
                 Hierarchy::Owner,
-                &decryption_key_pub(),
+                decryption_key_pub(),
                 None,
                 None,
                 None,
@@ -80,7 +80,7 @@ mod test_change_auth {
         let keyresult = context
             .create(
                 prim_key_handle,
-                &decryption_key_pub(),
+                decryption_key_pub(),
                 None,
                 None,
                 None,
@@ -91,7 +91,7 @@ mod test_change_auth {
             .load(
                 prim_key_handle,
                 keyresult.out_private,
-                &keyresult.out_public,
+                keyresult.out_public.clone(),
             )
             .unwrap();
 
@@ -102,7 +102,7 @@ mod test_change_auth {
             .object_change_auth(loaded_key.into(), prim_key_handle.into(), new_key_auth)
             .unwrap();
         context
-            .load(prim_key_handle, new_private, &keyresult.out_public)
+            .load(prim_key_handle, new_private, keyresult.out_public)
             .unwrap();
     }
 

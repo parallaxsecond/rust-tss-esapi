@@ -30,10 +30,10 @@ impl Context {
     pub fn create_primary(
         &mut self,
         primary_handle: Hierarchy,
-        public: &Public,
-        auth_value: Option<&Auth>,
-        initial_data: Option<&SensitiveData>,
-        outside_info: Option<&Data>,
+        public: Public,
+        auth_value: Option<Auth>,
+        initial_data: Option<SensitiveData>,
+        outside_info: Option<Data>,
         creation_pcrs: Option<PcrSelectionList>,
     ) -> Result<CreatePrimaryKeyResult> {
         let sensitive_create = TPM2B_SENSITIVE_CREATE {
@@ -41,8 +41,8 @@ impl Context {
                 .try_into()
                 .unwrap(),
             sensitive: TPMS_SENSITIVE_CREATE {
-                userAuth: auth_value.cloned().unwrap_or_default().into(),
-                data: initial_data.cloned().unwrap_or_default().into(),
+                userAuth: auth_value.unwrap_or_default().into(),
+                data: initial_data.unwrap_or_default().into(),
             },
         };
         let creation_pcrs = PcrSelectionList::list_from_option(creation_pcrs);
@@ -61,8 +61,8 @@ impl Context {
                 self.optional_session_2(),
                 self.optional_session_3(),
                 &sensitive_create,
-                &public.clone().try_into()?,
-                &outside_info.cloned().unwrap_or_default().into(),
+                &public.try_into()?,
+                &outside_info.unwrap_or_default().into(),
                 &creation_pcrs.into(),
                 &mut esys_prim_key_handle,
                 &mut out_public_ptr,

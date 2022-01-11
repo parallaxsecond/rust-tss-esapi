@@ -182,7 +182,7 @@ impl Context {
     pub fn policy_pcr(
         &mut self,
         policy_session: PolicySession,
-        pcr_policy_digest: &Digest,
+        pcr_policy_digest: Digest,
         pcr_selection_list: PcrSelectionList,
     ) -> Result<()> {
         let ret = unsafe {
@@ -192,7 +192,7 @@ impl Context {
                 self.optional_session_1(),
                 self.optional_session_2(),
                 self.optional_session_3(),
-                &pcr_policy_digest.clone().into(),
+                &pcr_policy_digest.into(),
                 &pcr_selection_list.into(),
             )
         };
@@ -294,7 +294,7 @@ impl Context {
     pub fn policy_cp_hash(
         &mut self,
         policy_session: PolicySession,
-        cp_hash_a: &Digest,
+        cp_hash_a: Digest,
     ) -> Result<()> {
         let ret = unsafe {
             Esys_PolicyCpHash(
@@ -303,7 +303,7 @@ impl Context {
                 self.optional_session_1(),
                 self.optional_session_2(),
                 self.optional_session_3(),
-                &cp_hash_a.clone().into(),
+                &cp_hash_a.into(),
             )
         };
         let ret = Error::from_tss_rc(ret);
@@ -322,7 +322,7 @@ impl Context {
     pub fn policy_name_hash(
         &mut self,
         policy_session: PolicySession,
-        name_hash: &Digest,
+        name_hash: Digest,
     ) -> Result<()> {
         let ret = unsafe {
             Esys_PolicyNameHash(
@@ -331,7 +331,7 @@ impl Context {
                 self.optional_session_1(),
                 self.optional_session_2(),
                 self.optional_session_3(),
-                &name_hash.clone().into(),
+                &name_hash.into(),
             )
         };
         let ret = Error::from_tss_rc(ret);
@@ -461,8 +461,8 @@ impl Context {
     pub fn policy_authorize(
         &mut self,
         policy_session: PolicySession,
-        approved_policy: &Digest,
-        policy_ref: &Nonce,
+        approved_policy: Digest,
+        policy_ref: Nonce,
         key_sign: &Name,
         check_ticket: VerifiedTicket,
     ) -> Result<()> {
@@ -474,8 +474,8 @@ impl Context {
                 self.optional_session_1(),
                 self.optional_session_2(),
                 self.optional_session_3(),
-                &approved_policy.clone().into(),
-                &policy_ref.clone().into(),
+                &approved_policy.into(),
+                &policy_ref.into(),
                 key_sign.as_ref(),
                 &check_ticket,
             )
@@ -597,7 +597,7 @@ impl Context {
     pub fn policy_template(
         &mut self,
         policy_session: PolicySession,
-        template_hash: &Digest,
+        template_hash: Digest,
     ) -> Result<()> {
         let ret = unsafe {
             Esys_PolicyTemplate(
@@ -606,7 +606,7 @@ impl Context {
                 self.optional_session_1(),
                 self.optional_session_2(),
                 self.optional_session_3(),
-                &template_hash.clone().into(),
+                &template_hash.into(),
             )
         };
         let ret = Error::from_tss_rc(ret);

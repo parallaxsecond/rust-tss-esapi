@@ -14,8 +14,8 @@ mod test_create {
         let prim_key_handle = context
             .create_primary(
                 Hierarchy::Owner,
-                &decryption_key_pub(),
-                Some(&key_auth),
+                decryption_key_pub(),
+                Some(key_auth.clone()),
                 None,
                 None,
                 None,
@@ -26,8 +26,8 @@ mod test_create {
         let _ = context
             .create(
                 prim_key_handle,
-                &decryption_key_pub(),
-                Some(&key_auth),
+                decryption_key_pub(),
+                Some(key_auth),
                 None,
                 None,
                 None,
@@ -50,8 +50,8 @@ mod test_load {
         let prim_key_handle = context
             .create_primary(
                 Hierarchy::Owner,
-                &decryption_key_pub(),
-                Some(&key_auth),
+                decryption_key_pub(),
+                Some(key_auth.clone()),
                 None,
                 None,
                 None,
@@ -62,8 +62,8 @@ mod test_load {
         let result = context
             .create(
                 prim_key_handle,
-                &signing_key_pub(),
-                Some(&key_auth),
+                signing_key_pub(),
+                Some(key_auth),
                 None,
                 None,
                 None,
@@ -71,7 +71,7 @@ mod test_load {
             .unwrap();
 
         let _ = context
-            .load(prim_key_handle, result.out_private, &result.out_public)
+            .load(prim_key_handle, result.out_private, result.out_public)
             .unwrap();
     }
 }
@@ -113,7 +113,7 @@ mod test_load_external_public {
                 .expect("Failed to create rsa parameters for public structure"),
             )
             .with_rsa_unique_identifier(
-                &PublicKeyRsa::try_from(&KEY[..256])
+                PublicKeyRsa::try_from(&KEY[..256])
                     .expect("Failed to create Public RSA key from buffer"),
             )
             .build()
@@ -126,7 +126,7 @@ mod test_load_external_public {
         let pub_key = get_ext_rsa_pub();
 
         context
-            .load_external_public(&pub_key, Hierarchy::Owner)
+            .load_external_public(pub_key, Hierarchy::Owner)
             .unwrap();
     }
 }
@@ -211,7 +211,7 @@ mod test_load_external {
                 .expect("Failed to create rsa parameters for public structure"),
             )
             .with_rsa_unique_identifier(
-                &PublicKeyRsa::try_from(&KEY[..])
+                PublicKeyRsa::try_from(&KEY[..])
                     .expect("Failed to create Public RSA key from buffer"),
             )
             .build()
@@ -225,7 +225,7 @@ mod test_load_external {
         let priv_key = get_ext_rsa_priv();
 
         let key_handle = context
-            .load_external(priv_key, &pub_key, Hierarchy::Null)
+            .load_external(priv_key, pub_key, Hierarchy::Null)
             .unwrap();
         context.flush_context(key_handle.into()).unwrap();
     }
@@ -245,8 +245,8 @@ mod test_read_public {
         let key_handle = context
             .create_primary(
                 Hierarchy::Owner,
-                &signing_key_pub(),
-                Some(&key_auth),
+                signing_key_pub(),
+                Some(key_auth),
                 None,
                 None,
                 None,
@@ -269,7 +269,7 @@ mod test_make_credential {
         let key_handle = context
             .create_primary(
                 Hierarchy::Owner,
-                &decryption_key_pub(),
+                decryption_key_pub(),
                 None,
                 None,
                 None,
@@ -341,7 +341,7 @@ mod test_activate_credential {
         let key_handle = context
             .create_primary(
                 Hierarchy::Owner,
-                &decryption_key_pub(),
+                decryption_key_pub(),
                 None,
                 None,
                 None,
@@ -389,7 +389,7 @@ mod test_unseal {
         let key_handle_seal = context
             .create_primary(
                 Hierarchy::Owner,
-                &decryption_key_pub(),
+                decryption_key_pub(),
                 None,
                 None,
                 None,
@@ -400,7 +400,7 @@ mod test_unseal {
         let key_handle_unseal = context
             .create_primary(
                 Hierarchy::Owner,
-                &decryption_key_pub(),
+                decryption_key_pub(),
                 None,
                 None,
                 None,
@@ -413,15 +413,15 @@ mod test_unseal {
         let result = context
             .create(
                 key_handle_seal,
-                &key_pub,
+                key_pub,
                 None,
-                Some(SensitiveData::try_from(testbytes.to_vec()).unwrap()).as_ref(),
+                Some(SensitiveData::try_from(testbytes.to_vec()).unwrap()),
                 None,
                 None,
             )
             .unwrap();
         let loaded_key = context
-            .load(key_handle_unseal, result.out_private, &result.out_public)
+            .load(key_handle_unseal, result.out_private, result.out_public)
             .unwrap();
         let unsealed = context.unseal(loaded_key.into()).unwrap();
         let unsealed = unsealed.value();

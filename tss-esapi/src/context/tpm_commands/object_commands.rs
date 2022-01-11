@@ -40,10 +40,10 @@ impl Context {
     pub fn create(
         &mut self,
         parent_handle: KeyHandle,
-        public: &Public,
-        auth_value: Option<&Auth>,
-        sensitive_data: Option<&SensitiveData>,
-        outside_info: Option<&Data>,
+        public: Public,
+        auth_value: Option<Auth>,
+        sensitive_data: Option<SensitiveData>,
+        outside_info: Option<Data>,
         creation_pcrs: Option<PcrSelectionList>,
     ) -> Result<CreateKeyResult> {
         let sensitive_create = TPM2B_SENSITIVE_CREATE {
@@ -51,8 +51,8 @@ impl Context {
                 .try_into()
                 .unwrap(), // will not fail on targets of at least 16 bits
             sensitive: TPMS_SENSITIVE_CREATE {
-                userAuth: auth_value.cloned().unwrap_or_default().into(),
-                data: sensitive_data.cloned().unwrap_or_default().into(),
+                userAuth: auth_value.unwrap_or_default().into(),
+                data: sensitive_data.unwrap_or_default().into(),
             },
         };
         let creation_pcrs = PcrSelectionList::list_from_option(creation_pcrs);
@@ -71,8 +71,8 @@ impl Context {
                 self.optional_session_2(),
                 self.optional_session_3(),
                 &sensitive_create,
-                &public.clone().try_into()?,
-                &outside_info.cloned().unwrap_or_default().into(),
+                &public.try_into()?,
+                &outside_info.unwrap_or_default().into(),
                 &creation_pcrs.into(),
                 &mut out_private_ptr,
                 &mut out_public_ptr,
@@ -107,7 +107,7 @@ impl Context {
         &mut self,
         parent_handle: KeyHandle,
         private: Private,
-        public: &Public,
+        public: Public,
     ) -> Result<KeyHandle> {
         let mut esys_key_handle = ESYS_TR_NONE;
         let ret = unsafe {
@@ -118,7 +118,7 @@ impl Context {
                 self.optional_session_2(),
                 self.optional_session_3(),
                 &private.into(),
-                &public.clone().try_into()?,
+                &public.try_into()?,
                 &mut esys_key_handle,
             )
         };
@@ -138,7 +138,7 @@ impl Context {
     pub fn load_external(
         &mut self,
         private: Sensitive,
-        public: &Public,
+        public: Public,
         hierarchy: Hierarchy,
     ) -> Result<KeyHandle> {
         let mut esys_key_handle = ESYS_TR_NONE;
@@ -149,7 +149,7 @@ impl Context {
                 self.optional_session_2(),
                 self.optional_session_3(),
                 &private.try_into()?,
-                &public.clone().try_into()?,
+                &public.try_into()?,
                 if cfg!(tpm2_tss_version = "3") {
                     ObjectHandle::from(hierarchy).into()
                 } else {
@@ -175,7 +175,7 @@ impl Context {
     /// Load the public part of an external key and return its new handle.
     pub fn load_external_public(
         &mut self,
-        public: &Public,
+        public: Public,
         hierarchy: Hierarchy,
     ) -> Result<KeyHandle> {
         let mut esys_key_handle = ESYS_TR_NONE;
@@ -186,7 +186,7 @@ impl Context {
                 self.optional_session_2(),
                 self.optional_session_3(),
                 null(),
-                &public.clone().try_into()?,
+                &public.try_into()?,
                 if cfg!(tpm2_tss_version = "3") {
                     ObjectHandle::from(hierarchy).into()
                 } else {

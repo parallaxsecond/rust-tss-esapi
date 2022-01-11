@@ -125,8 +125,8 @@ impl Context {
     ///     let key_handle = ctx
     ///         .create_primary(
     ///             Hierarchy::Owner,
-    ///             &public_area,
-    ///             Some(&key_auth),
+    ///             public_area,
+    ///             Some(key_auth),
     ///             None,
     ///             None,
     ///             None,
@@ -245,12 +245,12 @@ impl Context {
     /// #    ctx
     /// #        .create_primary(
     /// #            Hierarchy::Owner,
-    /// #            &create_restricted_decryption_rsa_public(
+    /// #            create_restricted_decryption_rsa_public(
     /// #               SymmetricDefinitionObject::AES_256_CFB,
     /// #               RsaKeyBits::Rsa2048,
     /// #               RsaExponent::default(),
     /// #            ).expect("Failed to Public structure for key"),
-    /// #            Some(auth_value_primary).as_ref(),
+    /// #            Some(auth_value_primary),
     /// #            None,
     /// #            None,
     /// #            None,
@@ -364,12 +364,12 @@ impl Context {
     /// #    ctx
     /// #        .create_primary(
     /// #            Hierarchy::Owner,
-    /// #            &create_restricted_decryption_rsa_public(
+    /// #            create_restricted_decryption_rsa_public(
     /// #               SymmetricDefinitionObject::AES_256_CFB,
     /// #               RsaKeyBits::Rsa2048,
     /// #               RsaExponent::default(),
     /// #            ).expect("Failed to Public structure for key"),
-    /// #            Some(auth_value_primary).as_ref(),
+    /// #            Some(auth_value_primary),
     /// #            None,
     /// #            None,
     /// #            None,

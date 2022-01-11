@@ -88,8 +88,8 @@ impl PublicBuilder {
 
     /// Adds the auth policy for the [Public] strucutre
     /// to the builder
-    pub fn with_auth_policy(mut self, auth_policy: &Digest) -> Self {
-        self.auth_policy = Some(auth_policy.clone());
+    pub fn with_auth_policy(mut self, auth_policy: Digest) -> Self {
+        self.auth_policy = Some(auth_policy);
         self
     }
 
@@ -112,8 +112,8 @@ impl PublicBuilder {
     /// [Rsa][`crate::interface_types::algorithm::PublicAlgorithm::Rsa].
     ///
     /// The unique identifier is the public key.
-    pub fn with_rsa_unique_identifier(mut self, rsa_unique_identifier: &PublicKeyRsa) -> Self {
-        self.rsa_unique_identifier = Some(rsa_unique_identifier.clone());
+    pub fn with_rsa_unique_identifier(mut self, rsa_unique_identifier: PublicKeyRsa) -> Self {
+        self.rsa_unique_identifier = Some(rsa_unique_identifier);
         self
     }
 
@@ -139,9 +139,9 @@ impl PublicBuilder {
     /// [KeyedHash][`crate::interface_types::algorithm::PublicAlgorithm::KeyedHash].
     pub fn with_keyed_hash_unique_identifier(
         mut self,
-        keyed_hash_unique_identifier: &Digest,
+        keyed_hash_unique_identifier: Digest,
     ) -> Self {
-        self.keyed_hash_unique_identifier = Some(keyed_hash_unique_identifier.clone());
+        self.keyed_hash_unique_identifier = Some(keyed_hash_unique_identifier);
         self
     }
 
@@ -164,8 +164,8 @@ impl PublicBuilder {
     /// [Ecc][`crate::interface_types::algorithm::PublicAlgorithm::Ecc].
     ///
     /// The unique identifier is a ecc point.
-    pub fn with_ecc_unique_identifier(mut self, ecc_unique_identifier: &EccPoint) -> Self {
-        self.ecc_unique_identifier = Some(ecc_unique_identifier.clone());
+    pub fn with_ecc_unique_identifier(mut self, ecc_unique_identifier: EccPoint) -> Self {
+        self.ecc_unique_identifier = Some(ecc_unique_identifier);
         self
     }
 
@@ -191,9 +191,9 @@ impl PublicBuilder {
     /// [SymCipher][`crate::interface_types::algorithm::PublicAlgorithm::SymCipher].
     pub fn with_symmetric_cipher_unique_identifier(
         mut self,
-        symmetric_cipher_unique_identifier: &Digest,
+        symmetric_cipher_unique_identifier: Digest,
     ) -> Self {
-        self.symmetric_cipher_unique_identifier = Some(symmetric_cipher_unique_identifier.clone());
+        self.symmetric_cipher_unique_identifier = Some(symmetric_cipher_unique_identifier);
         self
     }
 

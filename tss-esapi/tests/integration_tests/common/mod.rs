@@ -266,7 +266,7 @@ pub fn get_pcr_policy_digest(
         .build();
 
     let (_update_counter, pcr_selection_list_out, pcr_data) = context
-        .pcr_read(&pcr_selection_list)
+        .pcr_read(pcr_selection_list.clone())
         .map(|(update_counter, read_pcr_selections, read_pcr_digests)| {
             (
                 update_counter,
@@ -307,7 +307,7 @@ pub fn get_pcr_policy_digest(
 
     let (hashed_data, _ticket) = context
         .hash(
-            &MaxBuffer::try_from(concatenated_pcr_values.to_vec()).unwrap(),
+            MaxBuffer::try_from(concatenated_pcr_values.to_vec()).unwrap(),
             HashingAlgorithm::Sha256,
             Hierarchy::Owner,
         )
@@ -345,7 +345,7 @@ pub fn get_pcr_policy_digest(
             .expect("Failed to convert auth session into policy session");
         // There should be no errors setting pcr policy for trial session.
         context
-            .policy_pcr(trial_policy_session, &hashed_data, pcr_selection_list)
+            .policy_pcr(trial_policy_session, hashed_data, pcr_selection_list)
             .expect("Failed to call policy pcr");
 
         // There is now a policy digest that can be retrieved and used.
@@ -389,7 +389,7 @@ pub fn get_pcr_policy_digest(
             .expect("Failed to convert auth session into policy session");
         // There should be no errors setting pcr policy for trial session.
         context
-            .policy_pcr(policy_session, &hashed_data, pcr_selection_list)
+            .policy_pcr(policy_session, hashed_data, pcr_selection_list)
             .expect("Failed to call policy_pcr");
 
         // There is now a policy digest that can be retrieved and used.
@@ -419,9 +419,9 @@ pub fn create_public_sealed_object() -> Public {
         .with_public_algorithm(PublicAlgorithm::KeyedHash)
         .with_name_hashing_algorithm(HashingAlgorithm::Sha256)
         .with_object_attributes(object_attributes)
-        .with_auth_policy(&Default::default())
+        .with_auth_policy(Default::default())
         .with_keyed_hash_parameters(PublicKeyedHashParameters::new(KeyedHashScheme::Null))
-        .with_keyed_hash_unique_identifier(&Default::default())
+        .with_keyed_hash_unique_identifier(Default::default())
         .build()
         .expect("Failed to create public structure.")
 }

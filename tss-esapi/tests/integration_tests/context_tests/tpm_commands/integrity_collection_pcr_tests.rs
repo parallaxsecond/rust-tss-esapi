@@ -28,7 +28,7 @@ mod test_pcr_extend_reset {
             .build();
         // pcr_read is NO_SESSIONS
         let (_, read_pcr_selections, read_pcr_digests) = context.execute_without_session(|ctx| {
-            ctx.pcr_read(&pcr_selection_list)
+            ctx.pcr_read(pcr_selection_list.clone())
                 .expect("Failed to call pcr_read")
         });
 
@@ -73,7 +73,7 @@ mod test_pcr_extend_reset {
 
         // Read PCR contents
         let (_, read_pcr_selections_2, read_pcr_digests_2) =
-            context.execute_without_session(|ctx| ctx.pcr_read(&pcr_selection_list).unwrap());
+            context.execute_without_session(|ctx| ctx.pcr_read(pcr_selection_list).unwrap());
         // Needs to have the length of associated with the hashing algorithm
         /*
           Right Hand Side determined by:
@@ -126,7 +126,7 @@ mod test_pcr_extend_reset {
             .build();
         let pcr_data = context
             .execute_without_session(|ctx| {
-                ctx.pcr_read(&pcr_selection_list).map(
+                ctx.pcr_read(pcr_selection_list).map(
                     |(_, read_pcr_selections, read_pcr_digests)| {
                         PcrData::create(&read_pcr_selections, &read_pcr_digests)
                             .expect("Failed to create PcrData")
@@ -170,7 +170,7 @@ mod test_pcr_read {
         assert_eq!(input.pcrSelections[0].pcrSelect[2], 0b0000_0000);
         // Read the pcr slots.
         let (update_counter, read_pcr_selections, read_pcr_digests) = context
-            .pcr_read(&pcr_selection_list)
+            .pcr_read(pcr_selection_list)
             .expect("Failed to call pcr_read");
 
         // Verify that the selected slots have been read.
@@ -236,7 +236,7 @@ mod test_pcr_read {
             )
             .build();
         let (_update_counter, pcr_selection_list_out, _pcr_data) =
-            context.pcr_read(&pcr_selection_list_in).unwrap();
+            context.pcr_read(pcr_selection_list_in.clone()).unwrap();
         assert_ne!(pcr_selection_list_in, pcr_selection_list_out);
     }
 }

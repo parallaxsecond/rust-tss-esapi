@@ -20,8 +20,8 @@ use zeroize::Zeroize;
 
 impl Context {
     /// Set the authentication value for a given object handle in the ESYS context.
-    pub fn tr_set_auth(&mut self, object_handle: ObjectHandle, auth: &Auth) -> Result<()> {
-        let mut tss_auth = auth.clone().into();
+    pub fn tr_set_auth(&mut self, object_handle: ObjectHandle, auth: Auth) -> Result<()> {
+        let mut tss_auth = auth.into();
         let ret = unsafe { Esys_TR_SetAuth(self.mut_context(), object_handle.into(), &tss_auth) };
         tss_auth.buffer.zeroize();
         let ret = Error::from_tss_rc(ret);

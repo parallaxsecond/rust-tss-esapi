@@ -53,13 +53,13 @@ impl Context {
         &mut self,
         tpm_key: Option<KeyHandle>,
         bind: Option<ObjectHandle>,
-        nonce: Option<&Nonce>,
+        nonce: Option<Nonce>,
         session_type: SessionType,
         symmetric: SymmetricDefinition,
         auth_hash: HashingAlgorithm,
     ) -> Result<Option<AuthSession>> {
         let nonce_ptr: *const TPM2B_NONCE = match nonce {
-            Some(val) => &val.clone().into(),
+            Some(val) => &val.into(),
             None => null(),
         };
 

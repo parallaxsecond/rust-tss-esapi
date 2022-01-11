@@ -120,8 +120,8 @@ impl NvPublicBuilder {
         self
     }
 
-    pub fn with_index_auth_policy(mut self, nv_index_auth_policy: &Digest) -> Self {
-        self.authorization_policy = Some(nv_index_auth_policy.clone());
+    pub fn with_index_auth_policy(mut self, nv_index_auth_policy: Digest) -> Self {
+        self.authorization_policy = Some(nv_index_auth_policy);
         self
     }
 

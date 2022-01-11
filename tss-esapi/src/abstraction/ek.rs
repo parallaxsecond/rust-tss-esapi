@@ -69,7 +69,7 @@ pub fn create_ek_public_from_default_template<IKC: IntoKeyCustomization>(
             .with_public_algorithm(PublicAlgorithm::Rsa)
             .with_name_hashing_algorithm(HashingAlgorithm::Sha256)
             .with_object_attributes(obj_attrs)
-            .with_auth_policy(&Digest::try_from(authpolicy[0..32].to_vec())?)
+            .with_auth_policy(Digest::try_from(authpolicy[0..32].to_vec())?)
             .with_rsa_parameters(
                 PublicRsaParametersBuilder::new()
                     .with_symmetric(SymmetricDefinitionObject::AES_128_CFB)
@@ -81,12 +81,12 @@ pub fn create_ek_public_from_default_template<IKC: IntoKeyCustomization>(
                     .with_restricted(obj_attrs.decrypt())
                     .build()?,
             )
-            .with_rsa_unique_identifier(&PublicKeyRsa::new_empty_with_size(RsaKeyBits::Rsa2048)),
+            .with_rsa_unique_identifier(PublicKeyRsa::new_empty_with_size(RsaKeyBits::Rsa2048)),
         AsymmetricAlgorithm::Ecc => PublicBuilder::new()
             .with_public_algorithm(PublicAlgorithm::Ecc)
             .with_name_hashing_algorithm(HashingAlgorithm::Sha256)
             .with_object_attributes(obj_attrs)
-            .with_auth_policy(&Digest::try_from(authpolicy[0..32].to_vec())?)
+            .with_auth_policy(Digest::try_from(authpolicy[0..32].to_vec())?)
             .with_ecc_parameters(
                 PublicEccParametersBuilder::new()
                     .with_symmetric(SymmetricDefinitionObject::AES_128_CFB)
@@ -98,7 +98,7 @@ pub fn create_ek_public_from_default_template<IKC: IntoKeyCustomization>(
                     .with_restricted(obj_attrs.decrypt())
                     .build()?,
             )
-            .with_ecc_unique_identifier(&EccPoint::new(
+            .with_ecc_unique_identifier(EccPoint::new(
                 EccParameter::try_from(vec![0u8; 32])?,
                 EccParameter::try_from(vec![0u8; 32])?,
             )),
@@ -126,7 +126,7 @@ pub fn create_ek_object<IKC: IntoKeyCustomization>(
 
     Ok(context
         .execute_with_nullauth_session(|ctx| {
-            ctx.create_primary(Hierarchy::Endorsement, &ek_public, None, None, None, None)
+            ctx.create_primary(Hierarchy::Endorsement, ek_public, None, None, None, None)
         })?
         .key_handle)
 }

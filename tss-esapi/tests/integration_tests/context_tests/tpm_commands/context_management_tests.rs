@@ -14,8 +14,8 @@ mod test_ctx_save {
         let key_handle = context
             .create_primary(
                 Hierarchy::Owner,
-                &signing_key_pub(),
-                Some(&key_auth),
+                signing_key_pub(),
+                Some(key_auth),
                 None,
                 None,
                 None,
@@ -34,8 +34,8 @@ mod test_ctx_save {
         let prim_key_handle = context
             .create_primary(
                 Hierarchy::Owner,
-                &decryption_key_pub(),
-                Some(&key_auth),
+                decryption_key_pub(),
+                Some(key_auth.clone()),
                 None,
                 None,
                 None,
@@ -46,8 +46,8 @@ mod test_ctx_save {
         let result = context
             .create(
                 prim_key_handle,
-                &signing_key_pub(),
-                Some(&key_auth),
+                signing_key_pub(),
+                Some(key_auth),
                 None,
                 None,
                 None,
@@ -55,7 +55,7 @@ mod test_ctx_save {
             .unwrap();
 
         let key_handle = context
-            .load(prim_key_handle, result.out_private, &result.out_public)
+            .load(prim_key_handle, result.out_private, result.out_public)
             .unwrap();
         context.flush_context(prim_key_handle.into()).unwrap();
         let _ = context.context_save(key_handle.into()).unwrap();
@@ -77,8 +77,8 @@ mod test_ctx_load {
         let prim_key_handle = context
             .create_primary(
                 Hierarchy::Owner,
-                &decryption_key_pub(),
-                Some(Auth::try_from(key_auth.value().to_vec()).unwrap()).as_ref(),
+                decryption_key_pub(),
+                Some(Auth::try_from(key_auth.value().to_vec()).unwrap()),
                 None,
                 None,
                 None,
@@ -89,8 +89,8 @@ mod test_ctx_load {
         let result = context
             .create(
                 prim_key_handle,
-                &signing_key_pub(),
-                Some(Auth::try_from(key_auth.value().to_vec()).unwrap()).as_ref(),
+                signing_key_pub(),
+                Some(Auth::try_from(key_auth.value().to_vec()).unwrap()),
                 None,
                 None,
                 None,
@@ -98,7 +98,7 @@ mod test_ctx_load {
             .unwrap();
 
         let key_handle = context
-            .load(prim_key_handle, result.out_private, &result.out_public)
+            .load(prim_key_handle, result.out_private, result.out_public)
             .unwrap();
         context.flush_context(prim_key_handle.into()).unwrap();
         let key_ctx = context.context_save(key_handle.into()).unwrap();
@@ -121,8 +121,8 @@ mod test_flush_context {
         let key_handle = context
             .create_primary(
                 Hierarchy::Owner,
-                &signing_key_pub(),
-                Some(&key_auth),
+                signing_key_pub(),
+                Some(key_auth),
                 None,
                 None,
                 None,
@@ -142,8 +142,8 @@ mod test_flush_context {
         let prim_key_handle = context
             .create_primary(
                 Hierarchy::Owner,
-                &decryption_key_pub(),
-                Some(&key_auth),
+                decryption_key_pub(),
+                Some(key_auth.clone()),
                 None,
                 None,
                 None,
@@ -154,8 +154,8 @@ mod test_flush_context {
         let result = context
             .create(
                 prim_key_handle,
-                &signing_key_pub(),
-                Some(&key_auth),
+                signing_key_pub(),
+                Some(key_auth),
                 None,
                 None,
                 None,
@@ -163,7 +163,7 @@ mod test_flush_context {
             .unwrap();
 
         let key_handle = context
-            .load(prim_key_handle, result.out_private, &result.out_public)
+            .load(prim_key_handle, result.out_private, result.out_public)
             .unwrap();
         context.flush_context(prim_key_handle.into()).unwrap();
         let _ = context.read_public(key_handle).unwrap();
@@ -243,8 +243,8 @@ mod test_evict_control {
         let primary_key_handle = context
             .create_primary(
                 Hierarchy::Owner,
-                &decryption_key_pub(),
-                Some(auth_value_primary).as_ref(),
+                decryption_key_pub(),
+                Some(auth_value_primary),
                 None,
                 None,
                 None,

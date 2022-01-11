@@ -36,7 +36,7 @@ fn write_nv_index(context: &mut Context, nv_index: NvIndexTpmHandle) -> NvIndexH
         .unwrap();
 
     let owner_nv_index_handle = context
-        .nv_define_space(Provision::Owner, None, &owner_nv_public)
+        .nv_define_space(Provision::Owner, None, owner_nv_public)
         .unwrap();
 
     let value = [1, 2, 3, 4, 5, 6, 7];
@@ -44,10 +44,15 @@ fn write_nv_index(context: &mut Context, nv_index: NvIndexTpmHandle) -> NvIndexH
 
     // Write the data using Owner authorization
     context
-        .nv_write(NvAuth::Owner, owner_nv_index_handle, &expected_data, 0)
+        .nv_write(
+            NvAuth::Owner,
+            owner_nv_index_handle,
+            expected_data.clone(),
+            0,
+        )
         .unwrap();
     context
-        .nv_write(NvAuth::Owner, owner_nv_index_handle, &expected_data, 1024)
+        .nv_write(NvAuth::Owner, owner_nv_index_handle, expected_data, 1024)
         .unwrap();
 
     owner_nv_index_handle

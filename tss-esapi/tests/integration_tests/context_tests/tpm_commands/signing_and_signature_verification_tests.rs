@@ -19,8 +19,8 @@ mod test_verify_signature {
         let key_handle = context
             .create_primary(
                 Hierarchy::Owner,
-                &signing_key_pub(),
-                Some(&key_auth),
+                signing_key_pub(),
+                Some(key_auth),
                 None,
                 None,
                 None,
@@ -36,7 +36,7 @@ mod test_verify_signature {
         let signature = context
             .sign(
                 key_handle,
-                &Digest::try_from(HASH[..32].to_vec()).unwrap(),
+                Digest::try_from(HASH[..32].to_vec()).unwrap(),
                 SignatureScheme::Null,
                 validation.try_into().unwrap(),
             )
@@ -45,7 +45,7 @@ mod test_verify_signature {
         context
             .verify_signature(
                 key_handle,
-                &Digest::try_from(HASH[..32].to_vec()).unwrap(),
+                Digest::try_from(HASH[..32].to_vec()).unwrap(),
                 signature,
             )
             .unwrap();
@@ -60,8 +60,8 @@ mod test_verify_signature {
         let key_handle = context
             .create_primary(
                 Hierarchy::Owner,
-                &signing_key_pub(),
-                Some(&key_auth),
+                signing_key_pub(),
+                Some(key_auth),
                 None,
                 None,
                 None,
@@ -77,7 +77,7 @@ mod test_verify_signature {
         let mut signature = context
             .sign(
                 key_handle,
-                &Digest::try_from(HASH[..32].to_vec()).unwrap(),
+                Digest::try_from(HASH[..32].to_vec()).unwrap(),
                 SignatureScheme::Null,
                 validation.try_into().unwrap(),
             )
@@ -96,7 +96,7 @@ mod test_verify_signature {
         assert!(context
             .verify_signature(
                 key_handle,
-                &Digest::try_from(HASH[..32].to_vec()).unwrap(),
+                Digest::try_from(HASH[..32].to_vec()).unwrap(),
                 signature,
             )
             .is_err());
@@ -111,8 +111,8 @@ mod test_verify_signature {
         let key_handle = context
             .create_primary(
                 Hierarchy::Owner,
-                &signing_key_pub(),
-                Some(&key_auth),
+                signing_key_pub(),
+                Some(key_auth),
                 None,
                 None,
                 None,
@@ -132,7 +132,7 @@ mod test_verify_signature {
         assert!(context
             .verify_signature(
                 key_handle,
-                &Digest::try_from(HASH[..32].to_vec()).unwrap(),
+                Digest::try_from(HASH[..32].to_vec()).unwrap(),
                 signature,
             )
             .is_err());
@@ -147,8 +147,8 @@ mod test_verify_signature {
         let key_handle = context
             .create_primary(
                 Hierarchy::Owner,
-                &signing_key_pub(),
-                Some(&key_auth),
+                signing_key_pub(),
+                Some(key_auth),
                 None,
                 None,
                 None,
@@ -167,7 +167,7 @@ mod test_verify_signature {
         assert!(context
             .verify_signature(
                 key_handle,
-                &Digest::try_from(HASH[..32].to_vec()).unwrap(),
+                Digest::try_from(HASH[..32].to_vec()).unwrap(),
                 signature,
             )
             .is_err());
@@ -193,8 +193,8 @@ mod test_sign {
         let key_handle = context
             .create_primary(
                 Hierarchy::Owner,
-                &signing_key_pub(),
-                Some(&key_auth),
+                signing_key_pub(),
+                Some(key_auth),
                 None,
                 None,
                 None,
@@ -210,7 +210,7 @@ mod test_sign {
         context
             .sign(
                 key_handle,
-                &Digest::try_from(HASH[..32].to_vec()).unwrap(),
+                Digest::try_from(HASH[..32].to_vec()).unwrap(),
                 SignatureScheme::Null,
                 validation.try_into().unwrap(),
             )
@@ -226,8 +226,8 @@ mod test_sign {
         let key_handle = context
             .create_primary(
                 Hierarchy::Owner,
-                &signing_key_pub(),
-                Some(&key_auth),
+                signing_key_pub(),
+                Some(key_auth),
                 None,
                 None,
                 None,
@@ -243,7 +243,7 @@ mod test_sign {
         context
             .sign(
                 key_handle,
-                &Digest::try_from(Vec::<u8>::new()).unwrap(),
+                Digest::try_from(Vec::<u8>::new()).unwrap(),
                 SignatureScheme::Null,
                 validation.try_into().unwrap(),
             )
@@ -259,8 +259,8 @@ mod test_sign {
         let key_handle = context
             .create_primary(
                 Hierarchy::Owner,
-                &signing_key_pub(),
-                Some(&key_auth),
+                signing_key_pub(),
+                Some(key_auth),
                 None,
                 None,
                 None,
@@ -276,7 +276,7 @@ mod test_sign {
         context
             .sign(
                 key_handle,
-                &Digest::try_from([0xbb; 40].to_vec()).unwrap(),
+                Digest::try_from([0xbb; 40].to_vec()).unwrap(),
                 SignatureScheme::Null,
                 validation.try_into().unwrap(),
             )

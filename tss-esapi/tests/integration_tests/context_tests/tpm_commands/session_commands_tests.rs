@@ -40,8 +40,7 @@ mod test_start_auth_session {
                         .to_vec(),
                     )
                     .unwrap(),
-                )
-                .as_ref(),
+                ),
                 SessionType::Hmac,
                 SymmetricDefinition::AES_256_CFB,
                 HashingAlgorithm::Sha256,
@@ -55,7 +54,7 @@ mod test_start_auth_session {
         let prim_key_handle = context
             .create_primary(
                 Hierarchy::Owner,
-                &decryption_key_pub(),
+                decryption_key_pub(),
                 None,
                 None,
                 None,

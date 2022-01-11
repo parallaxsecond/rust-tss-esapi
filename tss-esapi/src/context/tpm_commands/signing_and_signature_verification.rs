@@ -16,7 +16,7 @@ impl Context {
     pub fn verify_signature(
         &mut self,
         key_handle: KeyHandle,
-        digest: &Digest,
+        digest: Digest,
         signature: Signature,
     ) -> Result<VerifiedTicket> {
         let mut validation = null_mut();
@@ -28,7 +28,7 @@ impl Context {
                 self.optional_session_1(),
                 self.optional_session_2(),
                 self.optional_session_3(),
-                &digest.clone().into(),
+                &digest.into(),
                 &signature,
                 &mut validation,
             )
@@ -49,7 +49,7 @@ impl Context {
     pub fn sign(
         &mut self,
         key_handle: KeyHandle,
-        digest: &Digest,
+        digest: Digest,
         scheme: SignatureScheme,
         validation: HashcheckTicket,
     ) -> Result<Signature> {
@@ -62,7 +62,7 @@ impl Context {
                 self.required_session_1()?,
                 self.optional_session_2(),
                 self.optional_session_3(),
-                &digest.clone().into(),
+                &digest.into(),
                 &scheme.into(),
                 &validation,
                 &mut signature,

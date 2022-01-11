@@ -63,7 +63,7 @@ pub fn read_all(
 ) -> Result<PcrData> {
     let mut pcr_data = PcrData::new();
     while !pcr_selection_list.is_empty() {
-        let (_, pcrs_read, pcr_digests) = context.pcr_read(&pcr_selection_list)?;
+        let (_, pcrs_read, pcr_digests) = context.pcr_read(pcr_selection_list.clone())?;
         pcr_data.add(&pcrs_read, &pcr_digests)?;
         pcr_selection_list.subtract(&pcrs_read)?;
     }

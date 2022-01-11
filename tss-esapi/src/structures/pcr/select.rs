@@ -30,7 +30,7 @@ impl PcrSelect {
     pub fn new(size_of_select: PcrSelectSize, pcr_slots: &[PcrSlot]) -> Self {
         PcrSelect {
             size_of_select,
-            selected_pcrs: pcr_slots.iter().cloned().collect(),
+            selected_pcrs: pcr_slots.iter().copied().collect(),
         }
     }
 
