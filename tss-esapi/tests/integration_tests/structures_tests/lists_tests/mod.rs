@@ -5,4 +5,5 @@ mod command_code_list_tests;
 mod digest_list_tests;
 mod pcr_selection_list_builder_tests;
 mod pcr_selection_list_tests;
+mod tagged_pcr_property_list_tests;
 mod tagged_tpm_property_list_tests;

@@ -110,6 +110,11 @@ pub use algorithm_property_list::AlgorithmPropertyList;
 pub mod algorithm_property_list {
     pub use super::lists::algorithm_property::*;
 }
+
+pub use tagged_pcr_property_list::TaggedPcrPropertyList;
+pub mod tagged_pcr_property_list {
+    pub use super::lists::tagged_pcr_property::*;
+}
 /////////////////////////////////////////////////////////
 /// The parameters section
 /////////////////////////////////////////////////////////
