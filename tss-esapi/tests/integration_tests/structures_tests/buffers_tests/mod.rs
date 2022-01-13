@@ -7,3 +7,4 @@ mod digest_tests;
 mod max_buffer_tests;
 mod nonce_tests;
 mod public;
+mod sensitive;

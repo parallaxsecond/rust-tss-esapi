@@ -3,5 +3,6 @@
 pub mod parameters;
 pub mod public;
 pub mod schemes;
+pub mod sensitive;
 pub mod signature;
 pub mod symmetric;
