@@ -19,7 +19,10 @@ pub mod locality;
 
 pub mod algorithm;
 
+pub mod command_code;
+
 pub use algorithm::AlgorithmAttributes;
+pub use command_code::CommandCodeAttributes;
 pub use locality::{LocalityAttributes, LocalityAttributesBuilder};
 pub use nv_index::{NvIndexAttributes, NvIndexAttributesBuilder};
 pub use object::{ObjectAttributes, ObjectAttributesBuilder};
