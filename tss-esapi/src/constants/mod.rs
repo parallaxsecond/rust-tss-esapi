@@ -55,10 +55,15 @@ pub mod ecc;
 /// Constants -> TPM_CC section of the specification.
 pub mod command_code;
 
+/// Representation of the constants defined in
+/// Constants -> TPM_PT_PCR section of the specification.
+pub mod pcr_property_tag;
+
 pub use capabilities::CapabilityType;
 pub use command_code::CommandCode;
 pub use ecc::EccCurveIdentifier;
 pub use nv_index_type::NvIndexType;
+pub use pcr_property_tag::PcrPropertyTag;
 pub use property_tag::PropertyTag;
 pub use response_code::{ResponseCode, Tss2ResponseCode, Tss2ResponseCodeKind};
 pub use session_type::SessionType;

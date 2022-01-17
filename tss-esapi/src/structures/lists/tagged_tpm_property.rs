@@ -4,7 +4,7 @@
 use crate::{
     constants::PropertyTag,
     structures::TaggedProperty,
-    tss2_esys::{TPML_TAGGED_TPM_PROPERTY, TPMS_TAGGED_PROPERTY},
+    tss2_esys::{TPM2_CAP, TPM2_MAX_CAP_BUFFER, TPML_TAGGED_TPM_PROPERTY, TPMS_TAGGED_PROPERTY},
     Error, Result, WrapperErrorKind,
 };
 use log::error;
@@ -22,7 +22,7 @@ pub struct TaggedTpmPropertyList {
 impl TaggedTpmPropertyList {
     pub const MAX_SIZE: usize = Self::calculate_max_size();
 
-    /// Finds a [TaggedProperty] in the list matching the provided `property_tag`.
+    /// Finds the first [TaggedProperty] in the list matching the provided `property_tag`.
     pub fn find(&self, property_tag: PropertyTag) -> Option<&TaggedProperty> {
         self.tagged_tpm_properties
             .iter()
@@ -35,7 +35,9 @@ impl TaggedTpmPropertyList {
         // According to the specification the size is vendor specific.
         // So if someone is using modified values in their TSS libraries
         // it is picked up here.
-        (std::mem::size_of::<TPML_TAGGED_TPM_PROPERTY>() - std::mem::size_of::<u32>())
+        (TPM2_MAX_CAP_BUFFER as usize
+            - std::mem::size_of::<TPM2_CAP>()
+            - std::mem::size_of::<u32>())
             / std::mem::size_of::<TPMS_TAGGED_PROPERTY>()
     }
 }
@@ -110,7 +112,7 @@ impl TryFrom<TPML_TAGGED_TPM_PROPERTY> for TaggedTpmPropertyList {
 impl From<TaggedTpmPropertyList> for TPML_TAGGED_TPM_PROPERTY {
     fn from(tagged_tpm_property_list: TaggedTpmPropertyList) -> Self {
         let mut tpml_tagged_tpm_property: TPML_TAGGED_TPM_PROPERTY = Default::default();
-        for tagged_property in tagged_tpm_property_list.tagged_tpm_properties {
+        for tagged_property in tagged_tpm_property_list {
             tpml_tagged_tpm_property.tpmProperty[tpml_tagged_tpm_property.count as usize] =
                 tagged_property.into();
             tpml_tagged_tpm_property.count += 1;

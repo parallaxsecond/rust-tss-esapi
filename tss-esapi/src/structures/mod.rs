@@ -56,9 +56,13 @@ pub use self::hash::agile::HashAgile;
 /// The pcr section
 /////////////////////////////////////////////////////////
 mod pcr;
+
+pub use self::pcr_slot::PcrSlot;
+pub mod pcr_slot {
+    pub use super::pcr::slot::*;
+}
+
 pub use self::pcr_select::PcrSelect;
-pub use self::pcr_select::PcrSelectSize;
-pub use self::pcr_select::PcrSlot;
 pub mod pcr_select {
     pub use super::pcr::select::*;
 }
@@ -66,6 +70,11 @@ pub mod pcr_select {
 pub use self::pcr_selection::PcrSelection;
 pub mod pcr_selection {
     pub use super::pcr::selection::*;
+}
+
+pub use self::pcr_select_size::PcrSelectSize;
+pub mod pcr_select_size {
+    pub use super::pcr::select_size::*;
 }
 /////////////////////////////////////////////////////////
 /// The lists section
@@ -100,6 +109,11 @@ pub mod tagged_tpm_property_list {
 pub use algorithm_property_list::AlgorithmPropertyList;
 pub mod algorithm_property_list {
     pub use super::lists::algorithm_property::*;
+}
+
+pub use tagged_pcr_property_list::TaggedPcrPropertyList;
+pub mod tagged_pcr_property_list {
+    pub use super::lists::tagged_pcr_property::*;
 }
 /////////////////////////////////////////////////////////
 /// The parameters section
@@ -215,3 +229,8 @@ pub use tagged_property::TaggedProperty;
 /////////////////////////////////////////////////////////
 mod algorithm_property;
 pub use algorithm_property::AlgorithmProperty;
+/////////////////////////////////////////////////////////
+/// TaggedPcrSelect
+/////////////////////////////////////////////////////////
+mod tagged_pcr_select;
+pub use tagged_pcr_select::TaggedPcrSelect;

@@ -22,6 +22,27 @@ fn test_conversion_to_tss_pcr_select() {
 }
 
 #[test]
+fn test_size_of_select_handling() {
+    let actual = PcrSelect::try_from(TPMS_PCR_SELECT {
+        sizeofSelect: 3,
+        pcrSelect: [2, 1, 3, 5],
+    })
+    .expect("Failed to convert TPMS_PCR_SELECT to PcrSelect");
+    // Size of select is 3 so no values set in the fourth
+    // octet should be present.
+    let expected = PcrSelect::new(
+        PcrSelectSize::ThreeBytes,
+        &[
+            PcrSlot::Slot1,
+            PcrSlot::Slot8,
+            PcrSlot::Slot16,
+            PcrSlot::Slot17,
+        ],
+    );
+    assert_eq!(expected, actual);
+}
+
+#[test]
 fn test_conversion_from_tss_pcr_select() {
     let actual = PcrSelect::try_from(TPMS_PCR_SELECT {
         sizeofSelect: 3,

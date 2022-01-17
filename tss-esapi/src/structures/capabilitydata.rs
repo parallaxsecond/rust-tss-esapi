@@ -4,12 +4,12 @@ use crate::{
     constants::tss::*,
     handles::TpmHandle,
     structures::{
-        AlgorithmPropertyList, CommandCodeList, PcrSelect, PcrSelectionList, TaggedTpmPropertyList,
+        AlgorithmPropertyList, CommandCodeList, PcrSelectionList, TaggedPcrPropertyList,
+        TaggedTpmPropertyList,
     },
     tss2_esys::*,
     Error, Result, WrapperErrorKind,
 };
-use std::collections::HashMap;
 use std::convert::{TryFrom, TryInto};
 use std::mem::size_of;
 
@@ -22,9 +22,9 @@ pub enum CapabilityData {
     AuditCommands(CommandCodeList),
     AssignedPCR(PcrSelectionList),
     TpmProperties(TaggedTpmPropertyList),
-    PCRProperties(HashMap<TPM2_PT_PCR, PcrSelect>),
+    PcrProperties(TaggedPcrPropertyList),
     ECCCurves(Vec<TPM2_ECC_CURVE>),
-    // These are in the TPM TMU_CAPABILITIES, but are not defined by esapi-2.4.1
+    // These are in the TPM TPMU_CAPABILITIES, but are not defined by esapi-2.4.1
     // AuthPolicies(),
     // ActData(),
 }
@@ -90,24 +90,7 @@ fn cd_from_tpm_properties(props: TPML_TAGGED_TPM_PROPERTY) -> Result<CapabilityD
 }
 
 fn cd_from_pcr_properties(props: TPML_TAGGED_PCR_PROPERTY) -> Result<CapabilityData> {
-    if props.count > max_cap_size::<TPMS_TAGGED_PCR_SELECT>() {
-        return Err(Error::WrapperError(WrapperErrorKind::InvalidParam));
-    }
-
-    let mut data = HashMap::new();
-
-    for i in 0..props.count {
-        let prop = props.pcrProperty[i as usize];
-
-        let select = PcrSelect::try_from(TPMS_PCR_SELECT {
-            sizeofSelect: prop.sizeofSelect,
-            pcrSelect: prop.pcrSelect,
-        })?;
-
-        let _ = data.insert(prop.tag, select);
-    }
-
-    Ok(CapabilityData::PCRProperties(data))
+    Ok(CapabilityData::PcrProperties(props.try_into()?))
 }
 
 fn cd_from_ecc_curves(props: TPML_ECC_CURVE) -> Result<CapabilityData> {
