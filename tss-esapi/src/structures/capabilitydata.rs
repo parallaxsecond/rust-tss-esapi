@@ -4,8 +4,8 @@ use crate::{
     constants::tss::*,
     handles::TpmHandle,
     structures::{
-        AlgorithmPropertyList, CommandCodeList, PcrSelectionList, TaggedPcrPropertyList,
-        TaggedTpmPropertyList,
+        AlgorithmPropertyList, CommandCodeList, EccCurveList, PcrSelectionList,
+        TaggedPcrPropertyList, TaggedTpmPropertyList,
     },
     tss2_esys::*,
     Error, Result, WrapperErrorKind,
@@ -13,6 +13,12 @@ use crate::{
 use std::convert::{TryFrom, TryInto};
 use std::mem::size_of;
 
+
+/// A representation of all the capabilites that can be associated
+/// with a TPM.
+/// 
+/// # Details
+/// This corresponds to `TPMS_CAPABILITY_DATA`
 #[derive(Debug, Clone)]
 pub enum CapabilityData {
     Algorithms(AlgorithmPropertyList),
@@ -20,16 +26,16 @@ pub enum CapabilityData {
     Commands(Vec<TPMA_CC>),
     PpCommands(CommandCodeList),
     AuditCommands(CommandCodeList),
-    AssignedPCR(PcrSelectionList),
+    AssignedPcr(PcrSelectionList),
     TpmProperties(TaggedTpmPropertyList),
     PcrProperties(TaggedPcrPropertyList),
-    ECCCurves(Vec<TPM2_ECC_CURVE>),
+    EccCurves(EccCurveList),
     // These are in the TPM TPMU_CAPABILITIES, but are not defined by esapi-2.4.1
     // AuthPolicies(),
     // ActData(),
 }
 
-fn max_cap_size<T>() -> u32 {
+pub(crate) const fn max_cap_size<T>() -> u32 {
     ((TPM2_MAX_CAP_BUFFER as usize - size_of::<TPM2_CAP>() - size_of::<u32>()) / size_of::<T>())
         as u32
 }
@@ -82,7 +88,7 @@ fn cd_from_audit_commands(props: TPML_CC) -> Result<CapabilityData> {
 }
 
 fn cd_from_assigned_pcrs(props: TPML_PCR_SELECTION) -> Result<CapabilityData> {
-    Ok(CapabilityData::AssignedPCR(props.try_into()?))
+    Ok(CapabilityData::AssignedPcr(props.try_into()?))
 }
 
 fn cd_from_tpm_properties(props: TPML_TAGGED_TPM_PROPERTY) -> Result<CapabilityData> {
@@ -94,18 +100,7 @@ fn cd_from_pcr_properties(props: TPML_TAGGED_PCR_PROPERTY) -> Result<CapabilityD
 }
 
 fn cd_from_ecc_curves(props: TPML_ECC_CURVE) -> Result<CapabilityData> {
-    if props.count > max_cap_size::<TPM2_ECC_CURVE>() {
-        return Err(Error::WrapperError(WrapperErrorKind::InvalidParam));
-    }
-
-    let mut data = Vec::new();
-    data.reserve_exact(props.count as usize);
-
-    for i in 0..props.count {
-        data.push(props.eccCurves[i as usize]);
-    }
-
-    Ok(CapabilityData::ECCCurves(data))
+    Ok(CapabilityData::EccCurves(EccCurveList::try_from(props)?))
 }
 
 impl TryFrom<TPMS_CAPABILITY_DATA> for CapabilityData {

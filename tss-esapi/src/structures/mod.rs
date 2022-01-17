@@ -90,6 +90,11 @@ pub mod digest_values {
     pub use super::lists::digest_values::*;
 }
 
+pub use self::ecc_curves::EccCurveList;
+pub mod ecc_curves {
+    pub use super::lists::ecc_curves::*;
+}
+
 pub use self::pcr_selection_list::PcrSelectionList;
 pub use self::pcr_selection_list::PcrSelectionListBuilder;
 pub mod pcr_selection_list {

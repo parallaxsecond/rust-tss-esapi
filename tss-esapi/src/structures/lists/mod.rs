@@ -4,6 +4,7 @@ pub mod algorithm_property;
 pub mod command_code;
 pub mod digest;
 pub mod digest_values;
+pub mod ecc_curves;
 pub mod pcr_selection;
 pub mod tagged_pcr_property;
 pub mod tagged_tpm_property;
