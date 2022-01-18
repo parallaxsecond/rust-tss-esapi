@@ -2,9 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 use crate::{
     constants::tss::*,
-    handles::TpmHandle,
     structures::{
-        AlgorithmPropertyList, CommandCodeList, EccCurveList, PcrSelectionList,
+        AlgorithmPropertyList, CommandCodeList, EccCurveList, HandleList, PcrSelectionList,
         TaggedPcrPropertyList, TaggedTpmPropertyList,
     },
     tss2_esys::*,
@@ -13,16 +12,15 @@ use crate::{
 use std::convert::{TryFrom, TryInto};
 use std::mem::size_of;
 
-
 /// A representation of all the capabilites that can be associated
 /// with a TPM.
-/// 
+///
 /// # Details
 /// This corresponds to `TPMS_CAPABILITY_DATA`
 #[derive(Debug, Clone)]
 pub enum CapabilityData {
     Algorithms(AlgorithmPropertyList),
-    Handles(Vec<TpmHandle>),
+    Handles(HandleList),
     Commands(Vec<TPMA_CC>),
     PpCommands(CommandCodeList),
     AuditCommands(CommandCodeList),
@@ -45,19 +43,7 @@ fn cd_from_alg_properties(props: TPML_ALG_PROPERTY) -> Result<CapabilityData> {
 }
 
 fn cd_from_handles(props: TPML_HANDLE) -> Result<CapabilityData> {
-    if props.count > max_cap_size::<TPM2_HANDLE>() {
-        return Err(Error::WrapperError(WrapperErrorKind::InvalidParam));
-    }
-
-    let mut data: Vec<TpmHandle> = Vec::new();
-    data.reserve_exact(props.count as usize);
-
-    for i in 0..props.count {
-        let handle: TPM2_HANDLE = props.handle[i as usize];
-        data.push(handle.try_into()?);
-    }
-
-    Ok(CapabilityData::Handles(data))
+    Ok(CapabilityData::Handles(HandleList::try_from(props)?))
 }
 
 fn cd_from_command(props: TPML_CCA) -> Result<CapabilityData> {
