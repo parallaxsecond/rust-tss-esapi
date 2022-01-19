@@ -14,6 +14,9 @@ use num_traits::{FromPrimitive, ToPrimitive};
 use std::convert::TryFrom;
 /// Enum that contains the constants for the
 /// implemented elliptic curves.
+///
+/// # Details
+/// This corresponds to `TPM2_ECC_CURVE`
 #[derive(FromPrimitive, ToPrimitive, Debug, Copy, Clone, PartialEq, Eq)]
 #[repr(u16)]
 pub enum EccCurveIdentifier {
