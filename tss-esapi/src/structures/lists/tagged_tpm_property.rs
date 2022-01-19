@@ -32,7 +32,7 @@ impl TaggedTpmPropertyList {
     /// Private function that calculates the maximum number
     /// elements allowed in internal storage.
     const fn calculate_max_size() -> usize {
-        crate::structures::capabilitydata::max_cap_size::<TPMS_TAGGED_PROPERTY>()
+        crate::structures::capability_data::max_cap_size::<TPMS_TAGGED_PROPERTY>()
     }
 }
 

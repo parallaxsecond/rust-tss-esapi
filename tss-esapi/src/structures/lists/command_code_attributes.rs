@@ -31,7 +31,7 @@ impl CommandCodeAttributesList {
     /// Private function that calculates the maximum number
     /// elements allowed in internal storage.
     const fn calculate_max_size() -> usize {
-        crate::structures::capabilitydata::max_cap_size::<TPMA_CC>()
+        crate::structures::capability_data::max_cap_size::<TPMA_CC>()
     }
 }
 
