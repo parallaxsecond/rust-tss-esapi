@@ -4,7 +4,7 @@
 use crate::{
     constants::PcrPropertyTag,
     structures::{PcrSlot, TaggedPcrSelect},
-    tss2_esys::{TPM2_CAP, TPM2_MAX_CAP_BUFFER, TPML_TAGGED_PCR_PROPERTY, TPMS_TAGGED_PCR_SELECT},
+    tss2_esys::{TPML_TAGGED_PCR_PROPERTY, TPMS_TAGGED_PCR_SELECT},
     Error, Result, WrapperErrorKind,
 };
 use log::error;
@@ -44,13 +44,7 @@ impl TaggedPcrPropertyList {
     /// Private function that calculates the maximum number
     /// elements allowed in internal storage.
     const fn calculate_max_size() -> usize {
-        // According to the specification the size is vendor specific.
-        // So if someone is using modified values in their TSS libraries
-        // it is picked up here.
-        (TPM2_MAX_CAP_BUFFER as usize
-            - std::mem::size_of::<TPM2_CAP>()
-            - std::mem::size_of::<u32>())
-            / std::mem::size_of::<TPMS_TAGGED_PCR_SELECT>()
+        crate::structures::capabilitydata::max_cap_size::<TPMS_TAGGED_PCR_SELECT>()
     }
 }
 

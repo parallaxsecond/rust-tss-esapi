@@ -17,8 +17,7 @@ pub struct HandleList {
 }
 
 impl HandleList {
-    pub const MAX_SIZE: usize =
-        crate::structures::capabilitydata::max_cap_size::<TPM2_HANDLE>() as usize;
+    pub const MAX_SIZE: usize = Self::calculate_max_size();
 
     pub fn new() -> Self {
         HandleList {
@@ -42,6 +41,12 @@ impl HandleList {
     /// Returns the inner type.
     pub fn into_inner(self) -> Vec<TpmHandle> {
         self.handles
+    }
+
+    /// Private function that calculates the maximum number
+    /// elements allowed in internal storage.
+    const fn calculate_max_size() -> usize {
+        crate::structures::capabilitydata::max_cap_size::<TPM2_HANDLE>()
     }
 }
 

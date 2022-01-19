@@ -4,7 +4,7 @@
 use crate::{
     constants::AlgorithmIdentifier,
     structures::AlgorithmProperty,
-    tss2_esys::{TPM2_CAP, TPM2_MAX_CAP_BUFFER, TPML_ALG_PROPERTY, TPMS_ALG_PROPERTY},
+    tss2_esys::{TPML_ALG_PROPERTY, TPMS_ALG_PROPERTY},
     Error, Result, WrapperErrorKind,
 };
 use log::error;
@@ -29,10 +29,7 @@ impl AlgorithmPropertyList {
     /// Private function that calculates the maximum number
     /// elements allowed in internal storage.
     const fn calculate_max_size() -> usize {
-        (TPM2_MAX_CAP_BUFFER as usize
-            - std::mem::size_of::<TPM2_CAP>()
-            - std::mem::size_of::<u32>())
-            / std::mem::size_of::<TPMS_ALG_PROPERTY>()
+        crate::structures::capabilitydata::max_cap_size::<TPMS_ALG_PROPERTY>()
     }
 }
 

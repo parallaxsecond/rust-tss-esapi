@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 use crate::{
     attributes::CommandCodeAttributes,
-    tss2_esys::{TPM2_CAP, TPM2_MAX_CAP_BUFFER, TPMA_CC, TPML_CCA},
+    tss2_esys::{TPMA_CC, TPML_CCA},
     Error, Result, WrapperErrorKind,
 };
 use log::error;
@@ -31,13 +31,7 @@ impl CommandCodeAttributesList {
     /// Private function that calculates the maximum number
     /// elements allowed in internal storage.
     const fn calculate_max_size() -> usize {
-        // According to the specification the size is vendor specific.
-        // So if someone is using modified values in their TSS libraries
-        // it is picked up here.
-        (TPM2_MAX_CAP_BUFFER as usize
-            - std::mem::size_of::<TPM2_CAP>()
-            - std::mem::size_of::<u32>())
-            / std::mem::size_of::<TPMA_CC>()
+        crate::structures::capabilitydata::max_cap_size::<TPMA_CC>()
     }
 }
 
