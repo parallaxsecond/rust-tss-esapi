@@ -16,7 +16,7 @@ pub struct CommandCodeList {
 }
 
 impl CommandCodeList {
-    pub const MAX_SIZE: usize = TPM2_MAX_CAP_CC as usize;
+    pub const MAX_SIZE: usize = Self::calculate_max_size();
     /// Creates a new CommandCodeList
     pub const fn new() -> Self {
         CommandCodeList {
@@ -40,6 +40,12 @@ impl CommandCodeList {
     /// Returns the inner type.
     pub fn into_inner(self) -> Vec<CommandCode> {
         self.command_codes
+    }
+
+    /// Private function that calculates the maximum number
+    /// elements allowed in internal storage.
+    const fn calculate_max_size() -> usize {
+        TPM2_MAX_CAP_CC as usize
     }
 }
 

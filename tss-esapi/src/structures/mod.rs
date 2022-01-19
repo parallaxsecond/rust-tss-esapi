@@ -125,6 +125,11 @@ pub use tagged_pcr_property_list::TaggedPcrPropertyList;
 pub mod tagged_pcr_property_list {
     pub use super::lists::tagged_pcr_property::*;
 }
+
+pub use self::command_code_attributes_list::CommandCodeAttributesList;
+pub mod command_code_attributes_list {
+    pub use super::lists::command_code_attributes::*;
+}
 /////////////////////////////////////////////////////////
 /// The parameters section
 /////////////////////////////////////////////////////////
