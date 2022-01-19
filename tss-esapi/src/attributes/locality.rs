@@ -113,7 +113,7 @@ impl LocalityAttributesBuilder {
                     );
                     return Err(Error::local_error(WrapperErrorKind::InvalidParam));
                 }
-                32.. => {
+                32..=255 => {
                     if locality_attributes.0 != 0 {
                         error!("Locality attribute {new} is extended and cannot be combined with locality attribute(s) {old}", new=locality, old=locality_attributes.0);
                         return Err(Error::local_error(WrapperErrorKind::InvalidParam));
