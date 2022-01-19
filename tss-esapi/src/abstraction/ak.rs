@@ -67,7 +67,7 @@ fn create_ak_public<IKC: IntoKeyCustomization>(
                     .with_restricted(obj_attrs.restricted())
                     .build()?,
             )
-            .with_rsa_unique_identifier(&PublicKeyRsa::default())
+            .with_rsa_unique_identifier(PublicKeyRsa::default())
             .build(),
         AsymmetricAlgorithm::Ecc => PublicBuilder::new()
             .with_public_algorithm(PublicAlgorithm::Ecc)
@@ -97,7 +97,7 @@ fn create_ak_public<IKC: IntoKeyCustomization>(
 pub fn load_ak(
     context: &mut Context,
     parent: KeyHandle,
-    ak_auth_value: Option<&Auth>,
+    ak_auth_value: Option<Auth>,
     private: Private,
     public: Public,
 ) -> Result<KeyHandle> {
@@ -137,7 +137,7 @@ pub fn load_ak(
             })?;
 
             ctx.execute_with_session(Some(policy_auth_session), |ctx| {
-                ctx.load(parent, private, &public)
+                ctx.load(parent, private, public)
             })
         },
     )?;
@@ -155,7 +155,7 @@ pub fn create_ak<IKC: IntoKeyCustomization>(
     parent: KeyHandle,
     hash_alg: HashingAlgorithm,
     sign_alg: SignatureSchemeAlgorithm,
-    ak_auth_value: Option<&Auth>,
+    ak_auth_value: Option<Auth>,
     key_customization: IKC,
 ) -> Result<CreateKeyResult> {
     let key_alg = AsymmetricAlgorithm::try_from(sign_alg).map_err(|e| {
@@ -202,7 +202,7 @@ pub fn create_ak<IKC: IntoKeyCustomization>(
             })?;
 
             ctx.execute_with_session(Some(policy_auth_session), |ctx| {
-                ctx.create(parent, &ak_pub, ak_auth_value, None, None, None)
+                ctx.create(parent, ak_pub, ak_auth_value, None, None, None)
             })
         },
     )

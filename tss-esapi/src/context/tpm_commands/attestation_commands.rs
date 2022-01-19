@@ -73,7 +73,7 @@ impl Context {
     /// # .expect("Failed to create an unrestricted signing rsa public structure");
     /// # let sign_key_handle = context
     /// #     .execute_with_nullauth_session(|ctx| {
-    /// #         ctx.create_primary(Hierarchy::Owner, &signing_key_pub, None, None, None, None)
+    /// #         ctx.create_primary(Hierarchy::Owner, signing_key_pub, None, None, None, None)
     /// #     })
     /// #     .unwrap()
     /// #     .key_handle;
@@ -89,7 +89,7 @@ impl Context {
     /// #     .execute_with_nullauth_session(|ctx| {
     /// #         ctx.create_primary(
     /// #             Hierarchy::Owner,
-    /// #             &decryption_key_pub,
+    /// #             decryption_key_pub,
     /// #             None,
     /// #             None,
     /// #             None,
@@ -109,7 +109,7 @@ impl Context {
     ///             ctx.certify(
     ///                 obj_key_handle.into(),
     ///                 sign_key_handle,
-    ///                 &Data::try_from(qualifying_data).unwrap(),
+    ///                 Data::try_from(qualifying_data).unwrap(),
     ///                 SignatureScheme::Null,
     ///             )
     ///         },
@@ -120,7 +120,7 @@ impl Context {
         &mut self,
         object_handle: ObjectHandle,
         signing_key_handle: KeyHandle,
-        qualifying_data: &Data,
+        qualifying_data: Data,
         signing_scheme: SignatureScheme,
     ) -> Result<(Attest, Signature)> {
         let mut certify_info = null_mut();
@@ -133,7 +133,7 @@ impl Context {
                 self.required_session_1()?,
                 self.required_session_2()?,
                 self.optional_session_3(),
-                &qualifying_data.clone().into(),
+                &qualifying_data.into(),
                 &signing_scheme.into(),
                 &mut certify_info,
                 &mut signature,
@@ -163,7 +163,7 @@ impl Context {
     pub fn quote(
         &mut self,
         signing_key_handle: KeyHandle,
-        qualifying_data: &Data,
+        qualifying_data: Data,
         signing_scheme: SignatureScheme,
         pcr_selection_list: PcrSelectionList,
     ) -> Result<(Attest, Signature)> {
@@ -176,7 +176,7 @@ impl Context {
                 self.optional_session_1(),
                 self.optional_session_2(),
                 self.optional_session_3(),
-                &qualifying_data.clone().into(),
+                &qualifying_data.into(),
                 &signing_scheme.into(),
                 &pcr_selection_list.into(),
                 &mut quoted,

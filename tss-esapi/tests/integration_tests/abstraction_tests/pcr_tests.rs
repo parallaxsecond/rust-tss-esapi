@@ -57,7 +57,7 @@ fn test_pcr_read_all() {
 
     let (_count, _read_pcr_selection_1, read_pcrs_1) = context
         .pcr_read(
-            &PcrSelectionListBuilder::new()
+            PcrSelectionListBuilder::new()
                 .with_selection(
                     HashingAlgorithm::Sha256,
                     &[
@@ -77,7 +77,7 @@ fn test_pcr_read_all() {
 
     let (_count, _read_pcr_selection_2, read_pcrs_2) = context
         .pcr_read(
-            &PcrSelectionListBuilder::new()
+            PcrSelectionListBuilder::new()
                 .with_selection(
                     HashingAlgorithm::Sha256,
                     &[
@@ -97,7 +97,7 @@ fn test_pcr_read_all() {
 
     let (_count, _read_pcr_selection_3, read_pcrs_3) = context
         .pcr_read(
-            &PcrSelectionListBuilder::new()
+            PcrSelectionListBuilder::new()
                 .with_selection(
                     HashingAlgorithm::Sha256,
                     &[

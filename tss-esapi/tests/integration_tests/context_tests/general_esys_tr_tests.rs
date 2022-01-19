@@ -84,7 +84,7 @@ mod test_tr_from_tpm_public {
             .unwrap();
 
         let initial_nv_index_handle = context
-            .nv_define_space(Provision::Owner, None, &nv_public)
+            .nv_define_space(Provision::Owner, None, nv_public)
             .unwrap();
         ///////////////////////////////////////////
         // Read the name from the tpm
@@ -167,7 +167,7 @@ mod test_tr_from_tpm_public {
         // Set password authorization when creating the space.
         context.set_sessions((Some(AuthSession::Password), None, None));
         let initial_nv_index_handle = context
-            .nv_define_space(Provision::Owner, Some(&auth), &nv_public)
+            .nv_define_space(Provision::Owner, Some(auth), nv_public)
             .expect("Failed to call nv_define_space");
         ///////////////////////////////////////////////////////////////
         // Read the name from the tpm
@@ -268,7 +268,7 @@ mod test_tr_from_tpm_public {
         // Set password authorization when creating the space.
         context.set_sessions((Some(AuthSession::Password), None, None));
         let initial_nv_index_handle = context
-            .nv_define_space(Provision::Owner, Some(&auth), &nv_public)
+            .nv_define_space(Provision::Owner, Some(auth.clone()), nv_public)
             .unwrap();
         ///////////////////////////////////////////////////////////////
         // Read the name from the tpm
@@ -294,7 +294,7 @@ mod test_tr_from_tpm_public {
             .nv_write(
                 NvAuth::NvIndex(initial_nv_index_handle),
                 initial_nv_index_handle,
-                &expected_data,
+                expected_data.clone(),
                 0,
             )
             .map_err(|e| cleanup(&mut context, e, initial_nv_index_handle, "nv_write"))
@@ -344,7 +344,7 @@ mod test_tr_from_tpm_public {
 
         // Set authorization for the retrieved handle
         context
-            .tr_set_auth(new_nv_index_handle.into(), &auth)
+            .tr_set_auth(new_nv_index_handle.into(), auth)
             .map_err(|e| cleanup(&mut context, e, new_nv_index_handle, "tr_set_auth"))
             .unwrap();
         // read the data

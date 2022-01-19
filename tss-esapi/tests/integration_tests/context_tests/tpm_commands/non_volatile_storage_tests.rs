@@ -48,11 +48,11 @@ mod test_nv_define_space {
 
         // Fails because attributes dont match hierarchy auth.
         let _ = context
-            .nv_define_space(Provision::Platform, None, &owner_nv_public)
+            .nv_define_space(Provision::Platform, None, owner_nv_public)
             .unwrap_err();
 
         let _ = context
-            .nv_define_space(Provision::Owner, None, &platform_nv_public)
+            .nv_define_space(Provision::Owner, None, platform_nv_public)
             .unwrap_err();
     }
 
@@ -94,7 +94,7 @@ mod test_nv_define_space {
             .expect("Failed to build NvPublic for platform");
 
         let owner_nv_index_handle = context
-            .nv_define_space(Provision::Owner, None, &owner_nv_public)
+            .nv_define_space(Provision::Owner, None, owner_nv_public)
             .expect("Call to nv_define_space failed");
 
         let _ = context
@@ -105,7 +105,7 @@ mod test_nv_define_space {
         // On many TPMs, you will get error 0x00000185, indicating the Platform hierarchy to
         // be unavailable (because the system went to operating system)
         let platform_nv_index_handle = context
-            .nv_define_space(Provision::Platform, None, &platform_nv_public)
+            .nv_define_space(Provision::Platform, None, platform_nv_public)
             .expect("Call to nv_define_space failed");
 
         let _ = context
@@ -145,7 +145,7 @@ mod test_nv_undefine_space {
             .expect("Failed to build NvPublic for owner");
 
         let owner_nv_index_handle = context
-            .nv_define_space(Provision::Owner, None, &owner_nv_public)
+            .nv_define_space(Provision::Owner, None, owner_nv_public)
             .expect("Call to nv_define_space failed");
 
         // Succeeds
@@ -185,7 +185,7 @@ mod test_nv_read_public {
             .expect("Failed to build the expected NvPublic");
 
         let nv_index_handle = context
-            .nv_define_space(Provision::Owner, None, &expected_nv_public)
+            .nv_define_space(Provision::Owner, None, expected_nv_public.clone())
             .expect("Call to nv_define_space failed");
 
         let read_public_result = context.nv_read_public(nv_index_handle);
@@ -240,14 +240,14 @@ mod test_nv_write {
             .expect("Failed to build NvPublic for owner");
 
         let owner_nv_index_handle = context
-            .nv_define_space(Provision::Owner, None, &owner_nv_public)
+            .nv_define_space(Provision::Owner, None, owner_nv_public)
             .expect("Call to nv_define_space failed");
 
         // Use owner authorization
         let write_result = context.nv_write(
             NvAuth::Owner,
             owner_nv_index_handle,
-            &MaxNvBuffer::try_from([1, 2, 3, 4, 5, 6, 7].to_vec()).unwrap(),
+            MaxNvBuffer::try_from([1, 2, 3, 4, 5, 6, 7].to_vec()).unwrap(),
             0,
         );
 
@@ -296,7 +296,7 @@ mod test_nv_read {
             .expect("Failed to build NvPublic for owner");
 
         let owner_nv_index_handle = context
-            .nv_define_space(Provision::Owner, None, &owner_nv_public)
+            .nv_define_space(Provision::Owner, None, owner_nv_public)
             .expect("Call to nv_define_space failed");
 
         let value = [1, 2, 3, 4, 5, 6, 7];
@@ -304,8 +304,12 @@ mod test_nv_read {
             MaxNvBuffer::try_from(value.to_vec()).expect("Failed to create MaxBuffer from data");
 
         // Write the data using Owner authorization
-        let write_result =
-            context.nv_write(NvAuth::Owner, owner_nv_index_handle, &expected_data, 0);
+        let write_result = context.nv_write(
+            NvAuth::Owner,
+            owner_nv_index_handle,
+            expected_data.clone(),
+            0,
+        );
         // read data using owner authorization
         let read_result =
             context.nv_read(NvAuth::Owner, owner_nv_index_handle, value.len() as u16, 0);

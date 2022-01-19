@@ -166,15 +166,15 @@ impl Context {
     ///     .with_name_hashing_algorithm(HashingAlgorithm::Sha256)
     ///     .with_object_attributes(object_attributes)
     ///     .with_ecc_parameters(ecc_parms)
-    ///     .with_ecc_unique_identifier(&EccPoint::default())
+    ///     .with_ecc_unique_identifier(EccPoint::default())
     ///     .build()
     ///     .unwrap();
     ///
     /// let key_handle = context
     ///     .create_primary(
     ///         Hierarchy::Owner,
-    ///         &public,
-    ///         Some(&key_auth),
+    ///         public,
+    ///         Some(key_auth),
     ///         None,
     ///         None,
     ///         None,
@@ -298,15 +298,15 @@ impl Context {
     ///     .with_name_hashing_algorithm(HashingAlgorithm::Sha256)
     ///     .with_object_attributes(object_attributes)
     ///     .with_ecc_parameters(ecc_parms)
-    ///     .with_ecc_unique_identifier(&EccPoint::default())
+    ///     .with_ecc_unique_identifier(EccPoint::default())
     ///     .build()
     ///     .unwrap();
     ///
     /// let key_handle = context
     ///     .create_primary(
     ///         Hierarchy::Owner,
-    ///         &public,
-    ///         Some(&key_auth),
+    ///         public,
+    ///         Some(key_auth),
     ///         None,
     ///         None,
     ///         None,

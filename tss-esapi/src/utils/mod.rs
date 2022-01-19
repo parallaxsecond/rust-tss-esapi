@@ -128,7 +128,7 @@ pub fn create_restricted_decryption_rsa_public(
             )
             .build()?,
         )
-        .with_rsa_unique_identifier(&PublicKeyRsa::default())
+        .with_rsa_unique_identifier(PublicKeyRsa::default())
         .build()
 }
 
@@ -165,7 +165,7 @@ pub fn create_unrestricted_encryption_decryption_rsa_public(
                 .with_restricted(false)
                 .build()?,
         )
-        .with_rsa_unique_identifier(&PublicKeyRsa::default())
+        .with_rsa_unique_identifier(PublicKeyRsa::default())
         .build()
 }
 
@@ -201,7 +201,7 @@ pub fn create_unrestricted_signing_rsa_public(
             )
             .build()?,
         )
-        .with_rsa_unique_identifier(&PublicKeyRsa::default())
+        .with_rsa_unique_identifier(PublicKeyRsa::default())
         .build()
 }
 
@@ -215,7 +215,7 @@ pub fn create_unrestricted_signing_rsa_public_with_unique(
     scheme: RsaScheme,
     rsa_key_bits: RsaKeyBits,
     rsa_pub_exponent: RsaExponent,
-    rsa_public_key: &PublicKeyRsa,
+    rsa_public_key: PublicKeyRsa,
 ) -> Result<Public> {
     let object_attributes = ObjectAttributesBuilder::new()
         .with_fixed_tpm(true)
@@ -268,7 +268,7 @@ pub fn create_unrestricted_signing_ecc_public(
         .with_ecc_parameters(
             PublicEccParametersBuilder::new_unrestricted_signing_key(scheme, curve).build()?,
         )
-        .with_ecc_unique_identifier(&EccPoint::default())
+        .with_ecc_unique_identifier(EccPoint::default())
         .build()
 }
 

@@ -28,8 +28,8 @@ impl Context {
     pub fn nv_define_space(
         &mut self,
         nv_auth: Provision,
-        auth: Option<&Auth>,
-        public_info: &NvPublic,
+        auth: Option<Auth>,
+        public_info: NvPublic,
     ) -> Result<NvIndexHandle> {
         let mut object_identifier: ESYS_TR = ESYS_TR_NONE;
         let ret = unsafe {
@@ -39,8 +39,8 @@ impl Context {
                 self.optional_session_1(),
                 self.optional_session_2(),
                 self.optional_session_3(),
-                &auth.cloned().unwrap_or_default().into(),
-                &public_info.clone().try_into()?,
+                &auth.unwrap_or_default().into(),
+                &public_info.try_into()?,
                 &mut object_identifier,
             )
         };
@@ -135,7 +135,7 @@ impl Context {
         &mut self,
         auth_handle: NvAuth,
         nv_index_handle: NvIndexHandle,
-        data: &MaxNvBuffer,
+        data: MaxNvBuffer,
         offset: u16,
     ) -> Result<()> {
         let ret = unsafe {
@@ -146,7 +146,7 @@ impl Context {
                 self.optional_session_1(),
                 self.optional_session_2(),
                 self.optional_session_3(),
-                &data.clone().into(),
+                &data.into(),
                 offset,
             )
         };

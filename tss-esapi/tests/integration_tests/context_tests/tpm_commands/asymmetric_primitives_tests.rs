@@ -25,8 +25,8 @@ mod test_rsa_encrypt_decrypt {
         let key_handle = context
             .create_primary(
                 Hierarchy::Owner,
-                &encryption_decryption_key_pub(),
-                Some(&key_auth),
+                encryption_decryption_key_pub(),
+                Some(key_auth),
                 None,
                 None,
                 None,
@@ -88,12 +88,12 @@ mod test_rsa_encrypt_decrypt {
             .with_name_hashing_algorithm(HashingAlgorithm::Sha256)
             .with_object_attributes(object_attributes)
             .with_ecc_parameters(ecc_parms)
-            .with_ecc_unique_identifier(&EccPoint::default())
+            .with_ecc_unique_identifier(EccPoint::default())
             .build()
             .unwrap();
 
         let key_handle = context
-            .create_primary(Hierarchy::Owner, &public, Some(&key_auth), None, None, None)
+            .create_primary(Hierarchy::Owner, public, Some(key_auth), None, None, None)
             .unwrap()
             .key_handle;
 

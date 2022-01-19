@@ -52,12 +52,19 @@ mod test_duplicate {
                     .build()
                     .expect("Params to be valid"),
             )
-            .with_ecc_unique_identifier(&EccPoint::default())
+            .with_ecc_unique_identifier(EccPoint::default())
             .build()
             .expect("public to be valid");
 
         let new_parent_handle = context
-            .create_primary(Hierarchy::Owner, &public_parent, None, None, None, None)
+            .create_primary(
+                Hierarchy::Owner,
+                public_parent.clone(),
+                None,
+                None,
+                None,
+                None,
+            )
             .unwrap()
             .key_handle;
 
@@ -137,7 +144,7 @@ mod test_duplicate {
             .with_name_hashing_algorithm(HashingAlgorithm::Sha256)
             .with_object_attributes(object_attributes)
             // Use policy digest computed using the trial session
-            .with_auth_policy(&digest)
+            .with_auth_policy(digest)
             .with_ecc_parameters(
                 PublicEccParametersBuilder::new()
                     .with_ecc_scheme(EccScheme::Null)
@@ -149,7 +156,7 @@ mod test_duplicate {
                     .build()
                     .expect("Params to be valid"),
             )
-            .with_ecc_unique_identifier(&EccPoint::default())
+            .with_ecc_unique_identifier(EccPoint::default())
             .build()
             .expect("public to be valid");
 
@@ -158,20 +165,27 @@ mod test_duplicate {
         // that was used to get the "parent_name".
         // In real world the new parent will likely be persisted in the TPM.
         let new_parent_handle: ObjectHandle = context
-            .create_primary(Hierarchy::Owner, &public_parent, None, None, None, None)
+            .create_primary(
+                Hierarchy::Owner,
+                public_parent.clone(),
+                None,
+                None,
+                None,
+                None,
+            )
             .unwrap()
             .key_handle
             .into();
 
         let parent_of_object_to_duplicate_handle = context
-            .create_primary(Hierarchy::Owner, &public_parent, None, None, None, None)
+            .create_primary(Hierarchy::Owner, public_parent, None, None, None, None)
             .unwrap()
             .key_handle;
 
         let result = context
             .create(
                 parent_of_object_to_duplicate_handle,
-                &public_child,
+                public_child,
                 None,
                 None,
                 None,
@@ -183,7 +197,7 @@ mod test_duplicate {
             .load(
                 parent_of_object_to_duplicate_handle,
                 result.out_private.clone(),
-                &result.out_public,
+                result.out_public,
             )
             .unwrap()
             .into();

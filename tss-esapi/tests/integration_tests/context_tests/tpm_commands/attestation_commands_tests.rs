@@ -30,14 +30,14 @@ mod test_quote {
         let qualifying_data = vec![0xff; 16];
 
         let key_handle = context
-            .create_primary(Hierarchy::Owner, &signing_key_pub(), None, None, None, None)
+            .create_primary(Hierarchy::Owner, signing_key_pub(), None, None, None, None)
             .unwrap()
             .key_handle;
 
         let (attest, _signature) = context
             .quote(
                 key_handle,
-                &Data::try_from(qualifying_data).unwrap(),
+                Data::try_from(qualifying_data).unwrap(),
                 SignatureScheme::Null,
                 pcr_selection_list.clone(),
             )
@@ -70,13 +70,13 @@ mod test_quote {
         let qualifying_data = vec![0xff; 16];
 
         let sign_key_handle = context
-            .create_primary(Hierarchy::Owner, &signing_key_pub(), None, None, None, None)
+            .create_primary(Hierarchy::Owner, signing_key_pub(), None, None, None, None)
             .unwrap()
             .key_handle;
         let obj_key_handle = context
             .create_primary(
                 Hierarchy::Owner,
-                &decryption_key_pub(),
+                decryption_key_pub(),
                 None,
                 None,
                 None,
@@ -96,7 +96,7 @@ mod test_quote {
                     ctx.certify(
                         obj_key_handle.into(),
                         sign_key_handle,
-                        &Data::try_from(qualifying_data.clone()).unwrap(),
+                        Data::try_from(qualifying_data.clone()).unwrap(),
                         SignatureScheme::Null,
                     )
                 },
@@ -108,12 +108,12 @@ mod test_quote {
         let data = MaxBuffer::try_from(attest.marshall().unwrap())
             .expect("Failed to get data buffer from attestation data");
         let (digest, _) = context
-            .hash(&data, HashingAlgorithm::Sha256, Hierarchy::Null)
+            .hash(data, HashingAlgorithm::Sha256, Hierarchy::Null)
             .expect("Failed to hash data");
 
         let ticket = context
             .execute_with_nullauth_session(|ctx| {
-                ctx.verify_signature(sign_key_handle, &digest, signature)
+                ctx.verify_signature(sign_key_handle, digest, signature)
             })
             .expect("Failed to verify signature");
         assert_eq!(ticket.tag(), StructureTag::Verified);
@@ -136,7 +136,7 @@ mod test_quote {
         let obj_key_handle = context
             .create_primary(
                 Hierarchy::Owner,
-                &decryption_key_pub(),
+                decryption_key_pub(),
                 None,
                 None,
                 None,
@@ -156,7 +156,7 @@ mod test_quote {
                     ctx.certify(
                         obj_key_handle.into(),
                         KeyHandle::Null,
-                        &Data::try_from(qualifying_data).unwrap(),
+                        Data::try_from(qualifying_data).unwrap(),
                         sign_scheme,
                     )
                 },

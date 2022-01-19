@@ -508,13 +508,13 @@ fn ctx_migration_test() {
     let prim_key_handle = basic_ctx
         .create_primary(
             Hierarchy::Owner,
-            &create_restricted_decryption_rsa_public(
+            create_restricted_decryption_rsa_public(
                 SymmetricDefinitionObject::AES_256_CFB,
                 RsaKeyBits::Rsa2048,
                 RsaExponent::create(0).unwrap(),
             )
             .unwrap(),
-            Some(&key_auth),
+            Some(key_auth.clone()),
             None,
             None,
             None,
@@ -525,8 +525,8 @@ fn ctx_migration_test() {
     let result = basic_ctx
         .create(
             prim_key_handle,
-            &crate::common::signing_key_pub(),
-            Some(&key_auth),
+            crate::common::signing_key_pub(),
+            Some(key_auth.clone()),
             None,
             None,
             None,
@@ -537,13 +537,13 @@ fn ctx_migration_test() {
         .load(
             prim_key_handle,
             result.out_private.clone(),
-            &result.out_public,
+            result.out_public.clone(),
         )
         .unwrap();
     let key_context = basic_ctx.context_save(key_handle.into()).unwrap();
 
     let pub_key_handle = basic_ctx
-        .load_external_public(&result.out_public, Hierarchy::Owner)
+        .load_external_public(result.out_public.clone(), Hierarchy::Owner)
         .unwrap();
     let pub_key_context = basic_ctx.context_save(pub_key_handle.into()).unwrap();
 
@@ -654,7 +654,7 @@ fn activate_credential() {
         panic!("Wrong Public type");
     };
     let pub_handle = basic_ctx
-        .load_external_public(&key_pub, Hierarchy::Owner)
+        .load_external_public(key_pub, Hierarchy::Owner)
         .unwrap();
 
     // Credential to expect back as proof for attestation
@@ -773,7 +773,7 @@ fn activate_credential_wrong_key() {
         panic!("Wrong Public type");
     };
     let pub_handle = basic_ctx
-        .load_external_public(&key_pub, Hierarchy::Owner)
+        .load_external_public(key_pub, Hierarchy::Owner)
         .unwrap();
 
     // Credential to expect back as proof for attestation

@@ -20,7 +20,7 @@ mod test_policy_signed {
         let mut context = create_ctx_with_session();
 
         let key_handle = context
-            .create_primary(Hierarchy::Owner, &signing_key_pub(), None, None, None, None)
+            .create_primary(Hierarchy::Owner, signing_key_pub(), None, None, None, None)
             .unwrap()
             .key_handle;
 
@@ -240,7 +240,7 @@ mod test_policy_pcr {
             .build();
 
         let (_update_counter, pcr_selection_list_out, pcr_data) = context
-            .pcr_read(&pcr_selection_list)
+            .pcr_read(pcr_selection_list.clone())
             .map(|(update_counter, read_pcr_selections, read_pcr_digests)| {
                 (
                     update_counter,
@@ -281,7 +281,7 @@ mod test_policy_pcr {
 
         let (hashed_data, _ticket) = context
             .hash(
-                &concatenated_pcr_values,
+                concatenated_pcr_values,
                 HashingAlgorithm::Sha256,
                 Hierarchy::Owner,
             )
@@ -290,7 +290,7 @@ mod test_policy_pcr {
             .expect("Failed to convert auth session into policy session");
         // There should be no errors setting pcr policy for trial session.
         context
-            .policy_pcr(trial_policy_session, &hashed_data, pcr_selection_list)
+            .policy_pcr(trial_policy_session, hashed_data, pcr_selection_list)
             .expect("Failed to call policy_pcr");
     }
 }
@@ -472,7 +472,7 @@ mod test_policy_cp_hash {
             .expect("Failed to convert auth session into policy session");
         // There should be no errors setting an Or for a TRIAL session
         context
-            .policy_cp_hash(trial_policy_session, &test_dig)
+            .policy_cp_hash(trial_policy_session, test_dig)
             .unwrap();
     }
 }
@@ -522,7 +522,7 @@ mod test_policy_name_hash {
             .expect("Failed to convert auth session into policy session");
         // There should be no errors setting an Or for a TRIAL session
         context
-            .policy_name_hash(trial_policy_session, &test_dig)
+            .policy_name_hash(trial_policy_session, test_dig)
             .expect("Call to policy_name_hash failed");
     }
 }
@@ -545,8 +545,8 @@ mod test_policy_authorize {
         let key_handle = context
             .create_primary(
                 Hierarchy::Owner,
-                &signing_key_pub(),
-                Some(&key_auth),
+                signing_key_pub(),
+                Some(key_auth),
                 None,
                 None,
                 None,
@@ -561,7 +561,7 @@ mod test_policy_authorize {
         // aHash ≔ H_{aHashAlg}(approvedPolicy || policyRef)
         let ahash = context
             .hash(
-                &MaxBuffer::try_from(policy_digest.value().to_vec()).unwrap(),
+                MaxBuffer::try_from(policy_digest.value().to_vec()).unwrap(),
                 HashingAlgorithm::Sha256,
                 Hierarchy::Null,
             )
@@ -577,21 +577,21 @@ mod test_policy_authorize {
         let signature = context
             .sign(
                 key_handle,
-                &ahash,
+                ahash.clone(),
                 SignatureScheme::Null,
                 validation.try_into().unwrap(),
             )
             .unwrap();
         let tkt = context
-            .verify_signature(key_handle, &ahash, signature)
+            .verify_signature(key_handle, ahash, signature)
             .unwrap();
 
         // Since the signature is over this sessions' state, it should be valid
         context
             .policy_authorize(
                 policy_ses,
-                &policy_digest,
-                &Nonce::try_from(policy_ref).unwrap(),
+                policy_digest,
+                Nonce::try_from(policy_ref).unwrap(),
                 &key_name,
                 tkt,
             )
@@ -735,7 +735,7 @@ mod test_policy_get_digest {
         let trial_policy_session = PolicySession::try_from(trial_policy_auth_session)
             .expect("Failed to convert auth session into policy session");
         let (_update_counter, pcr_selection_list_out, pcr_data) = context
-            .pcr_read(&pcr_selection_list)
+            .pcr_read(pcr_selection_list.clone())
             .map(|(update_counter, read_pcr_selections, read_pcr_digests)| {
                 (
                     update_counter,
@@ -776,14 +776,14 @@ mod test_policy_get_digest {
 
         let (hashed_data, _ticket) = context
             .hash(
-                &concatenated_pcr_values,
+                concatenated_pcr_values,
                 HashingAlgorithm::Sha256,
                 Hierarchy::Owner,
             )
             .unwrap();
         // There should be no errors setting pcr policy for trial session.
         context
-            .policy_pcr(trial_policy_session, &hashed_data, pcr_selection_list)
+            .policy_pcr(trial_policy_session, hashed_data, pcr_selection_list)
             .unwrap();
 
         // There is now a policy digest that can be retrieved and used.
@@ -860,7 +860,7 @@ mod test_policy_template {
             .start_auth_session(
                 None,
                 None,
-                Some(&trial_session_nonce),
+                Some(trial_session_nonce),
                 SessionType::Trial,
                 SymmetricDefinition::AES_128_CFB,
                 HashingAlgorithm::Sha1,
@@ -879,7 +879,7 @@ mod test_policy_template {
         // to see if the command is supported by the TPM and if
         // not log a warning but let the test pass.
         context
-            .policy_template(trial_policy_session, &template_hash)
+            .policy_template(trial_policy_session, template_hash)
             .expect("Failed to call policy_template");
 
         let expected_policy_template = Digest::try_from(vec![

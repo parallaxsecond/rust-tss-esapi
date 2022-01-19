@@ -148,12 +148,12 @@ impl Context {
     ///     .with_selection(HashingAlgorithm::Sha256, &[PcrSlot::Slot0, PcrSlot::Slot1])
     ///     .build();
     ///
-    /// let (update_counter, read_pcr_list, digest_list) = context.pcr_read(&pcr_selection_list)
+    /// let (update_counter, read_pcr_list, digest_list) = context.pcr_read(pcr_selection_list)
     ///     .expect("Call to pcr_read failed");
     /// ```
     pub fn pcr_read(
         &mut self,
-        pcr_selection_list: &PcrSelectionList,
+        pcr_selection_list: PcrSelectionList,
     ) -> Result<(u32, PcrSelectionList, DigestList)> {
         let mut pcr_update_counter: u32 = 0;
         let mut tss_pcr_selection_list_out_ptr = null_mut();
@@ -164,7 +164,7 @@ impl Context {
                 self.optional_session_1(),
                 self.optional_session_2(),
                 self.optional_session_3(),
-                &pcr_selection_list.clone().into(),
+                &pcr_selection_list.into(),
                 &mut pcr_update_counter,
                 &mut tss_pcr_selection_list_out_ptr,
                 &mut tss_digest_list_out_ptr,

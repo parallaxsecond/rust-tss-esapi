@@ -161,14 +161,14 @@ impl Context {
     /// #         .build()
     /// #         .unwrap(),
     /// #     )
-    /// #     .with_rsa_unique_identifier(&PublicKeyRsa::default())
+    /// #     .with_rsa_unique_identifier(PublicKeyRsa::default())
     /// #     .build()
     /// #     .unwrap();
     /// #
     /// # let parent_of_object_to_duplicate_handle = context
     /// #     .create_primary(
     /// #         Hierarchy::Owner,
-    /// #         &parent_public,
+    /// #         parent_public.clone(),
     /// #         None,
     /// #         None,
     /// #         None,
@@ -194,7 +194,7 @@ impl Context {
     /// #     .with_public_algorithm(PublicAlgorithm::Rsa)
     /// #     .with_name_hashing_algorithm(HashingAlgorithm::Sha256)
     /// #     .with_object_attributes(object_attributes)
-    /// #     .with_auth_policy(&digest)
+    /// #     .with_auth_policy(digest)
     /// #     .with_rsa_parameters(
     /// #         PublicRsaParametersBuilder::new()
     /// #             .with_scheme(RsaScheme::Null)
@@ -205,14 +205,14 @@ impl Context {
     /// #             .build()
     /// #             .expect("Params to be valid"),
     /// #     )
-    /// #     .with_rsa_unique_identifier(&PublicKeyRsa::default())
+    /// #     .with_rsa_unique_identifier(PublicKeyRsa::default())
     /// #     .build()
     /// #     .expect("public to be valid");
     /// #
     /// # let result = context
     /// #     .create(
     /// #         parent_of_object_to_duplicate_handle,
-    /// #         &public_child,
+    /// #         public_child,
     /// #         None,
     /// #         None,
     /// #         None,
@@ -224,7 +224,7 @@ impl Context {
     /// #     .load(
     /// #         parent_of_object_to_duplicate_handle,
     /// #         result.out_private.clone(),
-    /// #         &result.out_public,
+    /// #         result.out_public,
     /// #     )
     /// #     .unwrap()
     /// #     .into();
@@ -232,7 +232,7 @@ impl Context {
     /// # let new_parent_handle: ObjectHandle = context
     /// #     .create_primary(
     /// #         Hierarchy::Owner,
-    /// #         &parent_public,
+    /// #         parent_public,
     /// #         None,
     /// #         None,
     /// #         None,
@@ -483,14 +483,14 @@ impl Context {
     /// #         .build()
     /// #         .unwrap(),
     /// #     )
-    /// #     .with_rsa_unique_identifier(&PublicKeyRsa::default())
+    /// #     .with_rsa_unique_identifier(PublicKeyRsa::default())
     /// #     .build()
     /// #     .unwrap();
     /// #
     /// # let parent_of_object_to_duplicate_handle = context
     /// #     .create_primary(
     /// #         Hierarchy::Owner,
-    /// #         &parent_public,
+    /// #         parent_public.clone(),
     /// #         None,
     /// #         None,
     /// #         None,
@@ -516,7 +516,7 @@ impl Context {
     /// #     .with_public_algorithm(PublicAlgorithm::Rsa)
     /// #     .with_name_hashing_algorithm(HashingAlgorithm::Sha256)
     /// #     .with_object_attributes(object_attributes)
-    /// #     .with_auth_policy(&digest)
+    /// #     .with_auth_policy(digest)
     /// #     .with_rsa_parameters(
     /// #         PublicRsaParametersBuilder::new()
     /// #             .with_scheme(RsaScheme::Null)
@@ -527,14 +527,14 @@ impl Context {
     /// #             .build()
     /// #             .expect("Params to be valid"),
     /// #     )
-    /// #     .with_rsa_unique_identifier(&PublicKeyRsa::default())
+    /// #     .with_rsa_unique_identifier(PublicKeyRsa::default())
     /// #     .build()
     /// #     .expect("public to be valid");
     /// #
     /// # let result = context
     /// #     .create(
     /// #         parent_of_object_to_duplicate_handle,
-    /// #         &public_child,
+    /// #         public_child,
     /// #         None,
     /// #         None,
     /// #         None,
@@ -546,7 +546,7 @@ impl Context {
     /// #     .load(
     /// #         parent_of_object_to_duplicate_handle,
     /// #         result.out_private.clone(),
-    /// #         &result.out_public,
+    /// #         result.out_public,
     /// #     )
     /// #     .unwrap()
     /// #     .into();
@@ -554,7 +554,7 @@ impl Context {
     /// # let new_parent_handle: ObjectHandle = context
     /// #     .create_primary(
     /// #         Hierarchy::Owner,
-    /// #         &parent_public,
+    /// #         parent_public,
     /// #         None,
     /// #         None,
     /// #         None,

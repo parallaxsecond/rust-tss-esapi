@@ -22,7 +22,7 @@ mod test_encrypt_decrypt_2 {
         let mut context = create_ctx_without_session();
 
         context
-            .tr_set_auth(Hierarchy::Owner.into(), &Auth::default())
+            .tr_set_auth(Hierarchy::Owner.into(), Auth::default())
             .expect("Failed to set auth to empty for owner");
 
         let primary_key_auth = Auth::try_from(
@@ -37,7 +37,7 @@ mod test_encrypt_decrypt_2 {
         let primary_key_handle = context.execute_with_session(Some(AuthSession::Password), |ctx| {
             ctx.create_primary(
                 Hierarchy::Owner,
-                &tss_esapi::utils::create_restricted_decryption_rsa_public(
+                tss_esapi::utils::create_restricted_decryption_rsa_public(
                     Cipher::aes_128_cfb()
                         .try_into()
                         .expect("Failed to convert from Cipher"),
@@ -45,7 +45,7 @@ mod test_encrypt_decrypt_2 {
                     RsaExponent::default(),
                 )
                 .expect("Failed to create public for primary key"),
-                Some(&primary_key_auth),
+                Some(primary_key_auth.clone()),
                 None,
                 None,
                 None,
@@ -55,7 +55,7 @@ mod test_encrypt_decrypt_2 {
         });
 
         context
-            .tr_set_auth(primary_key_handle.into(), &primary_key_auth)
+            .tr_set_auth(primary_key_handle.into(), primary_key_auth)
             .expect("Failed to set auth from primary key handle.");
 
         let symmetric_key_object_attributes = ObjectAttributesBuilder::new()
@@ -74,7 +74,7 @@ mod test_encrypt_decrypt_2 {
                     .try_into()
                     .expect("Failed to create symmteric cipher parameters from cipher"),
             ))
-            .with_symmetric_cipher_unique_identifier(&Default::default())
+            .with_symmetric_cipher_unique_identifier(Default::default())
             .build()
             .expect("Failed to create public for symmetric key public");
 
@@ -97,9 +97,9 @@ mod test_encrypt_decrypt_2 {
             context.execute_with_session(Some(AuthSession::Password), |ctx| {
                 ctx.create(
                     primary_key_handle,
-                    &symmetric_key_public,
-                    Some(&symmetric_key_auth),
-                    Some(&symmetric_key_value),
+                    symmetric_key_public,
+                    Some(symmetric_key_auth.clone()),
+                    Some(symmetric_key_value),
                     None,
                     None,
                 )
@@ -111,13 +111,13 @@ mod test_encrypt_decrypt_2 {
                 ctx.load(
                     primary_key_handle,
                     symmetric_key_creation_data.out_private,
-                    &symmetric_key_creation_data.out_public,
+                    symmetric_key_creation_data.out_public,
                 )
                 .expect("Failed to load symmetric key")
             });
 
         context
-            .tr_set_auth(symmetric_key_handle.into(), &symmetric_key_auth)
+            .tr_set_auth(symmetric_key_handle.into(), symmetric_key_auth)
             .expect("Failed to set auth on symmetric key handle");
 
         let initial_value =
@@ -133,8 +133,8 @@ mod test_encrypt_decrypt_2 {
                     symmetric_key_handle,
                     false,
                     SymmetricMode::Cfb,
-                    &data,
-                    &initial_value,
+                    data.clone(),
+                    initial_value.clone(),
                 )
                 .expect("Call to encrypt_decrypt_2 failed when encrypting data")
             });
@@ -147,8 +147,8 @@ mod test_encrypt_decrypt_2 {
                     symmetric_key_handle,
                     true,
                     SymmetricMode::Cfb,
-                    &encrypted_data,
-                    &initial_value,
+                    encrypted_data,
+                    initial_value,
                 )
                 .expect("Call to encrypt_decrypt_2 failed when decrypting data")
             });
@@ -177,7 +177,7 @@ mod test_hash {
         let expected_hierarchy = Hierarchy::Owner;
         let (actual_hashed_data, ticket) = context
             .hash(
-                &MaxBuffer::try_from(data.as_bytes().to_vec()).unwrap(),
+                MaxBuffer::try_from(data.as_bytes().to_vec()).unwrap(),
                 HashingAlgorithm::Sha256,
                 expected_hierarchy,
             )
@@ -219,19 +219,19 @@ mod test_hmac {
             .with_keyed_hash_parameters(PublicKeyedHashParameters::new(
                 KeyedHashScheme::HMAC_SHA_256,
             ))
-            .with_keyed_hash_unique_identifier(&Default::default())
+            .with_keyed_hash_unique_identifier(Default::default())
             .build()
             .expect("Failed to build public structure for key.");
 
         let key = context
-            .create_primary(Hierarchy::Owner, &key_pub, None, None, None, None)
+            .create_primary(Hierarchy::Owner, key_pub, None, None, None, None)
             .unwrap();
 
         let data = vec![1, 2, 3, 4];
 
         let buf = MaxBuffer::try_from(data).unwrap();
         context
-            .hmac(key.key_handle.into(), &buf, HashingAlgorithm::Sha256)
+            .hmac(key.key_handle.into(), buf, HashingAlgorithm::Sha256)
             .unwrap();
     }
 }
