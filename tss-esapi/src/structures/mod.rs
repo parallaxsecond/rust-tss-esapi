@@ -198,3 +198,9 @@ pub use property::{
     algorithm_property::AlgorithmProperty, tagged_pcr_select::TaggedPcrSelect,
     tagged_property::TaggedProperty,
 };
+
+/////////////////////////////////////////////////////////
+/// NV structures
+/////////////////////////////////////////////////////////
+mod nv;
+pub use nv::storage::{NvPublic, NvPublicBuilder};

@@ -330,6 +330,11 @@ impl PublicRsaParameters {
     pub const fn exponent(&self) -> RsaExponent {
         self.exponent
     }
+
+    /// Get a builder for this structure
+    pub const fn builder() -> PublicRsaParametersBuilder {
+        PublicRsaParametersBuilder::new()
+    }
 }
 
 impl From<PublicRsaParameters> for TPMS_RSA_PARMS {

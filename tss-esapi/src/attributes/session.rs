@@ -24,6 +24,13 @@ bitfield! {
     pub audit, _: 7;
 }
 
+impl SessionAttributes {
+    /// Get a builder for the structure
+    pub const fn builder() -> SessionAttributesBuilder {
+        SessionAttributesBuilder::new()
+    }
+}
+
 impl From<TPMA_SESSION> for SessionAttributes {
     fn from(tss_session_attributes: TPMA_SESSION) -> SessionAttributes {
         SessionAttributes(tss_session_attributes)
@@ -53,6 +60,13 @@ bitfield! {
     _, use_audit: 7;
 }
 
+impl SessionAttributesMask {
+    /// Get a builder for the structure
+    pub const fn builder() -> SessionAttributesBuilder {
+        SessionAttributesBuilder::new()
+    }
+}
+
 impl From<TPMA_SESSION> for SessionAttributesMask {
     fn from(tss_session_attributes: TPMA_SESSION) -> SessionAttributesMask {
         SessionAttributesMask(tss_session_attributes)
@@ -77,7 +91,7 @@ pub struct SessionAttributesBuilder {
 }
 
 impl SessionAttributesBuilder {
-    pub fn new() -> SessionAttributesBuilder {
+    pub const fn new() -> SessionAttributesBuilder {
         SessionAttributesBuilder {
             attributes: SessionAttributes(0),
             mask: SessionAttributesMask(0),

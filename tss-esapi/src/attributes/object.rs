@@ -58,6 +58,11 @@ impl ObjectAttributes {
         attrs.set_sign_encrypt(true);
         attrs
     }
+
+    /// Get a builder for the structure
+    pub const fn builder() -> ObjectAttributesBuilder {
+        ObjectAttributesBuilder::new()
+    }
 }
 
 impl From<ObjectAttributes> for TPMA_OBJECT {

@@ -81,6 +81,11 @@ impl PcrSelectionList {
                 .and_then(|existing_pcr_selection| existing_pcr_selection.deselect_exact(pcr_slot))
         })
     }
+
+    /// Get a builder for this structure
+    pub fn builder() -> PcrSelectionListBuilder {
+        PcrSelectionListBuilder::new()
+    }
 }
 
 impl From<PcrSelectionList> for TPML_PCR_SELECTION {

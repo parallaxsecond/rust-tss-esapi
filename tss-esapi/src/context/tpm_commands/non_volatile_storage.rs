@@ -4,8 +4,7 @@ use crate::{
     context::handle_manager::HandleDropAction,
     handles::{AuthHandle, NvIndexHandle},
     interface_types::resource_handles::{NvAuth, Provision},
-    nv::storage::NvPublic,
-    structures::{Auth, MaxNvBuffer, Name},
+    structures::{Auth, MaxNvBuffer, Name, NvPublic},
     tss2_esys::*,
     Context, Error, Result,
 };

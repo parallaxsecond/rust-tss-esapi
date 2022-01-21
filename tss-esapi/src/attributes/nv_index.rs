@@ -107,6 +107,11 @@ impl NvIndexAttributes {
 
         Ok(())
     }
+
+    /// Get a builder for the structure
+    pub const fn builder() -> NvIndexAttributesBuilder {
+        NvIndexAttributesBuilder::new()
+    }
 }
 
 impl TryFrom<TPMA_NV> for NvIndexAttributes {

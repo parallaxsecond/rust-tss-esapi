@@ -6,7 +6,7 @@ mod test_nv_define_space {
         attributes::NvIndexAttributesBuilder,
         handles::NvIndexTpmHandle,
         interface_types::{algorithm::HashingAlgorithm, resource_handles::Provision},
-        nv::storage::NvPublicBuilder,
+        structures::NvPublicBuilder,
     };
 
     #[test]
@@ -120,7 +120,7 @@ mod test_nv_undefine_space {
         attributes::NvIndexAttributesBuilder,
         handles::NvIndexTpmHandle,
         interface_types::{algorithm::HashingAlgorithm, resource_handles::Provision},
-        nv::storage::NvPublicBuilder,
+        structures::NvPublicBuilder,
     };
 
     #[test]
@@ -161,7 +161,7 @@ mod test_nv_read_public {
         attributes::NvIndexAttributesBuilder,
         handles::NvIndexTpmHandle,
         interface_types::{algorithm::HashingAlgorithm, resource_handles::Provision},
-        nv::storage::NvPublicBuilder,
+        structures::NvPublicBuilder,
     };
 
     #[test]
@@ -215,8 +215,7 @@ mod test_nv_write {
             algorithm::HashingAlgorithm,
             resource_handles::{NvAuth, Provision},
         },
-        nv::storage::NvPublicBuilder,
-        structures::MaxNvBuffer,
+        structures::{MaxNvBuffer, NvPublicBuilder},
     };
     #[test]
     fn test_nv_write() {
@@ -271,8 +270,7 @@ mod test_nv_read {
             algorithm::HashingAlgorithm,
             resource_handles::{NvAuth, Provision},
         },
-        nv::storage::NvPublicBuilder,
-        structures::MaxNvBuffer,
+        structures::{MaxNvBuffer, NvPublicBuilder},
     };
     #[test]
     fn test_nv_read() {
