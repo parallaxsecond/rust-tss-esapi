@@ -17,8 +17,7 @@ pub struct EccCurveList {
 }
 
 impl EccCurveList {
-    pub const MAX_SIZE: usize =
-        crate::structures::capabilitydata::max_cap_size::<TPM2_ECC_CURVE>() as usize;
+    pub const MAX_SIZE: usize = Self::calculate_max_size();
 
     pub fn new() -> Self {
         EccCurveList {
@@ -42,6 +41,12 @@ impl EccCurveList {
     /// Returns the inner type.
     pub fn into_inner(self) -> Vec<EccCurveIdentifier> {
         self.ecc_curves
+    }
+
+    /// Private function that calculates the maximum number
+    /// elements allowed in internal storage.
+    const fn calculate_max_size() -> usize {
+        crate::structures::capability_data::max_cap_size::<TPM2_ECC_CURVE>()
     }
 }
 

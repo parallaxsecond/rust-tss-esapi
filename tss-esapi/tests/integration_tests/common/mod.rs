@@ -32,9 +32,11 @@ use tss_esapi::{
 };
 
 mod marshall;
+mod tpma_types_equality_checks;
 mod tpml_types_equality_checks;
 mod tpms_types_equality_checks;
 pub use marshall::*;
+pub use tpma_types_equality_checks::*;
 pub use tpml_types_equality_checks::*;
 pub use tpms_types_equality_checks::*;
 

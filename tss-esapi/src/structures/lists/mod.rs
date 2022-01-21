@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 pub mod algorithm_property;
 pub mod command_code;
+pub mod command_code_attributes;
 pub mod digest;
 pub mod digest_values;
 pub mod ecc_curves;
