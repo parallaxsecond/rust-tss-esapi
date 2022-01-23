@@ -157,7 +157,7 @@ impl TryFrom<TPMS_PCR_SELECTION> for PcrSelection {
 
         // Select only the octets indicated by sizeofSelect
         let mut selected_octets = [0u8; TPM2_PCR_SELECT_MAX as usize];
-        let number_of_selected_octets: usize = size_of_select.into();
+        let number_of_selected_octets: usize = size_of_select.as_usize();
         selected_octets[..number_of_selected_octets]
             .copy_from_slice(&tss_pcr_selection.pcrSelect[..number_of_selected_octets]);
 
@@ -180,7 +180,7 @@ impl From<PcrSelection> for TPMS_PCR_SELECTION {
     fn from(pcr_selection: PcrSelection) -> Self {
         TPMS_PCR_SELECTION {
             hash: pcr_selection.hashing_algorithm.into(),
-            sizeofSelect: pcr_selection.size_of_select.into(),
+            sizeofSelect: pcr_selection.size_of_select.as_u8(),
             pcrSelect: pcr_selection.selected_pcrs.bits().to_le_bytes(),
         }
     }

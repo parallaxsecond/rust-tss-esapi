@@ -6,36 +6,87 @@ use tss_esapi::{structures::PcrSelectSize, Error, WrapperErrorKind};
 
 macro_rules! test_valid_conversions {
     (PcrSelectSize::$expected:ident, $value:expr) => {
-        let expected_u8: u8 = $value;
-        let expected_usize: usize = $value;
-
-        let actual = PcrSelectSize::try_from(expected_u8).expect(&format!(
-            "Failed to convert {} to PcrSelectSize",
-            expected_u8
-        ));
+        let expected_u8 = $value;
+        let expected_u32 = $value;
+        let expected_usize = $value;
 
         assert_eq!(
-            PcrSelectSize::$expected,
-            actual,
-            "PcrSelectSize converted from {} did not match the expected value {}",
             expected_u8,
+            PcrSelectSize::$expected.as_u8(),
+            "The PcrSelectSize as_u8() method for {} did not give the expected u8 value {}",
             stringify!(PcrSelectSize::$expected),
+            expected_u8
         );
 
         assert_eq!(
-            expected_u8,
-            u8::from(actual),
-            "PcrSelectSize {} did not convert to the expected u8 value {}",
+            expected_u32,
+            PcrSelectSize::$expected.as_u32(),
+            "The PcrSelectSize as_u32() method for {} did not give the expected u32 value {}",
             stringify!(PcrSelectSize::$expected),
-            expected_u8
+            expected_u32
         );
 
         assert_eq!(
             expected_usize,
-            usize::from(actual),
-            "PcrSelectSize {} did not convert to the expected usize value {}",
+            PcrSelectSize::$expected.as_usize(),
+            "The PcrSelectSize as_usize() method for {} did not give the expected usize value {}",
             stringify!(PcrSelectSize::$expected),
             expected_usize
+        );
+
+        assert_eq!(
+            PcrSelectSize::$expected,
+            PcrSelectSize::try_parse_u8(expected_u8).expect(&format!(
+                "try_parse_u8 failed to parse value {}",
+                expected_u8
+            )),
+            "The u8 value {} did not get parsed as the expected {}",
+            expected_u8,
+            stringify!(PcrSelectSize::$expected),
+        );
+
+        assert_eq!(
+            PcrSelectSize::$expected,
+            PcrSelectSize::try_parse_u32(expected_u32).expect(&format!(
+                "try_parse_u32 failed to parse value {}",
+                expected_u32
+            )),
+            "The u32 value {} did not get parsed as the expected {}",
+            expected_u32,
+            stringify!(PcrSelectSize::$expected),
+        );
+
+        assert_eq!(
+            PcrSelectSize::$expected,
+            PcrSelectSize::try_parse_usize(expected_usize).expect(&format!(
+                "try_parse_usize failed to parse value {}",
+                expected_usize
+            )),
+            "The usize value {} did not get parsed as the expected {}",
+            expected_u32,
+            stringify!(PcrSelectSize::$expected),
+        );
+
+        assert_eq!(
+            PcrSelectSize::$expected,
+            PcrSelectSize::try_from(expected_u8).expect(&format!(
+                "Failed to convert u8 value {} to a PcrSelectSize",
+                expected_u8
+            )),
+            "The value {} did not get converted into the expected {}",
+            expected_u8,
+            stringify!(PcrSelectSize::$expected),
+        );
+
+        assert_eq!(
+            expected_u8,
+            u8::try_from(PcrSelectSize::$expected).expect(&format!(
+                "Failed to convert {} to u8 value",
+                stringify!(PcrSelectSize::$expected)
+            )),
+            "{} did not get converted into the expected u8 value {}",
+            stringify!(PcrSelectSize::$expected),
+            expected_u8,
         );
     };
 }
