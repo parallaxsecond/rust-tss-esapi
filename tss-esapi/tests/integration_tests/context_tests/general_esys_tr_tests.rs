@@ -9,8 +9,7 @@ mod test_tr_from_tpm_public {
             resource_handles::{NvAuth, Provision},
             session_handles::AuthSession,
         },
-        nv::storage::NvPublicBuilder,
-        structures::{Auth, CapabilityData, MaxNvBuffer},
+        structures::{Auth, CapabilityData, MaxNvBuffer, NvPublicBuilder},
         tss2_esys::TPM2_HANDLE,
         Context,
     };

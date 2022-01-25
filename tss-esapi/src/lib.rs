@@ -109,7 +109,6 @@ mod context;
 mod error;
 pub mod handles;
 pub mod interface_types;
-pub mod nv;
 pub mod structures;
 pub mod tcti_ldr;
 pub mod traits;

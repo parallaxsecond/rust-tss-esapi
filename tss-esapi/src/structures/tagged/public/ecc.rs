@@ -257,6 +257,11 @@ impl PublicEccParameters {
     pub const fn key_derivation_function_scheme(&self) -> KeyDerivationFunctionScheme {
         self.key_derivation_function_scheme
     }
+
+    /// Get a builder for this structure
+    pub const fn builder() -> PublicEccParametersBuilder {
+        PublicEccParametersBuilder::new()
+    }
 }
 
 impl From<PublicEccParameters> for TPMS_ECC_PARMS {

@@ -521,6 +521,11 @@ impl TransientKeyContext {
         }
         Ok(key_handle)
     }
+
+    /// Get a builder for the structure
+    pub fn builder() -> TransientKeyContextBuilder {
+        TransientKeyContextBuilder::new()
+    }
 }
 
 /// Build a new `TransientKeyContext`.

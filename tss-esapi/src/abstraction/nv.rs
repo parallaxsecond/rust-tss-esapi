@@ -7,8 +7,7 @@ use crate::{
     constants::{tss::*, CapabilityType, PropertyTag},
     handles::{NvIndexHandle, NvIndexTpmHandle, TpmHandle},
     interface_types::resource_handles::NvAuth,
-    nv::storage::NvPublic,
-    structures::{CapabilityData, Name},
+    structures::{CapabilityData, Name, NvPublic},
     Context, Error, Result, WrapperErrorKind,
 };
 

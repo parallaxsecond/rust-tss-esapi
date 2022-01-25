@@ -374,6 +374,11 @@ impl Public {
             | Public::SymCipher { auth_policy, .. } => auth_policy,
         }
     }
+
+    /// Get a builder for this structure
+    pub const fn builder() -> PublicBuilder {
+        PublicBuilder::new()
+    }
 }
 
 impl From<Public> for TPMT_PUBLIC {

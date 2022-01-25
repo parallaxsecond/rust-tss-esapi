@@ -51,7 +51,7 @@ impl LocalityAttributes {
     }
 
     /// Returns the builder used to construct LocalAttributes.
-    pub fn builder() -> LocalityAttributesBuilder {
+    pub const fn builder() -> LocalityAttributesBuilder {
         LocalityAttributesBuilder::new()
     }
 }

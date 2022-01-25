@@ -10,8 +10,7 @@ use tss_esapi::{
         algorithm::HashingAlgorithm,
         resource_handles::{NvAuth, Provision},
     },
-    nv::storage::NvPublicBuilder,
-    structures::MaxNvBuffer,
+    structures::{MaxNvBuffer, NvPublicBuilder},
     Context,
 };
 

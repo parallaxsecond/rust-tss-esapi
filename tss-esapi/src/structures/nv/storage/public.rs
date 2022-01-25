@@ -12,6 +12,11 @@ use crate::{
 use log::error;
 use std::convert::{TryFrom, TryInto};
 
+/// Representation of the public parameters of a non-volatile
+/// space allocation.
+///
+/// # Details
+/// Corresponds to `TPMS_NV_PUBLIC`
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct NvPublic {
     nv_index: NvIndexTpmHandle,
@@ -42,6 +47,11 @@ impl NvPublic {
 
     pub fn data_size(&self) -> usize {
         self.data_size
+    }
+
+    /// Get a builder for the structure
+    pub const fn builder() -> NvPublicBuilder {
+        NvPublicBuilder::new()
     }
 }
 
@@ -95,7 +105,7 @@ pub struct NvPublicBuilder {
 }
 
 impl NvPublicBuilder {
-    pub fn new() -> Self {
+    pub const fn new() -> Self {
         NvPublicBuilder {
             nv_index: None,
             name_algorithm: None,
