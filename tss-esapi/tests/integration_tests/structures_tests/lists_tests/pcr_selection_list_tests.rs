@@ -10,33 +10,41 @@ use tss_esapi::{
 
 #[test]
 fn from_tpml_retains_order() {
-    let selection_1 = PcrSelection::new(
+    let selection_1 = PcrSelection::create(
         HashingAlgorithm::Sha256,
         PcrSelectSize::ThreeBytes,
         &[PcrSlot::Slot10],
-    );
-    let selection_1 = TPMS_PCR_SELECTION::try_from(selection_1).unwrap();
+    )
+    .expect("Failed to create PcrSelection 1");
+    let selection_1 = TPMS_PCR_SELECTION::try_from(selection_1)
+        .expect("Failed to convert PcrSelection 1 into TPMS_PCR_SELECTION");
 
-    let selection_2 = PcrSelection::new(
+    let selection_2 = PcrSelection::create(
         HashingAlgorithm::Sha256,
         PcrSelectSize::ThreeBytes,
         &[PcrSlot::Slot11],
-    );
-    let selection_2 = TPMS_PCR_SELECTION::try_from(selection_2).unwrap();
+    )
+    .expect("Failed to create PcrSelection 2");
+    let selection_2 = TPMS_PCR_SELECTION::try_from(selection_2)
+        .expect("Failed to convert PcrSelection 2 into TPMS_PCR_SELECTION");
 
-    let selection_3 = PcrSelection::new(
+    let selection_3 = PcrSelection::create(
         HashingAlgorithm::Sha1,
         PcrSelectSize::ThreeBytes,
         &[PcrSlot::Slot16],
-    );
-    let selection_3 = TPMS_PCR_SELECTION::try_from(selection_3).unwrap();
+    )
+    .expect("Failed to create PcrSelection 3");
+    let selection_3 = TPMS_PCR_SELECTION::try_from(selection_3)
+        .expect("Failed to convert PcrSelection 3 into TPMS_PCR_SELECTION");
 
-    let selection_4 = PcrSelection::new(
+    let selection_4 = PcrSelection::create(
         HashingAlgorithm::Sha1,
         PcrSelectSize::ThreeBytes,
         &[PcrSlot::Slot2],
-    );
-    let selection_4 = TPMS_PCR_SELECTION::try_from(selection_4).unwrap();
+    )
+    .expect("Failed to create PcrSelection 4");
+    let selection_4 = TPMS_PCR_SELECTION::try_from(selection_4)
+        .expect("Failed to convert PcrSelection 4 into TPMS_PCR_SELECTION");
 
     let tpml_selections = TPML_PCR_SELECTION {
         count: 4,
@@ -91,35 +99,43 @@ fn from_tpml_retains_order() {
 
 #[test]
 fn test_subtract() {
-    let pcr_selection_1 = PcrSelection::new(
+    let pcr_selection_1 = PcrSelection::create(
         HashingAlgorithm::Sha256,
         PcrSelectSize::ThreeBytes,
         &[PcrSlot::Slot10],
-    );
+    )
+    .expect("Failed to create PcrSelection 1");
     let tpms_pcr_selection_1 = TPMS_PCR_SELECTION::try_from(pcr_selection_1)
-        .expect("Failed to create tpms_pcr_selection_1");
+        .expect("Failed to convert PcrSelection 1 into TPMS_PCR_SELECTION");
 
-    let pcr_selection_2 = PcrSelection::new(
+    let pcr_selection_2 = PcrSelection::create(
         HashingAlgorithm::Sha256,
         PcrSelectSize::ThreeBytes,
         &[PcrSlot::Slot11],
-    );
+    )
+    .expect("Failed to create PcrSelection 2");
     let tpms_pcr_selection_2 = TPMS_PCR_SELECTION::try_from(pcr_selection_2)
-        .expect("Failed to create tpms_pcr_selection_2");
+        .expect("Failed to convert PcrSelection 2 into TPMS_PCR_SELECTION");
 
-    let tpms_pcr_selection_3 = TPMS_PCR_SELECTION::try_from(PcrSelection::new(
-        HashingAlgorithm::Sha1,
-        PcrSelectSize::ThreeBytes,
-        &[PcrSlot::Slot16],
-    ))
-    .expect("Failed to create tpms_pcr_selection_3");
+    let tpms_pcr_selection_3 = TPMS_PCR_SELECTION::try_from(
+        PcrSelection::create(
+            HashingAlgorithm::Sha1,
+            PcrSelectSize::ThreeBytes,
+            &[PcrSlot::Slot16],
+        )
+        .expect("Failed to create PcrSelection 3"),
+    )
+    .expect("Failed to convert PcrSelection 3 into TPMS_PCR_SELECTION");
 
-    let tpms_pcr_selection_4 = TPMS_PCR_SELECTION::try_from(PcrSelection::new(
-        HashingAlgorithm::Sha1,
-        PcrSelectSize::ThreeBytes,
-        &[PcrSlot::Slot2],
-    ))
-    .expect("Failed to create tpms_pcr_selection_4");
+    let tpms_pcr_selection_4 = TPMS_PCR_SELECTION::try_from(
+        PcrSelection::create(
+            HashingAlgorithm::Sha1,
+            PcrSelectSize::ThreeBytes,
+            &[PcrSlot::Slot2],
+        )
+        .expect("Failed to create PcrSelection 4"),
+    )
+    .expect("Failed to convert PcrSelection 4 into TPMS_PCR_SELECTION");
 
     let mut selection_list_1 = PcrSelectionList::try_from(TPML_PCR_SELECTION {
         count: 4,
@@ -188,26 +204,34 @@ fn test_subtract() {
 
 #[test]
 fn test_subtract_overlapping_without_remaining() {
-    let tpms_pcr_selection_1 = TPMS_PCR_SELECTION::try_from(PcrSelection::new(
-        HashingAlgorithm::Sha256,
-        PcrSelectSize::ThreeBytes,
-        &[PcrSlot::Slot10],
-    ))
-    .expect("Failed to create tpms_pcr_selection_1");
+    let tpms_pcr_selection_1 = TPMS_PCR_SELECTION::try_from(
+        PcrSelection::create(
+            HashingAlgorithm::Sha256,
+            PcrSelectSize::ThreeBytes,
+            &[PcrSlot::Slot10],
+        )
+        .expect("Failed to create PcrSelection 1"),
+    )
+    .expect("Failed to convert PcrSelection 1 into TPMS_PCR_SELECTION");
+    let tpms_pcr_selection_2 = TPMS_PCR_SELECTION::try_from(
+        PcrSelection::create(
+            HashingAlgorithm::Sha256,
+            PcrSelectSize::ThreeBytes,
+            &[PcrSlot::Slot11],
+        )
+        .expect("Failed to create PcrSelection 2"),
+    )
+    .expect("Failed to convert PcrSelection 2 into TPMS_PCR_SELECTION");
 
-    let tpms_pcr_selection_2 = TPMS_PCR_SELECTION::try_from(PcrSelection::new(
-        HashingAlgorithm::Sha256,
-        PcrSelectSize::ThreeBytes,
-        &[PcrSlot::Slot11],
-    ))
-    .expect("Failed to create tpms_pcr_selection_2");
-
-    let tpms_pcr_selection_3 = TPMS_PCR_SELECTION::try_from(PcrSelection::new(
-        HashingAlgorithm::Sha256,
-        PcrSelectSize::ThreeBytes,
-        &[PcrSlot::Slot10, PcrSlot::Slot11],
-    ))
-    .expect("Failed to create tpms_pcr_selection_3");
+    let tpms_pcr_selection_3 = TPMS_PCR_SELECTION::try_from(
+        PcrSelection::create(
+            HashingAlgorithm::Sha256,
+            PcrSelectSize::ThreeBytes,
+            &[PcrSlot::Slot10, PcrSlot::Slot11],
+        )
+        .expect("Failed to create PcrSelection 3"),
+    )
+    .expect("Failed to convert PcrSelection 3 into TPMS_PCR_SELECTION");
 
     let mut selection_list_1 = PcrSelectionList::try_from(TPML_PCR_SELECTION {
         count: 2,
@@ -268,34 +292,44 @@ fn test_subtract_overlapping_without_remaining() {
 
 #[test]
 fn test_subtract_overlapping_with_remaining() {
-    let tpms_pcr_selection_1 = TPMS_PCR_SELECTION::try_from(PcrSelection::new(
-        HashingAlgorithm::Sha256,
-        PcrSelectSize::ThreeBytes,
-        &[PcrSlot::Slot10],
-    ))
-    .expect("Failed to create tpms_pcr_selection_1");
+    let tpms_pcr_selection_1 = TPMS_PCR_SELECTION::try_from(
+        PcrSelection::create(
+            HashingAlgorithm::Sha256,
+            PcrSelectSize::ThreeBytes,
+            &[PcrSlot::Slot10],
+        )
+        .expect("Failed to create PcrSelection 1"),
+    )
+    .expect("Failed to convert PcrSelection 1 into TPMS_PCR_SELECTION");
 
-    let tpms_pcr_selection_2 = TPMS_PCR_SELECTION::try_from(PcrSelection::new(
-        HashingAlgorithm::Sha256,
-        PcrSelectSize::ThreeBytes,
-        &[PcrSlot::Slot11],
-    ))
-    .expect("Failed to create tpms_pcr_selection_2");
+    let tpms_pcr_selection_2 = TPMS_PCR_SELECTION::try_from(
+        PcrSelection::create(
+            HashingAlgorithm::Sha256,
+            PcrSelectSize::ThreeBytes,
+            &[PcrSlot::Slot11],
+        )
+        .expect("Failed to create PcrSelection 2"),
+    )
+    .expect("Failed to convert PcrSelection 2 into TPMS_PCR_SELECTION");
 
-    let expected = PcrSelection::new(
+    let expected = PcrSelection::create(
         HashingAlgorithm::Sha256,
         PcrSelectSize::ThreeBytes,
         &[PcrSlot::Slot12],
-    );
-    let tpms_pcr_selection_3 =
-        TPMS_PCR_SELECTION::try_from(expected).expect("Failed to create tpms_pcr_selection_2");
+    )
+    .expect("Failed to create PcrSelection 'expected'");
+    let tpms_pcr_selection_3 = TPMS_PCR_SELECTION::try_from(expected)
+        .expect("Failed to convert PcrSelection 'expected' into TPMS_PCR_SELECTION");
 
-    let tpms_pcr_selection_4 = TPMS_PCR_SELECTION::try_from(PcrSelection::new(
-        HashingAlgorithm::Sha256,
-        PcrSelectSize::ThreeBytes,
-        &[PcrSlot::Slot10, PcrSlot::Slot11],
-    ))
-    .expect("Failed to create tpms_pcr_selection_3");
+    let tpms_pcr_selection_4 = TPMS_PCR_SELECTION::try_from(
+        PcrSelection::create(
+            HashingAlgorithm::Sha256,
+            PcrSelectSize::ThreeBytes,
+            &[PcrSlot::Slot10, PcrSlot::Slot11],
+        )
+        .expect("Failed to create PcrSelection 4"),
+    )
+    .expect("Failed to convert PcrSelection 4 into TPMS_PCR_SELECTION");
 
     let mut selection_list_1 = PcrSelectionList::try_from(TPML_PCR_SELECTION {
         count: 3,
@@ -360,35 +394,42 @@ fn test_subtract_overlapping_with_remaining() {
 
 #[test]
 fn test_invalid_subtraction() {
-    let pcr_selection_1 = PcrSelection::new(
+    let pcr_selection_1 = PcrSelection::create(
         HashingAlgorithm::Sha256,
         PcrSelectSize::ThreeBytes,
         &[PcrSlot::Slot10],
-    );
+    )
+    .expect("Failed to create PcrSelection 1");
     let tpms_pcr_selection_1 = TPMS_PCR_SELECTION::try_from(pcr_selection_1)
-        .expect("Failed to create tpms_pcr_selection_1");
+        .expect("Failed to convert PcrSelection 1 into TPMS_PCR_SELECTION");
 
-    let pcr_selection_2 = PcrSelection::new(
+    let pcr_selection_2 = PcrSelection::create(
         HashingAlgorithm::Sha256,
         PcrSelectSize::ThreeBytes,
         &[PcrSlot::Slot11],
-    );
+    )
+    .expect("Failed to create PcrSelection 2");
     let tpms_pcr_selection_2 = TPMS_PCR_SELECTION::try_from(pcr_selection_2)
-        .expect("Failed to create tpms_pcr_selection_2");
+        .expect("Failed to convert PcrSelection 2 into TPMS_PCR_SELECTION");
 
-    let tpms_pcr_selection_3 = TPMS_PCR_SELECTION::try_from(PcrSelection::new(
-        HashingAlgorithm::Sha1,
-        PcrSelectSize::ThreeBytes,
-        &[PcrSlot::Slot16],
-    ))
-    .expect("Failed to create tpms_pcr_selection_3");
-
-    let tpms_pcr_selection_4 = TPMS_PCR_SELECTION::try_from(PcrSelection::new(
-        HashingAlgorithm::Sha1,
-        PcrSelectSize::ThreeBytes,
-        &[PcrSlot::Slot2],
-    ))
-    .expect("Failed to create tpms_pcr_selection_4");
+    let tpms_pcr_selection_3 = TPMS_PCR_SELECTION::try_from(
+        PcrSelection::create(
+            HashingAlgorithm::Sha1,
+            PcrSelectSize::ThreeBytes,
+            &[PcrSlot::Slot16],
+        )
+        .expect("Failed to create PcrSelection 3"),
+    )
+    .expect("Failed to convert PcrSelection 3 into TPMS_PCR_SELECTION");
+    let tpms_pcr_selection_4 = TPMS_PCR_SELECTION::try_from(
+        PcrSelection::create(
+            HashingAlgorithm::Sha1,
+            PcrSelectSize::ThreeBytes,
+            &[PcrSlot::Slot2],
+        )
+        .expect("Failed to create PcrSelection 4"),
+    )
+    .expect("Failed to convert PcrSelection 4 into TPMS_PCR_SELECTION");
 
     let mut selection_list_1 = PcrSelectionList::try_from(TPML_PCR_SELECTION {
         count: 2,

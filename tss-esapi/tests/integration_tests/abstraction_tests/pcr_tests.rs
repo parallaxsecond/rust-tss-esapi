@@ -41,7 +41,8 @@ fn test_pcr_read_all() {
                 PcrSlot::Slot23,
             ],
         )
-        .build();
+        .build()
+        .expect("Failed to create PcrSelectionList for read_all call");
 
     let pcr_data = tss_esapi::abstraction::pcr::read_all(&mut context, pcr_selection_list)
         .expect("Call to pcr_read_all failed");
@@ -71,7 +72,8 @@ fn test_pcr_read_all() {
                         PcrSlot::Slot7,
                     ],
                 )
-                .build(),
+                .build()
+                .expect("Failed to create PcrSekectinList for first pcr_read call"),
         )
         .expect("Call 1 to pcr_read failed");
 
@@ -91,7 +93,8 @@ fn test_pcr_read_all() {
                         PcrSlot::Slot15,
                     ],
                 )
-                .build(),
+                .build()
+                .expect("Failed to create PcrSekectinList for second pcr_read call"),
         )
         .expect("Call 2 to pcr_read failed");
 
@@ -111,9 +114,10 @@ fn test_pcr_read_all() {
                         PcrSlot::Slot23,
                     ],
                 )
-                .build(),
+                .build()
+                .expect("Failed to create PcrSekectinList for third pcr_read call"),
         )
-        .expect("Call 2 to pcr_read failed");
+        .expect("Call 3 to pcr_read failed");
 
     vec![read_pcrs_1, read_pcrs_2, read_pcrs_3]
         .iter()

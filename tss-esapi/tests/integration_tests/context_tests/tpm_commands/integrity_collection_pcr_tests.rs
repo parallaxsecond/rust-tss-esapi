@@ -25,7 +25,8 @@ mod test_pcr_extend_reset {
         let pcr_selection_list = PcrSelectionListBuilder::new()
             .with_selection(HashingAlgorithm::Sha1, &[PcrSlot::Slot16])
             .with_selection(HashingAlgorithm::Sha256, &[PcrSlot::Slot16])
-            .build();
+            .build()
+            .expect("Failed to create first PcrSelectionList for pcr_read call");
         // pcr_read is NO_SESSIONS
         let (_, read_pcr_selections, read_pcr_digests) = context.execute_without_session(|ctx| {
             ctx.pcr_read(pcr_selection_list.clone())
@@ -123,7 +124,8 @@ mod test_pcr_extend_reset {
         let pcr_selection_list = PcrSelectionListBuilder::new()
             .with_selection(HashingAlgorithm::Sha1, &[PcrSlot::Slot16])
             .with_selection(HashingAlgorithm::Sha256, &[PcrSlot::Slot16])
-            .build();
+            .build()
+            .expect("Failed to create PcrSelectionList for pcr_read call after pcr_reset");
         let pcr_data = context
             .execute_without_session(|ctx| {
                 ctx.pcr_read(pcr_selection_list).map(
@@ -158,7 +160,8 @@ mod test_pcr_read {
         // Read PCR 0
         let pcr_selection_list = PcrSelectionListBuilder::new()
             .with_selection(HashingAlgorithm::Sha256, &[PcrSlot::Slot0])
-            .build();
+            .build()
+            .expect("Failed to create PcrSelectionList");
         let input: TPML_PCR_SELECTION = pcr_selection_list.clone().into();
         // Verify input
         assert_eq!(pcr_selection_list.len(), 1);
@@ -234,9 +237,11 @@ mod test_pcr_read {
                     PcrSlot::Slot16,
                 ],
             )
-            .build();
-        let (_update_counter, pcr_selection_list_out, _pcr_data) =
-            context.pcr_read(pcr_selection_list_in.clone()).unwrap();
+            .build()
+            .expect("Failed to create PcrSelectionList");
+        let (_update_counter, pcr_selection_list_out, _pcr_data) = context
+            .pcr_read(pcr_selection_list_in.clone())
+            .expect("pcr_read call failed");
         assert_ne!(pcr_selection_list_in, pcr_selection_list_out);
     }
 }

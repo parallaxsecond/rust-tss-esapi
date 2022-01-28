@@ -11,17 +11,19 @@ use tss_esapi::{
 #[test]
 fn test_valid_conversions() {
     let expected_tagged_pcr_properties = vec![
-        TaggedPcrSelect::new(
+        TaggedPcrSelect::create(
             PcrPropertyTag::Auth,
             PcrSelectSize::ThreeBytes,
             &[PcrSlot::Slot1, PcrSlot::Slot8, PcrSlot::Slot17],
-        ),
-        TaggedPcrSelect::new(
+        )
+        .expect("Failed to create TaggedPcrSelect 1"),
+        TaggedPcrSelect::create(
             PcrPropertyTag::DrtmReset,
             PcrSelectSize::TwoBytes,
             &[PcrSlot::Slot2, PcrSlot::Slot9],
-        ),
-        TaggedPcrSelect::new(
+        )
+        .expect("Failed to create TaggedPcrSelect 2"),
+        TaggedPcrSelect::create(
             PcrPropertyTag::ExtendL0,
             PcrSelectSize::OneByte,
             &[
@@ -30,7 +32,8 @@ fn test_valid_conversions() {
                 PcrSlot::Slot6,
                 PcrSlot::Slot7,
             ],
-        ),
+        )
+        .expect("Failed to create TaggedPcrSelect 3"),
     ];
 
     let expected_tpml_tagged_pcr_property: TPML_TAGGED_PCR_PROPERTY =

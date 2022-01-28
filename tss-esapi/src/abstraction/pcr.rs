@@ -53,7 +53,8 @@ pub use data::PcrData;
 ///             PcrSlot::Slot20,
 ///             PcrSlot::Slot21,
 ///     ])
-///     .build();
+///     .build()
+///     .expect("Failed to build PcrSelectionList");
 /// let _pcr_data = tss_esapi::abstraction::pcr::read_all(&mut context, pcr_selection_list)
 ///     .expect("pcr::read_all failed");
 /// ```

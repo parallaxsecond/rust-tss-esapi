@@ -10,12 +10,15 @@ use tss_esapi::{
 
 #[test]
 fn test_conversion_to_tss_pcr_selection() {
-    let actual = TPMS_PCR_SELECTION::try_from(PcrSelection::new(
-        HashingAlgorithm::Sha512,
-        PcrSelectSize::ThreeBytes,
-        &[PcrSlot::Slot3, PcrSlot::Slot9, PcrSlot::Slot23],
-    ))
-    .unwrap();
+    let actual = TPMS_PCR_SELECTION::try_from(
+        PcrSelection::create(
+            HashingAlgorithm::Sha512,
+            PcrSelectSize::ThreeBytes,
+            &[PcrSlot::Slot3, PcrSlot::Slot9, PcrSlot::Slot23],
+        )
+        .expect("Failed to create pcr selection"),
+    )
+    .expect("Failed to convert PcrSelection to TPMS_PCR_SELECTION");
     let expected = TPMS_PCR_SELECTION {
         hash: TPM2_ALG_SHA512,
         sizeofSelect: 3,
@@ -34,11 +37,12 @@ fn test_conversion_from_tss_pcr_selection() {
         pcrSelect: [16, 128, 0, 0],
     })
     .unwrap();
-    let expected = PcrSelection::new(
+    let expected = PcrSelection::create(
         HashingAlgorithm::Sha256,
         PcrSelectSize::TwoBytes,
         &[PcrSlot::Slot4, PcrSlot::Slot15],
-    );
+    )
+    .expect("Failed to create pcr selection");
     assert_eq!(expected, actual);
 }
 
@@ -54,30 +58,33 @@ fn test_size_of_select_handling() {
     // Size of select is 2 so the values in octet 3 and 4
     // should not appear in the converted pcr selection.
 
-    let expected = PcrSelection::new(
+    let expected = PcrSelection::create(
         HashingAlgorithm::Sha256,
         PcrSelectSize::TwoBytes,
         &[PcrSlot::Slot4, PcrSlot::Slot15],
-    );
+    )
+    .expect("Failed to create PcrSelection");
     assert_eq!(expected, actual);
 }
 
 #[test]
 fn test_subtract() {
-    let mut pcr_select_1 = PcrSelection::new(
+    let mut pcr_select_1 = PcrSelection::create(
         HashingAlgorithm::Sha256,
         PcrSelectSize::TwoBytes,
         &[PcrSlot::Slot4, PcrSlot::Slot15],
-    );
+    )
+    .expect("Failed to create PcrSelect pcr_select_1");
 
-    let pcr_select_2 = PcrSelection::new(
+    let pcr_select_2 = PcrSelection::create(
         HashingAlgorithm::Sha256,
         PcrSelectSize::TwoBytes,
         &[PcrSlot::Slot4],
-    );
+    )
+    .expect("Failed to create PcrSelect pcr_select_2");
 
     pcr_select_1
-        .subtract(&pcr_select_2)
+        .subtract_exact(&pcr_select_2)
         .expect("Failed to subtract pcr_select_2 from pcr_select_1");
 
     assert_eq!(

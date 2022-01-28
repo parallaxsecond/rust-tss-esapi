@@ -24,7 +24,8 @@ fn test_valid_to_tpml_digest_conversion() {
                 PcrSlot::Slot7,
             ],
         )
-        .build();
+        .build()
+        .expect("Failed to create PcrSelectionList 1");
 
     let mut pcr_digest_list_1 = DigestList::new();
     for i in 0u8..8u8 {
@@ -48,7 +49,8 @@ fn test_valid_to_tpml_digest_conversion() {
                 PcrSlot::Slot15,
             ],
         )
-        .build();
+        .build()
+        .expect("Failed to create PcrSelectionList 2");
 
     let mut pcr_digest_list_2 = DigestList::new();
     for i in 8u8..16u8 {
@@ -107,7 +109,8 @@ fn test_invalid_to_tpml_digest_conversion() {
                 PcrSlot::Slot7,
             ],
         )
-        .build();
+        .build()
+        .expect("Failed to create PcrSelectionList 1");
 
     let mut pcr_digest_list_1 = DigestList::new();
     for i in 0u8..7u8 {

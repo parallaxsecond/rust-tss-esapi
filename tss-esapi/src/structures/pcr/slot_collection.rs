@@ -10,7 +10,7 @@ use enumflags2::BitFlags;
 use log::error;
 use std::convert::TryFrom;
 
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+#[derive(Debug, Default, Copy, Clone, Eq, PartialEq)]
 pub struct PcrSlotCollection {
     pcr_select_size: PcrSelectSize,
     pcr_slots: BitFlags<PcrSlot>,
@@ -21,10 +21,7 @@ impl PcrSlotCollection {
 
     /// Creates a new PcrSlotCollection
     pub fn new() -> Self {
-        PcrSlotCollection {
-            pcr_select_size: PcrSelectSize::default(),
-            pcr_slots: BitFlags::<PcrSlot>::empty(),
-        }
+        PcrSlotCollection::default()
     }
 
     /// Creates a PcrCollection from the given arguments.
@@ -205,12 +202,6 @@ impl PcrSlotCollection {
             PcrSelectSize::ThreeBytes => 0x00FFFFFF,
             PcrSelectSize::FourBytes => 0xFFFFFFFF,
         }
-    }
-}
-
-impl Default for PcrSlotCollection {
-    fn default() -> Self {
-        PcrSlotCollection::new()
     }
 }
 

@@ -3,14 +3,12 @@
 
 use crate::{
     constants::PcrPropertyTag,
-    structures::{PcrSelectSize, PcrSlot},
-    tss2_esys::{TPM2_PCR_SELECT_MAX, TPMS_TAGGED_PCR_SELECT},
-    Error, Result, WrapperErrorKind,
+    structures::{PcrSelectSize, PcrSlot, PcrSlotCollection},
+    tss2_esys::TPMS_TAGGED_PCR_SELECT,
+    Error, Result,
 };
-use enumflags2::BitFlags;
-use log::error;
+
 use std::convert::TryFrom;
-use std::iter::FromIterator;
 
 /// Type that holds information regarding
 /// what PCR slots that are associated with
@@ -20,22 +18,22 @@ use std::iter::FromIterator;
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub struct TaggedPcrSelect {
     pcr_property_tag: PcrPropertyTag,
-    size_of_select: PcrSelectSize,
-    selected_pcrs: BitFlags<PcrSlot>,
+    pcr_slot_collection: PcrSlotCollection,
 }
 
 impl TaggedPcrSelect {
     /// Creates a new TaggedPcrSelect
-    pub fn new(
+    pub fn create(
         pcr_property_tag: PcrPropertyTag,
-        size_of_select: PcrSelectSize,
+        pcr_select_size: PcrSelectSize,
         selected_pcr_slots: &[PcrSlot],
-    ) -> Self {
-        TaggedPcrSelect {
-            pcr_property_tag,
-            size_of_select,
-            selected_pcrs: Self::to_internal_representation(selected_pcr_slots),
-        }
+    ) -> Result<Self> {
+        PcrSlotCollection::create(pcr_select_size, selected_pcr_slots).map(|pcr_slot_collection| {
+            TaggedPcrSelect {
+                pcr_property_tag,
+                pcr_slot_collection,
+            }
+        })
     }
 
     /// Returns the property identifier
@@ -51,19 +49,13 @@ impl TaggedPcrSelect {
     /// indicates what slots have the [PcrPropertyTag]
     /// property.
     pub const fn size_of_select(&self) -> PcrSelectSize {
-        self.size_of_select
+        self.pcr_slot_collection.size_of_select()
     }
 
     /// Returns the pcr slots that has the property
     /// indicated by the pcr property tag.
     pub fn selected_pcrs(&self) -> Vec<PcrSlot> {
-        self.selected_pcrs.iter().collect()
-    }
-
-    /// Private function for converting a slize of pcr slots to
-    /// internal representation.
-    fn to_internal_representation(pcr_slots: &[PcrSlot]) -> BitFlags<PcrSlot> {
-        BitFlags::<PcrSlot>::from_iter(pcr_slots.iter().copied())
+        self.pcr_slot_collection.collection()
     }
 }
 
@@ -72,37 +64,25 @@ impl TryFrom<TPMS_TAGGED_PCR_SELECT> for TaggedPcrSelect {
     fn try_from(tpms_tagged_pcr_select: TPMS_TAGGED_PCR_SELECT) -> Result<Self> {
         // Parse the tag.
         let pcr_property_tag = PcrPropertyTag::try_from(tpms_tagged_pcr_select.tag)?;
-
-        // Parse the sizeofSelect into a SelectSize.
-        let size_of_select = PcrSelectSize::try_from(tpms_tagged_pcr_select.sizeofSelect)?;
-
-        // Select only the octets indicated by sizeofSelect
-        let mut selected_octets = [0u8; TPM2_PCR_SELECT_MAX as usize];
-        let number_of_selected_octets: usize = size_of_select.as_usize();
-        selected_octets[..number_of_selected_octets]
-            .copy_from_slice(&tpms_tagged_pcr_select.pcrSelect[..number_of_selected_octets]);
-
-        // Parse selected pcrs into BitFlags
-        let selected_pcrs = BitFlags::<PcrSlot>::try_from(u32::from_le_bytes(selected_octets))
-            .map_err(|e| {
-                error!("Error parsing pcrSelect to a BitFlags<PcrSlot>: {}.", e);
-                Error::local_error(WrapperErrorKind::UnsupportedParam)
-            })?;
+        let pcr_slot_collection = PcrSlotCollection::try_from((
+            tpms_tagged_pcr_select.sizeofSelect,
+            tpms_tagged_pcr_select.pcrSelect,
+        ))?;
 
         Ok(TaggedPcrSelect {
             pcr_property_tag,
-            size_of_select,
-            selected_pcrs,
+            pcr_slot_collection,
         })
     }
 }
 
 impl From<TaggedPcrSelect> for TPMS_TAGGED_PCR_SELECT {
     fn from(tagged_pcr_select: TaggedPcrSelect) -> Self {
+        let (size_of_select, pcr_select) = tagged_pcr_select.pcr_slot_collection.into();
         TPMS_TAGGED_PCR_SELECT {
             tag: tagged_pcr_select.pcr_property_tag.into(),
-            sizeofSelect: tagged_pcr_select.size_of_select.as_u8(),
-            pcrSelect: tagged_pcr_select.selected_pcrs.bits().to_le_bytes(),
+            sizeofSelect: size_of_select,
+            pcrSelect: pcr_select,
         }
     }
 }

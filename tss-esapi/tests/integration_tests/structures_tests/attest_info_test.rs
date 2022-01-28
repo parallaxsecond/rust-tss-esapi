@@ -55,6 +55,7 @@ fn test_quote_into_tpm_type_conversions() {
                 ],
             )
             .build()
+            .expect("Failed to createm PcrSelectionList")
             .into(),
         pcrDigest: Digest::try_from(vec![0xffu8; 32])
             .expect("Failed to create digest")

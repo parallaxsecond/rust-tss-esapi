@@ -237,7 +237,8 @@ mod test_policy_pcr {
         // Read the pcr values using pcr_read
         let pcr_selection_list = PcrSelectionListBuilder::new()
             .with_selection(HashingAlgorithm::Sha256, &[PcrSlot::Slot0, PcrSlot::Slot1])
-            .build();
+            .build()
+            .expect("Failed to create PcrSelectionList");
 
         let (_update_counter, pcr_selection_list_out, pcr_data) = context
             .pcr_read(pcr_selection_list.clone())
@@ -730,7 +731,8 @@ mod test_policy_get_digest {
         // Read the pcr values using pcr_read
         let pcr_selection_list = PcrSelectionListBuilder::new()
             .with_selection(HashingAlgorithm::Sha256, &[PcrSlot::Slot0, PcrSlot::Slot1])
-            .build();
+            .build()
+            .expect("Failed to create PcrSelectionList");
 
         let trial_policy_session = PolicySession::try_from(trial_policy_auth_session)
             .expect("Failed to convert auth session into policy session");

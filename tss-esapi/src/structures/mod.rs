@@ -131,7 +131,7 @@ pub mod command_code_attributes_list {
     pub use super::lists::command_code_attributes::*;
 }
 
-pub use pcr::slot_collection::PcrSlotCollection;
+pub(crate) use pcr::slot_collection::PcrSlotCollection;
 /////////////////////////////////////////////////////////
 /// The parameters section
 /////////////////////////////////////////////////////////

@@ -20,7 +20,8 @@ fn test_conversion() {
                 PcrSlot::Slot4,
             ],
         )
-        .build();
+        .build()
+        .expect("Failed to pcr selection list");
     let expected_pcr_digest = Digest::try_from(vec![0xffu8; 32]).expect("Failed to create digest");
     let expected_tpms_quote_info = TPMS_QUOTE_INFO {
         pcrSelect: expected_pcr_selection.clone().into(),
