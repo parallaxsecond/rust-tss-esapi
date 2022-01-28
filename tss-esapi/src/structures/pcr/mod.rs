@@ -4,3 +4,4 @@ pub mod select;
 pub mod select_size;
 pub mod selection;
 pub mod slot;
+pub mod slot_collection;

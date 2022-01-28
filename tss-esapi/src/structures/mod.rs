@@ -130,6 +130,8 @@ pub use self::command_code_attributes_list::CommandCodeAttributesList;
 pub mod command_code_attributes_list {
     pub use super::lists::command_code_attributes::*;
 }
+
+pub use pcr::slot_collection::PcrSlotCollection;
 /////////////////////////////////////////////////////////
 /// The parameters section
 /////////////////////////////////////////////////////////
