@@ -9,7 +9,7 @@ use tss_esapi::{
 #[test]
 fn test_conversion_to_tss_pcr_select() {
     let actual = TPMS_PCR_SELECT::try_from(
-        PcrSelect::create(PcrSelectSize::TwoBytes, &[PcrSlot::Slot0, PcrSlot::Slot8])
+        PcrSelect::create(PcrSelectSize::TwoOctets, &[PcrSlot::Slot0, PcrSlot::Slot8])
             .expect("Failed to create PcrSelect"),
     )
     .expect("Failed to convert PcrSelect into TPMS_PCR_SELECT");
@@ -31,7 +31,7 @@ fn test_size_of_select_handling() {
     // Size of select is 3 so no values set in the fourth
     // octet should be present.
     let expected = PcrSelect::create(
-        PcrSelectSize::ThreeBytes,
+        PcrSelectSize::ThreeOctets,
         &[
             PcrSlot::Slot1,
             PcrSlot::Slot8,
@@ -51,7 +51,7 @@ fn test_conversion_from_tss_pcr_select() {
     })
     .unwrap();
     let expected = PcrSelect::create(
-        PcrSelectSize::ThreeBytes,
+        PcrSelectSize::ThreeOctets,
         &[
             PcrSlot::Slot1,
             PcrSlot::Slot8,

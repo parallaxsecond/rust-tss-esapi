@@ -12,10 +12,10 @@ use std::convert::TryFrom;
 #[derive(FromPrimitive, ToPrimitive, Debug, Copy, Clone, PartialEq, Eq)]
 #[repr(u8)]
 pub enum PcrSelectSize {
-    OneByte = 1,
-    TwoBytes = 2,
-    ThreeBytes = 3,
-    FourBytes = 4,
+    OneOctet = 1,
+    TwoOctets = 2,
+    ThreeOctets = 3,
+    FourOctets = 4,
 }
 
 impl PcrSelectSize {
@@ -74,15 +74,15 @@ impl PcrSelectSize {
     }
 }
 
-/// The default for PcrSelectSize is three bytes.
+/// The default for PcrSelectSize is three octets.
 /// A value for the sizeofSelect that works
 /// on most platforms.
 impl Default for PcrSelectSize {
     fn default() -> PcrSelectSize {
         match TPM2_PCR_SELECT_MAX {
-            1 => PcrSelectSize::OneByte,
-            2 => PcrSelectSize::TwoBytes,
-            _ => PcrSelectSize::ThreeBytes,
+            1 => PcrSelectSize::OneOctet,
+            2 => PcrSelectSize::TwoOctets,
+            _ => PcrSelectSize::ThreeOctets,
         }
     }
 }

@@ -13,19 +13,19 @@ fn test_valid_conversions() {
     let expected_tagged_pcr_properties = vec![
         TaggedPcrSelect::create(
             PcrPropertyTag::Auth,
-            PcrSelectSize::ThreeBytes,
+            PcrSelectSize::ThreeOctets,
             &[PcrSlot::Slot1, PcrSlot::Slot8, PcrSlot::Slot17],
         )
         .expect("Failed to create TaggedPcrSelect 1"),
         TaggedPcrSelect::create(
             PcrPropertyTag::DrtmReset,
-            PcrSelectSize::TwoBytes,
+            PcrSelectSize::TwoOctets,
             &[PcrSlot::Slot2, PcrSlot::Slot9],
         )
         .expect("Failed to create TaggedPcrSelect 2"),
         TaggedPcrSelect::create(
             PcrPropertyTag::ExtendL0,
-            PcrSelectSize::OneByte,
+            PcrSelectSize::OneOctet,
             &[
                 PcrSlot::Slot4,
                 PcrSlot::Slot5,

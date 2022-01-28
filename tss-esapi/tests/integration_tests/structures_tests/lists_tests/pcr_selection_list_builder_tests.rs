@@ -147,7 +147,7 @@ fn test_conversion_of_data_with_invalid_pcr_select_bit_flags() {
 
     assert_eq!(
         pcr_selection_list.get_selections()[0].size_of_select(),
-        PcrSelectSize::ThreeBytes,
+        PcrSelectSize::ThreeOctets,
         "PcrSelection in index 0, in the converted pcr selection list, contained an unexpected 'size of select' value",
     );
 

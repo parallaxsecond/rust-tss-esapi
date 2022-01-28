@@ -13,7 +13,7 @@ fn test_conversion_to_tss_pcr_selection() {
     let actual = TPMS_PCR_SELECTION::try_from(
         PcrSelection::create(
             HashingAlgorithm::Sha512,
-            PcrSelectSize::ThreeBytes,
+            PcrSelectSize::ThreeOctets,
             &[PcrSlot::Slot3, PcrSlot::Slot9, PcrSlot::Slot23],
         )
         .expect("Failed to create pcr selection"),
@@ -39,7 +39,7 @@ fn test_conversion_from_tss_pcr_selection() {
     .unwrap();
     let expected = PcrSelection::create(
         HashingAlgorithm::Sha256,
-        PcrSelectSize::TwoBytes,
+        PcrSelectSize::TwoOctets,
         &[PcrSlot::Slot4, PcrSlot::Slot15],
     )
     .expect("Failed to create pcr selection");
@@ -60,7 +60,7 @@ fn test_size_of_select_handling() {
 
     let expected = PcrSelection::create(
         HashingAlgorithm::Sha256,
-        PcrSelectSize::TwoBytes,
+        PcrSelectSize::TwoOctets,
         &[PcrSlot::Slot4, PcrSlot::Slot15],
     )
     .expect("Failed to create PcrSelection");
@@ -71,14 +71,14 @@ fn test_size_of_select_handling() {
 fn test_subtract() {
     let mut pcr_select_1 = PcrSelection::create(
         HashingAlgorithm::Sha256,
-        PcrSelectSize::TwoBytes,
+        PcrSelectSize::TwoOctets,
         &[PcrSlot::Slot4, PcrSlot::Slot15],
     )
     .expect("Failed to create PcrSelect pcr_select_1");
 
     let pcr_select_2 = PcrSelection::create(
         HashingAlgorithm::Sha256,
-        PcrSelectSize::TwoBytes,
+        PcrSelectSize::TwoOctets,
         &[PcrSlot::Slot4],
     )
     .expect("Failed to create PcrSelect pcr_select_2");
@@ -95,7 +95,7 @@ fn test_subtract() {
 
     assert_eq!(
         pcr_select_1.size_of_select(),
-        PcrSelectSize::TwoBytes,
+        PcrSelectSize::TwoOctets,
         "The pcr_select_1 did not have the expected size of select after subtract"
     );
 

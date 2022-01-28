@@ -12,7 +12,7 @@ use tss_esapi::{
 fn from_tpml_retains_order() {
     let selection_1 = PcrSelection::create(
         HashingAlgorithm::Sha256,
-        PcrSelectSize::ThreeBytes,
+        PcrSelectSize::ThreeOctets,
         &[PcrSlot::Slot10],
     )
     .expect("Failed to create PcrSelection 1");
@@ -21,7 +21,7 @@ fn from_tpml_retains_order() {
 
     let selection_2 = PcrSelection::create(
         HashingAlgorithm::Sha256,
-        PcrSelectSize::ThreeBytes,
+        PcrSelectSize::ThreeOctets,
         &[PcrSlot::Slot11],
     )
     .expect("Failed to create PcrSelection 2");
@@ -30,7 +30,7 @@ fn from_tpml_retains_order() {
 
     let selection_3 = PcrSelection::create(
         HashingAlgorithm::Sha1,
-        PcrSelectSize::ThreeBytes,
+        PcrSelectSize::ThreeOctets,
         &[PcrSlot::Slot16],
     )
     .expect("Failed to create PcrSelection 3");
@@ -39,7 +39,7 @@ fn from_tpml_retains_order() {
 
     let selection_4 = PcrSelection::create(
         HashingAlgorithm::Sha1,
-        PcrSelectSize::ThreeBytes,
+        PcrSelectSize::ThreeOctets,
         &[PcrSlot::Slot2],
     )
     .expect("Failed to create PcrSelection 4");
@@ -101,7 +101,7 @@ fn from_tpml_retains_order() {
 fn test_subtract() {
     let pcr_selection_1 = PcrSelection::create(
         HashingAlgorithm::Sha256,
-        PcrSelectSize::ThreeBytes,
+        PcrSelectSize::ThreeOctets,
         &[PcrSlot::Slot10],
     )
     .expect("Failed to create PcrSelection 1");
@@ -110,7 +110,7 @@ fn test_subtract() {
 
     let pcr_selection_2 = PcrSelection::create(
         HashingAlgorithm::Sha256,
-        PcrSelectSize::ThreeBytes,
+        PcrSelectSize::ThreeOctets,
         &[PcrSlot::Slot11],
     )
     .expect("Failed to create PcrSelection 2");
@@ -120,7 +120,7 @@ fn test_subtract() {
     let tpms_pcr_selection_3 = TPMS_PCR_SELECTION::try_from(
         PcrSelection::create(
             HashingAlgorithm::Sha1,
-            PcrSelectSize::ThreeBytes,
+            PcrSelectSize::ThreeOctets,
             &[PcrSlot::Slot16],
         )
         .expect("Failed to create PcrSelection 3"),
@@ -130,7 +130,7 @@ fn test_subtract() {
     let tpms_pcr_selection_4 = TPMS_PCR_SELECTION::try_from(
         PcrSelection::create(
             HashingAlgorithm::Sha1,
-            PcrSelectSize::ThreeBytes,
+            PcrSelectSize::ThreeOctets,
             &[PcrSlot::Slot2],
         )
         .expect("Failed to create PcrSelection 4"),
@@ -207,7 +207,7 @@ fn test_subtract_overlapping_without_remaining() {
     let tpms_pcr_selection_1 = TPMS_PCR_SELECTION::try_from(
         PcrSelection::create(
             HashingAlgorithm::Sha256,
-            PcrSelectSize::ThreeBytes,
+            PcrSelectSize::ThreeOctets,
             &[PcrSlot::Slot10],
         )
         .expect("Failed to create PcrSelection 1"),
@@ -216,7 +216,7 @@ fn test_subtract_overlapping_without_remaining() {
     let tpms_pcr_selection_2 = TPMS_PCR_SELECTION::try_from(
         PcrSelection::create(
             HashingAlgorithm::Sha256,
-            PcrSelectSize::ThreeBytes,
+            PcrSelectSize::ThreeOctets,
             &[PcrSlot::Slot11],
         )
         .expect("Failed to create PcrSelection 2"),
@@ -226,7 +226,7 @@ fn test_subtract_overlapping_without_remaining() {
     let tpms_pcr_selection_3 = TPMS_PCR_SELECTION::try_from(
         PcrSelection::create(
             HashingAlgorithm::Sha256,
-            PcrSelectSize::ThreeBytes,
+            PcrSelectSize::ThreeOctets,
             &[PcrSlot::Slot10, PcrSlot::Slot11],
         )
         .expect("Failed to create PcrSelection 3"),
@@ -295,7 +295,7 @@ fn test_subtract_overlapping_with_remaining() {
     let tpms_pcr_selection_1 = TPMS_PCR_SELECTION::try_from(
         PcrSelection::create(
             HashingAlgorithm::Sha256,
-            PcrSelectSize::ThreeBytes,
+            PcrSelectSize::ThreeOctets,
             &[PcrSlot::Slot10],
         )
         .expect("Failed to create PcrSelection 1"),
@@ -305,7 +305,7 @@ fn test_subtract_overlapping_with_remaining() {
     let tpms_pcr_selection_2 = TPMS_PCR_SELECTION::try_from(
         PcrSelection::create(
             HashingAlgorithm::Sha256,
-            PcrSelectSize::ThreeBytes,
+            PcrSelectSize::ThreeOctets,
             &[PcrSlot::Slot11],
         )
         .expect("Failed to create PcrSelection 2"),
@@ -314,7 +314,7 @@ fn test_subtract_overlapping_with_remaining() {
 
     let expected = PcrSelection::create(
         HashingAlgorithm::Sha256,
-        PcrSelectSize::ThreeBytes,
+        PcrSelectSize::ThreeOctets,
         &[PcrSlot::Slot12],
     )
     .expect("Failed to create PcrSelection 'expected'");
@@ -324,7 +324,7 @@ fn test_subtract_overlapping_with_remaining() {
     let tpms_pcr_selection_4 = TPMS_PCR_SELECTION::try_from(
         PcrSelection::create(
             HashingAlgorithm::Sha256,
-            PcrSelectSize::ThreeBytes,
+            PcrSelectSize::ThreeOctets,
             &[PcrSlot::Slot10, PcrSlot::Slot11],
         )
         .expect("Failed to create PcrSelection 4"),
@@ -396,7 +396,7 @@ fn test_subtract_overlapping_with_remaining() {
 fn test_invalid_subtraction() {
     let pcr_selection_1 = PcrSelection::create(
         HashingAlgorithm::Sha256,
-        PcrSelectSize::ThreeBytes,
+        PcrSelectSize::ThreeOctets,
         &[PcrSlot::Slot10],
     )
     .expect("Failed to create PcrSelection 1");
@@ -405,7 +405,7 @@ fn test_invalid_subtraction() {
 
     let pcr_selection_2 = PcrSelection::create(
         HashingAlgorithm::Sha256,
-        PcrSelectSize::ThreeBytes,
+        PcrSelectSize::ThreeOctets,
         &[PcrSlot::Slot11],
     )
     .expect("Failed to create PcrSelection 2");
@@ -415,7 +415,7 @@ fn test_invalid_subtraction() {
     let tpms_pcr_selection_3 = TPMS_PCR_SELECTION::try_from(
         PcrSelection::create(
             HashingAlgorithm::Sha1,
-            PcrSelectSize::ThreeBytes,
+            PcrSelectSize::ThreeOctets,
             &[PcrSlot::Slot16],
         )
         .expect("Failed to create PcrSelection 3"),
@@ -424,7 +424,7 @@ fn test_invalid_subtraction() {
     let tpms_pcr_selection_4 = TPMS_PCR_SELECTION::try_from(
         PcrSelection::create(
             HashingAlgorithm::Sha1,
-            PcrSelectSize::ThreeBytes,
+            PcrSelectSize::ThreeOctets,
             &[PcrSlot::Slot2],
         )
         .expect("Failed to create PcrSelection 4"),

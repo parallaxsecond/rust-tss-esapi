@@ -197,10 +197,10 @@ impl PcrSlotCollection {
     /// pcr slots with regard to the PcrSelectSize
     const fn calculate_max_pcr_slots_value(pcr_select_size: PcrSelectSize) -> u32 {
         match pcr_select_size {
-            PcrSelectSize::OneByte => 0x000000FF,
-            PcrSelectSize::TwoBytes => 0x0000FFFF,
-            PcrSelectSize::ThreeBytes => 0x00FFFFFF,
-            PcrSelectSize::FourBytes => 0xFFFFFFFF,
+            PcrSelectSize::OneOctet => 0x000000FF,
+            PcrSelectSize::TwoOctets => 0x0000FFFF,
+            PcrSelectSize::ThreeOctets => 0x00FFFFFF,
+            PcrSelectSize::FourOctets => 0xFFFFFFFF,
         }
     }
 }

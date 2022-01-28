@@ -93,10 +93,10 @@ macro_rules! test_valid_conversions {
 
 #[test]
 fn test_valid_conversions() {
-    test_valid_conversions!(PcrSelectSize::OneByte, 1);
-    test_valid_conversions!(PcrSelectSize::TwoBytes, 2);
-    test_valid_conversions!(PcrSelectSize::ThreeBytes, 3);
-    test_valid_conversions!(PcrSelectSize::FourBytes, 4);
+    test_valid_conversions!(PcrSelectSize::OneOctet, 1);
+    test_valid_conversions!(PcrSelectSize::TwoOctets, 2);
+    test_valid_conversions!(PcrSelectSize::ThreeOctets, 3);
+    test_valid_conversions!(PcrSelectSize::FourOctets, 4);
 }
 
 #[test]
@@ -116,7 +116,7 @@ fn test_default() {
     // The default valuen should be the value that
     // works on most platforms i.e. three octets.
     assert_eq!(
-        PcrSelectSize::ThreeBytes,
+        PcrSelectSize::ThreeOctets,
         PcrSelectSize::default(),
         "PcrSelectSize did not have the expected default value",
     );
