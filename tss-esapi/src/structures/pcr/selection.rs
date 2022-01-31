@@ -20,7 +20,7 @@ pub struct PcrSelection {
 impl PcrSelection {
     /// Creates new PcrSelection
     ///
-    /// # Error
+    /// # Errors
     /// Returns InconsistentParams error if a pcr slot
     /// has been provided that ends up in an octet outside the
     /// range specified by the `size_of_select` parameter.
@@ -65,7 +65,7 @@ impl PcrSelection {
 
     /// Removes the specified [PcrSlot]s from the selected pcrs.
     ///
-    /// # Error
+    /// # Errors
     /// If one of the specified pcr slots does not exist in the selected pcrs.
     pub fn deselect_exact(&mut self, pcr_slot: PcrSlot) -> Result<()> {
         self.pcr_slot_collection.remove_exact(pcr_slot)
@@ -88,7 +88,7 @@ impl PcrSelection {
     /// * Cannot be called with `other`that contains pcr slots present
     ///   in `self`.
     ///
-    /// # Error
+    /// # Errors
     /// Returns InvalidParam if there is a hashing algorithm mismatch
     /// Returns InvalidParam if there is size of select mismatch.
     /// Returns InvalidParam if `other` contains items that are present in `self`

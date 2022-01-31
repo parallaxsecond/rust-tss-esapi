@@ -38,7 +38,7 @@ impl LocalityAttributes {
 
     /// Returns the LocalityAttributes as a number.
     ///
-    /// # Error
+    /// # Errors
     /// If the attributes are not extended en InvalidParams error
     /// is returned.
     pub fn as_extended(&self) -> Result<u8> {
