@@ -382,7 +382,10 @@ impl Context {
 
     /// Returns a mutable reference to the native ESYS context handle.
     fn mut_context(&mut self) -> *mut ESYS_CONTEXT {
-        self.esys_context.as_mut().unwrap().as_mut_ptr() // will only fail if called from Drop after .take()
+        self.esys_context
+            .as_mut()
+            .map(MBox::<ESYS_CONTEXT>::as_mut_ptr)
+            .unwrap() // will only fail if called from Drop after .take()
     }
 
     /// Internal function for retrieving the ESYS session handle for
@@ -455,10 +458,16 @@ impl Drop for Context {
             error!("Not all handles have had their resources successfully released");
         }
 
-        let esys_context = self.esys_context.take().unwrap(); // should not fail based on how the context is initialised/used
-
         // Close the context.
-        unsafe { Esys_Finalize(&mut esys_context.into_raw()) };
+        unsafe {
+            Esys_Finalize(
+                &mut self
+                    .esys_context
+                    .take()
+                    .map(MBox::<ESYS_CONTEXT>::into_raw)
+                    .unwrap(), // should not fail based on how the context is initialised/used
+            )
+        };
         info!("Context closed.");
     }
 }
