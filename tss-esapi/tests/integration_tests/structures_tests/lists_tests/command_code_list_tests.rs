@@ -41,7 +41,6 @@ fn test_conversions() {
         });
 
     let tpml_cc: TPML_CC = command_code_list
-        .clone()
         .try_into()
         .expect("Failed to convert CommandCodeList into TPML_CC");
 

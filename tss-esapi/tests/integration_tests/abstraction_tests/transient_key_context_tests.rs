@@ -618,8 +618,8 @@ fn activate_credential() {
     let (material, auth) = ctx.create_key(params, 16).unwrap();
     let obj = ObjectWrapper {
         material,
-        auth,
         params,
+        auth,
     };
     let make_cred_params = ctx.get_make_cred_params(obj.clone(), None).unwrap();
 
@@ -696,8 +696,8 @@ fn make_cred_params_name() {
     let (material, auth) = ctx.create_key(params, 16).unwrap();
     let obj = ObjectWrapper {
         material,
-        auth,
         params,
+        auth,
     };
     let make_cred_params = ctx.get_make_cred_params(obj, None).unwrap();
 
@@ -729,8 +729,8 @@ fn activate_credential_wrong_key() {
     let (material, auth) = ctx.create_key(params, 16).unwrap();
     let obj = ObjectWrapper {
         material,
-        auth,
         params,
+        auth,
     };
     let make_cred_params = ctx.get_make_cred_params(obj, None).unwrap();
 
@@ -738,8 +738,8 @@ fn activate_credential_wrong_key() {
     let (material, auth) = ctx.create_key(params, 16).unwrap();
     let wrong_obj = ObjectWrapper {
         material,
-        auth,
         params,
+        auth,
     };
 
     drop(ctx);
@@ -824,8 +824,8 @@ fn activate_credential_wrong_data() {
     let (material, auth) = ctx.create_key(params, 16).unwrap();
     let obj = ObjectWrapper {
         material,
-        auth,
         params,
+        auth,
     };
 
     // No data (essentially wrong size)
