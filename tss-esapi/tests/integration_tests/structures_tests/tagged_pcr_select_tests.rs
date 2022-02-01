@@ -10,7 +10,7 @@ use tss_esapi::{
 #[test]
 fn test_conversions() {
     let expected_pcr_property_tag = PcrPropertyTag::ExtendL0;
-    let expected_size_of_select = PcrSelectSize::ThreeBytes;
+    let expected_size_of_select = PcrSelectSize::ThreeOctets;
     let expected_pcr_slots = vec![
         PcrSlot::Slot1,
         PcrSlot::Slot8,
@@ -20,7 +20,7 @@ fn test_conversions() {
 
     let expected_tpms_tagged_pcr_select = TPMS_TAGGED_PCR_SELECT {
         tag: expected_pcr_property_tag.into(),
-        sizeofSelect: expected_size_of_select.into(),
+        sizeofSelect: expected_size_of_select.as_u8(),
         pcrSelect: [2, 1, 3, 0],
     };
 

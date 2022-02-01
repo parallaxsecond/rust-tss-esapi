@@ -25,7 +25,8 @@ mod test_quote {
         // Quote PCR 0
         let pcr_selection_list = PcrSelectionListBuilder::new()
             .with_selection(HashingAlgorithm::Sha256, &[PcrSlot::Slot0])
-            .build();
+            .build()
+            .expect("Failed to create PcrSelectionList");
         // No qualifying data
         let qualifying_data = vec![0xff; 16];
 

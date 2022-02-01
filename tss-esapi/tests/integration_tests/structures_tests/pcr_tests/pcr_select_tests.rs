@@ -8,11 +8,11 @@ use tss_esapi::{
 
 #[test]
 fn test_conversion_to_tss_pcr_select() {
-    let actual = TPMS_PCR_SELECT::try_from(PcrSelect::new(
-        PcrSelectSize::TwoBytes,
-        &[PcrSlot::Slot0, PcrSlot::Slot8],
-    ))
-    .unwrap();
+    let actual = TPMS_PCR_SELECT::try_from(
+        PcrSelect::create(PcrSelectSize::TwoOctets, &[PcrSlot::Slot0, PcrSlot::Slot8])
+            .expect("Failed to create PcrSelect"),
+    )
+    .expect("Failed to convert PcrSelect into TPMS_PCR_SELECT");
     let expected = TPMS_PCR_SELECT {
         sizeofSelect: 2,
         pcrSelect: [1, 1, 0, 0],
@@ -30,15 +30,16 @@ fn test_size_of_select_handling() {
     .expect("Failed to convert TPMS_PCR_SELECT to PcrSelect");
     // Size of select is 3 so no values set in the fourth
     // octet should be present.
-    let expected = PcrSelect::new(
-        PcrSelectSize::ThreeBytes,
+    let expected = PcrSelect::create(
+        PcrSelectSize::ThreeOctets,
         &[
             PcrSlot::Slot1,
             PcrSlot::Slot8,
             PcrSlot::Slot16,
             PcrSlot::Slot17,
         ],
-    );
+    )
+    .expect("Failed to create PcrSelect");
     assert_eq!(expected, actual);
 }
 
@@ -49,14 +50,15 @@ fn test_conversion_from_tss_pcr_select() {
         pcrSelect: [2, 1, 3, 0],
     })
     .unwrap();
-    let expected = PcrSelect::new(
-        PcrSelectSize::ThreeBytes,
+    let expected = PcrSelect::create(
+        PcrSelectSize::ThreeOctets,
         &[
             PcrSlot::Slot1,
             PcrSlot::Slot8,
             PcrSlot::Slot16,
             PcrSlot::Slot17,
         ],
-    );
+    )
+    .expect("Failed to create PcrSelect");
     assert_eq!(expected, actual);
 }

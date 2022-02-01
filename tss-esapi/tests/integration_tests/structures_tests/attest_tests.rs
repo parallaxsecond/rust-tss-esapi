@@ -73,7 +73,8 @@ fn test_attest_with_quote_info_into_tpm_type_conversions() {
                 PcrSlot::Slot4,
             ],
         )
-        .build();
+        .build()
+        .expect("Failed to createm PcrSelectionList");
     let expected_pcr_digest = Digest::try_from(vec![0xffu8; 32]).expect("Failed to create digest");
     let expected_attest_info = AttestInfo::Quote {
         info: TPMS_QUOTE_INFO {

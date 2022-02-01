@@ -50,7 +50,7 @@ impl HandleManager {
 
     /// Sets the handle as flushed which removes it from the manager.
     ///
-    /// # Error
+    /// # Errors
     /// If the handle was not set to be flushed then this will cause an
     /// error but the handle will still be removed from the handler.
     pub fn set_as_flushed(&mut self, handle: ObjectHandle) -> Result<()> {
@@ -75,7 +75,7 @@ impl HandleManager {
 
     /// Sets the handles as closed which removes it from the handler.
     ///
-    /// # Error
+    /// # Errors
     /// If the handle was set to be flushed then this will cause an
     /// error but the handle will still be removed from the handler.
     pub fn set_as_closed(&mut self, handle: ObjectHandle) -> Result<()> {

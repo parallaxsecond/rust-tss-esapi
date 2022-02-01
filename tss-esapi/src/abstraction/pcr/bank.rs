@@ -22,7 +22,7 @@ impl PcrBank {
     /// # Details
     /// The order of pcr slots are assumed to match the order of the Digests.
     ///
-    /// # Error
+    /// # Errors
     /// - If number of pcr slots does not match the number of pcr digests
     ///   InconsistentParams error is returned.
     ///
@@ -88,7 +88,7 @@ impl PcrBank {
 
     /// Inserts [Digest] value associated with a [PcrSlot] into the bank.
     ///
-    /// # Error
+    /// # Errors
     /// Returns an error if a [Digest] is already associated with the
     /// provided [PcrSlot].
     pub fn insert_digest(&mut self, pcr_slot: PcrSlot, digest: Digest) -> Result<()> {
@@ -99,7 +99,7 @@ impl PcrBank {
 
     /// Attempts to extend the [PcrBank] with `other`.
     ///
-    /// # Error
+    /// # Errors
     /// Returns an error if the a value in `other` already
     /// exists.
     pub fn try_extend(&mut self, other: PcrBank) -> Result<()> {

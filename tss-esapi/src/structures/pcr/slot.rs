@@ -37,6 +37,14 @@ pub enum PcrSlot {
     Slot21 = 0x0020_0000,
     Slot22 = 0x0040_0000,
     Slot23 = 0x0080_0000,
+    Slot24 = 0x0100_0000,
+    Slot25 = 0x0200_0000,
+    Slot26 = 0x0400_0000,
+    Slot27 = 0x0800_0000,
+    Slot28 = 0x1000_0000,
+    Slot29 = 0x2000_0000,
+    Slot30 = 0x4000_0000,
+    Slot31 = 0x8000_0000,
 }
 
 impl From<PcrSlot> for u32 {

@@ -567,7 +567,7 @@ impl SignatureScheme {
     /// This is intended to provide the functionality of reading
     /// from the ```anySig``` field in the TPMU_SIG_SCHEME union.
     ///
-    /// # Error
+    /// # Errors
     /// Returns an InvalidParam error if the trying to read from
     /// SignatureScheme that is not a signing scheme.
     pub fn signing_scheme(&self) -> Result<HashingAlgorithm> {
@@ -591,7 +591,7 @@ impl SignatureScheme {
     /// This is intended to provide the functionality of writing
     /// to the ```anySig``` field in the TPMU_SIG_SCHEME union.
     ///
-    /// # Error
+    /// # Errors
     /// Returns an InvalidParam error if the trying to read from
     /// SignatureScheme that is not a signing scheme.
     pub fn set_signing_scheme(&mut self, hashing_algorithm: HashingAlgorithm) -> Result<()> {

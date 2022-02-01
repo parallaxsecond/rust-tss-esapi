@@ -10,7 +10,7 @@ use std::convert::TryFrom;
 
 /// A struct representing a pcr selection list. This
 /// corresponds to the TSS TPML_PCR_SELECTION.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Default)]
 pub struct PcrSelectionList {
     items: Vec<PcrSelection>,
 }
@@ -56,7 +56,7 @@ impl PcrSelectionList {
     ///
     /// This returns an empty list if None is passed
     pub fn list_from_option(pcr_list: Option<PcrSelectionList>) -> PcrSelectionList {
-        pcr_list.unwrap_or_else(|| PcrSelectionListBuilder::new().build())
+        pcr_list.unwrap_or_default()
     }
 
     /// Private methods for removing pcr selections that are empty.
@@ -89,7 +89,7 @@ impl PcrSelectionList {
 }
 
 impl From<PcrSelectionList> for TPML_PCR_SELECTION {
-    fn from(pcr_selections: PcrSelectionList) -> TPML_PCR_SELECTION {
+    fn from(pcr_selections: PcrSelectionList) -> Self {
         let mut tss_pcr_selection_list: TPML_PCR_SELECTION = Default::default();
         for pcr_selection in pcr_selections.items {
             tss_pcr_selection_list.pcrSelections[tss_pcr_selection_list.count as usize] =
@@ -178,17 +178,20 @@ impl PcrSelectionListBuilder {
     /// provided.
     ///
     /// If no size of select have been provided then it will
-    /// be defaulted to 3. This may not be the correct size for
+    /// be defaulted to to the most suitable with regard to TPM2_PCR_SELECT_MAX.
+    /// This may not be the correct size for
     /// the current platform. The correct values can be obtained
     /// by querying the tpm for its capabilities.
-    pub fn build(self) -> PcrSelectionList {
+    pub fn build(self) -> Result<PcrSelectionList> {
         let size_of_select = self.size_of_select.unwrap_or_default();
-        PcrSelectionList {
-            items: self
-                .items
-                .iter()
-                .map(|(k, v)| PcrSelection::new(*k, size_of_select, v.as_slice()))
-                .collect(),
-        }
+        self.items
+            .iter()
+            .try_fold(Vec::<PcrSelection>::new(), |mut acc, (&k, v)| {
+                PcrSelection::create(k, size_of_select, v.as_slice()).map(|pcr_select| {
+                    acc.push(pcr_select);
+                    acc
+                })
+            })
+            .map(|items| PcrSelectionList { items })
     }
 }

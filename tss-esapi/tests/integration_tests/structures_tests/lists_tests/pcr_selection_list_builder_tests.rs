@@ -16,7 +16,8 @@ fn test_one_selection() {
             HashingAlgorithm::Sha256,
             &[PcrSlot::Slot0, PcrSlot::Slot8, PcrSlot::Slot16],
         )
-        .build();
+        .build()
+        .expect("Failed to createm PcrSelectionList");
 
     let pcr_selection_list_size = pcr_selection_list.len();
     let actual: TPML_PCR_SELECTION = pcr_selection_list.into();
@@ -52,7 +53,8 @@ fn test_multiple_selection() {
                 PcrSlot::Slot23,
             ],
         )
-        .build();
+        .build()
+        .expect("Failed to createm PcrSelectionList");
 
     let pcr_selection_list_size = pcr_selection_list.len();
     let actual: TPML_PCR_SELECTION = pcr_selection_list.into();
@@ -87,7 +89,8 @@ fn test_multiple_conversions() {
             HashingAlgorithm::Sha256,
             &[PcrSlot::Slot0, PcrSlot::Slot8, PcrSlot::Slot16],
         )
-        .build();
+        .build()
+        .expect("Failed to create PcrSelectionList");
     let pcr_selection_list_size = pcr_selection_list.len();
     let converted: TPML_PCR_SELECTION = pcr_selection_list.into();
     assert_eq!(converted.count as usize, pcr_selection_list_size);
@@ -125,6 +128,7 @@ fn test_conversion_of_data_with_invalid_pcr_select_bit_flags() {
     let mut tpml_pcr_selection: TPML_PCR_SELECTION = PcrSelectionListBuilder::new()
         .with_selection(expected_hash_algorithm, &expected_pcr_slots)
         .build()
+        .expect("Failed to create PcrSelectionList")
         .into();
 
     // Size of select is 3 indicating that only 3 first octets
@@ -143,7 +147,7 @@ fn test_conversion_of_data_with_invalid_pcr_select_bit_flags() {
 
     assert_eq!(
         pcr_selection_list.get_selections()[0].size_of_select(),
-        PcrSelectSize::ThreeBytes,
+        PcrSelectSize::ThreeOctets,
         "PcrSelection in index 0, in the converted pcr selection list, contained an unexpected 'size of select' value",
     );
 
@@ -162,6 +166,7 @@ fn test_conversion_of_data_with_invalid_size_of_select() {
             &[PcrSlot::Slot0, PcrSlot::Slot8, PcrSlot::Slot16],
         )
         .build()
+        .expect("Failed to create PcrSelectionList")
         .into();
 
     // 1,2,3,4 are theonly valid values for sizeofSelect.
@@ -179,6 +184,7 @@ fn test_conversion_of_data_with_invalid_hash_alg_id() {
             &[PcrSlot::Slot0, PcrSlot::Slot8, PcrSlot::Slot16],
         )
         .build()
+        .expect("Failed to create PcrSelectionList")
         .into();
 
     // Si
