@@ -1,17 +1,16 @@
 // Copyright 2022 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
 use crate::{tss2_esys::TPM2_PCR_SELECT_MAX, Error, Result, WrapperErrorKind};
-use enumflags2::{BitFlags, _internal::RawBitFlags};
+use enumflags2::bitflags;
 use log::error;
 use num_derive::{FromPrimitive, ToPrimitive};
-use num_traits::FromPrimitive;
+use num_traits::{FromPrimitive, ToPrimitive};
 use std::convert::TryFrom;
 
 /// Enum with the bit flag for each PCR slot.
-#[derive(
-    FromPrimitive, ToPrimitive, BitFlags, Hash, Debug, Eq, PartialEq, Ord, PartialOrd, Clone, Copy,
-)]
+#[bitflags]
 #[repr(u32)]
+#[derive(FromPrimitive, ToPrimitive, Hash, Debug, Eq, PartialEq, Ord, PartialOrd, Clone, Copy)]
 pub enum PcrSlot {
     Slot0 = 0x0000_0001,
     Slot1 = 0x0000_0002,
@@ -49,7 +48,7 @@ pub enum PcrSlot {
 
 impl From<PcrSlot> for u32 {
     fn from(pcr_slot: PcrSlot) -> u32 {
-        pcr_slot.bits()
+        pcr_slot.to_u32().unwrap()
     }
 }
 
