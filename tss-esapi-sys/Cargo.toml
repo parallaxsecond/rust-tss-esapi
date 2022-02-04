@@ -1,6 +1,6 @@
 [package]
 name = "tss-esapi-sys"
-version = "0.2.0"
+version = "0.3.0"
 authors = ["Parsec Project Contributors"]
 edition = "2018"
 description = "FFI wrapper around TSS 2.0 Enhanced System API"
