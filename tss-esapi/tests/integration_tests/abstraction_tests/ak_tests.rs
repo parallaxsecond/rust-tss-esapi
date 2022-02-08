@@ -12,7 +12,7 @@ use tss_esapi::{
         algorithm::{AsymmetricAlgorithm, HashingAlgorithm, SignatureSchemeAlgorithm},
         session_handles::PolicySession,
     },
-    structures::{Auth, Digest, SymmetricDefinition},
+    structures::{Auth, Digest, PublicBuilder, SymmetricDefinition},
 };
 
 use crate::common::create_ctx_without_session;
@@ -143,13 +143,17 @@ fn test_create_and_use_ak() {
 
 #[test]
 fn test_create_custom_ak() {
-    struct StClearKeys;
-    impl KeyCustomization for &StClearKeys {
+    struct CustomizeKey;
+    impl KeyCustomization for &CustomizeKey {
         fn attributes(
             &self,
             attributes_builder: ObjectAttributesBuilder,
         ) -> ObjectAttributesBuilder {
             attributes_builder.with_st_clear(true)
+        }
+
+        fn template(&self, template_builder: PublicBuilder) -> PublicBuilder {
+            template_builder.with_name_hashing_algorithm(HashingAlgorithm::Sha1)
         }
     }
     let mut context = create_ctx_without_session();
@@ -179,7 +183,7 @@ fn test_create_custom_ak() {
         HashingAlgorithm::Sha256,
         SignatureSchemeAlgorithm::RsaPss,
         Some(ak_auth),
-        &StClearKeys,
+        &CustomizeKey,
     )
     .unwrap();
 
@@ -191,5 +195,10 @@ fn test_create_custom_ak() {
         att_key.out_public.object_attributes().0,
         att_key_without.out_public.object_attributes().0
             | tss_esapi::constants::tss::TPMA_OBJECT_STCLEAR
+    );
+
+    assert_eq!(
+        att_key.out_public.name_hashing_algorithm(),
+        HashingAlgorithm::Sha1,
     );
 }

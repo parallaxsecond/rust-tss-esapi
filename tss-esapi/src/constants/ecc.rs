@@ -17,7 +17,7 @@ use std::convert::TryFrom;
 ///
 /// # Details
 /// This corresponds to `TPM2_ECC_CURVE`
-#[derive(FromPrimitive, ToPrimitive, Debug, Copy, Clone, PartialEq, Eq)]
+#[derive(FromPrimitive, ToPrimitive, Debug, Copy, Clone, PartialEq, Eq, Hash)]
 #[repr(u16)]
 pub enum EccCurveIdentifier {
     NistP192 = TPM2_ECC_NIST_P192,

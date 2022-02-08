@@ -49,7 +49,7 @@ fn create_ak_public<IKC: IntoKeyCustomization>(
     }
     .build()?;
 
-    match key_alg {
+    let key_builder = match key_alg {
         AsymmetricAlgorithm::Rsa => PublicBuilder::new()
             .with_public_algorithm(PublicAlgorithm::Rsa)
             .with_name_hashing_algorithm(hash_alg)
@@ -67,8 +67,7 @@ fn create_ak_public<IKC: IntoKeyCustomization>(
                     .with_restricted(obj_attrs.restricted())
                     .build()?,
             )
-            .with_rsa_unique_identifier(PublicKeyRsa::default())
-            .build(),
+            .with_rsa_unique_identifier(PublicKeyRsa::default()),
         AsymmetricAlgorithm::Ecc => PublicBuilder::new()
             .with_public_algorithm(PublicAlgorithm::Ecc)
             .with_name_hashing_algorithm(hash_alg)
@@ -84,13 +83,20 @@ fn create_ak_public<IKC: IntoKeyCustomization>(
                     .with_curve(EccCurve::NistP192)
                     .with_key_derivation_function_scheme(KeyDerivationFunctionScheme::Null)
                     .build()?,
-            )
-            .build(),
+            ),
         AsymmetricAlgorithm::Null => {
             // TODO: Figure out what to with Null.
-            Err(Error::local_error(WrapperErrorKind::UnsupportedParam))
+            return Err(Error::local_error(WrapperErrorKind::UnsupportedParam));
         }
-    }
+    };
+
+    let key_builder = if let Some(ref k) = key_customization {
+        k.template(key_builder)
+    } else {
+        key_builder
+    };
+
+    key_builder.build()
 }
 
 /// This loads an Attestation Key previously generated under the Endorsement hierarchy
