@@ -121,8 +121,8 @@ impl Context {
     /// The provided [PcrSelectionList] contains the pcr slots in the different
     /// banks that is going to be read. It is possible to select more pcr slots
     /// then what will fit in the returned result so the method returns a [PcrSelectionList]
-    /// that indicates what values that was read. The values that was read are returned
-    /// in the [PcrData].
+    /// that indicates what values were read. The values that were read are returned
+    /// in a [DigestList].
     ///
     /// # Errors
     /// * Several different errors can occur if conversion of return
