@@ -26,7 +26,8 @@
     unused_import_braces,
     unused_qualifications,
     unused_results,
-    missing_copy_implementations
+    missing_copy_implementations,
+    rustdoc::broken_intra_doc_links,
 )]
 //! # TSS 2.0 Rust Wrapper over Enhanced System API
 //! This crate exposes the functionality of the TCG Software Stack Enhanced System API to
