@@ -11,6 +11,13 @@
 set -euf -o pipefail
 
 #################################################
+# Change rust toolchain version
+#################################################
+if [[ ! -z ${RUST_TOOLCHAIN_VERSION:+x} ]]; then
+	rustup override set ${RUST_TOOLCHAIN_VERSION}
+fi
+
+#################################################
 # Generate bindings for non-"standard" versions #
 #################################################
 if [[ "$TPM2_TSS_VERSION" != "2.3.3" ]]; then
