@@ -4,6 +4,13 @@
 use std::convert::TryFrom;
 use tss_esapi::{structures::PcrSelectSize, Error, WrapperErrorKind};
 
+fn bad_u8_values() -> Vec<u8> {
+    let mut bad_values = Vec::<u8>::with_capacity(u8::MAX as usize);
+    bad_values.push(0);
+    bad_values.extend(5u8..=u8::MAX);
+    bad_values
+}
+
 macro_rules! test_valid_conversions {
     (PcrSelectSize::$expected:ident, $value:expr) => {
         let expected_u8 = $value;
@@ -101,11 +108,11 @@ fn test_valid_conversions() {
 
 #[test]
 fn test_invalid_conversions() {
-    for value in 5..=u8::MAX {
+    for value in bad_u8_values() {
         assert_eq!(
             Err(Error::WrapperError(WrapperErrorKind::InvalidParam)),
             PcrSelectSize::try_from(value),
-            "Converting an invalid size_of_select value{} did not result in the expected error",
+            "Converting an invalid size_of_select value {} did not result in the expected error",
             value,
         );
     }
@@ -120,4 +127,40 @@ fn test_default() {
         PcrSelectSize::default(),
         "PcrSelectSize did not have the expected default value",
     );
+}
+
+#[test]
+fn test_try_parse_u8_with_invalid_values() {
+    for value in bad_u8_values() {
+        assert_eq!(
+            Err(Error::WrapperError(WrapperErrorKind::InvalidParam)),
+            PcrSelectSize::try_parse_u8(value),
+            "try_parse_u8 using an invalid size_of_select value {} did not result in the expected error",
+            value,
+        );
+    }
+}
+
+#[test]
+fn test_try_parse_u32_with_invalid_values() {
+    for value in bad_u8_values() {
+        assert_eq!(
+            Err(Error::WrapperError(WrapperErrorKind::InvalidParam)),
+            PcrSelectSize::try_parse_u32(value as u32),
+            "try_parse_u32 using an invalid size_of_select value {} did not result in the expected error",
+            value,
+        );
+    }
+}
+
+#[test]
+fn test_try_parse_usize_with_invalid_values() {
+    for value in bad_u8_values() {
+        assert_eq!(
+            Err(Error::WrapperError(WrapperErrorKind::InvalidParam)),
+            PcrSelectSize::try_parse_usize(value as usize),
+            "try_parse_usize using an invalid size_of_select value {} did not result in the expected error",
+            value,
+        );
+    }
 }
