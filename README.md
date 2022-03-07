@@ -1,3 +1,4 @@
+![Codecov](https://img.shields.io/codecov/c/gh/parallaxsecond/rust-tss-esapi)
 # TSS 2.0 Enhanced System API Rust Wrapper
 
 The `tss-esapi` Rust crate provides an idiomatic interface to the TCG TSS 2.0 Enhanced System API. We expose both direct FFI bindings (under the `tss-esapi-sys` crate) and abstracted versions, aimed at improved convenience of using the API.
