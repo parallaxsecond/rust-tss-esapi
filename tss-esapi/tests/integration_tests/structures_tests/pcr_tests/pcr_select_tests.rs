@@ -62,3 +62,34 @@ fn test_conversion_from_tss_pcr_select() {
     .expect("Failed to create PcrSelect");
     assert_eq!(expected, actual);
 }
+
+#[test]
+fn test_size_of_select() {
+    let expected_pcr_select_size = PcrSelectSize::ThreeOctets;
+    let pcr_select = PcrSelect::create(
+        expected_pcr_select_size,
+        &[
+            PcrSlot::Slot1,
+            PcrSlot::Slot8,
+            PcrSlot::Slot16,
+            PcrSlot::Slot17,
+        ],
+    )
+    .expect("Failed to create PcrSelect");
+
+    assert_eq!(expected_pcr_select_size, pcr_select.size_of_select());
+}
+
+#[test]
+fn test_selected_pcrs() {
+    let expected_selected_pcrs = vec![
+        PcrSlot::Slot1,
+        PcrSlot::Slot8,
+        PcrSlot::Slot16,
+        PcrSlot::Slot17,
+    ];
+    let pcr_select = PcrSelect::create(PcrSelectSize::default(), expected_selected_pcrs.as_slice())
+        .expect("Failed to create PcrSelect");
+
+    assert_eq!(expected_selected_pcrs, pcr_select.selected_pcrs());
+}
