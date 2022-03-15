@@ -18,6 +18,7 @@ swtpm_setup --tpm2 \
     --tpmstate /tmp/tpmdir \
     --createek --decryption --create-ek-cert \
     --create-platform-cert \
+    --pcr-banks sha1,sha256 \
     --display
 swtpm socket --tpm2 \
     --tpmstate dir=/tmp/tpmdir \
