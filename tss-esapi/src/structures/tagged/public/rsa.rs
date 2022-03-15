@@ -232,17 +232,13 @@ impl RsaExponent {
 
     /// Function for creating a new RsaExponent
     ///
+    /// # Warning
+    /// Will not check whether the value is a valid exponent for RSA.
+    ///
     /// # Errors
     /// Will return an error if the value passed into the function
     /// is not a valid RSA exponent.
     pub fn create(value: u32) -> Result<Self> {
-        if !RsaExponent::is_valid(value) {
-            error!(
-                "Received invalid value {} when creating rsa exponent",
-                value,
-            );
-            return Err(Error::WrapperError(WrapperErrorKind::InvalidParam));
-        }
         Ok(RsaExponent { value })
     }
 
@@ -251,9 +247,9 @@ impl RsaExponent {
         self.value
     }
 
-    /// Function for checking if a value is valid rsa exponent.
-    pub fn is_valid(value: u32) -> bool {
-        (value > 2 && primal::is_prime(value.into())) || value == 0
+    /// No-op. Does not check whether the value is a valid exponent for RSA.
+    pub fn is_valid(_: u32) -> bool {
+        true
     }
 }
 
@@ -267,17 +263,9 @@ impl TryFrom<UINT32> for RsaExponent {
     type Error = Error;
 
     fn try_from(tpm_uint32_value: UINT32) -> Result<Self> {
-        if RsaExponent::is_valid(tpm_uint32_value) {
-            Ok(RsaExponent {
-                value: tpm_uint32_value,
-            })
-        } else {
-            error!(
-                "Received invalid rsa exponent value {}, from the TPM",
-                tpm_uint32_value,
-            );
-            Err(Error::WrapperError(WrapperErrorKind::WrongValueFromTpm))
-        }
+        Ok(RsaExponent {
+            value: tpm_uint32_value,
+        })
     }
 }
 
