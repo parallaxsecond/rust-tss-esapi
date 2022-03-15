@@ -4,3 +4,4 @@ mod algorithm_attributes_tests;
 mod command_code_attributes_tests;
 mod locality_attributes_tests;
 mod nv_index_attributes_tests;
+mod session_attributes_tests;
