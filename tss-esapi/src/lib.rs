@@ -33,37 +33,16 @@
 //! This crate exposes the functionality of the TCG Software Stack Enhanced System API to
 //! Rust developers, both directly through FFI bindings and through more Rust-tailored interfaces
 //! at varying levels of abstraction.
-//! At the moment, the abstracted functionality focuses on creating signing and encryption RSA
-//! keys, as well as signing and verifying signatures.
 //! Only platforms based on processors with a word size of at least 16 bits are supported.
 //!
-//! The crate is expected to successfully compile and run using the nightly compiler and any other
-//! Rust compiler since 1.38.0.
-//!
-//! # Disclaimer
-//!
-//! The current version of the API does not offer any security or code safety guarantees as it has
-//! not been tested to a desired level of confidence.
-//! The implementation that is provided is suitable for exploratory testing and experimentation only.
-//! This test implementation does not offer any tangible security benefits and therefore is not
-//! suitable for use in production.
-//! Contributions from the developer community are welcome. Please refer to the contribution guidelines.
-//!
 //! # Code structure
-//! The modules comprising the crate expose the following functionalities:
-//! * lib/root module - exposes the `Context` structure, the most basic abstraction over the
-//! ESAPI, on top of which all other abstraction layers are implemented.
-//! * utils - exposes Rust-native versions and/or builders for (some of) the structures defined in
-//! the TSS 2.0 specification; it also offers convenience methods for generating very specific
-//! parameter structures for use in certain operations.
-//! * response_code - implements error code parsing for the formats defined in the TSS spec and
-//! exposes it along with wrapper-specific error types.
-//! * abstraction - intended to offer abstracted interfaces that focus on providing different
-//! kinds of user experience to the developers; at the moment the only implementation allows for a
-//! resource-handle-free coding experience by working soloely with object contexts.
-//! * tss2_esys - exposes raw FFI bindings to the Enhanced System API.
-//! * constants - exposes constants that were ported to Rust manually as bindgen does not support
-//! converting them yet.
+//! Our code structure is mostly derived from
+//! [part 2 of the TPM2 TCG spec](https://trustedcomputinggroup.org/wp-content/uploads/TCG_TPM2_r1p59_Part2_Structures_pub.pdf).
+//! For simplicity, however, we have reduced the depth of the import tree, so most (if not all) types
+//! are at most one level away from root.
+//!
+//! Minimum supported Rust version (MSRV):
+//! We currently check with version 1.53.0 of the Rust compiler during CI builds.
 //!
 //! # Notes on code safety:
 //! * thread safety is ensured by the required mutability of the `Context` structure within the
