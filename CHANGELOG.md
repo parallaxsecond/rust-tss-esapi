@@ -1,5 +1,161 @@
 # Changelog
 
+## [tss-esapi-7.0.1](https://github.com/parallaxsecond/rust-tss-esapi/tree/tss-esapi-7.0.1) (2022-03-18)
+
+[Full Changelog](https://github.com/parallaxsecond/rust-tss-esapi/compare/tss-esapi-7.0.0...tss-esapi-7.0.1)
+
+**Implemented enhancements:**
+
+- Adds more session attributes tests. [\#331](https://github.com/parallaxsecond/rust-tss-esapi/pull/331) ([Superhepper](https://github.com/Superhepper))
+- Adds more pcr structure tests. [\#328](https://github.com/parallaxsecond/rust-tss-esapi/pull/328) ([Superhepper](https://github.com/Superhepper))
+
+**Closed issues:**
+
+- Steps to a stable 7.0.0 [\#290](https://github.com/parallaxsecond/rust-tss-esapi/issues/290)
+
+**Merged pull requests:**
+
+- Bump Fedora version for CI to Fedora 35 [\#333](https://github.com/parallaxsecond/rust-tss-esapi/pull/333) ([puiterwijk](https://github.com/puiterwijk))
+- Remove RSA primality test [\#332](https://github.com/parallaxsecond/rust-tss-esapi/pull/332) ([puiterwijk](https://github.com/puiterwijk))
+- Adds code coverage badge to the readme. [\#329](https://github.com/parallaxsecond/rust-tss-esapi/pull/329) ([Superhepper](https://github.com/Superhepper))
+- Check for documentation link errors [\#327](https://github.com/parallaxsecond/rust-tss-esapi/pull/327) ([wiktor-k](https://github.com/wiktor-k))
+- Adds MSRV ci check [\#319](https://github.com/parallaxsecond/rust-tss-esapi/pull/319) ([Superhepper](https://github.com/Superhepper))
+
+## [tss-esapi-7.0.0](https://github.com/parallaxsecond/rust-tss-esapi/tree/tss-esapi-7.0.0) (2022-02-15)
+
+[Full Changelog](https://github.com/parallaxsecond/rust-tss-esapi/compare/tss-esapi-7.0.0-beta.2...tss-esapi-7.0.0)
+
+**Fixed bugs:**
+
+- Fix broken link in docs [\#326](https://github.com/parallaxsecond/rust-tss-esapi/pull/326) ([ionut-arm](https://github.com/ionut-arm))
+
+**Closed issues:**
+
+- 7.0.0-beta.1: AK template can no longer be customised [\#322](https://github.com/parallaxsecond/rust-tss-esapi/issues/322)
+
+**Merged pull requests:**
+
+- Bump tss-esapi to 7.0.0 [\#325](https://github.com/parallaxsecond/rust-tss-esapi/pull/325) ([ionut-arm](https://github.com/ionut-arm))
+
+## [tss-esapi-7.0.0-beta.2](https://github.com/parallaxsecond/rust-tss-esapi/tree/tss-esapi-7.0.0-beta.2) (2022-02-08)
+
+[Full Changelog](https://github.com/parallaxsecond/rust-tss-esapi/compare/tss-esapi-7.0.0-beta.1...tss-esapi-7.0.0-beta.2)
+
+**Fixed bugs:**
+
+- Allow customizing AK public [\#323](https://github.com/parallaxsecond/rust-tss-esapi/pull/323) ([ionut-arm](https://github.com/ionut-arm))
+
+**Closed issues:**
+
+- rust-tss-esapi-7.0.0-beta.1 tag not pushed to git [\#321](https://github.com/parallaxsecond/rust-tss-esapi/issues/321)
+
+## [tss-esapi-7.0.0-beta.1](https://github.com/parallaxsecond/rust-tss-esapi/tree/tss-esapi-7.0.0-beta.1) (2022-02-04)
+
+[Full Changelog](https://github.com/parallaxsecond/rust-tss-esapi/compare/tss-esapi-sys-0.3.0...tss-esapi-7.0.0-beta.1)
+
+## [tss-esapi-sys-0.3.0](https://github.com/parallaxsecond/rust-tss-esapi/tree/tss-esapi-sys-0.3.0) (2022-02-04)
+
+[Full Changelog](https://github.com/parallaxsecond/rust-tss-esapi/compare/tss-esapi-7.0.0-alpha.1...tss-esapi-sys-0.3.0)
+
+**Implemented enhancements:**
+
+- To few items in PcrSlot compared with what PcrSelectSize can indicate. [\#311](https://github.com/parallaxsecond/rust-tss-esapi/issues/311)
+- Implement native type for TPML\_TAGGED\_PCR\_PROPERTY in CapabilityData. [\#305](https://github.com/parallaxsecond/rust-tss-esapi/issues/305)
+- Create native type for the TPM2\_CC constants. [\#296](https://github.com/parallaxsecond/rust-tss-esapi/issues/296)
+- Add testing against tpm2-tss v3.0.0 [\#269](https://github.com/parallaxsecond/rust-tss-esapi/issues/269)
+- Re-implement subtract functionality for PcrSelectionList [\#259](https://github.com/parallaxsecond/rust-tss-esapi/issues/259)
+- Make context methods that has arguments with types that cannot be copied, take a reference instead [\#254](https://github.com/parallaxsecond/rust-tss-esapi/issues/254)
+- Add builder methods and move NvPublic [\#316](https://github.com/parallaxsecond/rust-tss-esapi/pull/316) ([ionut-arm](https://github.com/ionut-arm))
+- Replace type in CapabilityData::EccCurves [\#312](https://github.com/parallaxsecond/rust-tss-esapi/pull/312) ([ionut-arm](https://github.com/ionut-arm))
+- Update API to take ownership where needed [\#307](https://github.com/parallaxsecond/rust-tss-esapi/pull/307) ([ionut-arm](https://github.com/ionut-arm))
+- Sensitive buffers [\#306](https://github.com/parallaxsecond/rust-tss-esapi/pull/306) ([ionut-arm](https://github.com/ionut-arm))
+- Implement PublicBuffer [\#302](https://github.com/parallaxsecond/rust-tss-esapi/pull/302) ([ionut-arm](https://github.com/ionut-arm))
+- Add ActivateCredential support for TKC [\#284](https://github.com/parallaxsecond/rust-tss-esapi/pull/284) ([ionut-arm](https://github.com/ionut-arm))
+- Improved return values of pcr\_read. [\#281](https://github.com/parallaxsecond/rust-tss-esapi/pull/281) ([Superhepper](https://github.com/Superhepper))
+- Expand importing functionality in TransientKeyCtx [\#276](https://github.com/parallaxsecond/rust-tss-esapi/pull/276) ([ionut-arm](https://github.com/ionut-arm))
+- Add version testing to CI [\#275](https://github.com/parallaxsecond/rust-tss-esapi/pull/275) ([ionut-arm](https://github.com/ionut-arm))
+- Bump bindings version; add Darwin bindings [\#265](https://github.com/parallaxsecond/rust-tss-esapi/pull/265) ([ionut-arm](https://github.com/ionut-arm))
+
+**Fixed bugs:**
+
+- PcrSlot wont compile if TPM2\_PCR\_SELECT\_MAX != 4 [\#310](https://github.com/parallaxsecond/rust-tss-esapi/issues/310)
+- Build failure for tss-esapi 6.1.0 with zeroize\_derive 1.2.0 [\#260](https://github.com/parallaxsecond/rust-tss-esapi/issues/260)
+- Investigate if context methods are using incorrect types. [\#186](https://github.com/parallaxsecond/rust-tss-esapi/issues/186)
+- Change default RSA exponent to 0 [\#292](https://github.com/parallaxsecond/rust-tss-esapi/pull/292) ([ionut-arm](https://github.com/ionut-arm))
+- Change Name to TPM2B\_NAME conversion [\#288](https://github.com/parallaxsecond/rust-tss-esapi/pull/288) ([ionut-arm](https://github.com/ionut-arm))
+
+**Closed issues:**
+
+- Hierarchy/Unseal/Load auth value [\#309](https://github.com/parallaxsecond/rust-tss-esapi/issues/309)
+- ActivateCredential error on non-6.1.1 versions \(Esys Finish ErrorCode \(0x00000101\)\) [\#285](https://github.com/parallaxsecond/rust-tss-esapi/issues/285)
+- error while building [\#283](https://github.com/parallaxsecond/rust-tss-esapi/issues/283)
+- doubts about TPMS\_ECC\_PARMS  [\#282](https://github.com/parallaxsecond/rust-tss-esapi/issues/282)
+- Manually construct PcrData? [\#277](https://github.com/parallaxsecond/rust-tss-esapi/issues/277)
+- Thank you [\#192](https://github.com/parallaxsecond/rust-tss-esapi/issues/192)
+- Key management approach in abstraction::transient won't work in windows [\#169](https://github.com/parallaxsecond/rust-tss-esapi/issues/169)
+
+**Merged pull requests:**
+
+- Prepare 7.0.0-beta.1 release [\#320](https://github.com/parallaxsecond/rust-tss-esapi/pull/320) ([ionut-arm](https://github.com/ionut-arm))
+- Updates depedencies [\#318](https://github.com/parallaxsecond/rust-tss-esapi/pull/318) ([Superhepper](https://github.com/Superhepper))
+- Fixes some pcr issues. [\#317](https://github.com/parallaxsecond/rust-tss-esapi/pull/317) ([Superhepper](https://github.com/Superhepper))
+- Creates native type for TPML\_CCA [\#315](https://github.com/parallaxsecond/rust-tss-esapi/pull/315) ([Superhepper](https://github.com/Superhepper))
+- Make the crate compatible with 1.53 toolchain [\#314](https://github.com/parallaxsecond/rust-tss-esapi/pull/314) ([ionut-arm](https://github.com/ionut-arm))
+- Rust native TPML\_TAGGED\_PCR\_PROPERTY type [\#308](https://github.com/parallaxsecond/rust-tss-esapi/pull/308) ([Superhepper](https://github.com/Superhepper))
+- Updates CapabilityData to use AlgorithmPropertyList [\#304](https://github.com/parallaxsecond/rust-tss-esapi/pull/304) ([Superhepper](https://github.com/Superhepper))
+- Fix typos and introduce Check spelling CI step [\#303](https://github.com/parallaxsecond/rust-tss-esapi/pull/303) ([wiktor-k](https://github.com/wiktor-k))
+- Adds TaggedTpmProprtyList [\#301](https://github.com/parallaxsecond/rust-tss-esapi/pull/301) ([Superhepper](https://github.com/Superhepper))
+- Command code list [\#300](https://github.com/parallaxsecond/rust-tss-esapi/pull/300) ([Superhepper](https://github.com/Superhepper))
+- Adds CommandCode enum and replaces use of TPM2\_CC. [\#299](https://github.com/parallaxsecond/rust-tss-esapi/pull/299) ([Superhepper](https://github.com/Superhepper))
+- Support Certify context command [\#297](https://github.com/parallaxsecond/rust-tss-esapi/pull/297) ([rshearman](https://github.com/rshearman))
+- Removes TPMA\_LOCALITY from context methods. [\#294](https://github.com/parallaxsecond/rust-tss-esapi/pull/294) ([Superhepper](https://github.com/Superhepper))
+- Adds the attest structures [\#293](https://github.com/parallaxsecond/rust-tss-esapi/pull/293) ([Superhepper](https://github.com/Superhepper))
+- Suppress deref\_nullptr warnings [\#289](https://github.com/parallaxsecond/rust-tss-esapi/pull/289) ([ionut-arm](https://github.com/ionut-arm))
+- Added SignatureScheme type. [\#286](https://github.com/parallaxsecond/rust-tss-esapi/pull/286) ([Superhepper](https://github.com/Superhepper))
+- Make Name wrap the raw type directly [\#280](https://github.com/parallaxsecond/rust-tss-esapi/pull/280) ([wiktor-k](https://github.com/wiktor-k))
+- Add `policy_duplication_select` to Context [\#278](https://github.com/parallaxsecond/rust-tss-esapi/pull/278) ([wiktor-k](https://github.com/wiktor-k))
+- Added auth\_policy method to ther Public structure. [\#274](https://github.com/parallaxsecond/rust-tss-esapi/pull/274) ([Superhepper](https://github.com/Superhepper))
+- Improved tests and naming for CapabilityType [\#273](https://github.com/parallaxsecond/rust-tss-esapi/pull/273) ([Superhepper](https://github.com/Superhepper))
+- Fix a typo in "bitfield" [\#272](https://github.com/parallaxsecond/rust-tss-esapi/pull/272) ([wiktor-k](https://github.com/wiktor-k))
+- Fix builders when using Null symmetric \(and a couple of small fixes\) [\#271](https://github.com/parallaxsecond/rust-tss-esapi/pull/271) ([wiktor-k](https://github.com/wiktor-k))
+- Add a hint for unique\_identifier functions [\#270](https://github.com/parallaxsecond/rust-tss-esapi/pull/270) ([wiktor-k](https://github.com/wiktor-k))
+- Fix error comment for ECC decryption keys [\#268](https://github.com/parallaxsecond/rust-tss-esapi/pull/268) ([wiktor-k](https://github.com/wiktor-k))
+- Fix tss2\_esys version detection + new load\_external test [\#267](https://github.com/parallaxsecond/rust-tss-esapi/pull/267) ([rshearman](https://github.com/rshearman))
+- Add TPM Import command [\#266](https://github.com/parallaxsecond/rust-tss-esapi/pull/266) ([wiktor-k](https://github.com/wiktor-k))
+- Add property tag variant for MaxCapBuffer [\#264](https://github.com/parallaxsecond/rust-tss-esapi/pull/264) ([rshearman](https://github.com/rshearman))
+- Fix abstraction nv handle leaks [\#263](https://github.com/parallaxsecond/rust-tss-esapi/pull/263) ([rshearman](https://github.com/rshearman))
+- Refactoring and improvement of tests [\#258](https://github.com/parallaxsecond/rust-tss-esapi/pull/258) ([Superhepper](https://github.com/Superhepper))
+- Add duplication command [\#248](https://github.com/parallaxsecond/rust-tss-esapi/pull/248) ([wiktor-k](https://github.com/wiktor-k))
+
+## [tss-esapi-7.0.0-alpha.1](https://github.com/parallaxsecond/rust-tss-esapi/tree/tss-esapi-7.0.0-alpha.1) (2021-09-17)
+
+[Full Changelog](https://github.com/parallaxsecond/rust-tss-esapi/compare/tss-esapi-6.1.0...tss-esapi-7.0.0-alpha.1)
+
+**Implemented enhancements:**
+
+- Missing check for key handle session where they are required [\#252](https://github.com/parallaxsecond/rust-tss-esapi/issues/252)
+- Move TransientKeyContext away from contexts [\#256](https://github.com/parallaxsecond/rust-tss-esapi/pull/256) ([ionut-arm](https://github.com/ionut-arm))
+
+**Fixed bugs:**
+
+- The Context Management Tests are not executed [\#250](https://github.com/parallaxsecond/rust-tss-esapi/issues/250)
+
+**Closed issues:**
+
+- Getting the u32 value of a TpmHandle. [\#231](https://github.com/parallaxsecond/rust-tss-esapi/issues/231)
+- Problems with sessions in tests [\#200](https://github.com/parallaxsecond/rust-tss-esapi/issues/200)
+
+**Merged pull requests:**
+
+- Bump version for new alpha release [\#257](https://github.com/parallaxsecond/rust-tss-esapi/pull/257) ([ionut-arm](https://github.com/ionut-arm))
+- Add ECDH-related functions [\#255](https://github.com/parallaxsecond/rust-tss-esapi/pull/255) ([wiktor-k](https://github.com/wiktor-k))
+- Add missing key handle session checks [\#253](https://github.com/parallaxsecond/rust-tss-esapi/pull/253) ([Superhepper](https://github.com/Superhepper))
+- Fixed issue with missing tests. [\#251](https://github.com/parallaxsecond/rust-tss-esapi/pull/251) ([Superhepper](https://github.com/Superhepper))
+- Fix a typo in "persistent" [\#249](https://github.com/parallaxsecond/rust-tss-esapi/pull/249) ([wiktor-k](https://github.com/wiktor-k))
+- Implemented conversion traits for PcrSlot. [\#247](https://github.com/parallaxsecond/rust-tss-esapi/pull/247) ([Superhepper](https://github.com/Superhepper))
+- Update CHANGELOG.md [\#245](https://github.com/parallaxsecond/rust-tss-esapi/pull/245) ([ionut-arm](https://github.com/ionut-arm))
+- Creates native rust type for TPM2B\_PUBLIC. [\#241](https://github.com/parallaxsecond/rust-tss-esapi/pull/241) ([Superhepper](https://github.com/Superhepper))
+
 ## [tss-esapi-6.1.0](https://github.com/parallaxsecond/rust-tss-esapi/tree/tss-esapi-6.1.0) (2021-08-04)
 
 [Full Changelog](https://github.com/parallaxsecond/rust-tss-esapi/compare/tss-esapi-6.0.0...tss-esapi-6.1.0)
