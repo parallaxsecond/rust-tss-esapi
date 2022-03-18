@@ -248,6 +248,10 @@ impl RsaExponent {
     }
 
     /// No-op. Does not check whether the value is a valid exponent for RSA.
+    #[deprecated(
+        since = "7.0.1",
+        note = "TPMs are only mandated to support 0 as an exponent, with support for and checking of other values being done differently by each manufacturer. See discussion here: https://github.com/parallaxsecond/rust-tss-esapi/pull/332"
+    )]
     pub fn is_valid(_: u32) -> bool {
         true
     }
