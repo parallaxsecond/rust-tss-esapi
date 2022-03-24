@@ -37,7 +37,7 @@ use crate::{
 use log::error;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use std::convert::{TryFrom, TryInto};
+use std::convert::{AsMut, AsRef, TryFrom, TryInto};
 use zeroize::Zeroize;
 
 mod key_attestation;
@@ -525,6 +525,18 @@ impl TransientKeyContext {
     /// Get a builder for the structure
     pub fn builder() -> TransientKeyContextBuilder {
         TransientKeyContextBuilder::new()
+    }
+}
+
+impl AsRef<Context> for TransientKeyContext {
+    fn as_ref(&self) -> &Context {
+        &self.context
+    }
+}
+
+impl AsMut<Context> for TransientKeyContext {
+    fn as_mut(&mut self) -> &mut Context {
+        &mut self.context
     }
 }
 

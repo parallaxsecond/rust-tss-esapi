@@ -852,3 +852,13 @@ fn activate_credential_wrong_data() {
         panic!("Got crate error ({}) when expecting an error from TPM.", e);
     }
 }
+
+#[test]
+fn get_random_from_tkc() {
+    // Check that we can convert a reference from TKC to Context
+    let mut ctx = create_ctx();
+    let _rand_bytes = ctx
+        .as_mut()
+        .execute_without_session(|ctx| ctx.get_random(16))
+        .expect("Failed to get random bytes");
+}
