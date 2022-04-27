@@ -279,7 +279,7 @@ impl Context {
                 self.optional_session_3(),
                 &data.into(),
                 hashing_algorithm.into(),
-                if cfg!(tpm2_tss_version = "3") {
+                if cfg!(hierarchy_is_esys_tr) {
                     ObjectHandle::from(hierarchy).into()
                 } else {
                     TpmHandle::from(hierarchy).into()

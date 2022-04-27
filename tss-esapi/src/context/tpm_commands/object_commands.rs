@@ -153,7 +153,7 @@ impl Context {
                 self.optional_session_3(),
                 &private.try_into()?,
                 &public.try_into()?,
-                if cfg!(tpm2_tss_version = "3") {
+                if cfg!(hierarchy_is_esys_tr) {
                     ObjectHandle::from(hierarchy).into()
                 } else {
                     TpmHandle::from(hierarchy).into()
@@ -190,7 +190,7 @@ impl Context {
                 self.optional_session_3(),
                 null(),
                 &public.try_into()?,
-                if cfg!(tpm2_tss_version = "3") {
+                if cfg!(hierarchy_is_esys_tr) {
                     ObjectHandle::from(hierarchy).into()
                 } else {
                     TpmHandle::from(hierarchy).into()
