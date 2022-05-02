@@ -22,4 +22,19 @@ fn main() {
         "Unsupported TSS version {}",
         tss_version
     );
+
+    let hierarchy_is_esys_tr_req = VersionReq::parse(">=3.0.0").unwrap();
+    if hierarchy_is_esys_tr_req.matches(&tss_version) {
+        println!("cargo:rustc-cfg=hierarchy_is_esys_tr")
+    }
+
+    let has_tss_base_rc_values_28_to_51_req = VersionReq::parse(">=2.4.0").unwrap();
+    if has_tss_base_rc_values_28_to_51_req.matches(&tss_version) {
+        println!("cargo:rustc-cfg=has_tss_base_rc_values_28_to_51")
+    }
+
+    let has_tss_base_rc_values_52_to_53_req = VersionReq::parse(">=3.0.0").unwrap();
+    if has_tss_base_rc_values_52_to_53_req.matches(&tss_version) {
+        println!("cargo:rustc-cfg=has_tss_base_rc_values_52_to_53")
+    }
 }

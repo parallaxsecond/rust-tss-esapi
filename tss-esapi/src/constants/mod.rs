@@ -67,7 +67,7 @@ pub use nv_index_type::NvIndexType;
 pub use pcr_property_tag::PcrPropertyTag;
 pub use property_tag::PropertyTag;
 pub use response_code::{ResponseCode, Tss2ResponseCode, Tss2ResponseCodeKind};
-pub use return_code::ReturnCodeLayer;
+pub use return_code::{BaseError, ReturnCodeLayer};
 pub use session_type::SessionType;
 pub use startup_type::StartupType;
 pub use structure_tags::StructureTag;
