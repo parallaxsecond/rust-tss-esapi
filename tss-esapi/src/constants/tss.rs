@@ -630,3 +630,16 @@ pub const TPMA_CC_RHANDLE: TPMA_CC = 0x10000000; /* SET 1 indicates the presence
 pub const TPMA_CC_V: TPMA_CC = 0x20000000; /* SET 1 indicates that the command is vendor-specific. CLEAR 0 indicates that the command is defined in a version of this specification */
 pub const TPMA_CC_RES_MASK: TPMA_CC = 0xC0000000; /* allocated for software shall be zero */
 pub const TPMA_CC_RES_SHIFT: u32 = 30;
+
+pub const TSS2_RC_LAYER_MASK: u32 = 0x00FF0000;
+
+pub const TSS2_TPM_RC_LAYER: TSS2_RC = 0x00000000; /* base is a TPM2_RC_* */
+pub const TSS2_FEATURE_RC_LAYER: TSS2_RC = 0x00060000; /* base is a TSS2_BASE_RC_* */
+pub const TSS2_ESYS_RC_LAYER: TSS2_RC = 0x00070000; /* base is a TSS2_BASE_RC_* */
+pub const TSS2_SYS_RC_LAYER: TSS2_RC = 0x00080000; /* base is a TSS2_BASE_RC_* */
+pub const TSS2_MU_RC_LAYER: TSS2_RC = 0x00090000; /* base is a TSS2_BASE_RC_* */
+pub const TSS2_TCTI_RC_LAYER: TSS2_RC = 0x000A0000; /* base is a TSS2_BASE_RC_* */
+pub const TSS2_RESMGR_RC_LAYER: TSS2_RC = 0x000B0000; /* base is a TSS2_BASE_RC_* */
+pub const TSS2_RESMGR_TPM_RC_LAYER: TSS2_RC = 0x000C0000; /* base is a TPM2_RC_* */
+
+pub const TSS2_RC_SUCCESS: TSS2_RC = 0x00000000;
