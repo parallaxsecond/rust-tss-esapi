@@ -323,10 +323,11 @@ impl Context {
         let ret = Error::from_tss_rc(ret);
 
         if ret.is_success() {
-            let encryption_key_out = unsafe { Data::try_from(*encryption_key_out_ptr)? };
-            let duplicate = unsafe { Private::try_from(*duplicate_ptr)? };
-            let out_sym_seed = unsafe { EncryptedSecret::try_from(*out_sym_seed_ptr)? };
-            Ok((encryption_key_out, duplicate, out_sym_seed))
+            Ok((
+                Data::try_from(Context::ffi_data_to_owned(encryption_key_out_ptr))?,
+                Private::try_from(Context::ffi_data_to_owned(duplicate_ptr))?,
+                EncryptedSecret::try_from(Context::ffi_data_to_owned(out_sym_seed_ptr))?,
+            ))
         } else {
             error!("Error when performing duplication: {}", ret);
             Err(ret)
@@ -681,7 +682,7 @@ impl Context {
         let ret = Error::from_tss_rc(ret);
 
         if ret.is_success() {
-            Ok(unsafe { Private::try_from(*out_private_ptr)? })
+            Private::try_from(Context::ffi_data_to_owned(out_private_ptr))
         } else {
             error!("Error when performing import: {}", ret);
             Err(ret)

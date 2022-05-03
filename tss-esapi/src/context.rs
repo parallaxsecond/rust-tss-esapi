@@ -431,6 +431,12 @@ impl Context {
                 Error::local_error(ErrorKind::MissingAuthSession)
             })
     }
+
+    /// Private function for handling that has been allocated with
+    /// C memory allocation functions in TSS.
+    fn ffi_data_to_owned<T>(data_ptr: *mut T) -> T {
+        MBox::into_inner(unsafe { MBox::from_raw(data_ptr) })
+    }
 }
 
 impl Drop for Context {

@@ -9,8 +9,7 @@ use crate::{
     Context, Error, Result,
 };
 use log::error;
-use mbox::MBox;
-use std::convert::TryInto;
+use std::convert::{TryFrom, TryInto};
 use std::ptr::null_mut;
 
 impl Context {
@@ -24,8 +23,7 @@ impl Context {
         let ret = unsafe { Esys_ContextSave(self.mut_context(), handle.into(), &mut context_ptr) };
         let ret = Error::from_tss_rc(ret);
         if ret.is_success() {
-            let context = unsafe { MBox::from_raw(context_ptr) };
-            Ok((*context).try_into()?)
+            TpmsContext::try_from(Context::ffi_data_to_owned(context_ptr))
         } else {
             error!("Error in saving context: {}", ret);
             Err(ret)

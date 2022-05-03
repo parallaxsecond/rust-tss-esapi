@@ -7,7 +7,6 @@ use crate::{
     Context, Error, Result,
 };
 use log::error;
-use mbox::MBox;
 use std::convert::TryFrom;
 use std::ptr::null_mut;
 
@@ -55,8 +54,7 @@ impl Context {
         let ret = Error::from_tss_rc(ret);
 
         if ret.is_success() {
-            let out_data = unsafe { MBox::from_raw(out_data_ptr) };
-            let out_data = MaxBuffer::try_from(*out_data)?;
+            let out_data = MaxBuffer::try_from(Context::ffi_data_to_owned(out_data_ptr))?;
             let test_result_rc = Error::from_tss_rc(test_result);
             let test_result_rc = if test_result_rc.is_success() {
                 Ok(())

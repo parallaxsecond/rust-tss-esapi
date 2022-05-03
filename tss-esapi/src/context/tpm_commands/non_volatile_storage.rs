@@ -11,7 +11,6 @@ use crate::{
     Context, Error, Result,
 };
 use log::error;
-use mbox::MBox;
 use std::convert::{TryFrom, TryInto};
 use std::ptr::null_mut;
 
@@ -115,9 +114,10 @@ impl Context {
         };
         let ret = Error::from_tss_rc(ret);
         if ret.is_success() {
-            let nv_public = unsafe { MBox::from_raw(nv_public_ptr) };
-            let nv_name = unsafe { MBox::from_raw(nv_name_ptr) };
-            Ok((NvPublic::try_from(*nv_public)?, Name::try_from(*nv_name)?))
+            Ok((
+                NvPublic::try_from(Context::ffi_data_to_owned(nv_public_ptr))?,
+                Name::try_from(Context::ffi_data_to_owned(nv_name_ptr))?,
+            ))
         } else {
             error!("Error when reading NV public: {}", ret);
             Err(ret)
@@ -191,8 +191,7 @@ impl Context {
         };
         let ret = Error::from_tss_rc(ret);
         if ret.is_success() {
-            let data = unsafe { MBox::from_raw(data_ptr) };
-            Ok(MaxNvBuffer::try_from(*data)?)
+            MaxNvBuffer::try_from(Context::ffi_data_to_owned(data_ptr))
         } else {
             error!("Error when reading NV: {}", ret);
             Err(ret)

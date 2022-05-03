@@ -8,7 +8,7 @@ use crate::{
     Context, Error, Result,
 };
 use log::error;
-use std::convert::{TryFrom, TryInto};
+use std::convert::TryFrom;
 use std::ptr::null_mut;
 
 impl Context {
@@ -37,8 +37,7 @@ impl Context {
         let ret = Error::from_tss_rc(ret);
 
         if ret.is_success() {
-            let data = unsafe { PublicKeyRsa::try_from(*out_data_ptr)? };
-            Ok(data)
+            PublicKeyRsa::try_from(Context::ffi_data_to_owned(out_data_ptr))
         } else {
             error!("Error when performing RSA encryption: {}", ret);
             Err(ret)
@@ -70,8 +69,7 @@ impl Context {
         let ret = Error::from_tss_rc(ret);
 
         if ret.is_success() {
-            let data = unsafe { PublicKeyRsa::try_from(*message_ptr)? };
-            Ok(data)
+            PublicKeyRsa::try_from(Context::ffi_data_to_owned(message_ptr))
         } else {
             error!("Error when performing RSA decryption: {}", ret);
             Err(ret)
@@ -202,12 +200,12 @@ impl Context {
         let ret = Error::from_tss_rc(ret);
 
         if ret.is_success() {
-            Ok(unsafe {
-                (
-                    (*z_point_ptr).point.try_into()?,
-                    (*pub_point_ptr).point.try_into()?,
-                )
-            })
+            let z_point = Context::ffi_data_to_owned(z_point_ptr);
+            let pub_point = Context::ffi_data_to_owned(pub_point_ptr);
+            Ok((
+                EccPoint::try_from(z_point.point)?,
+                EccPoint::try_from(pub_point.point)?,
+            ))
         } else {
             error!("Error when generating ECDH keypair: {}", ret);
             Err(ret)
@@ -339,7 +337,8 @@ impl Context {
         let ret = Error::from_tss_rc(ret);
 
         if ret.is_success() {
-            Ok(unsafe { (*out_point_ptr).point.try_into()? })
+            let out_point = Context::ffi_data_to_owned(out_point_ptr);
+            EccPoint::try_from(out_point.point)
         } else {
             error!("Error when performing ECDH ZGen: {}", ret);
             Err(ret)

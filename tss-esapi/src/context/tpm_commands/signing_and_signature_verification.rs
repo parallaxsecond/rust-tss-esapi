@@ -7,7 +7,6 @@ use crate::{
     Context, Error, Result,
 };
 use log::error;
-use mbox::MBox;
 use std::convert::{TryFrom, TryInto};
 use std::ptr::null_mut;
 
@@ -35,9 +34,7 @@ impl Context {
         let ret = Error::from_tss_rc(ret);
 
         if ret.is_success() {
-            let validation = unsafe { MBox::from_raw(validation_ptr) };
-            let validation = VerifiedTicket::try_from(*validation)?;
-            Ok(validation)
+            VerifiedTicket::try_from(Context::ffi_data_to_owned(validation_ptr))
         } else {
             error!("Error when verifying signature: {}", ret);
             Err(ret)
@@ -69,8 +66,7 @@ impl Context {
         let ret = Error::from_tss_rc(ret);
 
         if ret.is_success() {
-            let signature = unsafe { MBox::from_raw(signature_ptr) };
-            Ok(Signature::try_from(*signature)?)
+            Signature::try_from(Context::ffi_data_to_owned(signature_ptr))
         } else {
             error!("Error when signing: {}", ret);
             Err(ret)

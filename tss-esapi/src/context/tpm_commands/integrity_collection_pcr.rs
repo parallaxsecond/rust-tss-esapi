@@ -7,7 +7,6 @@ use crate::{
     Context, Error, Result,
 };
 use log::error;
-use mbox::MBox;
 use std::convert::{TryFrom, TryInto};
 use std::ptr::null_mut;
 
@@ -174,12 +173,10 @@ impl Context {
         let ret = Error::from_tss_rc(ret);
 
         if ret.is_success() {
-            let pcr_selection_out = unsafe { MBox::from_raw(pcr_selection_out_ptr) };
-            let pcr_values = unsafe { MBox::from_raw(pcr_values_ptr) };
             Ok((
                 pcr_update_counter,
-                PcrSelectionList::try_from(*pcr_selection_out)?,
-                DigestList::try_from(*pcr_values)?,
+                PcrSelectionList::try_from(Context::ffi_data_to_owned(pcr_selection_out_ptr))?,
+                DigestList::try_from(Context::ffi_data_to_owned(pcr_values_ptr))?,
             ))
         } else {
             error!("Error when reading PCR: {}", ret);

@@ -7,7 +7,6 @@ use crate::{
     Context, Error, Result,
 };
 use log::error;
-use mbox::MBox;
 use std::convert::TryFrom;
 use std::ptr::null_mut;
 
@@ -142,11 +141,11 @@ impl Context {
         let ret = Error::from_tss_rc(ret);
 
         if ret.is_success() {
-            let certify_info = unsafe { MBox::from_raw(certify_info_ptr) };
-            let signature = unsafe { MBox::from_raw(signature_ptr) };
+            let certify_info = Context::ffi_data_to_owned(certify_info_ptr);
+            let signature = Context::ffi_data_to_owned(signature_ptr);
             Ok((
-                Attest::try_from(AttestBuffer::try_from(*certify_info)?)?,
-                Signature::try_from(*signature)?,
+                Attest::try_from(AttestBuffer::try_from(certify_info)?)?,
+                Signature::try_from(signature)?,
             ))
         } else {
             error!("Error in certifying: {}", ret);
@@ -186,11 +185,11 @@ impl Context {
         let ret = Error::from_tss_rc(ret);
 
         if ret.is_success() {
-            let quoted = unsafe { MBox::from_raw(quoted_ptr) };
-            let signature = unsafe { MBox::from_raw(signature_ptr) };
+            let quoted = Context::ffi_data_to_owned(quoted_ptr);
+            let signature = Context::ffi_data_to_owned(signature_ptr);
             Ok((
-                Attest::try_from(AttestBuffer::try_from(*quoted)?)?,
-                Signature::try_from(*signature)?,
+                Attest::try_from(AttestBuffer::try_from(quoted)?)?,
+                Signature::try_from(signature)?,
             ))
         } else {
             error!("Error in quoting PCR: {}", ret);

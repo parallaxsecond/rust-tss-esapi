@@ -15,7 +15,6 @@ use crate::{
     Context, Error, Result,
 };
 use log::error;
-use mbox::MBox;
 use std::convert::{TryFrom, TryInto};
 use std::ptr::null_mut;
 
@@ -77,20 +76,20 @@ impl Context {
         let ret = Error::from_tss_rc(ret);
 
         if ret.is_success() {
-            let out_public_owned = unsafe { MBox::from_raw(out_public_ptr) };
-            let creation_data_owned = unsafe { MBox::from_raw(creation_data_ptr) };
-            let creation_hash_owned = unsafe { MBox::from_raw(creation_hash_ptr) };
-            let creation_ticket_owned = unsafe { MBox::from_raw(creation_ticket_ptr) };
-
+            let out_public_owned = Context::ffi_data_to_owned(out_public_ptr);
+            let creation_data_owned = Context::ffi_data_to_owned(creation_data_ptr);
+            let creation_hash_owned = Context::ffi_data_to_owned(creation_hash_ptr);
+            let creation_ticket_owned = Context::ffi_data_to_owned(creation_ticket_ptr);
             let primary_key_handle = KeyHandle::from(object_handle);
             self.handle_manager
                 .add_handle(primary_key_handle.into(), HandleDropAction::Flush)?;
+
             Ok(CreatePrimaryKeyResult {
                 key_handle: primary_key_handle,
-                out_public: Public::try_from(*out_public_owned)?,
-                creation_data: CreationData::try_from(*creation_data_owned)?,
-                creation_hash: Digest::try_from(*creation_hash_owned)?,
-                creation_ticket: CreationTicket::try_from(*creation_ticket_owned)?,
+                out_public: Public::try_from(out_public_owned)?,
+                creation_data: CreationData::try_from(creation_data_owned)?,
+                creation_hash: Digest::try_from(creation_hash_owned)?,
+                creation_ticket: CreationTicket::try_from(creation_ticket_owned)?,
             })
         } else {
             error!("Error in creating primary key: {}", ret);

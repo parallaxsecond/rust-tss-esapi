@@ -11,7 +11,6 @@ use crate::{
     Context, Error, Result,
 };
 use log::error;
-use mbox::MBox;
 use std::convert::TryFrom;
 use std::ptr::null_mut;
 
@@ -212,11 +211,9 @@ impl Context {
 
         let ret = Error::from_tss_rc(ret);
         if ret.is_success() {
-            let data_out = unsafe { MBox::from_raw(out_data_ptr) };
-            let iv_out = unsafe { MBox::from_raw(iv_out_ptr) };
             Ok((
-                MaxBuffer::try_from(*data_out)?,
-                InitialValue::try_from(*iv_out)?,
+                MaxBuffer::try_from(Context::ffi_data_to_owned(out_data_ptr))?,
+                InitialValue::try_from(Context::ffi_data_to_owned(iv_out_ptr))?,
             ))
         } else {
             error!(
@@ -293,11 +290,9 @@ impl Context {
         };
         let ret = Error::from_tss_rc(ret);
         if ret.is_success() {
-            let out_hash = unsafe { MBox::from_raw(out_hash_ptr) };
-            let validation = unsafe { MBox::from_raw(validation_ptr) };
             Ok((
-                Digest::try_from(*out_hash)?,
-                HashcheckTicket::try_from(*validation)?,
+                Digest::try_from(Context::ffi_data_to_owned(out_hash_ptr))?,
+                HashcheckTicket::try_from(Context::ffi_data_to_owned(validation_ptr))?,
             ))
         } else {
             error!("Error failed to perform hash operation: {}", ret);
@@ -377,8 +372,7 @@ impl Context {
         let ret = Error::from_tss_rc(ret);
 
         if ret.is_success() {
-            let out_hmac = unsafe { MBox::from_raw(out_hmac_ptr) };
-            Ok(Digest::try_from(*out_hmac)?)
+            Digest::try_from(Context::ffi_data_to_owned(out_hmac_ptr))
         } else {
             error!("Error in hmac: {}", ret);
             Err(ret)

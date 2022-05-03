@@ -6,7 +6,6 @@ use crate::{
     Context, Error, Result, WrapperErrorKind as ErrorKind,
 };
 use log::error;
-use mbox::MBox;
 use std::convert::{TryFrom, TryInto};
 use std::ptr::null_mut;
 
@@ -32,10 +31,7 @@ impl Context {
 
         let ret = Error::from_tss_rc(ret);
         if ret.is_success() {
-            let buffer = unsafe { MBox::from_raw(random_bytes_ptr) };
-            let mut random = buffer.buffer.to_vec();
-            random.truncate(buffer.size.try_into().unwrap()); // should not panic given the TryInto above
-            Ok(Digest::try_from(random)?)
+            Digest::try_from(Context::ffi_data_to_owned(random_bytes_ptr))
         } else {
             error!("Error in getting random bytes: {}", ret);
             Err(ret)

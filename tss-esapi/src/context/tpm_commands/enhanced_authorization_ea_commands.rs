@@ -19,7 +19,6 @@ use crate::{
     Context, Error, Result, WrapperErrorKind as ErrorKind,
 };
 use log::error;
-use mbox::MBox;
 use std::convert::{TryFrom, TryInto};
 use std::ptr::null_mut;
 use std::time::Duration;
@@ -61,12 +60,10 @@ impl Context {
         };
         let ret = Error::from_tss_rc(ret);
         if ret.is_success() {
-            let out_timeout = unsafe { MBox::from_raw(out_timeout_ptr) };
-            let out_timeout = Timeout::try_from(*out_timeout)?;
-            let out_policy_ticket = unsafe { MBox::from_raw(out_policy_ticket_ptr) };
-            let out_policy_ticket = AuthTicket::try_from(*out_policy_ticket)?;
-
-            Ok((out_timeout, out_policy_ticket))
+            Ok((
+                Timeout::try_from(Context::ffi_data_to_owned(out_timeout_ptr))?,
+                AuthTicket::try_from(Context::ffi_data_to_owned(out_policy_ticket_ptr))?,
+            ))
         } else {
             error!("Error when sending policy signed: {}", ret);
             Err(ret)
@@ -106,12 +103,10 @@ impl Context {
         };
         let ret = Error::from_tss_rc(ret);
         if ret.is_success() {
-            let out_timeout = unsafe { MBox::from_raw(out_timeout_ptr) };
-            let out_timeout = Timeout::try_from(*out_timeout)?;
-            let out_policy_ticket = unsafe { MBox::from_raw(out_policy_ticket_ptr) };
-            let out_policy_ticket = AuthTicket::try_from(*out_policy_ticket)?;
-
-            Ok((out_timeout, out_policy_ticket))
+            Ok((
+                Timeout::try_from(Context::ffi_data_to_owned(out_timeout_ptr))?,
+                AuthTicket::try_from(Context::ffi_data_to_owned(out_policy_ticket_ptr))?,
+            ))
         } else {
             error!("Error when sending policy secret: {}", ret);
             Err(ret)
@@ -546,8 +541,7 @@ impl Context {
         };
         let ret = Error::from_tss_rc(ret);
         if ret.is_success() {
-            let policy_digest = unsafe { MBox::from_raw(policy_digest_ptr) };
-            Ok(Digest::try_from(*policy_digest)?)
+            Digest::try_from(Context::ffi_data_to_owned(policy_digest_ptr))
         } else {
             error!(
                 "Error failed to perform policy get digest operation: {}.",

@@ -10,7 +10,6 @@ use crate::{
     Context, Error, Result,
 };
 use log::error;
-use mbox::MBox;
 use std::convert::TryFrom;
 use std::ptr::null_mut;
 use zeroize::Zeroize;
@@ -37,8 +36,7 @@ impl Context {
             unsafe { Esys_TR_GetName(self.mut_context(), object_handle.into(), &mut name_ptr) };
         let ret = Error::from_tss_rc(ret);
         if ret.is_success() {
-            let name = unsafe { MBox::from_raw(name_ptr) };
-            Ok(Name::try_from(*name)?)
+            Name::try_from(Context::ffi_data_to_owned(name_ptr))
         } else {
             error!("Error in getting name: {}", ret);
             Err(ret)

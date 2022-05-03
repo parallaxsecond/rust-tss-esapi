@@ -16,7 +16,6 @@ use crate::{
     Context, Error, Result,
 };
 use log::error;
-use mbox::MBox;
 use std::convert::{TryFrom, TryInto};
 use std::ptr::{null, null_mut};
 
@@ -88,17 +87,17 @@ impl Context {
         let ret = Error::from_tss_rc(ret);
 
         if ret.is_success() {
-            let out_private_owned = unsafe { MBox::from_raw(out_private_ptr) };
-            let out_public_owned = unsafe { MBox::from_raw(out_public_ptr) };
-            let creation_data_owned = unsafe { MBox::from_raw(creation_data_ptr) };
-            let creation_hash_owned = unsafe { MBox::from_raw(creation_hash_ptr) };
-            let creation_ticket_owned = unsafe { MBox::from_raw(creation_ticket_ptr) };
+            let out_private_owned = Context::ffi_data_to_owned(out_private_ptr);
+            let out_public_owned = Context::ffi_data_to_owned(out_public_ptr);
+            let creation_data_owned = Context::ffi_data_to_owned(creation_data_ptr);
+            let creation_hash_owned = Context::ffi_data_to_owned(creation_hash_ptr);
+            let creation_ticket_owned = Context::ffi_data_to_owned(creation_ticket_ptr);
             Ok(CreateKeyResult {
-                out_private: Private::try_from(*out_private_owned)?,
-                out_public: Public::try_from(*out_public_owned)?,
-                creation_data: CreationData::try_from(*creation_data_owned)?,
-                creation_hash: Digest::try_from(*creation_hash_owned)?,
-                creation_ticket: CreationTicket::try_from(*creation_ticket_owned)?,
+                out_private: Private::try_from(out_private_owned)?,
+                out_public: Public::try_from(out_public_owned)?,
+                creation_data: CreationData::try_from(creation_data_owned)?,
+                creation_hash: Digest::try_from(creation_hash_owned)?,
+                creation_ticket: CreationTicket::try_from(creation_ticket_owned)?,
             })
         } else {
             error!("Error in creating derived key: {}", ret);
@@ -233,14 +232,10 @@ impl Context {
         let ret = Error::from_tss_rc(ret);
 
         if ret.is_success() {
-            let out_name_owned = unsafe { MBox::from_raw(name_ptr) };
-            let out_qualified_name_owned = unsafe { MBox::from_raw(qualified_name_ptr) };
-            let out_public_owned = unsafe { MBox::from_raw(out_public_ptr) };
-
             Ok((
-                Public::try_from(*out_public_owned)?,
-                Name::try_from(*out_name_owned)?,
-                Name::try_from(*out_qualified_name_owned)?,
+                Public::try_from(Context::ffi_data_to_owned(out_public_ptr))?,
+                Name::try_from(Context::ffi_data_to_owned(name_ptr))?,
+                Name::try_from(Context::ffi_data_to_owned(qualified_name_ptr))?,
             ))
         } else {
             error!("Error in reading public part of object: {}", ret);
@@ -274,9 +269,7 @@ impl Context {
         let ret = Error::from_tss_rc(ret);
 
         if ret.is_success() {
-            let out_cert_info_owned = unsafe { MBox::from_raw(cert_info_ptr) };
-
-            Ok(Digest::try_from(*out_cert_info_owned)?)
+            Digest::try_from(Context::ffi_data_to_owned(cert_info_ptr))
         } else {
             error!("Error when activating credential: {}", ret);
             Err(ret)
@@ -311,12 +304,9 @@ impl Context {
         let ret = Error::from_tss_rc(ret);
 
         if ret.is_success() {
-            let out_credential_blob = unsafe { MBox::from_raw(credential_blob_ptr) };
-            let out_secret = unsafe { MBox::from_raw(secret_ptr) };
-
             Ok((
-                IdObject::try_from(*out_credential_blob)?,
-                EncryptedSecret::try_from(*out_secret)?,
+                IdObject::try_from(Context::ffi_data_to_owned(credential_blob_ptr))?,
+                EncryptedSecret::try_from(Context::ffi_data_to_owned(secret_ptr))?,
             ))
         } else {
             error!("Error when making credential: {}", ret);
@@ -341,8 +331,7 @@ impl Context {
         let ret = Error::from_tss_rc(ret);
 
         if ret.is_success() {
-            let out_data = unsafe { MBox::from_raw(out_data_ptr) };
-            Ok(SensitiveData::try_from(*out_data)?)
+            SensitiveData::try_from(Context::ffi_data_to_owned(out_data_ptr))
         } else {
             error!("Error in unsealing: {}", ret);
             Err(ret)
@@ -371,9 +360,7 @@ impl Context {
         };
         let ret = Error::from_tss_rc(ret);
         if ret.is_success() {
-            let out_private = unsafe { MBox::from_raw(out_private_ptr) };
-            let out_private = Private::try_from(*out_private)?;
-            Ok(out_private)
+            Private::try_from(Context::ffi_data_to_owned(out_private_ptr))
         } else {
             error!("Error changing object auth: {}", ret);
             Err(ret)
