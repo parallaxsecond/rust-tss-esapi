@@ -388,25 +388,25 @@ impl Context {
             .unwrap() // will only fail if called from Drop after .take()
     }
 
-    /// Internal function for retrieving the ESYS session handle for
+    /// Private method for retrieving the ESYS session handle for
     /// the optional session 1.
     fn optional_session_1(&self) -> ESYS_TR {
         SessionHandle::from(self.sessions.0).into()
     }
 
-    /// Internal function for retrieving the ESYS session handle for
+    /// Private method for retrieving the ESYS session handle for
     /// the optional session 2.
     fn optional_session_2(&self) -> ESYS_TR {
         SessionHandle::from(self.sessions.1).into()
     }
 
-    /// Internal function for retrieving the ESYS session handle for
+    /// Private method for retrieving the ESYS session handle for
     /// the optional session 3.
     fn optional_session_3(&self) -> ESYS_TR {
         SessionHandle::from(self.sessions.2).into()
     }
 
-    /// Function that returns the required
+    /// Private method that returns the required
     /// session handle 1 if it is available else
     /// returns an error.
     fn required_session_1(&self) -> Result<ESYS_TR> {
@@ -419,7 +419,7 @@ impl Context {
             })
     }
 
-    /// Function that returns the required
+    /// Private method that returns the required
     /// session handle 2 if it is available else
     /// returns an error.
     fn required_session_2(&self) -> Result<ESYS_TR> {
