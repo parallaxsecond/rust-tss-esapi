@@ -3,12 +3,12 @@
 use crate::{
     handles::KeyHandle,
     structures::{Digest, HashcheckTicket, Signature, SignatureScheme, VerifiedTicket},
-    tss2_esys::*,
+    tss2_esys::{Esys_Sign, Esys_VerifySignature},
     Context, Error, Result,
 };
 use log::error;
 use mbox::MBox;
-use std::convert::TryFrom;
+use std::convert::{TryFrom, TryInto};
 use std::ptr::null_mut;
 
 impl Context {
@@ -19,8 +19,7 @@ impl Context {
         digest: Digest,
         signature: Signature,
     ) -> Result<VerifiedTicket> {
-        let mut validation = null_mut();
-        let signature = TPMT_SIGNATURE::try_from(signature)?;
+        let mut validation_ptr = null_mut();
         let ret = unsafe {
             Esys_VerifySignature(
                 self.mut_context(),
@@ -29,14 +28,14 @@ impl Context {
                 self.optional_session_2(),
                 self.optional_session_3(),
                 &digest.into(),
-                &signature,
-                &mut validation,
+                &signature.try_into()?,
+                &mut validation_ptr,
             )
         };
         let ret = Error::from_tss_rc(ret);
 
         if ret.is_success() {
-            let validation = unsafe { MBox::from_raw(validation) };
+            let validation = unsafe { MBox::from_raw(validation_ptr) };
             let validation = VerifiedTicket::try_from(*validation)?;
             Ok(validation)
         } else {
@@ -53,8 +52,7 @@ impl Context {
         scheme: SignatureScheme,
         validation: HashcheckTicket,
     ) -> Result<Signature> {
-        let mut signature = null_mut();
-        let validation = TPMT_TK_HASHCHECK::try_from(validation)?;
+        let mut signature_ptr = null_mut();
         let ret = unsafe {
             Esys_Sign(
                 self.mut_context(),
@@ -64,14 +62,14 @@ impl Context {
                 self.optional_session_3(),
                 &digest.into(),
                 &scheme.into(),
-                &validation,
-                &mut signature,
+                &validation.try_into()?,
+                &mut signature_ptr,
             )
         };
         let ret = Error::from_tss_rc(ret);
 
         if ret.is_success() {
-            let signature = unsafe { MBox::from_raw(signature) };
+            let signature = unsafe { MBox::from_raw(signature_ptr) };
             Ok(Signature::try_from(*signature)?)
         } else {
             error!("Error when signing: {}", ret);

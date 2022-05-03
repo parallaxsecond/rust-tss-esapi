@@ -3,7 +3,7 @@
 use crate::{
     handles::{KeyHandle, ObjectHandle},
     structures::{Attest, AttestBuffer, Data, PcrSelectionList, Signature, SignatureScheme},
-    tss2_esys::*,
+    tss2_esys::{Esys_Certify, Esys_Quote},
     Context, Error, Result,
 };
 use log::error;
@@ -123,8 +123,8 @@ impl Context {
         qualifying_data: Data,
         signing_scheme: SignatureScheme,
     ) -> Result<(Attest, Signature)> {
-        let mut certify_info = null_mut();
-        let mut signature = null_mut();
+        let mut certify_info_ptr = null_mut();
+        let mut signature_ptr = null_mut();
         let ret = unsafe {
             Esys_Certify(
                 self.mut_context(),
@@ -135,15 +135,15 @@ impl Context {
                 self.optional_session_3(),
                 &qualifying_data.into(),
                 &signing_scheme.into(),
-                &mut certify_info,
-                &mut signature,
+                &mut certify_info_ptr,
+                &mut signature_ptr,
             )
         };
         let ret = Error::from_tss_rc(ret);
 
         if ret.is_success() {
-            let certify_info = unsafe { MBox::<TPM2B_ATTEST>::from_raw(certify_info) };
-            let signature = unsafe { MBox::from_raw(signature) };
+            let certify_info = unsafe { MBox::from_raw(certify_info_ptr) };
+            let signature = unsafe { MBox::from_raw(signature_ptr) };
             Ok((
                 Attest::try_from(AttestBuffer::try_from(*certify_info)?)?,
                 Signature::try_from(*signature)?,
@@ -167,8 +167,8 @@ impl Context {
         signing_scheme: SignatureScheme,
         pcr_selection_list: PcrSelectionList,
     ) -> Result<(Attest, Signature)> {
-        let mut quoted = null_mut();
-        let mut signature = null_mut();
+        let mut quoted_ptr = null_mut();
+        let mut signature_ptr = null_mut();
         let ret = unsafe {
             Esys_Quote(
                 self.mut_context(),
@@ -179,15 +179,15 @@ impl Context {
                 &qualifying_data.into(),
                 &signing_scheme.into(),
                 &pcr_selection_list.into(),
-                &mut quoted,
-                &mut signature,
+                &mut quoted_ptr,
+                &mut signature_ptr,
             )
         };
         let ret = Error::from_tss_rc(ret);
 
         if ret.is_success() {
-            let quoted = unsafe { MBox::from_raw(quoted) };
-            let signature = unsafe { MBox::from_raw(signature) };
+            let quoted = unsafe { MBox::from_raw(quoted_ptr) };
+            let signature = unsafe { MBox::from_raw(signature_ptr) };
             Ok((
                 Attest::try_from(AttestBuffer::try_from(*quoted)?)?,
                 Signature::try_from(*signature)?,

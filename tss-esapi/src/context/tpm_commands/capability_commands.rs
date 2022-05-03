@@ -2,9 +2,10 @@
 // SPDX-License-Identifier: Apache-2.0
 use crate::{
     constants::CapabilityType,
+    interface_types::YesNo,
     structures::{CapabilityData, PublicParameters},
-    tss2_esys::*,
-    Context, Error, Result, WrapperErrorKind as ErrorKind,
+    tss2_esys::{Esys_GetCapability, Esys_TestParms},
+    Context, Error, Result,
 };
 use log::{error, warn};
 use mbox::MBox;
@@ -46,8 +47,8 @@ impl Context {
         property: u32,
         property_count: u32,
     ) -> Result<(CapabilityData, bool)> {
-        let mut outcapabilitydata = null_mut();
-        let mut outmoredata: u8 = 0;
+        let mut capability_data_ptr = null_mut();
+        let mut more_data = YesNo::No.into();
 
         let ret = unsafe {
             Esys_GetCapability(
@@ -58,23 +59,16 @@ impl Context {
                 capability.into(),
                 property,
                 property_count,
-                &mut outmoredata,
-                &mut outcapabilitydata,
+                &mut more_data,
+                &mut capability_data_ptr,
             )
-        };
-        let moredata = if outmoredata == 0 {
-            false
-        } else if outmoredata == 1 {
-            true
-        } else {
-            return Err(Error::WrapperError(ErrorKind::WrongValueFromTpm));
         };
         let ret = Error::from_tss_rc(ret);
 
         if ret.is_success() {
-            let capabilitydata = unsafe { MBox::from_raw(outcapabilitydata) };
-            let capabilities = CapabilityData::try_from(*capabilitydata)?;
-            Ok((capabilities, moredata))
+            let capability_data = unsafe { MBox::from_raw(capability_data_ptr) };
+            let capabilities = CapabilityData::try_from(*capability_data)?;
+            Ok((capabilities, YesNo::try_from(more_data)?.into()))
         } else {
             error!("Error when getting capabilities: {}", ret);
             Err(ret)

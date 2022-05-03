@@ -4,12 +4,11 @@ use crate::{
     handles::KeyHandle,
     structures::Data,
     structures::{EccPoint, PublicKeyRsa, RsaDecryptionScheme},
-    tss2_esys::*,
+    tss2_esys::{Esys_ECDH_KeyGen, Esys_ECDH_ZGen, Esys_RSA_Decrypt, Esys_RSA_Encrypt},
     Context, Error, Result,
 };
 use log::error;
-use std::convert::TryFrom;
-use std::convert::TryInto;
+use std::convert::{TryFrom, TryInto};
 use std::ptr::null_mut;
 
 impl Context {
@@ -21,7 +20,7 @@ impl Context {
         in_scheme: RsaDecryptionScheme,
         label: Data,
     ) -> Result<PublicKeyRsa> {
-        let mut out_data = null_mut();
+        let mut out_data_ptr = null_mut();
         let ret = unsafe {
             Esys_RSA_Encrypt(
                 self.mut_context(),
@@ -32,13 +31,13 @@ impl Context {
                 &message.into(),
                 &in_scheme.into(),
                 &label.into(),
-                &mut out_data,
+                &mut out_data_ptr,
             )
         };
         let ret = Error::from_tss_rc(ret);
 
         if ret.is_success() {
-            let data = unsafe { PublicKeyRsa::try_from(*out_data)? };
+            let data = unsafe { PublicKeyRsa::try_from(*out_data_ptr)? };
             Ok(data)
         } else {
             error!("Error when performing RSA encryption: {}", ret);
@@ -54,7 +53,7 @@ impl Context {
         in_scheme: RsaDecryptionScheme,
         label: Data,
     ) -> Result<PublicKeyRsa> {
-        let mut message = null_mut();
+        let mut message_ptr = null_mut();
         let ret = unsafe {
             Esys_RSA_Decrypt(
                 self.mut_context(),
@@ -65,13 +64,13 @@ impl Context {
                 &cipher_text.into(),
                 &in_scheme.into(),
                 &label.into(),
-                &mut message,
+                &mut message_ptr,
             )
         };
         let ret = Error::from_tss_rc(ret);
 
         if ret.is_success() {
-            let data = unsafe { PublicKeyRsa::try_from(*message)? };
+            let data = unsafe { PublicKeyRsa::try_from(*message_ptr)? };
             Ok(data)
         } else {
             error!("Error when performing RSA decryption: {}", ret);
@@ -186,8 +185,8 @@ impl Context {
     /// let (z_point, pub_point) = context.ecdh_key_gen(key_handle).unwrap();
     /// ```
     pub fn ecdh_key_gen(&mut self, key_handle: KeyHandle) -> Result<(EccPoint, EccPoint)> {
-        let mut z_point = null_mut();
-        let mut pub_point = null_mut();
+        let mut z_point_ptr = null_mut();
+        let mut pub_point_ptr = null_mut();
         let ret = unsafe {
             Esys_ECDH_KeyGen(
                 self.mut_context(),
@@ -195,15 +194,20 @@ impl Context {
                 self.optional_session_1(),
                 self.optional_session_2(),
                 self.optional_session_3(),
-                &mut z_point,
-                &mut pub_point,
+                &mut z_point_ptr,
+                &mut pub_point_ptr,
             )
         };
 
         let ret = Error::from_tss_rc(ret);
 
         if ret.is_success() {
-            Ok(unsafe { ((*z_point).point.try_into()?, (*pub_point).point.try_into()?) })
+            Ok(unsafe {
+                (
+                    (*z_point_ptr).point.try_into()?,
+                    (*pub_point_ptr).point.try_into()?,
+                )
+            })
         } else {
             error!("Error when generating ECDH keypair: {}", ret);
             Err(ret)
@@ -320,7 +324,7 @@ impl Context {
     /// assert_eq!(z_point.x().value(), z_point_gen.x().value());
     /// ```
     pub fn ecdh_z_gen(&mut self, key_handle: KeyHandle, in_point: EccPoint) -> Result<EccPoint> {
-        let mut point = null_mut();
+        let mut out_point_ptr = null_mut();
         let ret = unsafe {
             Esys_ECDH_ZGen(
                 self.mut_context(),
@@ -329,13 +333,13 @@ impl Context {
                 self.optional_session_2(),
                 self.optional_session_3(),
                 &in_point.into(),
-                &mut point,
+                &mut out_point_ptr,
             )
         };
         let ret = Error::from_tss_rc(ret);
 
         if ret.is_success() {
-            Ok(unsafe { (*point).point.try_into()? })
+            Ok(unsafe { (*out_point_ptr).point.try_into()? })
         } else {
             error!("Error when performing ECDH ZGen: {}", ret);
             Err(ret)

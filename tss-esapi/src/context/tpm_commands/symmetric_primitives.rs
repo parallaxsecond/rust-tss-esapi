@@ -7,7 +7,7 @@ use crate::{
         resource_handles::Hierarchy,
     },
     structures::{Digest, HashcheckTicket, InitialValue, MaxBuffer},
-    tss2_esys::*,
+    tss2_esys::{Esys_EncryptDecrypt2, Esys_HMAC, Esys_Hash},
     Context, Error, Result,
 };
 use log::error;
@@ -192,8 +192,8 @@ impl Context {
         in_data: MaxBuffer,
         initial_value_in: InitialValue,
     ) -> Result<(MaxBuffer, InitialValue)> {
-        let mut data_out_ptr = null_mut();
-        let mut initial_value_out_ptr = null_mut();
+        let mut out_data_ptr = null_mut();
+        let mut iv_out_ptr = null_mut();
         let ret = unsafe {
             Esys_EncryptDecrypt2(
                 self.mut_context(),
@@ -205,19 +205,18 @@ impl Context {
                 decrypt.into(),
                 mode.into(),
                 &initial_value_in.into(),
-                &mut data_out_ptr,
-                &mut initial_value_out_ptr,
+                &mut out_data_ptr,
+                &mut iv_out_ptr,
             )
         };
 
         let ret = Error::from_tss_rc(ret);
         if ret.is_success() {
-            let tss_data_out = unsafe { MBox::<TPM2B_MAX_BUFFER>::from_raw(data_out_ptr) };
-            let tss_initial_value_out =
-                unsafe { MBox::<TPM2B_IV>::from_raw(initial_value_out_ptr) };
+            let data_out = unsafe { MBox::from_raw(out_data_ptr) };
+            let iv_out = unsafe { MBox::from_raw(iv_out_ptr) };
             Ok((
-                MaxBuffer::try_from(*tss_data_out)?,
-                InitialValue::try_from(*tss_initial_value_out)?,
+                MaxBuffer::try_from(*data_out)?,
+                InitialValue::try_from(*iv_out)?,
             ))
         } else {
             error!(
@@ -294,8 +293,8 @@ impl Context {
         };
         let ret = Error::from_tss_rc(ret);
         if ret.is_success() {
-            let out_hash = unsafe { MBox::<TPM2B_DIGEST>::from_raw(out_hash_ptr) };
-            let validation = unsafe { MBox::<TPMT_TK_HASHCHECK>::from_raw(validation_ptr) };
+            let out_hash = unsafe { MBox::from_raw(out_hash_ptr) };
+            let validation = unsafe { MBox::from_raw(validation_ptr) };
             Ok((
                 Digest::try_from(*out_hash)?,
                 HashcheckTicket::try_from(*validation)?,
@@ -362,8 +361,7 @@ impl Context {
         buffer: MaxBuffer,
         alg_hash: HashingAlgorithm,
     ) -> Result<Digest> {
-        let mut out_digest = null_mut();
-
+        let mut out_hmac_ptr = null_mut();
         let ret = unsafe {
             Esys_HMAC(
                 self.mut_context(),
@@ -373,14 +371,14 @@ impl Context {
                 self.optional_session_3(),
                 &buffer.into(),
                 alg_hash.into(),
-                &mut out_digest,
+                &mut out_hmac_ptr,
             )
         };
         let ret = Error::from_tss_rc(ret);
 
         if ret.is_success() {
-            let out_digest = unsafe { MBox::from_raw(out_digest) };
-            Ok(Digest::try_from(*out_digest)?)
+            let out_hmac = unsafe { MBox::from_raw(out_hmac_ptr) };
+            Ok(Digest::try_from(*out_hmac)?)
         } else {
             error!("Error in hmac: {}", ret);
             Err(ret)

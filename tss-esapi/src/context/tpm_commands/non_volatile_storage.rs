@@ -2,10 +2,12 @@
 // SPDX-License-Identifier: Apache-2.0
 use crate::{
     context::handle_manager::HandleDropAction,
-    handles::{AuthHandle, NvIndexHandle},
+    handles::{AuthHandle, NvIndexHandle, ObjectHandle},
     interface_types::resource_handles::{NvAuth, Provision},
     structures::{Auth, MaxNvBuffer, Name, NvPublic},
-    tss2_esys::*,
+    tss2_esys::{
+        Esys_NV_DefineSpace, Esys_NV_Read, Esys_NV_ReadPublic, Esys_NV_UndefineSpace, Esys_NV_Write,
+    },
     Context, Error, Result,
 };
 use log::error;
@@ -30,7 +32,7 @@ impl Context {
         auth: Option<Auth>,
         public_info: NvPublic,
     ) -> Result<NvIndexHandle> {
-        let mut object_identifier: ESYS_TR = ESYS_TR_NONE;
+        let mut nv_handle = ObjectHandle::None.into();
         let ret = unsafe {
             Esys_NV_DefineSpace(
                 self.mut_context(),
@@ -40,14 +42,14 @@ impl Context {
                 self.optional_session_3(),
                 &auth.unwrap_or_default().into(),
                 &public_info.try_into()?,
-                &mut object_identifier,
+                &mut nv_handle,
             )
         };
         let ret = Error::from_tss_rc(ret);
         if ret.is_success() {
             self.handle_manager
-                .add_handle(object_identifier.into(), HandleDropAction::Close)?;
-            Ok(NvIndexHandle::from(object_identifier))
+                .add_handle(nv_handle.into(), HandleDropAction::Close)?;
+            Ok(NvIndexHandle::from(nv_handle))
         } else {
             error!("Error when defining NV space: {}", ret);
             Err(ret)
@@ -98,8 +100,8 @@ impl Context {
     /// This method is used to read the public
     /// area and name of a nv index.
     pub fn nv_read_public(&mut self, nv_index_handle: NvIndexHandle) -> Result<(NvPublic, Name)> {
-        let mut tss_nv_public_ptr = null_mut();
-        let mut tss_nv_name_ptr = null_mut();
+        let mut nv_public_ptr = null_mut();
+        let mut nv_name_ptr = null_mut();
         let ret = unsafe {
             Esys_NV_ReadPublic(
                 self.mut_context(),
@@ -107,18 +109,15 @@ impl Context {
                 self.optional_session_1(),
                 self.optional_session_2(),
                 self.optional_session_3(),
-                &mut tss_nv_public_ptr,
-                &mut tss_nv_name_ptr,
+                &mut nv_public_ptr,
+                &mut nv_name_ptr,
             )
         };
         let ret = Error::from_tss_rc(ret);
         if ret.is_success() {
-            let tss_nv_public = unsafe { MBox::<TPM2B_NV_PUBLIC>::from_raw(tss_nv_public_ptr) };
-            let tss_nv_name = unsafe { MBox::<TPM2B_NAME>::from_raw(tss_nv_name_ptr) };
-            Ok((
-                NvPublic::try_from(*tss_nv_public)?,
-                Name::try_from(*tss_nv_name)?,
-            ))
+            let nv_public = unsafe { MBox::from_raw(nv_public_ptr) };
+            let nv_name = unsafe { MBox::from_raw(nv_name_ptr) };
+            Ok((NvPublic::try_from(*nv_public)?, Name::try_from(*nv_name)?))
         } else {
             error!("Error when reading NV public: {}", ret);
             Err(ret)
@@ -176,7 +175,7 @@ impl Context {
         size: u16,
         offset: u16,
     ) -> Result<MaxNvBuffer> {
-        let mut tss_max_nv_buffer_ptr = null_mut();
+        let mut data_ptr = null_mut();
         let ret = unsafe {
             Esys_NV_Read(
                 self.mut_context(),
@@ -187,14 +186,13 @@ impl Context {
                 self.optional_session_3(),
                 size,
                 offset,
-                &mut tss_max_nv_buffer_ptr,
+                &mut data_ptr,
             )
         };
         let ret = Error::from_tss_rc(ret);
         if ret.is_success() {
-            let tss_max_nv_buffer =
-                unsafe { MBox::<TPM2B_MAX_NV_BUFFER>::from_raw(tss_max_nv_buffer_ptr) };
-            Ok(MaxNvBuffer::try_from(*tss_max_nv_buffer)?)
+            let data = unsafe { MBox::from_raw(data_ptr) };
+            Ok(MaxNvBuffer::try_from(*data)?)
         } else {
             error!("Error when reading NV: {}", ret);
             Err(ret)

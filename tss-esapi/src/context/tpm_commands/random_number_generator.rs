@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 use crate::{
     structures::{Digest, SensitiveData},
-    tss2_esys::*,
+    tss2_esys::{Esys_GetRandom, Esys_StirRandom},
     Context, Error, Result, WrapperErrorKind as ErrorKind,
 };
 use log::error;
@@ -16,7 +16,7 @@ impl Context {
     /// # Errors
     /// * if converting `num_bytes` to `u16` fails, a `WrongParamSize` will be returned
     pub fn get_random(&mut self, num_bytes: usize) -> Result<Digest> {
-        let mut buffer = null_mut();
+        let mut random_bytes_ptr = null_mut();
         let ret = unsafe {
             Esys_GetRandom(
                 self.mut_context(),
@@ -26,13 +26,13 @@ impl Context {
                 num_bytes
                     .try_into()
                     .map_err(|_| Error::local_error(ErrorKind::WrongParamSize))?,
-                &mut buffer,
+                &mut random_bytes_ptr,
             )
         };
 
         let ret = Error::from_tss_rc(ret);
         if ret.is_success() {
-            let buffer = unsafe { MBox::from_raw(buffer) };
+            let buffer = unsafe { MBox::from_raw(random_bytes_ptr) };
             let mut random = buffer.buffer.to_vec();
             random.truncate(buffer.size.try_into().unwrap()); // should not panic given the TryInto above
             Ok(Digest::try_from(random)?)

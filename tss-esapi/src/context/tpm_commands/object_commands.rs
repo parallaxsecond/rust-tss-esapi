@@ -8,7 +8,11 @@ use crate::{
         Auth, CreateKeyResult, CreationData, CreationTicket, Data, Digest, EncryptedSecret,
         IdObject, Name, PcrSelectionList, Private, Public, Sensitive, SensitiveData,
     },
-    tss2_esys::*,
+    tss2_esys::{
+        Esys_ActivateCredential, Esys_Create, Esys_Load, Esys_LoadExternal, Esys_MakeCredential,
+        Esys_ObjectChangeAuth, Esys_ReadPublic, Esys_Unseal, TPM2B_SENSITIVE_CREATE,
+        TPMS_SENSITIVE_CREATE,
+    },
     Context, Error, Result,
 };
 use log::error;
@@ -109,7 +113,7 @@ impl Context {
         private: Private,
         public: Public,
     ) -> Result<KeyHandle> {
-        let mut esys_key_handle = ESYS_TR_NONE;
+        let mut object_handle = ObjectHandle::None.into();
         let ret = unsafe {
             Esys_Load(
                 self.mut_context(),
@@ -119,12 +123,12 @@ impl Context {
                 self.optional_session_3(),
                 &private.into(),
                 &public.try_into()?,
-                &mut esys_key_handle,
+                &mut object_handle,
             )
         };
         let ret = Error::from_tss_rc(ret);
         if ret.is_success() {
-            let key_handle = KeyHandle::from(esys_key_handle);
+            let key_handle = KeyHandle::from(object_handle);
             self.handle_manager
                 .add_handle(key_handle.into(), HandleDropAction::Flush)?;
             Ok(key_handle)
@@ -141,7 +145,7 @@ impl Context {
         public: Public,
         hierarchy: Hierarchy,
     ) -> Result<KeyHandle> {
-        let mut esys_key_handle = ESYS_TR_NONE;
+        let mut object_handle = ObjectHandle::None.into();
         let ret = unsafe {
             Esys_LoadExternal(
                 self.mut_context(),
@@ -155,14 +159,14 @@ impl Context {
                 } else {
                     TpmHandle::from(hierarchy).into()
                 },
-                &mut esys_key_handle,
+                &mut object_handle,
             )
         };
 
         let ret = Error::from_tss_rc(ret);
 
         if ret.is_success() {
-            let key_handle = KeyHandle::from(esys_key_handle);
+            let key_handle = KeyHandle::from(object_handle);
             self.handle_manager
                 .add_handle(key_handle.into(), HandleDropAction::Flush)?;
             Ok(key_handle)
@@ -178,7 +182,7 @@ impl Context {
         public: Public,
         hierarchy: Hierarchy,
     ) -> Result<KeyHandle> {
-        let mut esys_key_handle = ESYS_TR_NONE;
+        let mut object_handle = ObjectHandle::None.into();
         let ret = unsafe {
             Esys_LoadExternal(
                 self.mut_context(),
@@ -192,14 +196,14 @@ impl Context {
                 } else {
                     TpmHandle::from(hierarchy).into()
                 },
-                &mut esys_key_handle,
+                &mut object_handle,
             )
         };
 
         let ret = Error::from_tss_rc(ret);
 
         if ret.is_success() {
-            let key_handle = KeyHandle::from(esys_key_handle);
+            let key_handle = KeyHandle::from(object_handle);
             self.handle_manager
                 .add_handle(key_handle.into(), HandleDropAction::Flush)?;
             Ok(key_handle)
@@ -212,8 +216,8 @@ impl Context {
     /// Read the public part of a key currently in the TPM and return it.
     pub fn read_public(&mut self, key_handle: KeyHandle) -> Result<(Public, Name, Name)> {
         let mut out_public_ptr = null_mut();
-        let mut out_name_ptr = null_mut();
-        let mut out_qualified_name_ptr = null_mut();
+        let mut name_ptr = null_mut();
+        let mut qualified_name_ptr = null_mut();
         let ret = unsafe {
             Esys_ReadPublic(
                 self.mut_context(),
@@ -222,16 +226,16 @@ impl Context {
                 self.optional_session_2(),
                 self.optional_session_3(),
                 &mut out_public_ptr,
-                &mut out_name_ptr,
-                &mut out_qualified_name_ptr,
+                &mut name_ptr,
+                &mut qualified_name_ptr,
             )
         };
         let ret = Error::from_tss_rc(ret);
 
         if ret.is_success() {
-            let out_name_owned = unsafe { MBox::from_raw(out_name_ptr) };
-            let out_qualified_name_owned = unsafe { MBox::from_raw(out_qualified_name_ptr) };
-            let out_public_owned = unsafe { MBox::<TPM2B_PUBLIC>::from_raw(out_public_ptr) };
+            let out_name_owned = unsafe { MBox::from_raw(name_ptr) };
+            let out_qualified_name_owned = unsafe { MBox::from_raw(qualified_name_ptr) };
+            let out_public_owned = unsafe { MBox::from_raw(out_public_ptr) };
 
             Ok((
                 Public::try_from(*out_public_owned)?,
@@ -252,7 +256,7 @@ impl Context {
         credential_blob: IdObject,
         secret: EncryptedSecret,
     ) -> Result<Digest> {
-        let mut out_cert_info_ptr = null_mut();
+        let mut cert_info_ptr = null_mut();
         let ret = unsafe {
             Esys_ActivateCredential(
                 self.mut_context(),
@@ -263,14 +267,14 @@ impl Context {
                 self.optional_session_3(),
                 &credential_blob.into(),
                 &secret.into(),
-                &mut out_cert_info_ptr,
+                &mut cert_info_ptr,
             )
         };
 
         let ret = Error::from_tss_rc(ret);
 
         if ret.is_success() {
-            let out_cert_info_owned = unsafe { MBox::<TPM2B_DIGEST>::from_raw(out_cert_info_ptr) };
+            let out_cert_info_owned = unsafe { MBox::from_raw(cert_info_ptr) };
 
             Ok(Digest::try_from(*out_cert_info_owned)?)
         } else {
@@ -288,8 +292,8 @@ impl Context {
         credential: Digest,
         object_name: Name,
     ) -> Result<(IdObject, EncryptedSecret)> {
-        let mut out_credential_blob = null_mut();
-        let mut out_secret = null_mut();
+        let mut credential_blob_ptr = null_mut();
+        let mut secret_ptr = null_mut();
         let ret = unsafe {
             Esys_MakeCredential(
                 self.mut_context(),
@@ -299,17 +303,16 @@ impl Context {
                 self.optional_session_3(),
                 &credential.into(),
                 object_name.as_ref(),
-                &mut out_credential_blob,
-                &mut out_secret,
+                &mut credential_blob_ptr,
+                &mut secret_ptr,
             )
         };
 
         let ret = Error::from_tss_rc(ret);
 
         if ret.is_success() {
-            let out_credential_blob =
-                unsafe { MBox::<TPM2B_ID_OBJECT>::from_raw(out_credential_blob) };
-            let out_secret = unsafe { MBox::<TPM2B_ENCRYPTED_SECRET>::from_raw(out_secret) };
+            let out_credential_blob = unsafe { MBox::from_raw(credential_blob_ptr) };
+            let out_secret = unsafe { MBox::from_raw(secret_ptr) };
 
             Ok((
                 IdObject::try_from(*out_credential_blob)?,
@@ -323,7 +326,7 @@ impl Context {
 
     /// Unseal and return data from a Sealed Data Object
     pub fn unseal(&mut self, item_handle: ObjectHandle) -> Result<SensitiveData> {
-        let mut out_data = null_mut();
+        let mut out_data_ptr = null_mut();
 
         let ret = unsafe {
             Esys_Unseal(
@@ -332,13 +335,13 @@ impl Context {
                 self.optional_session_1(),
                 self.optional_session_2(),
                 self.optional_session_3(),
-                &mut out_data,
+                &mut out_data_ptr,
             )
         };
         let ret = Error::from_tss_rc(ret);
 
         if ret.is_success() {
-            let out_data = unsafe { MBox::from_raw(out_data) };
+            let out_data = unsafe { MBox::from_raw(out_data_ptr) };
             Ok(SensitiveData::try_from(*out_data)?)
         } else {
             error!("Error in unsealing: {}", ret);
@@ -353,7 +356,7 @@ impl Context {
         parent_handle: ObjectHandle,
         new_auth: Auth,
     ) -> Result<Private> {
-        let mut out_private = null_mut();
+        let mut out_private_ptr = null_mut();
         let ret = unsafe {
             Esys_ObjectChangeAuth(
                 self.mut_context(),
@@ -363,12 +366,12 @@ impl Context {
                 self.optional_session_2(),
                 self.optional_session_3(),
                 &new_auth.into(),
-                &mut out_private,
+                &mut out_private_ptr,
             )
         };
         let ret = Error::from_tss_rc(ret);
         if ret.is_success() {
-            let out_private = unsafe { MBox::from_raw(out_private) };
+            let out_private = unsafe { MBox::from_raw(out_private_ptr) };
             let out_private = Private::try_from(*out_private)?;
             Ok(out_private)
         } else {

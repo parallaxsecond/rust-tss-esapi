@@ -4,12 +4,18 @@ use crate::{
     attributes::LocalityAttributes,
     constants::CommandCode,
     handles::{AuthHandle, ObjectHandle, SessionHandle},
-    interface_types::session_handles::PolicySession,
+    interface_types::{session_handles::PolicySession, YesNo},
     structures::{
         AuthTicket, Digest, DigestList, Name, Nonce, PcrSelectionList, Signature, Timeout,
         VerifiedTicket,
     },
-    tss2_esys::*,
+    tss2_esys::{
+        Esys_PolicyAuthValue, Esys_PolicyAuthorize, Esys_PolicyCommandCode, Esys_PolicyCpHash,
+        Esys_PolicyDuplicationSelect, Esys_PolicyGetDigest, Esys_PolicyLocality,
+        Esys_PolicyNameHash, Esys_PolicyNvWritten, Esys_PolicyOR, Esys_PolicyPCR,
+        Esys_PolicyPassword, Esys_PolicyPhysicalPresence, Esys_PolicySecret, Esys_PolicySigned,
+        Esys_PolicyTemplate,
+    },
     Context, Error, Result, WrapperErrorKind as ErrorKind,
 };
 use log::error;
@@ -31,16 +37,8 @@ impl Context {
         expiration: Option<Duration>,
         signature: Signature,
     ) -> Result<(Timeout, AuthTicket)> {
-        let mut out_timeout = null_mut();
-        let mut out_policy_ticket = null_mut();
-        let expiration = match expiration {
-            None => 0,
-            Some(val) => match i32::try_from(val.as_secs()) {
-                Ok(val) => val,
-                Err(_) => return Err(Error::local_error(ErrorKind::InvalidParam)),
-            },
-        };
-
+        let mut out_timeout_ptr = null_mut();
+        let mut out_policy_ticket_ptr = null_mut();
         let ret = unsafe {
             Esys_PolicySigned(
                 self.mut_context(),
@@ -52,17 +50,20 @@ impl Context {
                 &nonce_tpm.into(),
                 &cp_hash_a.into(),
                 &policy_ref.into(),
-                expiration,
+                i32::try_from(expiration.map_or(0, |v| v.as_secs())).map_err(|e| {
+                    error!("Unable to convert duration to i32: {}", e);
+                    Error::local_error(ErrorKind::InvalidParam)
+                })?,
                 &signature.try_into()?,
-                &mut out_timeout,
-                &mut out_policy_ticket,
+                &mut out_timeout_ptr,
+                &mut out_policy_ticket_ptr,
             )
         };
         let ret = Error::from_tss_rc(ret);
         if ret.is_success() {
-            let out_timeout = unsafe { MBox::from_raw(out_timeout) };
+            let out_timeout = unsafe { MBox::from_raw(out_timeout_ptr) };
             let out_timeout = Timeout::try_from(*out_timeout)?;
-            let out_policy_ticket = unsafe { MBox::from_raw(out_policy_ticket) };
+            let out_policy_ticket = unsafe { MBox::from_raw(out_policy_ticket_ptr) };
             let out_policy_ticket = AuthTicket::try_from(*out_policy_ticket)?;
 
             Ok((out_timeout, out_policy_ticket))
@@ -82,16 +83,8 @@ impl Context {
         policy_ref: Nonce,
         expiration: Option<Duration>,
     ) -> Result<(Timeout, AuthTicket)> {
-        let mut out_timeout = null_mut();
-        let mut out_policy_ticket = null_mut();
-        let expiration = match expiration {
-            None => 0,
-            Some(val) => match i32::try_from(val.as_secs()) {
-                Ok(val) => val,
-                Err(_) => return Err(Error::local_error(ErrorKind::InvalidParam)),
-            },
-        };
-
+        let mut out_timeout_ptr = null_mut();
+        let mut out_policy_ticket_ptr = null_mut();
         let ret = unsafe {
             Esys_PolicySecret(
                 self.mut_context(),
@@ -103,16 +96,19 @@ impl Context {
                 &nonce_tpm.into(),
                 &cp_hash_a.into(),
                 &policy_ref.into(),
-                expiration,
-                &mut out_timeout,
-                &mut out_policy_ticket,
+                i32::try_from(expiration.map_or(0, |v| v.as_secs())).map_err(|e| {
+                    error!("Unable to convert duration to i32: {}", e);
+                    Error::local_error(ErrorKind::InvalidParam)
+                })?,
+                &mut out_timeout_ptr,
+                &mut out_policy_ticket_ptr,
             )
         };
         let ret = Error::from_tss_rc(ret);
         if ret.is_success() {
-            let out_timeout = unsafe { MBox::from_raw(out_timeout) };
+            let out_timeout = unsafe { MBox::from_raw(out_timeout_ptr) };
             let out_timeout = Timeout::try_from(*out_timeout)?;
-            let out_policy_ticket = unsafe { MBox::from_raw(out_policy_ticket) };
+            let out_policy_ticket = unsafe { MBox::from_raw(out_policy_ticket_ptr) };
             let out_policy_ticket = AuthTicket::try_from(*out_policy_ticket)?;
 
             Ok((out_timeout, out_policy_ticket))
@@ -156,7 +152,7 @@ impl Context {
                 self.optional_session_1(),
                 self.optional_session_2(),
                 self.optional_session_3(),
-                &TPML_DIGEST::try_from(digest_list)?,
+                &digest_list.try_into()?,
             )
         };
         let ret = Error::from_tss_rc(ret);
@@ -466,7 +462,6 @@ impl Context {
         key_sign: &Name,
         check_ticket: VerifiedTicket,
     ) -> Result<()> {
-        let check_ticket = TPMT_TK_VERIFIED::try_from(check_ticket)?;
         let ret = unsafe {
             Esys_PolicyAuthorize(
                 self.mut_context(),
@@ -477,7 +472,7 @@ impl Context {
                 &approved_policy.into(),
                 &policy_ref.into(),
                 key_sign.as_ref(),
-                &check_ticket,
+                &check_ticket.try_into()?,
             )
         };
         let ret = Error::from_tss_rc(ret);
@@ -551,7 +546,7 @@ impl Context {
         };
         let ret = Error::from_tss_rc(ret);
         if ret.is_success() {
-            let policy_digest = unsafe { MBox::<TPM2B_DIGEST>::from_raw(policy_digest_ptr) };
+            let policy_digest = unsafe { MBox::from_raw(policy_digest_ptr) };
             Ok(Digest::try_from(*policy_digest)?)
         } else {
             error!(
@@ -577,7 +572,7 @@ impl Context {
                 self.optional_session_1(),
                 self.optional_session_2(),
                 self.optional_session_3(),
-                if written_set { 1 } else { 0 },
+                YesNo::from(written_set).into(),
             )
         };
         let ret = Error::from_tss_rc(ret);
