@@ -4,7 +4,7 @@ use crate::{
     attributes::{SessionAttributes, SessionAttributesMask},
     handles::SessionHandle,
     interface_types::session_handles::AuthSession,
-    tss2_esys::{Esys_TRSess_GetAttributes, Esys_TRSess_SetAttributes, TPMA_SESSION},
+    tss2_esys::{Esys_TRSess_GetAttributes, Esys_TRSess_SetAttributes},
     Context, Error, Result,
 };
 use log::error;
@@ -36,7 +36,7 @@ impl Context {
 
     /// Get session attribute flags.
     pub fn tr_sess_get_attributes(&mut self, session: AuthSession) -> Result<SessionAttributes> {
-        let mut flags: TPMA_SESSION = 0;
+        let mut flags = 0;
         let ret = unsafe {
             Esys_TRSess_GetAttributes(
                 self.mut_context(),

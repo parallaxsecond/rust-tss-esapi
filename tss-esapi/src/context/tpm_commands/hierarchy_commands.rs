@@ -3,16 +3,18 @@
 use crate::{
     context::handle_manager::HandleDropAction,
     handles::{AuthHandle, KeyHandle, ObjectHandle},
-    interface_types::resource_handles::Hierarchy,
+    interface_types::{resource_handles::Hierarchy, YesNo},
     structures::{
         Auth, CreatePrimaryKeyResult, CreationData, CreationTicket, Data, Digest, PcrSelectionList,
         Public, SensitiveData,
     },
-    tss2_esys::*,
+    tss2_esys::{
+        Esys_Clear, Esys_ClearControl, Esys_CreatePrimary, Esys_HierarchyChangeAuth,
+        TPM2B_SENSITIVE_CREATE, TPMS_SENSITIVE_CREATE,
+    },
     Context, Error, Result,
 };
 use log::error;
-use mbox::MBox;
 use std::convert::{TryFrom, TryInto};
 use std::ptr::null_mut;
 
@@ -51,7 +53,7 @@ impl Context {
         let mut creation_data_ptr = null_mut();
         let mut creation_hash_ptr = null_mut();
         let mut creation_ticket_ptr = null_mut();
-        let mut esys_prim_key_handle = ESYS_TR_NONE;
+        let mut object_handle = ObjectHandle::None.into();
 
         let ret = unsafe {
             Esys_CreatePrimary(
@@ -64,7 +66,7 @@ impl Context {
                 &public.try_into()?,
                 &outside_info.unwrap_or_default().into(),
                 &creation_pcrs.into(),
-                &mut esys_prim_key_handle,
+                &mut object_handle,
                 &mut out_public_ptr,
                 &mut creation_data_ptr,
                 &mut creation_hash_ptr,
@@ -74,20 +76,20 @@ impl Context {
         let ret = Error::from_tss_rc(ret);
 
         if ret.is_success() {
-            let out_public_owned = unsafe { MBox::from_raw(out_public_ptr) };
-            let creation_data_owned = unsafe { MBox::from_raw(creation_data_ptr) };
-            let creation_hash_owned = unsafe { MBox::from_raw(creation_hash_ptr) };
-            let creation_ticket_owned = unsafe { MBox::from_raw(creation_ticket_ptr) };
-
-            let primary_key_handle = KeyHandle::from(esys_prim_key_handle);
+            let out_public_owned = Context::ffi_data_to_owned(out_public_ptr);
+            let creation_data_owned = Context::ffi_data_to_owned(creation_data_ptr);
+            let creation_hash_owned = Context::ffi_data_to_owned(creation_hash_ptr);
+            let creation_ticket_owned = Context::ffi_data_to_owned(creation_ticket_ptr);
+            let primary_key_handle = KeyHandle::from(object_handle);
             self.handle_manager
                 .add_handle(primary_key_handle.into(), HandleDropAction::Flush)?;
+
             Ok(CreatePrimaryKeyResult {
                 key_handle: primary_key_handle,
-                out_public: Public::try_from(*out_public_owned)?,
-                creation_data: CreationData::try_from(*creation_data_owned)?,
-                creation_hash: Digest::try_from(*creation_hash_owned)?,
-                creation_ticket: CreationTicket::try_from(*creation_ticket_owned)?,
+                out_public: Public::try_from(out_public_owned)?,
+                creation_data: CreationData::try_from(creation_data_owned)?,
+                creation_hash: Digest::try_from(creation_hash_owned)?,
+                creation_ticket: CreationTicket::try_from(creation_ticket_owned)?,
             })
         } else {
             error!("Error in creating primary key: {}", ret);
@@ -130,7 +132,7 @@ impl Context {
                 self.required_session_1()?,
                 self.optional_session_2(),
                 self.optional_session_3(),
-                if disable { 1 } else { 0 },
+                YesNo::from(disable).into(),
             )
         };
         let ret = Error::from_tss_rc(ret);

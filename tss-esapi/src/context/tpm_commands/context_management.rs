@@ -4,12 +4,11 @@ use crate::{
     context::handle_manager::HandleDropAction,
     handles::{handle_conversion::TryIntoNotNone, AuthHandle, ObjectHandle, PersistentTpmHandle},
     interface_types::{dynamic_handles::Persistent, resource_handles::Provision},
-    tss2_esys::*,
+    tss2_esys::{Esys_ContextLoad, Esys_ContextSave, Esys_EvictControl, Esys_FlushContext},
     utils::TpmsContext,
     Context, Error, Result,
 };
 use log::error;
-use mbox::MBox;
 use std::convert::{TryFrom, TryInto};
 use std::ptr::null_mut;
 
@@ -20,13 +19,11 @@ impl Context {
     /// * if conversion from `TPMS_CONTEXT` to `TpmsContext` fails, a `WrongParamSize` error will
     /// be returned
     pub fn context_save(&mut self, handle: ObjectHandle) -> Result<TpmsContext> {
-        let mut context = null_mut();
-        let ret = unsafe { Esys_ContextSave(self.mut_context(), handle.into(), &mut context) };
-
+        let mut context_ptr = null_mut();
+        let ret = unsafe { Esys_ContextSave(self.mut_context(), handle.into(), &mut context_ptr) };
         let ret = Error::from_tss_rc(ret);
         if ret.is_success() {
-            let context = unsafe { MBox::<TPMS_CONTEXT>::from_raw(context) };
-            Ok((*context).try_into()?)
+            TpmsContext::try_from(Context::ffi_data_to_owned(context_ptr))
         } else {
             error!("Error in saving context: {}", ret);
             Err(ret)
@@ -39,21 +36,15 @@ impl Context {
     /// * if conversion from `TpmsContext` to the native `TPMS_CONTEXT` fails, a `WrongParamSize`
     /// error will be returned
     pub fn context_load(&mut self, context: TpmsContext) -> Result<ObjectHandle> {
-        let mut esys_handle = ESYS_TR_NONE;
+        let mut loaded_handle = ObjectHandle::None.into();
         let ret = unsafe {
-            Esys_ContextLoad(
-                self.mut_context(),
-                &TPMS_CONTEXT::try_from(context)?,
-                &mut esys_handle,
-            )
+            Esys_ContextLoad(self.mut_context(), &context.try_into()?, &mut loaded_handle)
         };
-
         let ret = Error::from_tss_rc(ret);
         if ret.is_success() {
-            let object_handle = ObjectHandle::from(esys_handle);
             self.handle_manager
-                .add_handle(object_handle, HandleDropAction::Flush)?;
-            Ok(object_handle)
+                .add_handle(loaded_handle.into(), HandleDropAction::Flush)?;
+            Ok(loaded_handle.into())
         } else {
             error!("Error in loading context: {}", ret);
             Err(ret)
@@ -423,7 +414,7 @@ impl Context {
         object_handle: ObjectHandle,
         persistent: Persistent,
     ) -> Result<ObjectHandle> {
-        let mut esys_object_handle: ESYS_TR = ESYS_TR_NONE;
+        let mut new_object_handle = ObjectHandle::None.into();
         let ret = unsafe {
             Esys_EvictControl(
                 self.mut_context(),
@@ -433,22 +424,21 @@ impl Context {
                 self.optional_session_2(),
                 self.optional_session_3(),
                 PersistentTpmHandle::from(persistent).into(),
-                &mut esys_object_handle,
+                &mut new_object_handle,
             )
         };
         let ret = Error::from_tss_rc(ret);
         if ret.is_success() {
-            let new_object_handle = ObjectHandle::from(esys_object_handle);
+            let new_object_handle = ObjectHandle::from(new_object_handle);
             // If you look at the specification and see that it says ESYS_TR_NULL
             // then that is an error in the spec. ESYS_TR_NULL was renamed to
             // ESYS_TR NONE.
-            if !new_object_handle.is_none() {
+            if new_object_handle.is_none() {
+                self.handle_manager.set_as_closed(object_handle)?;
+            } else {
                 self.handle_manager
                     .add_handle(new_object_handle, HandleDropAction::Close)?;
-            } else {
-                self.handle_manager.set_as_closed(object_handle)?;
             }
-
             Ok(new_object_handle)
         } else {
             error!("Error in evict control: {}", ret);

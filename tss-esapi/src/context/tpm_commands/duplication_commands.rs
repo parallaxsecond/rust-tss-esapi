@@ -4,7 +4,7 @@ use crate::Context;
 use crate::{
     handles::ObjectHandle,
     structures::{Data, EncryptedSecret, Private, Public, SymmetricDefinitionObject},
-    tss2_esys::*,
+    tss2_esys::{Esys_Duplicate, Esys_Import},
     Error, Result,
 };
 use log::error;
@@ -302,9 +302,9 @@ impl Context {
         encryption_key_in: Option<Data>,
         symmetric_alg: SymmetricDefinitionObject,
     ) -> Result<(Data, Private, EncryptedSecret)> {
-        let mut encryption_key_out = null_mut();
-        let mut duplicate = null_mut();
-        let mut out_sym_seed = null_mut();
+        let mut encryption_key_out_ptr = null_mut();
+        let mut duplicate_ptr = null_mut();
+        let mut out_sym_seed_ptr = null_mut();
         let ret = unsafe {
             Esys_Duplicate(
                 self.mut_context(),
@@ -315,18 +315,19 @@ impl Context {
                 self.optional_session_3(),
                 &encryption_key_in.unwrap_or_default().into(),
                 &symmetric_alg.into(),
-                &mut encryption_key_out,
-                &mut duplicate,
-                &mut out_sym_seed,
+                &mut encryption_key_out_ptr,
+                &mut duplicate_ptr,
+                &mut out_sym_seed_ptr,
             )
         };
         let ret = Error::from_tss_rc(ret);
 
         if ret.is_success() {
-            let encryption_key_out = unsafe { Data::try_from(*encryption_key_out)? };
-            let duplicate = unsafe { Private::try_from(*duplicate)? };
-            let out_sym_seed = unsafe { EncryptedSecret::try_from(*out_sym_seed)? };
-            Ok((encryption_key_out, duplicate, out_sym_seed))
+            Ok((
+                Data::try_from(Context::ffi_data_to_owned(encryption_key_out_ptr))?,
+                Private::try_from(Context::ffi_data_to_owned(duplicate_ptr))?,
+                EncryptedSecret::try_from(Context::ffi_data_to_owned(out_sym_seed_ptr))?,
+            ))
         } else {
             error!("Error when performing duplication: {}", ret);
             Err(ret)
@@ -662,7 +663,7 @@ impl Context {
         encrypted_secret: EncryptedSecret,
         symmetric_alg: SymmetricDefinitionObject,
     ) -> Result<Private> {
-        let mut out_private = null_mut();
+        let mut out_private_ptr = null_mut();
         let ret = unsafe {
             Esys_Import(
                 self.mut_context(),
@@ -675,13 +676,13 @@ impl Context {
                 &duplicate.into(),
                 &encrypted_secret.into(),
                 &symmetric_alg.into(),
-                &mut out_private,
+                &mut out_private_ptr,
             )
         };
         let ret = Error::from_tss_rc(ret);
 
         if ret.is_success() {
-            Ok(unsafe { Private::try_from(*out_private)? })
+            Private::try_from(Context::ffi_data_to_owned(out_private_ptr))
         } else {
             error!("Error when performing import: {}", ret);
             Err(ret)

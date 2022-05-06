@@ -3,11 +3,10 @@
 use crate::{
     handles::PcrHandle,
     structures::{DigestList, DigestValues, PcrSelectionList},
-    tss2_esys::*,
+    tss2_esys::{Esys_PCR_Extend, Esys_PCR_Read, Esys_PCR_Reset},
     Context, Error, Result,
 };
 use log::error;
-use mbox::MBox;
 use std::convert::{TryFrom, TryInto};
 use std::ptr::null_mut;
 
@@ -157,8 +156,8 @@ impl Context {
         pcr_selection_list: PcrSelectionList,
     ) -> Result<(u32, PcrSelectionList, DigestList)> {
         let mut pcr_update_counter: u32 = 0;
-        let mut tss_pcr_selection_list_out_ptr = null_mut();
-        let mut tss_digest_list_out_ptr = null_mut();
+        let mut pcr_selection_out_ptr = null_mut();
+        let mut pcr_values_ptr = null_mut();
         let ret = unsafe {
             Esys_PCR_Read(
                 self.mut_context(),
@@ -167,21 +166,17 @@ impl Context {
                 self.optional_session_3(),
                 &pcr_selection_list.into(),
                 &mut pcr_update_counter,
-                &mut tss_pcr_selection_list_out_ptr,
-                &mut tss_digest_list_out_ptr,
+                &mut pcr_selection_out_ptr,
+                &mut pcr_values_ptr,
             )
         };
         let ret = Error::from_tss_rc(ret);
 
         if ret.is_success() {
-            let tss_pcr_selection_list_out =
-                unsafe { MBox::<TPML_PCR_SELECTION>::from_raw(tss_pcr_selection_list_out_ptr) };
-            let tss_digest_list_out =
-                unsafe { MBox::<TPML_DIGEST>::from_raw(tss_digest_list_out_ptr) };
             Ok((
                 pcr_update_counter,
-                PcrSelectionList::try_from(*tss_pcr_selection_list_out)?,
-                DigestList::try_from(*tss_digest_list_out)?,
+                PcrSelectionList::try_from(Context::ffi_data_to_owned(pcr_selection_out_ptr))?,
+                DigestList::try_from(Context::ffi_data_to_owned(pcr_values_ptr))?,
             ))
         } else {
             error!("Error when reading PCR: {}", ret);
