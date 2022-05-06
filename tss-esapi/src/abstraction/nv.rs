@@ -20,7 +20,11 @@ pub fn read_full(
     auth_handle: NvAuth,
     nv_index_handle: NvIndexTpmHandle,
 ) -> Result<Vec<u8>> {
-    let mut rw = NvOpenOptions::new().open(context, auth_handle, nv_index_handle)?;
+    let mut rw = NvOpenOptions::Index {
+        auth_handle,
+        nv_index_handle,
+    }
+    .open(context)?;
     let mut result = Vec::with_capacity(rw.size());
 
     let _ = rw.read_to_end(&mut result).map_err(|e| {
@@ -80,47 +84,39 @@ pub fn list(context: &mut Context) -> Result<Vec<(NvPublic, Name)>> {
 }
 
 /// Options and flags which can be used to determine how a non-volatile storage index is opened.
-///
-/// This builder exposes the ability to determine how a [`NvReaderWriter`] is opened, and is typically used by
-/// calling [`NvOpenOptions::new`], chaining method calls to set each option and then calling [`NvOpenOptions::open`].
-#[derive(Debug, Clone, Default)]
-pub struct NvOpenOptions {
-    nv_public: Option<NvPublic>,
+#[derive(Debug, Clone)]
+pub enum NvOpenOptions {
+    Public {
+        nv_public: NvPublic,
+        auth_handle: NvAuth,
+    },
+    Index {
+        nv_index_handle: NvIndexTpmHandle,
+        auth_handle: NvAuth,
+    },
 }
 
 impl NvOpenOptions {
-    /// Creates a new blank set of options for opening a non-volatile storage index
-    ///
-    /// All options are initially set to `false`/`None`.
-    pub fn new() -> Self {
-        Self { nv_public: None }
-    }
-
-    /// Sets the public attributes to use when creating the non-volatile storage index
-    ///
-    /// If the public attributes are `None` then the non-volatile storage index will be opened or otherwise
-    /// it will be created.
-    pub fn with_nv_public(&mut self, nv_public: Option<NvPublic>) -> &mut Self {
-        self.nv_public = nv_public;
-        self
-    }
-
     /// Opens a non-volatile storage index using the options specified by `self`
     ///
     /// The non-volatile storage index may be used for reading or writing or both.
-    pub fn open<'a>(
-        &self,
-        context: &'a mut Context,
-        auth_handle: NvAuth,
-        nv_index_handle: NvIndexTpmHandle,
-    ) -> Result<NvReaderWriter<'a>> {
+    pub fn open<'a>(&self, context: &'a mut Context) -> Result<NvReaderWriter<'a>> {
         let buffer_size = context
             .get_tpm_property(PropertyTag::NvBufferMax)?
-            .unwrap_or(MaxNvBuffer::MAX_SIZE as u32) as usize;
+            .map(usize::try_from)
+            .transpose()
+            .map_err(|_| {
+                log::error!("Failed to obtain valid maximum NV buffer size");
+                Error::WrapperError(WrapperErrorKind::InternalError)
+            })?
+            .unwrap_or(MaxNvBuffer::MAX_SIZE);
 
-        let (data_size, nv_idx) = match &self.nv_public {
-            None => {
-                let nv_idx = TpmHandle::NvIndex(nv_index_handle);
+        let (data_size, nv_idx, auth_handle) = match self {
+            NvOpenOptions::Index {
+                nv_index_handle,
+                auth_handle,
+            } => {
+                let nv_idx = TpmHandle::NvIndex(*nv_index_handle);
                 let nv_idx = context
                     .execute_without_session(|ctx| ctx.tr_from_tpm_public(nv_idx))?
                     .into();
@@ -129,23 +125,25 @@ impl NvOpenOptions {
                         .execute_without_session(|ctx| ctx.nv_read_public(nv_idx))
                         .map(|(nvpub, _)| nvpub.data_size())?,
                     nv_idx,
+                    auth_handle,
                 )
             }
-            Some(nv_public) => {
-                if nv_public.nv_index() != nv_index_handle {
-                    return Err(Error::WrapperError(WrapperErrorKind::InconsistentParams));
-                }
-                let auth_handle = AuthHandle::from(auth_handle);
+            NvOpenOptions::Public {
+                nv_public,
+                auth_handle,
+            } => {
+                let auth = AuthHandle::from(*auth_handle);
                 (
                     nv_public.data_size(),
-                    context.nv_define_space(auth_handle.try_into()?, None, nv_public.clone())?,
+                    context.nv_define_space(auth.try_into()?, None, nv_public.clone())?,
+                    auth_handle,
                 )
             }
         };
 
         Ok(NvReaderWriter {
             context,
-            auth_handle,
+            auth_handle: *auth_handle,
             buffer_size,
             nv_idx,
             data_size,
