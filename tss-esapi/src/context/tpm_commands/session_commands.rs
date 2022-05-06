@@ -10,7 +10,7 @@ use crate::{
     },
     structures::{Nonce, SymmetricDefinition},
     tss2_esys::{Esys_PolicyRestart, Esys_StartAuthSession},
-    Context, Error, Result,
+    Context, Result, ReturnCode,
 };
 use log::error;
 use std::{convert::TryInto, ptr::null};
@@ -60,58 +60,54 @@ impl Context {
     ) -> Result<Option<AuthSession>> {
         let mut session_handle = ObjectHandle::None.into();
         let potential_tpm2b_nonce = nonce.map(|v| v.into());
-        let ret = unsafe {
-            Esys_StartAuthSession(
-                self.mut_context(),
-                tpm_key
-                    .map(ObjectHandle::from)
-                    .unwrap_or(ObjectHandle::None)
-                    .into(),
-                bind.unwrap_or(ObjectHandle::None).into(),
-                self.optional_session_1(),
-                self.optional_session_2(),
-                self.optional_session_3(),
-                potential_tpm2b_nonce.as_ref().map_or_else(null, |v| v),
-                session_type.into(),
-                &symmetric.try_into()?,
-                auth_hash.into(),
-                &mut session_handle,
-            )
-        };
+        ReturnCode::ensure_success(
+            unsafe {
+                Esys_StartAuthSession(
+                    self.mut_context(),
+                    tpm_key
+                        .map(ObjectHandle::from)
+                        .unwrap_or(ObjectHandle::None)
+                        .into(),
+                    bind.unwrap_or(ObjectHandle::None).into(),
+                    self.optional_session_1(),
+                    self.optional_session_2(),
+                    self.optional_session_3(),
+                    potential_tpm2b_nonce.as_ref().map_or_else(null, |v| v),
+                    session_type.into(),
+                    &symmetric.try_into()?,
+                    auth_hash.into(),
+                    &mut session_handle,
+                )
+            },
+            |ret| {
+                error!("Error when creating a session: {}", ret);
+            },
+        )?;
 
-        let ret = Error::from_tss_rc(ret);
-        if ret.is_success() {
-            self.handle_manager
-                .add_handle(session_handle.into(), HandleDropAction::Flush)?;
-            Ok(AuthSession::create(
-                session_type,
-                session_handle.into(),
-                auth_hash,
-            ))
-        } else {
-            error!("Error when creating a session: {}", ret);
-            Err(ret)
-        }
+        self.handle_manager
+            .add_handle(session_handle.into(), HandleDropAction::Flush)?;
+        Ok(AuthSession::create(
+            session_type,
+            session_handle.into(),
+            auth_hash,
+        ))
     }
 
     /// Restart the TPM Policy
     pub fn policy_restart(&mut self, policy_session: PolicySession) -> Result<()> {
-        let ret = unsafe {
-            Esys_PolicyRestart(
-                self.mut_context(),
-                SessionHandle::from(policy_session).into(),
-                self.optional_session_1(),
-                self.optional_session_2(),
-                self.optional_session_3(),
-            )
-        };
-        let ret = Error::from_tss_rc(ret);
-
-        if ret.is_success() {
-            Ok(())
-        } else {
-            error!("Error restarting policy: {}", ret);
-            Err(ret)
-        }
+        ReturnCode::ensure_success(
+            unsafe {
+                Esys_PolicyRestart(
+                    self.mut_context(),
+                    SessionHandle::from(policy_session).into(),
+                    self.optional_session_1(),
+                    self.optional_session_2(),
+                    self.optional_session_3(),
+                )
+            },
+            |ret| {
+                error!("Error restarting policy: {}", ret);
+            },
+        )
     }
 }

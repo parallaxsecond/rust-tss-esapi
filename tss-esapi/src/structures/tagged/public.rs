@@ -10,7 +10,7 @@ use crate::{
     structures::{Digest, EccPoint, PublicKeyRsa, SymmetricCipherParameters},
     traits::{Marshall, UnMarshall},
     tss2_esys::{TPM2B_PUBLIC, TPMT_PUBLIC},
-    Error, Result, WrapperErrorKind,
+    Error, Result, ReturnCode, WrapperErrorKind,
 };
 
 use ecc::PublicEccParameters;
@@ -501,29 +501,26 @@ impl Marshall for Public {
         let mut buffer = vec![0; Self::BUFFER_SIZE];
         let mut offset = 0;
 
-        let ret = Error::from_tss_rc(unsafe {
-            crate::tss2_esys::Tss2_MU_TPMT_PUBLIC_Marshal(
-                &self.clone().into(),
-                buffer.as_mut_ptr(),
-                Self::BUFFER_SIZE.try_into().map_err(|e| {
-                    error!("Failed to convert size of buffer to TSS size_t type: {}", e);
-                    Error::local_error(WrapperErrorKind::InvalidParam)
-                })?,
-                &mut offset,
-            )
-        });
-
-        if !ret.is_success() {
-            return Err(ret);
-        }
+        ReturnCode::ensure_success(
+            unsafe {
+                crate::tss2_esys::Tss2_MU_TPMT_PUBLIC_Marshal(
+                    &self.clone().into(),
+                    buffer.as_mut_ptr(),
+                    Self::BUFFER_SIZE.try_into().map_err(|e| {
+                        error!("Failed to convert size of buffer to TSS size_t type: {}", e);
+                        Error::local_error(WrapperErrorKind::InvalidParam)
+                    })?,
+                    &mut offset,
+                )
+            },
+            |ret| error!("Failed to marshal Public: {}", ret),
+        )?;
 
         let checked_offset = usize::try_from(offset).map_err(|e| {
             error!("Failed to parse offset as usize: {}", e);
             Error::local_error(WrapperErrorKind::InvalidParam)
         })?;
-
         buffer.truncate(checked_offset);
-
         Ok(buffer)
     }
 }
@@ -536,21 +533,20 @@ impl UnMarshall for Public {
         let mut dest = TPMT_PUBLIC::default();
         let mut offset = 0;
 
-        let ret = Error::from_tss_rc(unsafe {
-            crate::tss2_esys::Tss2_MU_TPMT_PUBLIC_Unmarshal(
-                marshalled_data.as_ptr(),
-                marshalled_data.len().try_into().map_err(|e| {
-                    error!("Failed to convert length of marshalled data: {}", e);
-                    Error::local_error(WrapperErrorKind::InvalidParam)
-                })?,
-                &mut offset,
-                &mut dest,
-            )
-        });
-
-        if !ret.is_success() {
-            return Err(ret);
-        }
+        ReturnCode::ensure_success(
+            unsafe {
+                crate::tss2_esys::Tss2_MU_TPMT_PUBLIC_Unmarshal(
+                    marshalled_data.as_ptr(),
+                    marshalled_data.len().try_into().map_err(|e| {
+                        error!("Failed to convert length of marshalled data: {}", e);
+                        Error::local_error(WrapperErrorKind::InvalidParam)
+                    })?,
+                    &mut offset,
+                    &mut dest,
+                )
+            },
+            |ret| error!("Failed to unmarshal Public: {}", ret),
+        )?;
 
         Public::try_from(dest)
     }
@@ -572,21 +568,20 @@ impl TryFrom<Public> for TPM2B_PUBLIC {
         let mut size = 0;
         let public_area = TPMT_PUBLIC::from(public);
 
-        let ret = Error::from_tss_rc(unsafe {
-            crate::tss2_esys::Tss2_MU_TPMT_PUBLIC_Marshal(
-                &public_area,
-                buffer.as_mut_ptr(),
-                Public::BUFFER_SIZE.try_into().map_err(|e| {
-                    error!("Failed to convert size of buffer to TSS size_t type: {}", e);
-                    Error::local_error(WrapperErrorKind::InvalidParam)
-                })?,
-                &mut size,
-            )
-        });
-
-        if !ret.is_success() {
-            return Err(ret);
-        }
+        ReturnCode::ensure_success(
+            unsafe {
+                crate::tss2_esys::Tss2_MU_TPMT_PUBLIC_Marshal(
+                    &public_area,
+                    buffer.as_mut_ptr(),
+                    Public::BUFFER_SIZE.try_into().map_err(|e| {
+                        error!("Failed to convert size of buffer to TSS size_t type: {}", e);
+                        Error::local_error(WrapperErrorKind::InvalidParam)
+                    })?,
+                    &mut size,
+                )
+            },
+            |ret| error!("Failed to marshal Public: {}", ret),
+        )?;
 
         Ok(TPM2B_PUBLIC {
             size: size.try_into().map_err(|e| {

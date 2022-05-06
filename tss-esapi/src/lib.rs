@@ -91,12 +91,13 @@
 //! controlled through environment variables as explained
 //! [here](https://github.com/tpm2-software/tpm2-tss/blob/main/doc/logging.md#runtime-log-level).
 //!
+mod context;
+
+pub mod error;
 pub use tss_esapi_sys as tss2_esys;
 pub mod abstraction;
 pub mod attributes;
 pub mod constants;
-mod context;
-pub mod error;
 pub mod handles;
 pub mod interface_types;
 pub mod structures;

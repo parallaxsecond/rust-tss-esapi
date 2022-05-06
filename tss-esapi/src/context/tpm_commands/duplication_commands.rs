@@ -5,7 +5,7 @@ use crate::{
     handles::ObjectHandle,
     structures::{Data, EncryptedSecret, Private, Public, SymmetricDefinitionObject},
     tss2_esys::{Esys_Duplicate, Esys_Import},
-    Error, Result,
+    Result, ReturnCode,
 };
 use log::error;
 
@@ -305,33 +305,32 @@ impl Context {
         let mut encryption_key_out_ptr = null_mut();
         let mut duplicate_ptr = null_mut();
         let mut out_sym_seed_ptr = null_mut();
-        let ret = unsafe {
-            Esys_Duplicate(
-                self.mut_context(),
-                object_to_duplicate.into(),
-                new_parent_handle.into(),
-                self.required_session_1()?,
-                self.optional_session_2(),
-                self.optional_session_3(),
-                &encryption_key_in.unwrap_or_default().into(),
-                &symmetric_alg.into(),
-                &mut encryption_key_out_ptr,
-                &mut duplicate_ptr,
-                &mut out_sym_seed_ptr,
-            )
-        };
-        let ret = Error::from_tss_rc(ret);
+        ReturnCode::ensure_success(
+            unsafe {
+                Esys_Duplicate(
+                    self.mut_context(),
+                    object_to_duplicate.into(),
+                    new_parent_handle.into(),
+                    self.required_session_1()?,
+                    self.optional_session_2(),
+                    self.optional_session_3(),
+                    &encryption_key_in.unwrap_or_default().into(),
+                    &symmetric_alg.into(),
+                    &mut encryption_key_out_ptr,
+                    &mut duplicate_ptr,
+                    &mut out_sym_seed_ptr,
+                )
+            },
+            |ret| {
+                error!("Error when performing duplication: {}", ret);
+            },
+        )?;
 
-        if ret.is_success() {
-            Ok((
-                Data::try_from(Context::ffi_data_to_owned(encryption_key_out_ptr))?,
-                Private::try_from(Context::ffi_data_to_owned(duplicate_ptr))?,
-                EncryptedSecret::try_from(Context::ffi_data_to_owned(out_sym_seed_ptr))?,
-            ))
-        } else {
-            error!("Error when performing duplication: {}", ret);
-            Err(ret)
-        }
+        Ok((
+            Data::try_from(Context::ffi_data_to_owned(encryption_key_out_ptr))?,
+            Private::try_from(Context::ffi_data_to_owned(duplicate_ptr))?,
+            EncryptedSecret::try_from(Context::ffi_data_to_owned(out_sym_seed_ptr))?,
+        ))
     }
 
     // Missing function: Rewrap
@@ -664,28 +663,26 @@ impl Context {
         symmetric_alg: SymmetricDefinitionObject,
     ) -> Result<Private> {
         let mut out_private_ptr = null_mut();
-        let ret = unsafe {
-            Esys_Import(
-                self.mut_context(),
-                parent_handle.into(),
-                self.required_session_1()?,
-                self.optional_session_2(),
-                self.optional_session_3(),
-                &encryption_key.unwrap_or_default().into(),
-                &public.try_into()?,
-                &duplicate.into(),
-                &encrypted_secret.into(),
-                &symmetric_alg.into(),
-                &mut out_private_ptr,
-            )
-        };
-        let ret = Error::from_tss_rc(ret);
-
-        if ret.is_success() {
-            Private::try_from(Context::ffi_data_to_owned(out_private_ptr))
-        } else {
-            error!("Error when performing import: {}", ret);
-            Err(ret)
-        }
+        ReturnCode::ensure_success(
+            unsafe {
+                Esys_Import(
+                    self.mut_context(),
+                    parent_handle.into(),
+                    self.required_session_1()?,
+                    self.optional_session_2(),
+                    self.optional_session_3(),
+                    &encryption_key.unwrap_or_default().into(),
+                    &public.try_into()?,
+                    &duplicate.into(),
+                    &encrypted_secret.into(),
+                    &symmetric_alg.into(),
+                    &mut out_private_ptr,
+                )
+            },
+            |ret| {
+                error!("Error when performing import: {}", ret);
+            },
+        )?;
+        Private::try_from(Context::ffi_data_to_owned(out_private_ptr))
     }
 }

@@ -6,7 +6,7 @@ use crate::{
     interface_types::{dynamic_handles::Persistent, resource_handles::Provision},
     tss2_esys::{Esys_ContextLoad, Esys_ContextSave, Esys_EvictControl, Esys_FlushContext},
     utils::TpmsContext,
-    Context, Error, Result,
+    Context, Result, ReturnCode,
 };
 use log::error;
 use std::convert::{TryFrom, TryInto};
@@ -20,14 +20,13 @@ impl Context {
     /// be returned
     pub fn context_save(&mut self, handle: ObjectHandle) -> Result<TpmsContext> {
         let mut context_ptr = null_mut();
-        let ret = unsafe { Esys_ContextSave(self.mut_context(), handle.into(), &mut context_ptr) };
-        let ret = Error::from_tss_rc(ret);
-        if ret.is_success() {
-            TpmsContext::try_from(Context::ffi_data_to_owned(context_ptr))
-        } else {
-            error!("Error in saving context: {}", ret);
-            Err(ret)
-        }
+        ReturnCode::ensure_success(
+            unsafe { Esys_ContextSave(self.mut_context(), handle.into(), &mut context_ptr) },
+            |ret| {
+                error!("Error in saving context: {}", ret);
+            },
+        )?;
+        TpmsContext::try_from(Context::ffi_data_to_owned(context_ptr))
     }
 
     /// Load a previously saved context into the TPM and return the object handle.
@@ -36,19 +35,23 @@ impl Context {
     /// * if conversion from `TpmsContext` to the native `TPMS_CONTEXT` fails, a `WrongParamSize`
     /// error will be returned
     pub fn context_load(&mut self, context: TpmsContext) -> Result<ObjectHandle> {
-        let mut loaded_handle = ObjectHandle::None.into();
-        let ret = unsafe {
-            Esys_ContextLoad(self.mut_context(), &context.try_into()?, &mut loaded_handle)
-        };
-        let ret = Error::from_tss_rc(ret);
-        if ret.is_success() {
-            self.handle_manager
-                .add_handle(loaded_handle.into(), HandleDropAction::Flush)?;
-            Ok(loaded_handle.into())
-        } else {
-            error!("Error in loading context: {}", ret);
-            Err(ret)
-        }
+        let mut esys_loaded_handle = ObjectHandle::None.into();
+        ReturnCode::ensure_success(
+            unsafe {
+                Esys_ContextLoad(
+                    self.mut_context(),
+                    &context.try_into()?,
+                    &mut esys_loaded_handle,
+                )
+            },
+            |ret| {
+                error!("Error in loading context: {}", ret);
+            },
+        )?;
+        let loaded_handle = ObjectHandle::from(esys_loaded_handle);
+        self.handle_manager
+            .add_handle(loaded_handle, HandleDropAction::Flush)?;
+        Ok(loaded_handle)
     }
 
     /// Flush the context of an object from the TPM.
@@ -131,15 +134,13 @@ impl Context {
     /// })
     /// ```
     pub fn flush_context(&mut self, handle: ObjectHandle) -> Result<()> {
-        let ret = unsafe { Esys_FlushContext(self.mut_context(), handle.try_into_not_none()?) };
-        let ret = Error::from_tss_rc(ret);
-        if ret.is_success() {
-            self.handle_manager.set_as_flushed(handle)?;
-            Ok(())
-        } else {
-            error!("Error in flushing context: {}", ret);
-            Err(ret)
-        }
+        ReturnCode::ensure_success(
+            unsafe { Esys_FlushContext(self.mut_context(), handle.try_into_not_none()?) },
+            |ret| {
+                error!("Error in flushing context: {}", ret);
+            },
+        )?;
+        self.handle_manager.set_as_flushed(handle)
     }
 
     /// Evicts persistent objects or allows certain transient objects
@@ -415,34 +416,33 @@ impl Context {
         persistent: Persistent,
     ) -> Result<ObjectHandle> {
         let mut new_object_handle = ObjectHandle::None.into();
-        let ret = unsafe {
-            Esys_EvictControl(
-                self.mut_context(),
-                AuthHandle::from(auth).into(),
-                object_handle.into(),
-                self.required_session_1()?,
-                self.optional_session_2(),
-                self.optional_session_3(),
-                PersistentTpmHandle::from(persistent).into(),
-                &mut new_object_handle,
-            )
-        };
-        let ret = Error::from_tss_rc(ret);
-        if ret.is_success() {
-            let new_object_handle = ObjectHandle::from(new_object_handle);
-            // If you look at the specification and see that it says ESYS_TR_NULL
-            // then that is an error in the spec. ESYS_TR_NULL was renamed to
-            // ESYS_TR NONE.
-            if new_object_handle.is_none() {
-                self.handle_manager.set_as_closed(object_handle)?;
-            } else {
-                self.handle_manager
-                    .add_handle(new_object_handle, HandleDropAction::Close)?;
-            }
-            Ok(new_object_handle)
+        ReturnCode::ensure_success(
+            unsafe {
+                Esys_EvictControl(
+                    self.mut_context(),
+                    AuthHandle::from(auth).into(),
+                    object_handle.into(),
+                    self.required_session_1()?,
+                    self.optional_session_2(),
+                    self.optional_session_3(),
+                    PersistentTpmHandle::from(persistent).into(),
+                    &mut new_object_handle,
+                )
+            },
+            |ret| {
+                error!("Error in evict control: {}", ret);
+            },
+        )?;
+        let new_object_handle = ObjectHandle::from(new_object_handle);
+        // If you look at the specification and see that it says ESYS_TR_NULL
+        // then that is an error in the spec. ESYS_TR_NULL was renamed to
+        // ESYS_TR NONE.
+        if new_object_handle.is_none() {
+            self.handle_manager.set_as_closed(object_handle)?;
         } else {
-            error!("Error in evict control: {}", ret);
-            Err(ret)
+            self.handle_manager
+                .add_handle(new_object_handle, HandleDropAction::Close)?;
         }
+        Ok(new_object_handle)
     }
 }

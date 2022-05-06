@@ -4,7 +4,7 @@ use crate::{
     handles::KeyHandle,
     structures::{Digest, HashcheckTicket, Signature, SignatureScheme, VerifiedTicket},
     tss2_esys::{Esys_Sign, Esys_VerifySignature},
-    Context, Error, Result,
+    Context, Result, ReturnCode,
 };
 use log::error;
 use std::convert::{TryFrom, TryInto};
@@ -19,26 +19,24 @@ impl Context {
         signature: Signature,
     ) -> Result<VerifiedTicket> {
         let mut validation_ptr = null_mut();
-        let ret = unsafe {
-            Esys_VerifySignature(
-                self.mut_context(),
-                key_handle.into(),
-                self.optional_session_1(),
-                self.optional_session_2(),
-                self.optional_session_3(),
-                &digest.into(),
-                &signature.try_into()?,
-                &mut validation_ptr,
-            )
-        };
-        let ret = Error::from_tss_rc(ret);
-
-        if ret.is_success() {
-            VerifiedTicket::try_from(Context::ffi_data_to_owned(validation_ptr))
-        } else {
-            error!("Error when verifying signature: {}", ret);
-            Err(ret)
-        }
+        ReturnCode::ensure_success(
+            unsafe {
+                Esys_VerifySignature(
+                    self.mut_context(),
+                    key_handle.into(),
+                    self.optional_session_1(),
+                    self.optional_session_2(),
+                    self.optional_session_3(),
+                    &digest.into(),
+                    &signature.try_into()?,
+                    &mut validation_ptr,
+                )
+            },
+            |ret| {
+                error!("Error when verifying signature: {}", ret);
+            },
+        )?;
+        VerifiedTicket::try_from(Context::ffi_data_to_owned(validation_ptr))
     }
 
     /// Sign a digest with a key present in the TPM and return the signature.
@@ -50,26 +48,24 @@ impl Context {
         validation: HashcheckTicket,
     ) -> Result<Signature> {
         let mut signature_ptr = null_mut();
-        let ret = unsafe {
-            Esys_Sign(
-                self.mut_context(),
-                key_handle.into(),
-                self.required_session_1()?,
-                self.optional_session_2(),
-                self.optional_session_3(),
-                &digest.into(),
-                &scheme.into(),
-                &validation.try_into()?,
-                &mut signature_ptr,
-            )
-        };
-        let ret = Error::from_tss_rc(ret);
-
-        if ret.is_success() {
-            Signature::try_from(Context::ffi_data_to_owned(signature_ptr))
-        } else {
-            error!("Error when signing: {}", ret);
-            Err(ret)
-        }
+        ReturnCode::ensure_success(
+            unsafe {
+                Esys_Sign(
+                    self.mut_context(),
+                    key_handle.into(),
+                    self.required_session_1()?,
+                    self.optional_session_2(),
+                    self.optional_session_3(),
+                    &digest.into(),
+                    &scheme.into(),
+                    &validation.try_into()?,
+                    &mut signature_ptr,
+                )
+            },
+            |ret| {
+                error!("Error when signing: {}", ret);
+            },
+        )?;
+        Signature::try_from(Context::ffi_data_to_owned(signature_ptr))
     }
 }

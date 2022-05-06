@@ -4,7 +4,7 @@ use crate::{
     handles::PcrHandle,
     structures::{DigestList, DigestValues, PcrSelectionList},
     tss2_esys::{Esys_PCR_Extend, Esys_PCR_Read, Esys_PCR_Reset},
-    Context, Error, Result,
+    Context, Result, ReturnCode,
 };
 use log::error;
 use std::convert::{TryFrom, TryInto};
@@ -88,24 +88,21 @@ impl Context {
     /// });
     /// ```
     pub fn pcr_extend(&mut self, pcr_handle: PcrHandle, digests: DigestValues) -> Result<()> {
-        let ret = unsafe {
-            Esys_PCR_Extend(
-                self.mut_context(),
-                pcr_handle.into(),
-                self.optional_session_1(),
-                self.optional_session_2(),
-                self.optional_session_3(),
-                &digests.try_into()?,
-            )
-        };
-        let ret = Error::from_tss_rc(ret);
-
-        if ret.is_success() {
-            Ok(())
-        } else {
-            error!("Error when extending PCR: {}", ret);
-            Err(ret)
-        }
+        ReturnCode::ensure_success(
+            unsafe {
+                Esys_PCR_Extend(
+                    self.mut_context(),
+                    pcr_handle.into(),
+                    self.optional_session_1(),
+                    self.optional_session_2(),
+                    self.optional_session_3(),
+                    &digests.try_into()?,
+                )
+            },
+            |ret| {
+                error!("Error when extending PCR: {}", ret);
+            },
+        )
     }
 
     // Missing function: PCR_Event
@@ -158,30 +155,29 @@ impl Context {
         let mut pcr_update_counter: u32 = 0;
         let mut pcr_selection_out_ptr = null_mut();
         let mut pcr_values_ptr = null_mut();
-        let ret = unsafe {
-            Esys_PCR_Read(
-                self.mut_context(),
-                self.optional_session_1(),
-                self.optional_session_2(),
-                self.optional_session_3(),
-                &pcr_selection_list.into(),
-                &mut pcr_update_counter,
-                &mut pcr_selection_out_ptr,
-                &mut pcr_values_ptr,
-            )
-        };
-        let ret = Error::from_tss_rc(ret);
+        ReturnCode::ensure_success(
+            unsafe {
+                Esys_PCR_Read(
+                    self.mut_context(),
+                    self.optional_session_1(),
+                    self.optional_session_2(),
+                    self.optional_session_3(),
+                    &pcr_selection_list.into(),
+                    &mut pcr_update_counter,
+                    &mut pcr_selection_out_ptr,
+                    &mut pcr_values_ptr,
+                )
+            },
+            |ret| {
+                error!("Error when reading PCR: {}", ret);
+            },
+        )?;
 
-        if ret.is_success() {
-            Ok((
-                pcr_update_counter,
-                PcrSelectionList::try_from(Context::ffi_data_to_owned(pcr_selection_out_ptr))?,
-                DigestList::try_from(Context::ffi_data_to_owned(pcr_values_ptr))?,
-            ))
-        } else {
-            error!("Error when reading PCR: {}", ret);
-            Err(ret)
-        }
+        Ok((
+            pcr_update_counter,
+            PcrSelectionList::try_from(Context::ffi_data_to_owned(pcr_selection_out_ptr))?,
+            DigestList::try_from(Context::ffi_data_to_owned(pcr_values_ptr))?,
+        ))
     }
 
     // Missing function: PCR_Allocate
@@ -242,23 +238,20 @@ impl Context {
     /// });
     /// ```
     pub fn pcr_reset(&mut self, pcr_handle: PcrHandle) -> Result<()> {
-        let ret = unsafe {
-            Esys_PCR_Reset(
-                self.mut_context(),
-                pcr_handle.into(),
-                self.optional_session_1(),
-                self.optional_session_2(),
-                self.optional_session_3(),
-            )
-        };
-        let ret = Error::from_tss_rc(ret);
-
-        if ret.is_success() {
-            Ok(())
-        } else {
-            error!("Error when resetting PCR: {}", ret);
-            Err(ret)
-        }
+        ReturnCode::ensure_success(
+            unsafe {
+                Esys_PCR_Reset(
+                    self.mut_context(),
+                    pcr_handle.into(),
+                    self.optional_session_1(),
+                    self.optional_session_2(),
+                    self.optional_session_3(),
+                )
+            },
+            |ret| {
+                error!("Error when resetting PCR: {}", ret);
+            },
+        )
     }
 
     // Missing function: _TPM_Hash_Start

@@ -1,8 +1,10 @@
 // Copyright 2022 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.
 
+use crate::common::{create_ctx_with_session, decryption_key_pub};
 use std::convert::TryFrom;
 use tss_esapi::{
+    attributes::SessionAttributesBuilder,
     constants::{
         tss::{
             TSS2_BASE_RC_ABI_MISMATCH, TSS2_BASE_RC_BAD_CONTEXT, TSS2_BASE_RC_BAD_REFERENCE,
@@ -14,9 +16,11 @@ use tss_esapi::{
             TSS2_BASE_RC_NOT_IMPLEMENTED, TSS2_BASE_RC_NO_DECRYPT_PARAM,
             TSS2_BASE_RC_NO_ENCRYPT_PARAM, TSS2_BASE_RC_TRY_AGAIN, TSS2_ESYS_RC_LAYER,
         },
-        BaseError,
+        BaseError, SessionType,
     },
     error::{BaseReturnCode, EsapiReturnCode, ReturnCode},
+    interface_types::{algorithm::HashingAlgorithm, resource_handles::Hierarchy},
+    structures::{Auth, SymmetricDefinition},
     Error, WrapperErrorKind,
 };
 
@@ -119,4 +123,67 @@ fn test_invalid_conversions() {
         Err(Error::WrapperError(WrapperErrorKind::InvalidParam)),
         "Converting invalid ESAPI layer response code did not produce the expected error"
     );
+}
+
+#[test]
+fn test_esapi_error_from_context_method() {
+    let mut context = create_ctx_with_session();
+    let random_digest = context.get_random(16).unwrap();
+    let key_auth = Auth::try_from(random_digest.value().to_vec()).unwrap();
+
+    let first_session = context.sessions().0.expect("Missing first session");
+    let second_session = context
+        .start_auth_session(
+            None,
+            None,
+            None,
+            SessionType::Hmac,
+            SymmetricDefinition::AES_256_CFB,
+            HashingAlgorithm::Sha256,
+        )
+        .expect("Failed to create second session")
+        .expect("Returned invalid value for second session");
+    let (second_session_attributes, second_session_attributes_mask) =
+        SessionAttributesBuilder::new().with_encrypt(true).build();
+    context
+        .tr_sess_set_attributes(
+            second_session,
+            second_session_attributes,
+            second_session_attributes_mask,
+        )
+        .expect("Failed to set attributes for second session");
+
+    // Creating primary with two sessions that both have encrypt set.
+    // This is expected to result in 'mutiple encrypt sessions' ESAPI error.
+    let result =
+        context.execute_with_sessions((Some(first_session), Some(second_session), None), |ctx| {
+            ctx.create_primary(
+                Hierarchy::Owner,
+                decryption_key_pub(),
+                Some(key_auth.clone()),
+                None,
+                None,
+                None,
+            )
+        });
+
+    if let Err(error) = result {
+        if let Error::TssError(return_code) = error {
+            if let ReturnCode::Esapi(esapi_return_code) = return_code {
+                assert_eq!(
+                esapi_return_code.base_error(),
+                BaseError::MultipleEncryptSessions,
+                "Calling 'create_primary' with two encrypt session did not result in the expected ESPI TSS error",
+            );
+            } else {
+                panic!("Calling 'create_primary' with two encrypt session did not result in an ESPI TSS error");
+            }
+        } else {
+            panic!(
+                "Calling 'create_primary' with two encrypt session did not result in an TSS error"
+            );
+        }
+    } else {
+        panic!("Calling 'create_primary' with two encrypt session did not result in an error");
+    }
 }

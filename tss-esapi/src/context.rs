@@ -9,7 +9,7 @@ use crate::{
     structures::{CapabilityData, SymmetricDefinition},
     tcti_ldr::{TabrmdConfig, TctiContext, TctiNameConf},
     tss2_esys::*,
-    Error, Result, WrapperErrorKind as ErrorKind,
+    Error, Result, ReturnCode, WrapperErrorKind as ErrorKind,
 };
 use handle_manager::HandleManager;
 use log::{error, info};
@@ -92,29 +92,27 @@ impl Context {
 
         let mut _tcti_context = TctiContext::initialize(tcti_name_conf)?;
 
-        let ret = unsafe {
-            Esys_Initialize(
-                &mut esys_context,
-                _tcti_context.tcti_context_ptr(),
-                null_mut(),
-            )
-        };
-        let ret = Error::from_tss_rc(ret);
+        ReturnCode::ensure_success(
+            unsafe {
+                Esys_Initialize(
+                    &mut esys_context,
+                    _tcti_context.tcti_context_ptr(),
+                    null_mut(),
+                )
+            },
+            |ret| {
+                error!("Error when creating a new context: {}", ret);
+            },
+        )?;
 
-        if ret.is_success() {
-            let esys_context = unsafe { Some(MBox::from_raw(esys_context)) };
-            let context = Context {
-                esys_context,
-                sessions: (None, None, None),
-                _tcti_context,
-                handle_manager: HandleManager::new(),
-                cached_tpm_properties: HashMap::new(),
-            };
-            Ok(context)
-        } else {
-            error!("Error when creating a new context: {}", ret);
-            Err(ret)
-        }
+        let esys_context = unsafe { Some(MBox::from_raw(esys_context)) };
+        Ok(Context {
+            esys_context,
+            sessions: (None, None, None),
+            _tcti_context,
+            handle_manager: HandleManager::new(),
+            cached_tpm_properties: HashMap::new(),
+        })
     }
 
     /// Create a new ESYS context based on the TAB Resource Manager Daemon.

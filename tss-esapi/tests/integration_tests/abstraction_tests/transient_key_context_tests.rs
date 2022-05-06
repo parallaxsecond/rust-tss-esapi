@@ -4,7 +4,8 @@ use std::convert::{TryFrom, TryInto};
 use tss_esapi::{
     abstraction::ek,
     abstraction::transient::{KeyParams, ObjectWrapper, TransientKeyContextBuilder},
-    constants::response_code::Tss2ResponseCodeKind,
+    constants::return_code::{TpmFormatOneError, TpmFormatZeroError},
+    error::{TpmFormatZeroResponseCode, TpmResponseCode},
     interface_types::{
         algorithm::{
             AsymmetricAlgorithm, EccSchemeAlgorithm, HashingAlgorithm, RsaSchemeAlgorithm,
@@ -18,7 +19,7 @@ use tss_esapi::{
         RsaSignature, Signature, SymmetricDefinitionObject,
     },
     utils::{create_restricted_decryption_rsa_public, PublicKey},
-    Error, TransientKeyContext, WrapperErrorKind as ErrorKind,
+    Error, ReturnCode, TransientKeyContext, WrapperErrorKind as ErrorKind,
 };
 
 use crate::common::create_tcti;
@@ -337,7 +338,7 @@ fn verify_wrong_key() {
     let pub_key = ctx
         .load_external_public_key(key2.public().clone(), key_params2)
         .unwrap();
-    if let Error::Tss2Error(error) = ctx
+    if let Error::TssError(ReturnCode::Tpm(TpmResponseCode::FormatOne(error))) = ctx
         .verify_signature(
             pub_key,
             key_params2,
@@ -346,7 +347,7 @@ fn verify_wrong_key() {
         )
         .unwrap_err()
     {
-        assert_eq!(error.kind(), Some(Tss2ResponseCodeKind::Signature));
+        assert_eq!(error.error_number(), TpmFormatOneError::Signature);
     } else {
         panic!("The signature verification should have failed with an invalid signature error.");
     }
@@ -376,7 +377,7 @@ fn verify_wrong_digest() {
 
     let mut digest_values = HASH.to_vec();
     digest_values[0..4].copy_from_slice(&[0xDE, 0xAD, 0xBE, 0xEF]);
-    if let Error::Tss2Error(error) = ctx
+    if let Error::TssError(ReturnCode::Tpm(TpmResponseCode::FormatOne(error))) = ctx
         .verify_signature(
             pub_key,
             key_params,
@@ -385,7 +386,7 @@ fn verify_wrong_digest() {
         )
         .unwrap_err()
     {
-        assert_eq!(error.kind(), Some(Tss2ResponseCodeKind::Signature));
+        assert_eq!(error.error_number(), TpmFormatOneError::Signature);
     } else {
         panic!("The signature verification should have failed with an invalid signature error.");
     }
@@ -801,8 +802,8 @@ fn activate_credential_wrong_key() {
             secret.value().to_vec(),
         )
         .unwrap_err();
-    if let Error::Tss2Error(e) = e {
-        assert_eq!(e.kind(), Some(Tss2ResponseCodeKind::Integrity));
+    if let Error::TssError(ReturnCode::Tpm(TpmResponseCode::FormatOne(error))) = e {
+        assert_eq!(error.error_number(), TpmFormatOneError::Integrity);
     } else {
         panic!("Got crate error ({}) when expecting an error from TPM.", e);
     }
@@ -832,8 +833,8 @@ fn activate_credential_wrong_data() {
     let e = ctx
         .activate_credential(obj.clone(), None, vec![], vec![])
         .unwrap_err();
-    if let Error::Tss2Error(e) = e {
-        assert_eq!(e.kind(), Some(Tss2ResponseCodeKind::Size));
+    if let Error::TssError(ReturnCode::Tpm(TpmResponseCode::FormatOne(error))) = e {
+        assert_eq!(error.error_number(), TpmFormatOneError::Size);
     } else {
         panic!("Got crate error ({}) when expecting an error from TPM.", e);
     }
@@ -842,12 +843,14 @@ fn activate_credential_wrong_data() {
     let e = ctx
         .activate_credential(obj, None, vec![0xaa; 52], vec![0x55; 256])
         .unwrap_err();
-    if let Error::Tss2Error(e) = e {
+    if let Error::TssError(ReturnCode::Tpm(TpmResponseCode::FormatOne(error))) = e {
         // IBM software TPM returns Value, swtpm returns Failure...
-        assert!(matches!(
-            e.kind(),
-            Some(Tss2ResponseCodeKind::Value) | Some(Tss2ResponseCodeKind::Failure)
-        ));
+        assert_eq!(error.error_number(), TpmFormatOneError::Value);
+    } else if let Error::TssError(ReturnCode::Tpm(TpmResponseCode::FormatZero(
+        TpmFormatZeroResponseCode::Error(error),
+    ))) = e
+    {
+        assert_eq!(error.error_number(), TpmFormatZeroError::Failure);
     } else {
         panic!("Got crate error ({}) when expecting an error from TPM.", e);
     }

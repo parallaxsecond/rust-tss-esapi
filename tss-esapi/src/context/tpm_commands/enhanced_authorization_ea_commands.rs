@@ -16,7 +16,7 @@ use crate::{
         Esys_PolicyPassword, Esys_PolicyPhysicalPresence, Esys_PolicySecret, Esys_PolicySigned,
         Esys_PolicyTemplate,
     },
-    Context, Error, Result, WrapperErrorKind as ErrorKind,
+    Context, Error, Result, ReturnCode, WrapperErrorKind as ErrorKind,
 };
 use log::error;
 use std::convert::{TryFrom, TryInto};
@@ -38,36 +38,35 @@ impl Context {
     ) -> Result<(Timeout, AuthTicket)> {
         let mut out_timeout_ptr = null_mut();
         let mut out_policy_ticket_ptr = null_mut();
-        let ret = unsafe {
-            Esys_PolicySigned(
-                self.mut_context(),
-                auth_object.into(),
-                SessionHandle::from(policy_session).into(),
-                self.required_session_1()?,
-                self.optional_session_2(),
-                self.optional_session_3(),
-                &nonce_tpm.into(),
-                &cp_hash_a.into(),
-                &policy_ref.into(),
-                i32::try_from(expiration.map_or(0, |v| v.as_secs())).map_err(|e| {
-                    error!("Unable to convert duration to i32: {}", e);
-                    Error::local_error(ErrorKind::InvalidParam)
-                })?,
-                &signature.try_into()?,
-                &mut out_timeout_ptr,
-                &mut out_policy_ticket_ptr,
-            )
-        };
-        let ret = Error::from_tss_rc(ret);
-        if ret.is_success() {
-            Ok((
-                Timeout::try_from(Context::ffi_data_to_owned(out_timeout_ptr))?,
-                AuthTicket::try_from(Context::ffi_data_to_owned(out_policy_ticket_ptr))?,
-            ))
-        } else {
-            error!("Error when sending policy signed: {}", ret);
-            Err(ret)
-        }
+        ReturnCode::ensure_success(
+            unsafe {
+                Esys_PolicySigned(
+                    self.mut_context(),
+                    auth_object.into(),
+                    SessionHandle::from(policy_session).into(),
+                    self.required_session_1()?,
+                    self.optional_session_2(),
+                    self.optional_session_3(),
+                    &nonce_tpm.into(),
+                    &cp_hash_a.into(),
+                    &policy_ref.into(),
+                    i32::try_from(expiration.map_or(0, |v| v.as_secs())).map_err(|e| {
+                        error!("Unable to convert duration to i32: {}", e);
+                        Error::local_error(ErrorKind::InvalidParam)
+                    })?,
+                    &signature.try_into()?,
+                    &mut out_timeout_ptr,
+                    &mut out_policy_ticket_ptr,
+                )
+            },
+            |ret| {
+                error!("Error when sending policy signed: {}", ret);
+            },
+        )?;
+        Ok((
+            Timeout::try_from(Context::ffi_data_to_owned(out_timeout_ptr))?,
+            AuthTicket::try_from(Context::ffi_data_to_owned(out_policy_ticket_ptr))?,
+        ))
     }
 
     /// Cause the policy to require a secret in authValue
@@ -82,35 +81,34 @@ impl Context {
     ) -> Result<(Timeout, AuthTicket)> {
         let mut out_timeout_ptr = null_mut();
         let mut out_policy_ticket_ptr = null_mut();
-        let ret = unsafe {
-            Esys_PolicySecret(
-                self.mut_context(),
-                auth_handle.into(),
-                SessionHandle::from(policy_session).into(),
-                self.required_session_1()?,
-                self.optional_session_2(),
-                self.optional_session_3(),
-                &nonce_tpm.into(),
-                &cp_hash_a.into(),
-                &policy_ref.into(),
-                i32::try_from(expiration.map_or(0, |v| v.as_secs())).map_err(|e| {
-                    error!("Unable to convert duration to i32: {}", e);
-                    Error::local_error(ErrorKind::InvalidParam)
-                })?,
-                &mut out_timeout_ptr,
-                &mut out_policy_ticket_ptr,
-            )
-        };
-        let ret = Error::from_tss_rc(ret);
-        if ret.is_success() {
-            Ok((
-                Timeout::try_from(Context::ffi_data_to_owned(out_timeout_ptr))?,
-                AuthTicket::try_from(Context::ffi_data_to_owned(out_policy_ticket_ptr))?,
-            ))
-        } else {
-            error!("Error when sending policy secret: {}", ret);
-            Err(ret)
-        }
+        ReturnCode::ensure_success(
+            unsafe {
+                Esys_PolicySecret(
+                    self.mut_context(),
+                    auth_handle.into(),
+                    SessionHandle::from(policy_session).into(),
+                    self.required_session_1()?,
+                    self.optional_session_2(),
+                    self.optional_session_3(),
+                    &nonce_tpm.into(),
+                    &cp_hash_a.into(),
+                    &policy_ref.into(),
+                    i32::try_from(expiration.map_or(0, |v| v.as_secs())).map_err(|e| {
+                        error!("Unable to convert duration to i32: {}", e);
+                        Error::local_error(ErrorKind::InvalidParam)
+                    })?,
+                    &mut out_timeout_ptr,
+                    &mut out_policy_ticket_ptr,
+                )
+            },
+            |ret| {
+                error!("Error when sending policy secret: {}", ret);
+            },
+        )?;
+        Ok((
+            Timeout::try_from(Context::ffi_data_to_owned(out_timeout_ptr))?,
+            AuthTicket::try_from(Context::ffi_data_to_owned(out_policy_ticket_ptr))?,
+        ))
     }
 
     // Missing function: PolicyTicket
@@ -140,23 +138,21 @@ impl Context {
             return Err(Error::local_error(ErrorKind::WrongParamSize));
         }
 
-        let ret = unsafe {
-            Esys_PolicyOR(
-                self.mut_context(),
-                SessionHandle::from(policy_session).into(),
-                self.optional_session_1(),
-                self.optional_session_2(),
-                self.optional_session_3(),
-                &digest_list.try_into()?,
-            )
-        };
-        let ret = Error::from_tss_rc(ret);
-        if ret.is_success() {
-            Ok(())
-        } else {
-            error!("Error when computing policy OR: {}", ret);
-            Err(ret)
-        }
+        ReturnCode::ensure_success(
+            unsafe {
+                Esys_PolicyOR(
+                    self.mut_context(),
+                    SessionHandle::from(policy_session).into(),
+                    self.optional_session_1(),
+                    self.optional_session_2(),
+                    self.optional_session_3(),
+                    &digest_list.try_into()?,
+                )
+            },
+            |ret| {
+                error!("Error when computing policy OR: {}", ret);
+            },
+        )
     }
 
     /// Cause conditional gating of a policy based on PCR.
@@ -176,24 +172,22 @@ impl Context {
         pcr_policy_digest: Digest,
         pcr_selection_list: PcrSelectionList,
     ) -> Result<()> {
-        let ret = unsafe {
-            Esys_PolicyPCR(
-                self.mut_context(),
-                SessionHandle::from(policy_session).into(),
-                self.optional_session_1(),
-                self.optional_session_2(),
-                self.optional_session_3(),
-                &pcr_policy_digest.into(),
-                &pcr_selection_list.into(),
-            )
-        };
-        let ret = Error::from_tss_rc(ret);
-        if ret.is_success() {
-            Ok(())
-        } else {
-            error!("Error when computing policy PCR: {}", ret);
-            Err(ret)
-        }
+        ReturnCode::ensure_success(
+            unsafe {
+                Esys_PolicyPCR(
+                    self.mut_context(),
+                    SessionHandle::from(policy_session).into(),
+                    self.optional_session_1(),
+                    self.optional_session_2(),
+                    self.optional_session_3(),
+                    &pcr_policy_digest.into(),
+                    &pcr_selection_list.into(),
+                )
+            },
+            |ret| {
+                error!("Error when computing policy PCR: {}", ret);
+            },
+        )
     }
 
     /// Cause conditional gating of a policy based on locality.
@@ -205,23 +199,21 @@ impl Context {
         policy_session: PolicySession,
         locality: LocalityAttributes,
     ) -> Result<()> {
-        let ret = unsafe {
-            Esys_PolicyLocality(
-                self.mut_context(),
-                SessionHandle::from(policy_session).into(),
-                self.optional_session_1(),
-                self.optional_session_2(),
-                self.optional_session_3(),
-                locality.into(),
-            )
-        };
-        let ret = Error::from_tss_rc(ret);
-        if ret.is_success() {
-            Ok(())
-        } else {
-            error!("Error when computing policy locality: {}", ret);
-            Err(ret)
-        }
+        ReturnCode::ensure_success(
+            unsafe {
+                Esys_PolicyLocality(
+                    self.mut_context(),
+                    SessionHandle::from(policy_session).into(),
+                    self.optional_session_1(),
+                    self.optional_session_2(),
+                    self.optional_session_3(),
+                    locality.into(),
+                )
+            },
+            |ret| {
+                error!("Error when computing policy locality: {}", ret);
+            },
+        )
     }
 
     // Missing function: PolicyNV
@@ -236,23 +228,21 @@ impl Context {
         policy_session: PolicySession,
         code: CommandCode,
     ) -> Result<()> {
-        let ret = unsafe {
-            Esys_PolicyCommandCode(
-                self.mut_context(),
-                SessionHandle::from(policy_session).into(),
-                self.optional_session_1(),
-                self.optional_session_2(),
-                self.optional_session_3(),
-                code.into(),
-            )
-        };
-        let ret = Error::from_tss_rc(ret);
-        if ret.is_success() {
-            Ok(())
-        } else {
-            error!("Error when computing policy command code: {}", ret);
-            Err(ret)
-        }
+        ReturnCode::ensure_success(
+            unsafe {
+                Esys_PolicyCommandCode(
+                    self.mut_context(),
+                    SessionHandle::from(policy_session).into(),
+                    self.optional_session_1(),
+                    self.optional_session_2(),
+                    self.optional_session_3(),
+                    code.into(),
+                )
+            },
+            |ret| {
+                error!("Error when computing policy command code: {}", ret);
+            },
+        )
     }
 
     /// Cause conditional gating of a policy based on physical presence.
@@ -260,22 +250,20 @@ impl Context {
     /// The TPM will ensure that the current policy can only complete when physical
     /// presence is asserted. The way this is done is implementation-specific.
     pub fn policy_physical_presence(&mut self, policy_session: PolicySession) -> Result<()> {
-        let ret = unsafe {
-            Esys_PolicyPhysicalPresence(
-                self.mut_context(),
-                SessionHandle::from(policy_session).into(),
-                self.optional_session_1(),
-                self.optional_session_2(),
-                self.optional_session_3(),
-            )
-        };
-        let ret = Error::from_tss_rc(ret);
-        if ret.is_success() {
-            Ok(())
-        } else {
-            error!("Error when computing policy physical presence: {}", ret);
-            Err(ret)
-        }
+        ReturnCode::ensure_success(
+            unsafe {
+                Esys_PolicyPhysicalPresence(
+                    self.mut_context(),
+                    SessionHandle::from(policy_session).into(),
+                    self.optional_session_1(),
+                    self.optional_session_2(),
+                    self.optional_session_3(),
+                )
+            },
+            |ret| {
+                error!("Error when computing policy physical presence: {}", ret);
+            },
+        )
     }
 
     /// Cause conditional gating of a policy based on command parameters.
@@ -287,23 +275,21 @@ impl Context {
         policy_session: PolicySession,
         cp_hash_a: Digest,
     ) -> Result<()> {
-        let ret = unsafe {
-            Esys_PolicyCpHash(
-                self.mut_context(),
-                SessionHandle::from(policy_session).into(),
-                self.optional_session_1(),
-                self.optional_session_2(),
-                self.optional_session_3(),
-                &cp_hash_a.into(),
-            )
-        };
-        let ret = Error::from_tss_rc(ret);
-        if ret.is_success() {
-            Ok(())
-        } else {
-            error!("Error when computing policy command parameters: {}", ret);
-            Err(ret)
-        }
+        ReturnCode::ensure_success(
+            unsafe {
+                Esys_PolicyCpHash(
+                    self.mut_context(),
+                    SessionHandle::from(policy_session).into(),
+                    self.optional_session_1(),
+                    self.optional_session_2(),
+                    self.optional_session_3(),
+                    &cp_hash_a.into(),
+                )
+            },
+            |ret| {
+                error!("Error when computing policy command parameters: {}", ret);
+            },
+        )
     }
 
     /// Cause conditional gating of a policy based on name hash.
@@ -315,23 +301,21 @@ impl Context {
         policy_session: PolicySession,
         name_hash: Digest,
     ) -> Result<()> {
-        let ret = unsafe {
-            Esys_PolicyNameHash(
-                self.mut_context(),
-                SessionHandle::from(policy_session).into(),
-                self.optional_session_1(),
-                self.optional_session_2(),
-                self.optional_session_3(),
-                &name_hash.into(),
-            )
-        };
-        let ret = Error::from_tss_rc(ret);
-        if ret.is_success() {
-            Ok(())
-        } else {
-            error!("Error when computing policy name hash: {}", ret);
-            Err(ret)
-        }
+        ReturnCode::ensure_success(
+            unsafe {
+                Esys_PolicyNameHash(
+                    self.mut_context(),
+                    SessionHandle::from(policy_session).into(),
+                    self.optional_session_1(),
+                    self.optional_session_2(),
+                    self.optional_session_3(),
+                    &name_hash.into(),
+                )
+            },
+            |ret| {
+                error!("Error when computing policy name hash: {}", ret);
+            },
+        )
     }
 
     /// Cause conditional gating of a policy based on duplication parent's name.
@@ -421,25 +405,23 @@ impl Context {
         new_parent_name: Name,
         include_object: bool,
     ) -> Result<()> {
-        let ret = unsafe {
-            Esys_PolicyDuplicationSelect(
-                self.mut_context(),
-                SessionHandle::from(policy_session).into(),
-                self.optional_session_1(),
-                self.optional_session_2(),
-                self.optional_session_3(),
-                &object_name.into(),
-                &new_parent_name.into(),
-                if include_object { 1 } else { 0 },
-            )
-        };
-        let ret = Error::from_tss_rc(ret);
-        if ret.is_success() {
-            Ok(())
-        } else {
-            error!("Error when computing policy duplication select: {}", ret);
-            Err(ret)
-        }
+        ReturnCode::ensure_success(
+            unsafe {
+                Esys_PolicyDuplicationSelect(
+                    self.mut_context(),
+                    SessionHandle::from(policy_session).into(),
+                    self.optional_session_1(),
+                    self.optional_session_2(),
+                    self.optional_session_3(),
+                    &object_name.into(),
+                    &new_parent_name.into(),
+                    YesNo::from(include_object).into(),
+                )
+            },
+            |ret| {
+                error!("Error when computing policy duplication select: {}", ret);
+            },
+        )
     }
 
     /// Cause conditional gating of a policy based on an authorized policy
@@ -457,26 +439,24 @@ impl Context {
         key_sign: &Name,
         check_ticket: VerifiedTicket,
     ) -> Result<()> {
-        let ret = unsafe {
-            Esys_PolicyAuthorize(
-                self.mut_context(),
-                SessionHandle::from(policy_session).into(),
-                self.optional_session_1(),
-                self.optional_session_2(),
-                self.optional_session_3(),
-                &approved_policy.into(),
-                &policy_ref.into(),
-                key_sign.as_ref(),
-                &check_ticket.try_into()?,
-            )
-        };
-        let ret = Error::from_tss_rc(ret);
-        if ret.is_success() {
-            Ok(())
-        } else {
-            error!("Error when computing policy authorize: {}", ret);
-            Err(ret)
-        }
+        ReturnCode::ensure_success(
+            unsafe {
+                Esys_PolicyAuthorize(
+                    self.mut_context(),
+                    SessionHandle::from(policy_session).into(),
+                    self.optional_session_1(),
+                    self.optional_session_2(),
+                    self.optional_session_3(),
+                    &approved_policy.into(),
+                    &policy_ref.into(),
+                    key_sign.as_ref(),
+                    &check_ticket.try_into()?,
+                )
+            },
+            |ret| {
+                error!("Error when computing policy authorize: {}", ret);
+            },
+        )
     }
 
     /// Cause conditional gating of a policy based on authValue.
@@ -484,22 +464,20 @@ impl Context {
     /// The TPM will ensure that the current policy requires the user to know the authValue
     /// used when creating the object.
     pub fn policy_auth_value(&mut self, policy_session: PolicySession) -> Result<()> {
-        let ret = unsafe {
-            Esys_PolicyAuthValue(
-                self.mut_context(),
-                SessionHandle::from(policy_session).into(),
-                self.optional_session_1(),
-                self.optional_session_2(),
-                self.optional_session_3(),
-            )
-        };
-        let ret = Error::from_tss_rc(ret);
-        if ret.is_success() {
-            Ok(())
-        } else {
-            error!("Error when computing policy auth value: {}", ret);
-            Err(ret)
-        }
+        ReturnCode::ensure_success(
+            unsafe {
+                Esys_PolicyAuthValue(
+                    self.mut_context(),
+                    SessionHandle::from(policy_session).into(),
+                    self.optional_session_1(),
+                    self.optional_session_2(),
+                    self.optional_session_3(),
+                )
+            },
+            |ret| {
+                error!("Error when computing policy auth value: {}", ret);
+            },
+        )
     }
 
     /// Cause conditional gating of a policy based on password.
@@ -507,48 +485,46 @@ impl Context {
     /// The TPM will ensure that the current policy requires the user to know the password
     /// used when creating the object.
     pub fn policy_password(&mut self, policy_session: PolicySession) -> Result<()> {
-        let ret = unsafe {
-            Esys_PolicyPassword(
-                self.mut_context(),
-                SessionHandle::from(policy_session).into(),
-                self.optional_session_1(),
-                self.optional_session_2(),
-                self.optional_session_3(),
-            )
-        };
-        let ret = Error::from_tss_rc(ret);
-        if ret.is_success() {
-            Ok(())
-        } else {
-            error!("Error when computing policy password: {}", ret);
-            Err(ret)
-        }
+        ReturnCode::ensure_success(
+            unsafe {
+                Esys_PolicyPassword(
+                    self.mut_context(),
+                    SessionHandle::from(policy_session).into(),
+                    self.optional_session_1(),
+                    self.optional_session_2(),
+                    self.optional_session_3(),
+                )
+            },
+            |ret| {
+                error!("Error when computing policy password: {}", ret);
+            },
+        )
     }
 
     /// Function for retrieving the current policy digest for
     /// the session.
     pub fn policy_get_digest(&mut self, policy_session: PolicySession) -> Result<Digest> {
         let mut policy_digest_ptr = null_mut();
-        let ret = unsafe {
-            Esys_PolicyGetDigest(
-                self.mut_context(),
-                SessionHandle::from(policy_session).into(),
-                self.optional_session_1(),
-                self.optional_session_2(),
-                self.optional_session_3(),
-                &mut policy_digest_ptr,
-            )
-        };
-        let ret = Error::from_tss_rc(ret);
-        if ret.is_success() {
-            Digest::try_from(Context::ffi_data_to_owned(policy_digest_ptr))
-        } else {
-            error!(
-                "Error failed to perform policy get digest operation: {}.",
-                ret
-            );
-            Err(ret)
-        }
+        ReturnCode::ensure_success(
+            unsafe {
+                Esys_PolicyGetDigest(
+                    self.mut_context(),
+                    SessionHandle::from(policy_session).into(),
+                    self.optional_session_1(),
+                    self.optional_session_2(),
+                    self.optional_session_3(),
+                    &mut policy_digest_ptr,
+                )
+            },
+            |ret| {
+                error!(
+                    "Error failed to perform policy get digest operation: {}.",
+                    ret
+                );
+            },
+        )?;
+
+        Digest::try_from(Context::ffi_data_to_owned(policy_digest_ptr))
     }
 
     /// Cause conditional gating of a policy based on NV written state.
@@ -559,23 +535,21 @@ impl Context {
         policy_session: PolicySession,
         written_set: bool,
     ) -> Result<()> {
-        let ret = unsafe {
-            Esys_PolicyNvWritten(
-                self.mut_context(),
-                SessionHandle::from(policy_session).into(),
-                self.optional_session_1(),
-                self.optional_session_2(),
-                self.optional_session_3(),
-                YesNo::from(written_set).into(),
-            )
-        };
-        let ret = Error::from_tss_rc(ret);
-        if ret.is_success() {
-            Ok(())
-        } else {
-            error!("Error when computing policy NV written state: {}", ret);
-            Err(ret)
-        }
+        ReturnCode::ensure_success(
+            unsafe {
+                Esys_PolicyNvWritten(
+                    self.mut_context(),
+                    SessionHandle::from(policy_session).into(),
+                    self.optional_session_1(),
+                    self.optional_session_2(),
+                    self.optional_session_3(),
+                    if written_set { 1 } else { 0 },
+                )
+            },
+            |ret| {
+                error!("Error when computing policy NV written state: {}", ret);
+            },
+        )
     }
 
     /// Bind policy to a specific creation template.
@@ -588,26 +562,24 @@ impl Context {
         policy_session: PolicySession,
         template_hash: Digest,
     ) -> Result<()> {
-        let ret = unsafe {
-            Esys_PolicyTemplate(
-                self.mut_context(),
-                SessionHandle::from(policy_session).into(),
-                self.optional_session_1(),
-                self.optional_session_2(),
-                self.optional_session_3(),
-                &template_hash.into(),
-            )
-        };
-        let ret = Error::from_tss_rc(ret);
-        if ret.is_success() {
-            Ok(())
-        } else {
-            error!(
-                "Failed to bind template to a specific creation template: {}",
-                ret
-            );
-            Err(ret)
-        }
+        ReturnCode::ensure_success(
+            unsafe {
+                Esys_PolicyTemplate(
+                    self.mut_context(),
+                    SessionHandle::from(policy_session).into(),
+                    self.optional_session_1(),
+                    self.optional_session_2(),
+                    self.optional_session_3(),
+                    &template_hash.into(),
+                )
+            },
+            |ret| {
+                error!(
+                    "Failed to bind template to a specific creation template: {}",
+                    ret
+                );
+            },
+        )
     }
     // Missing function: PolicyAuthorizeNV
 }

@@ -8,7 +8,7 @@ use crate::{
     },
     structures::{Digest, HashcheckTicket, InitialValue, MaxBuffer},
     tss2_esys::{Esys_EncryptDecrypt2, Esys_HMAC, Esys_Hash},
-    Context, Error, Result,
+    Context, Result, ReturnCode,
 };
 use log::error;
 use std::convert::TryFrom;
@@ -193,35 +193,33 @@ impl Context {
     ) -> Result<(MaxBuffer, InitialValue)> {
         let mut out_data_ptr = null_mut();
         let mut iv_out_ptr = null_mut();
-        let ret = unsafe {
-            Esys_EncryptDecrypt2(
-                self.mut_context(),
-                key_handle.into(),
-                self.required_session_1()?,
-                self.optional_session_2(),
-                self.optional_session_3(),
-                &in_data.into(),
-                decrypt.into(),
-                mode.into(),
-                &initial_value_in.into(),
-                &mut out_data_ptr,
-                &mut iv_out_ptr,
-            )
-        };
-
-        let ret = Error::from_tss_rc(ret);
-        if ret.is_success() {
-            Ok((
-                MaxBuffer::try_from(Context::ffi_data_to_owned(out_data_ptr))?,
-                InitialValue::try_from(Context::ffi_data_to_owned(iv_out_ptr))?,
-            ))
-        } else {
-            error!(
-                "Error failed to perform encrypt or decrypt operations {}",
-                ret
-            );
-            Err(ret)
-        }
+        ReturnCode::ensure_success(
+            unsafe {
+                Esys_EncryptDecrypt2(
+                    self.mut_context(),
+                    key_handle.into(),
+                    self.required_session_1()?,
+                    self.optional_session_2(),
+                    self.optional_session_3(),
+                    &in_data.into(),
+                    decrypt.into(),
+                    mode.into(),
+                    &initial_value_in.into(),
+                    &mut out_data_ptr,
+                    &mut iv_out_ptr,
+                )
+            },
+            |ret| {
+                error!(
+                    "Error failed to perform encrypt or decrypt operations {}",
+                    ret
+                );
+            },
+        )?;
+        Ok((
+            MaxBuffer::try_from(Context::ffi_data_to_owned(out_data_ptr))?,
+            InitialValue::try_from(Context::ffi_data_to_owned(iv_out_ptr))?,
+        ))
     }
 
     /// Hashes the provided data using the specified algorithm.
@@ -271,33 +269,32 @@ impl Context {
     ) -> Result<(Digest, HashcheckTicket)> {
         let mut out_hash_ptr = null_mut();
         let mut validation_ptr = null_mut();
-        let ret = unsafe {
-            Esys_Hash(
-                self.mut_context(),
-                self.optional_session_1(),
-                self.optional_session_2(),
-                self.optional_session_3(),
-                &data.into(),
-                hashing_algorithm.into(),
-                if cfg!(hierarchy_is_esys_tr) {
-                    ObjectHandle::from(hierarchy).into()
-                } else {
-                    TpmHandle::from(hierarchy).into()
-                },
-                &mut out_hash_ptr,
-                &mut validation_ptr,
-            )
-        };
-        let ret = Error::from_tss_rc(ret);
-        if ret.is_success() {
-            Ok((
-                Digest::try_from(Context::ffi_data_to_owned(out_hash_ptr))?,
-                HashcheckTicket::try_from(Context::ffi_data_to_owned(validation_ptr))?,
-            ))
-        } else {
-            error!("Error failed to perform hash operation: {}", ret);
-            Err(ret)
-        }
+        ReturnCode::ensure_success(
+            unsafe {
+                Esys_Hash(
+                    self.mut_context(),
+                    self.optional_session_1(),
+                    self.optional_session_2(),
+                    self.optional_session_3(),
+                    &data.into(),
+                    hashing_algorithm.into(),
+                    if cfg!(hierarchy_is_esys_tr) {
+                        ObjectHandle::from(hierarchy).into()
+                    } else {
+                        TpmHandle::from(hierarchy).into()
+                    },
+                    &mut out_hash_ptr,
+                    &mut validation_ptr,
+                )
+            },
+            |ret| {
+                error!("Error failed to perform hash operation: {}", ret);
+            },
+        )?;
+        Ok((
+            Digest::try_from(Context::ffi_data_to_owned(out_hash_ptr))?,
+            HashcheckTicket::try_from(Context::ffi_data_to_owned(validation_ptr))?,
+        ))
     }
 
     /// Asks the TPM to compute an HMAC over buffer with the specified key
@@ -357,26 +354,24 @@ impl Context {
         alg_hash: HashingAlgorithm,
     ) -> Result<Digest> {
         let mut out_hmac_ptr = null_mut();
-        let ret = unsafe {
-            Esys_HMAC(
-                self.mut_context(),
-                handle.into(),
-                self.required_session_1()?,
-                self.optional_session_2(),
-                self.optional_session_3(),
-                &buffer.into(),
-                alg_hash.into(),
-                &mut out_hmac_ptr,
-            )
-        };
-        let ret = Error::from_tss_rc(ret);
-
-        if ret.is_success() {
-            Digest::try_from(Context::ffi_data_to_owned(out_hmac_ptr))
-        } else {
-            error!("Error in hmac: {}", ret);
-            Err(ret)
-        }
+        ReturnCode::ensure_success(
+            unsafe {
+                Esys_HMAC(
+                    self.mut_context(),
+                    handle.into(),
+                    self.required_session_1()?,
+                    self.optional_session_2(),
+                    self.optional_session_3(),
+                    &buffer.into(),
+                    alg_hash.into(),
+                    &mut out_hmac_ptr,
+                )
+            },
+            |ret| {
+                error!("Error in hmac: {}", ret);
+            },
+        )?;
+        Digest::try_from(Context::ffi_data_to_owned(out_hmac_ptr))
     }
 
     // Missing function: MAC

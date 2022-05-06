@@ -9,7 +9,11 @@ mod sapi;
 mod tcti;
 mod tpm;
 
-use crate::{constants::return_code::ReturnCodeLayer, tss2_esys::TSS2_RC, Error, Result};
+use crate::{
+    constants::{return_code::ReturnCodeLayer, tss::TSS2_RC_SUCCESS},
+    tss2_esys::TSS2_RC,
+    Error, Result,
+};
 pub use base::BaseReturnCode;
 use bitfield::bitfield;
 pub use esapi::EsapiReturnCode;
@@ -35,6 +39,28 @@ pub enum ReturnCode {
     Tcti(TctiReturnCode),
     ResourceManager(BaseReturnCode),
     TpmResourceManager(TpmResponseCode),
+}
+
+impl ReturnCode {
+    /// Ensures that the return code indicates success.
+    ///
+    /// # Arguments
+    /// * `tss2_rc` - A TSS return code value.
+    /// * `f` - Function that will be executed before an error is returned.
+    ///
+    /// # Errors
+    /// Generates the error indicated by the return code.
+    pub(crate) fn ensure_success<F>(tss2_rc: TSS2_RC, f: F) -> Result<()>
+    where
+        F: FnOnce(TSS2_RC),
+    {
+        if ReturnCodeStructure(tss2_rc).is_success() {
+            Ok(())
+        } else {
+            f(tss2_rc);
+            Err(Error::tss_error(ReturnCode::try_from(tss2_rc)?))
+        }
+    }
 }
 
 impl TryFrom<TSS2_RC> for ReturnCode {
@@ -198,5 +224,10 @@ impl ReturnCodeStructure {
     /// valid layer then an error is returned.
     fn return_code_layer(&self) -> Result<ReturnCodeLayer> {
         ReturnCodeLayer::try_from(self.layer_data())
+    }
+
+    /// Checks if the return code indicates success.
+    const fn is_success(&self) -> bool {
+        self.0 == TSS2_RC_SUCCESS
     }
 }

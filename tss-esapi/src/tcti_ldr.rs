@@ -5,7 +5,7 @@
 //! See section 3.5 of the TCG TSS 2.0 TPM Command Transmission Interface(TCTI) API
 //! Specification.
 
-use crate::{Error, Result, WrapperErrorKind};
+use crate::{Error, Result, ReturnCode, WrapperErrorKind};
 use log::error;
 use regex::Regex;
 use std::convert::TryFrom;
@@ -37,15 +37,15 @@ impl TctiContext {
 
         let tcti_name_conf = CString::try_from(name_conf)?;
 
-        unsafe {
-            let ret =
-                tss_esapi_sys::Tss2_TctiLdr_Initialize(tcti_name_conf.as_ptr(), &mut tcti_context);
-            let ret = Error::from_tss_rc(ret);
-            if !ret.is_success() {
+        ReturnCode::ensure_success(
+            unsafe {
+                tss_esapi_sys::Tss2_TctiLdr_Initialize(tcti_name_conf.as_ptr(), &mut tcti_context)
+            },
+            |ret| {
                 error!("Error when creating a TCTI context: {}", ret);
-                return Err(ret);
-            }
-        }
+            },
+        )?;
+
         Ok(TctiContext { tcti_context })
     }
 
@@ -84,14 +84,13 @@ impl TctiInfo {
 
         let tcti_name_conf = CString::try_from(name_conf)?;
 
-        unsafe {
-            let ret = tss_esapi_sys::Tss2_TctiLdr_GetInfo(tcti_name_conf.as_ptr(), &mut tcti_info);
-            let ret = Error::from_tss_rc(ret);
-            if !ret.is_success() {
+        ReturnCode::ensure_success(
+            unsafe { tss_esapi_sys::Tss2_TctiLdr_GetInfo(tcti_name_conf.as_ptr(), &mut tcti_info) },
+            |ret| {
                 error!("Error when getting the TCTI_INFO structure: {}", ret);
-                return Err(ret);
-            }
-        }
+            },
+        )?;
+
         Ok(TctiInfo { tcti_info })
     }
 

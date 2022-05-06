@@ -5,7 +5,7 @@ use crate::{
     structures::Data,
     structures::{EccPoint, PublicKeyRsa, RsaDecryptionScheme},
     tss2_esys::{Esys_ECDH_KeyGen, Esys_ECDH_ZGen, Esys_RSA_Decrypt, Esys_RSA_Encrypt},
-    Context, Error, Result,
+    Context, Result, ReturnCode,
 };
 use log::error;
 use std::convert::TryFrom;
@@ -21,27 +21,25 @@ impl Context {
         label: Data,
     ) -> Result<PublicKeyRsa> {
         let mut out_data_ptr = null_mut();
-        let ret = unsafe {
-            Esys_RSA_Encrypt(
-                self.mut_context(),
-                key_handle.into(),
-                self.optional_session_1(),
-                self.optional_session_2(),
-                self.optional_session_3(),
-                &message.into(),
-                &in_scheme.into(),
-                &label.into(),
-                &mut out_data_ptr,
-            )
-        };
-        let ret = Error::from_tss_rc(ret);
-
-        if ret.is_success() {
-            PublicKeyRsa::try_from(Context::ffi_data_to_owned(out_data_ptr))
-        } else {
-            error!("Error when performing RSA encryption: {}", ret);
-            Err(ret)
-        }
+        ReturnCode::ensure_success(
+            unsafe {
+                Esys_RSA_Encrypt(
+                    self.mut_context(),
+                    key_handle.into(),
+                    self.optional_session_1(),
+                    self.optional_session_2(),
+                    self.optional_session_3(),
+                    &message.into(),
+                    &in_scheme.into(),
+                    &label.into(),
+                    &mut out_data_ptr,
+                )
+            },
+            |ret| {
+                error!("Error when performing RSA encryption: {}", ret);
+            },
+        )?;
+        PublicKeyRsa::try_from(Context::ffi_data_to_owned(out_data_ptr))
     }
 
     /// Perform an asymmetric RSA decryption.
@@ -53,27 +51,25 @@ impl Context {
         label: Data,
     ) -> Result<PublicKeyRsa> {
         let mut message_ptr = null_mut();
-        let ret = unsafe {
-            Esys_RSA_Decrypt(
-                self.mut_context(),
-                key_handle.into(),
-                self.required_session_1()?,
-                self.optional_session_2(),
-                self.optional_session_3(),
-                &cipher_text.into(),
-                &in_scheme.into(),
-                &label.into(),
-                &mut message_ptr,
-            )
-        };
-        let ret = Error::from_tss_rc(ret);
-
-        if ret.is_success() {
-            PublicKeyRsa::try_from(Context::ffi_data_to_owned(message_ptr))
-        } else {
-            error!("Error when performing RSA decryption: {}", ret);
-            Err(ret)
-        }
+        ReturnCode::ensure_success(
+            unsafe {
+                Esys_RSA_Decrypt(
+                    self.mut_context(),
+                    key_handle.into(),
+                    self.required_session_1()?,
+                    self.optional_session_2(),
+                    self.optional_session_3(),
+                    &cipher_text.into(),
+                    &in_scheme.into(),
+                    &label.into(),
+                    &mut message_ptr,
+                )
+            },
+            |ret| {
+                error!("Error when performing RSA decryption: {}", ret);
+            },
+        )?;
+        PublicKeyRsa::try_from(Context::ffi_data_to_owned(message_ptr))
     }
 
     /// Generate an ephemeral key pair.
@@ -185,31 +181,29 @@ impl Context {
     pub fn ecdh_key_gen(&mut self, key_handle: KeyHandle) -> Result<(EccPoint, EccPoint)> {
         let mut z_point_ptr = null_mut();
         let mut pub_point_ptr = null_mut();
-        let ret = unsafe {
-            Esys_ECDH_KeyGen(
-                self.mut_context(),
-                key_handle.into(),
-                self.optional_session_1(),
-                self.optional_session_2(),
-                self.optional_session_3(),
-                &mut z_point_ptr,
-                &mut pub_point_ptr,
-            )
-        };
+        ReturnCode::ensure_success(
+            unsafe {
+                Esys_ECDH_KeyGen(
+                    self.mut_context(),
+                    key_handle.into(),
+                    self.optional_session_1(),
+                    self.optional_session_2(),
+                    self.optional_session_3(),
+                    &mut z_point_ptr,
+                    &mut pub_point_ptr,
+                )
+            },
+            |ret| {
+                error!("Error when generating ECDH keypair: {}", ret);
+            },
+        )?;
 
-        let ret = Error::from_tss_rc(ret);
-
-        if ret.is_success() {
-            let z_point = Context::ffi_data_to_owned(z_point_ptr);
-            let pub_point = Context::ffi_data_to_owned(pub_point_ptr);
-            Ok((
-                EccPoint::try_from(z_point.point)?,
-                EccPoint::try_from(pub_point.point)?,
-            ))
-        } else {
-            error!("Error when generating ECDH keypair: {}", ret);
-            Err(ret)
-        }
+        let z_point = Context::ffi_data_to_owned(z_point_ptr);
+        let pub_point = Context::ffi_data_to_owned(pub_point_ptr);
+        Ok((
+            EccPoint::try_from(z_point.point)?,
+            EccPoint::try_from(pub_point.point)?,
+        ))
     }
 
     /// Recover Z value from a public point and a private key.
@@ -323,26 +317,24 @@ impl Context {
     /// ```
     pub fn ecdh_z_gen(&mut self, key_handle: KeyHandle, in_point: EccPoint) -> Result<EccPoint> {
         let mut out_point_ptr = null_mut();
-        let ret = unsafe {
-            Esys_ECDH_ZGen(
-                self.mut_context(),
-                key_handle.into(),
-                self.required_session_1()?,
-                self.optional_session_2(),
-                self.optional_session_3(),
-                &in_point.into(),
-                &mut out_point_ptr,
-            )
-        };
-        let ret = Error::from_tss_rc(ret);
-
-        if ret.is_success() {
-            let out_point = Context::ffi_data_to_owned(out_point_ptr);
-            EccPoint::try_from(out_point.point)
-        } else {
-            error!("Error when performing ECDH ZGen: {}", ret);
-            Err(ret)
-        }
+        ReturnCode::ensure_success(
+            unsafe {
+                Esys_ECDH_ZGen(
+                    self.mut_context(),
+                    key_handle.into(),
+                    self.required_session_1()?,
+                    self.optional_session_2(),
+                    self.optional_session_3(),
+                    &in_point.into(),
+                    &mut out_point_ptr,
+                )
+            },
+            |ret| {
+                error!("Error when performing ECDH ZGen: {}", ret);
+            },
+        )?;
+        let out_point = Context::ffi_data_to_owned(out_point_ptr);
+        EccPoint::try_from(out_point.point)
     }
 
     // Missing function: ECC_Parameters

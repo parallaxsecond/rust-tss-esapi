@@ -7,7 +7,7 @@ use crate::{
     structures::{AttestInfo, ClockInfo, Data, Name},
     traits::{Marshall, UnMarshall},
     tss2_esys::TPMS_ATTEST,
-    Error, Result, WrapperErrorKind,
+    Error, Result, ReturnCode, WrapperErrorKind,
 };
 use log::error;
 use std::convert::{TryFrom, TryInto};
@@ -126,29 +126,26 @@ impl Marshall for Attest {
         let mut buffer = vec![0; Self::BUFFER_SIZE];
         let mut offset = 0;
 
-        let ret = Error::from_tss_rc(unsafe {
-            crate::tss2_esys::Tss2_MU_TPMS_ATTEST_Marshal(
-                &self.clone().into(),
-                buffer.as_mut_ptr(),
-                Self::BUFFER_SIZE.try_into().map_err(|e| {
-                    error!("Failed to convert size of buffer to TSS size_t type: {}", e);
-                    Error::local_error(WrapperErrorKind::InvalidParam)
-                })?,
-                &mut offset,
-            )
-        });
-
-        if !ret.is_success() {
-            return Err(ret);
-        }
+        ReturnCode::ensure_success(
+            unsafe {
+                crate::tss2_esys::Tss2_MU_TPMS_ATTEST_Marshal(
+                    &self.clone().into(),
+                    buffer.as_mut_ptr(),
+                    Self::BUFFER_SIZE.try_into().map_err(|e| {
+                        error!("Failed to convert size of buffer to TSS size_t type: {}", e);
+                        Error::local_error(WrapperErrorKind::InvalidParam)
+                    })?,
+                    &mut offset,
+                )
+            },
+            |ret| error!("Failed to marshal Attest: {}", ret),
+        )?;
 
         let checked_offset = usize::try_from(offset).map_err(|e| {
             error!("Failed to parse offset as usize: {}", e);
             Error::local_error(WrapperErrorKind::InvalidParam)
         })?;
-
         buffer.truncate(checked_offset);
-
         Ok(buffer)
     }
 }
@@ -159,21 +156,20 @@ impl UnMarshall for Attest {
         let mut dest = TPMS_ATTEST::default();
         let mut offset = 0;
 
-        let ret = Error::from_tss_rc(unsafe {
-            crate::tss2_esys::Tss2_MU_TPMS_ATTEST_Unmarshal(
-                marshalled_data.as_ptr(),
-                marshalled_data.len().try_into().map_err(|e| {
-                    error!("Failed to convert length of marshalled data: {}", e);
-                    Error::local_error(WrapperErrorKind::InvalidParam)
-                })?,
-                &mut offset,
-                &mut dest,
-            )
-        });
-
-        if !ret.is_success() {
-            return Err(ret);
-        }
+        ReturnCode::ensure_success(
+            unsafe {
+                crate::tss2_esys::Tss2_MU_TPMS_ATTEST_Unmarshal(
+                    marshalled_data.as_ptr(),
+                    marshalled_data.len().try_into().map_err(|e| {
+                        error!("Failed to convert length of marshalled data: {}", e);
+                        Error::local_error(WrapperErrorKind::InvalidParam)
+                    })?,
+                    &mut offset,
+                    &mut dest,
+                )
+            },
+            |ret| error!("Failed to unmarshal Attest: {}", ret),
+        )?;
 
         Attest::try_from(dest)
     }

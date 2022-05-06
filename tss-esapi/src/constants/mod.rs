@@ -40,7 +40,6 @@ pub mod session_type;
 /// Constants -> TPM_CAP section of the specification
 pub mod capabilities;
 
-pub mod response_code;
 /// Representation of the return code TSS2_RC (TPM_RC)
 pub mod return_code;
 
@@ -66,8 +65,9 @@ pub use ecc::EccCurveIdentifier;
 pub use nv_index_type::NvIndexType;
 pub use pcr_property_tag::PcrPropertyTag;
 pub use property_tag::PropertyTag;
-pub use response_code::{ResponseCode, Tss2ResponseCode, Tss2ResponseCodeKind};
-pub use return_code::{BaseError, ReturnCodeLayer};
+pub use return_code::{
+    BaseError, ReturnCodeLayer, TpmFormatOneError, TpmFormatZeroError, TpmFormatZeroWarning,
+};
 pub use session_type::SessionType;
 pub use startup_type::StartupType;
 pub use structure_tags::StructureTag;

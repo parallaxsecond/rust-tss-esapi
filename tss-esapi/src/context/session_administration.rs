@@ -5,7 +5,7 @@ use crate::{
     handles::SessionHandle,
     interface_types::session_handles::AuthSession,
     tss2_esys::{Esys_TRSess_GetAttributes, Esys_TRSess_SetAttributes},
-    Context, Error, Result,
+    Context, Result, ReturnCode,
 };
 use log::error;
 
@@ -17,40 +17,37 @@ impl Context {
         attributes: SessionAttributes,
         mask: SessionAttributesMask,
     ) -> Result<()> {
-        let ret = unsafe {
-            Esys_TRSess_SetAttributes(
-                self.mut_context(),
-                SessionHandle::from(session).into(),
-                attributes.into(),
-                mask.into(),
-            )
-        };
-        let ret = Error::from_tss_rc(ret);
-        if ret.is_success() {
-            Ok(())
-        } else {
-            error!("Error when setting session attributes: {}", ret);
-            Err(ret)
-        }
+        ReturnCode::ensure_success(
+            unsafe {
+                Esys_TRSess_SetAttributes(
+                    self.mut_context(),
+                    SessionHandle::from(session).into(),
+                    attributes.into(),
+                    mask.into(),
+                )
+            },
+            |ret| {
+                error!("Error when setting session attributes: {}", ret);
+            },
+        )
     }
 
     /// Get session attribute flags.
     pub fn tr_sess_get_attributes(&mut self, session: AuthSession) -> Result<SessionAttributes> {
         let mut flags = 0;
-        let ret = unsafe {
-            Esys_TRSess_GetAttributes(
-                self.mut_context(),
-                SessionHandle::from(session).into(),
-                &mut flags,
-            )
-        };
-        let ret = Error::from_tss_rc(ret);
-        if ret.is_success() {
-            Ok(SessionAttributes(flags))
-        } else {
-            error!("Error when getting session attributes: {}", ret);
-            Err(ret)
-        }
+        ReturnCode::ensure_success(
+            unsafe {
+                Esys_TRSess_GetAttributes(
+                    self.mut_context(),
+                    SessionHandle::from(session).into(),
+                    &mut flags,
+                )
+            },
+            |ret| {
+                error!("Error when getting session attributes: {}", ret);
+            },
+        )?;
+        Ok(SessionAttributes(flags))
     }
 
     // Missing function: Esys_TRSess_GetNonceTPM
