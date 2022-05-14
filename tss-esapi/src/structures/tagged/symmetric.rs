@@ -13,7 +13,7 @@ use std::convert::{TryFrom, TryInto};
 ///
 /// # Details
 /// This corresponds to TPMT_SYM_DEF.
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, Eq, PartialEq)]
 pub enum SymmetricDefinition {
     // TODO: Investigate why TDES is not included...
     Aes {
