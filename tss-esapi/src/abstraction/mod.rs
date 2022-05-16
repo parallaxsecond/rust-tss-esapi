@@ -6,6 +6,7 @@ pub mod cipher;
 pub mod ek;
 pub mod nv;
 pub mod pcr;
+pub mod public;
 pub mod transient;
 
 use crate::{attributes::ObjectAttributesBuilder, structures::PublicBuilder};
