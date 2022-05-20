@@ -126,7 +126,7 @@ fn write() {
         .build()
         .unwrap();
 
-    let mut rw = nv::NvOpenOptions::Public {
+    let mut rw = nv::NvOpenOptions::NewIndex {
         nv_public: owner_nv_public,
         auth_handle: NvAuth::Owner,
     }

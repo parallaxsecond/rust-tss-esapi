@@ -20,7 +20,7 @@ pub fn read_full(
     auth_handle: NvAuth,
     nv_index_handle: NvIndexTpmHandle,
 ) -> Result<Vec<u8>> {
-    let mut rw = NvOpenOptions::Index {
+    let mut rw = NvOpenOptions::ExistingIndex {
         auth_handle,
         nv_index_handle,
     }
@@ -84,13 +84,16 @@ pub fn list(context: &mut Context) -> Result<Vec<(NvPublic, Name)>> {
 }
 
 /// Options and flags which can be used to determine how a non-volatile storage index is opened.
+#[non_exhaustive]
 #[derive(Debug, Clone)]
 pub enum NvOpenOptions {
-    Public {
+    /// Define a new NV space with given auth
+    NewIndex {
         nv_public: NvPublic,
         auth_handle: NvAuth,
     },
-    Index {
+    /// Open the NV space at the given handle, with the given auth
+    ExistingIndex {
         nv_index_handle: NvIndexTpmHandle,
         auth_handle: NvAuth,
     },
@@ -101,18 +104,10 @@ impl NvOpenOptions {
     ///
     /// The non-volatile storage index may be used for reading or writing or both.
     pub fn open<'a>(&self, context: &'a mut Context) -> Result<NvReaderWriter<'a>> {
-        let buffer_size = context
-            .get_tpm_property(PropertyTag::NvBufferMax)?
-            .map(usize::try_from)
-            .transpose()
-            .map_err(|_| {
-                log::error!("Failed to obtain valid maximum NV buffer size");
-                Error::WrapperError(WrapperErrorKind::InternalError)
-            })?
-            .unwrap_or(MaxNvBuffer::MAX_SIZE);
+        let buffer_size = max_nv_buffer_size(context)?;
 
         let (data_size, nv_idx, auth_handle) = match self {
-            NvOpenOptions::Index {
+            NvOpenOptions::ExistingIndex {
                 nv_index_handle,
                 auth_handle,
             } => {
@@ -128,17 +123,18 @@ impl NvOpenOptions {
                     auth_handle,
                 )
             }
-            NvOpenOptions::Public {
+            NvOpenOptions::NewIndex {
                 nv_public,
                 auth_handle,
-            } => {
-                let auth = AuthHandle::from(*auth_handle);
-                (
-                    nv_public.data_size(),
-                    context.nv_define_space(auth.try_into()?, None, nv_public.clone())?,
-                    auth_handle,
-                )
-            }
+            } => (
+                nv_public.data_size(),
+                context.nv_define_space(
+                    AuthHandle::from(*auth_handle).try_into()?,
+                    None,
+                    nv_public.clone(),
+                )?,
+                auth_handle,
+            ),
         };
 
         Ok(NvReaderWriter {
@@ -150,6 +146,19 @@ impl NvOpenOptions {
             offset: 0,
         })
     }
+}
+
+/// Get the maximum buffer size for an NV space.
+pub fn max_nv_buffer_size(ctx: &mut Context) -> Result<usize> {
+    Ok(ctx
+        .get_tpm_property(PropertyTag::NvBufferMax)?
+        .map(usize::try_from)
+        .transpose()
+        .map_err(|_| {
+            log::error!("Failed to obtain valid maximum NV buffer size");
+            Error::WrapperError(WrapperErrorKind::InternalError)
+        })?
+        .unwrap_or(MaxNvBuffer::MAX_SIZE))
 }
 
 /// Non-volatile storage index reader/writer
