@@ -59,6 +59,7 @@ impl Context {
         auth_hash: HashingAlgorithm,
     ) -> Result<Option<AuthSession>> {
         let mut session_handle = ObjectHandle::None.into();
+        let potential_tpm2b_nonce = nonce.map(|v| v.into());
         let ret = unsafe {
             Esys_StartAuthSession(
                 self.mut_context(),
@@ -70,7 +71,7 @@ impl Context {
                 self.optional_session_1(),
                 self.optional_session_2(),
                 self.optional_session_3(),
-                nonce.map_or_else(null, |v| &v.into()),
+                potential_tpm2b_nonce.as_ref().map_or_else(null, |v| v),
                 session_type.into(),
                 &symmetric.try_into()?,
                 auth_hash.into(),
