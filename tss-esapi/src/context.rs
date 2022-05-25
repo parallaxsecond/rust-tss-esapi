@@ -56,7 +56,7 @@ pub struct Context {
     ),
     /// TCTI context handle associated with the ESYS context.
     /// As with the ESYS context, an optional Mbox wrapper allows the context to be deallocated.
-    tcti_context: TctiContext,
+    _tcti_context: TctiContext,
     /// Handle manager that keep tracks of the state of the handles and how they are to be
     /// disposed.
     handle_manager: HandleManager,
@@ -91,12 +91,12 @@ impl Context {
     pub fn new(tcti_name_conf: TctiNameConf) -> Result<Self> {
         let mut esys_context = null_mut();
 
-        let mut tcti_context = TctiContext::initialize(tcti_name_conf)?;
+        let mut _tcti_context = TctiContext::initialize(tcti_name_conf)?;
 
         let ret = unsafe {
             Esys_Initialize(
                 &mut esys_context,
-                tcti_context.tcti_context_ptr(),
+                _tcti_context.tcti_context_ptr(),
                 null_mut(),
             )
         };
@@ -107,7 +107,7 @@ impl Context {
             let context = Context {
                 esys_context,
                 sessions: (None, None, None),
-                tcti_context,
+                _tcti_context,
                 handle_manager: HandleManager::new(),
                 cached_tpm_properties: HashMap::new(),
             };
