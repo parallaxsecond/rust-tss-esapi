@@ -656,7 +656,7 @@ impl AsymSchemeUnion {
             },
             AsymSchemeUnion::AnySig(hash_alg) => TPMU_ASYM_SCHEME {
                 anySig: TPMS_SCHEME_HASH {
-                    hashAlg: hash_alg.map(u16::from).or(Some(TPM2_ALG_NULL)).unwrap(),
+                    hashAlg: hash_alg.map(u16::from).unwrap_or(TPM2_ALG_NULL),
                 },
             },
         }

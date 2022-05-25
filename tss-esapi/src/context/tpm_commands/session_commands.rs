@@ -58,10 +58,7 @@ impl Context {
         symmetric: SymmetricDefinition,
         auth_hash: HashingAlgorithm,
     ) -> Result<Option<AuthSession>> {
-        let nonce_ptr: *const TPM2B_NONCE = match nonce {
-            Some(val) => &val.clone().into(),
-            None => null(),
-        };
+        let potential_tpm2b_nonce = nonce.map(|v| v.clone().into());
 
         let mut esys_session_handle = ESYS_TR_NONE;
 
@@ -73,7 +70,7 @@ impl Context {
                 self.optional_session_1(),
                 self.optional_session_2(),
                 self.optional_session_3(),
-                nonce_ptr,
+                potential_tpm2b_nonce.as_ref().map_or_else(null, |v| v),
                 session_type.into(),
                 &symmetric.try_into()?,
                 auth_hash.into(),
