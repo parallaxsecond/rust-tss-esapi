@@ -116,7 +116,6 @@ fn write() {
         .with_owner_write(true)
         .with_owner_read(true)
         .with_pp_read(true)
-        .with_owner_read(true)
         .build()
         .expect("Failed to create owner nv index attributes");
     let owner_nv_public = NvPublicBuilder::new()
@@ -127,10 +126,12 @@ fn write() {
         .build()
         .unwrap();
 
-    let mut rw = nv::NvOpenOptions::new()
-        .with_nv_public(Some(owner_nv_public))
-        .open(&mut context, NvAuth::Owner, nv_index)
-        .unwrap();
+    let mut rw = nv::NvOpenOptions::NewIndex {
+        nv_public: owner_nv_public,
+        auth_handle: NvAuth::Owner,
+    }
+    .open(&mut context)
+    .unwrap();
 
     let value = [1, 2, 3, 4, 5, 6, 7];
     rw.write_all(&value).unwrap();
