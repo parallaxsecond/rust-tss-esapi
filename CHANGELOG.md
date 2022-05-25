@@ -1,5 +1,36 @@
 # Changelog
 
+## [tss-esapi-7.1.0](https://github.com/parallaxsecond/rust-tss-esapi/tree/tss-esapi-7.1.0) (2022-05-25)
+
+- Fixed a security vulnerability related to using nonces when opening auth sessions. For more details see #344 .
+
+[Full Changelog](https://github.com/parallaxsecond/rust-tss-esapi/compare/tss-esapi-6.1.2...tss-esapi-7.1.0)
+
+**Implemented enhancements:**
+
+- Restructure NvOpenOptions [\#342](https://github.com/parallaxsecond/rust-tss-esapi/pull/342) ([ionut-arm](https://github.com/ionut-arm))
+- Implement ref conversions from TKC to Context [\#336](https://github.com/parallaxsecond/rust-tss-esapi/pull/336) ([ionut-arm](https://github.com/ionut-arm))
+
+**Fixed bugs:**
+
+- Fix dangling pointer issue [\#344](https://github.com/parallaxsecond/rust-tss-esapi/pull/344) ([ionut-arm](https://github.com/ionut-arm))
+
+**Merged pull requests:**
+
+- Add support for converting Public to SubjectPublicKeyInfo [\#341](https://github.com/parallaxsecond/rust-tss-esapi/pull/341) ([THS-on](https://github.com/THS-on))
+- Fixes potential memory leaks from the ffi types. [\#340](https://github.com/parallaxsecond/rust-tss-esapi/pull/340) ([Superhepper](https://github.com/Superhepper))
+- nv: Read, Seek and Write trait implementations [\#324](https://github.com/parallaxsecond/rust-tss-esapi/pull/324) ([rshearman](https://github.com/rshearman))
+
+## [tss-esapi-6.1.2](https://github.com/parallaxsecond/rust-tss-esapi/tree/tss-esapi-6.1.2) (2022-05-25)
+
+- Fixed a security vulnerability related to using nonces when opening auth sessions. For more details see #344 .
+
+[Full Changelog](https://github.com/parallaxsecond/rust-tss-esapi/compare/tss-esapi-7.0.1...tss-esapi-6.1.2)
+
+**Closed issues:**
+
+- Error during start\_auth\_session \(TCTI related error ?\) [\#337](https://github.com/parallaxsecond/rust-tss-esapi/issues/337)
+
 ## [tss-esapi-7.0.1](https://github.com/parallaxsecond/rust-tss-esapi/tree/tss-esapi-7.0.1) (2022-03-18)
 
 [Full Changelog](https://github.com/parallaxsecond/rust-tss-esapi/compare/tss-esapi-7.0.0...tss-esapi-7.0.1)
