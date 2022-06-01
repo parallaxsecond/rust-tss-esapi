@@ -14,7 +14,7 @@ use std::convert::{TryFrom, TryInto};
 ///
 /// # Details
 /// This corresponds to TPMT_PUBLIC_PARMS
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum PublicParameters {
     Rsa(PublicRsaParameters),
     KeyedHash(PublicKeyedHashParameters),
