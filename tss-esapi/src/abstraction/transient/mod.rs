@@ -5,14 +5,7 @@
 //!
 //! This module presents an abstraction over the TPM functionality exposed through the core
 //! `Context` structure. The abstraction works by hiding resource handle management from the
-//! client. This is achieved by passing objects back and forth in the form of contexts. Thus, when
-//! an object is created, its saved context is returned and the object is flushed from the TPM.
-//! Whenever the client needs to use said object, it calls the desired operation with the context
-//! as a parameter - the context is loaded in the TPM, the operation performed and the context
-//! flushed out again before the result is returned.
-//!
-//! Object contexts thus act as an opaque handle that can, however, be used by the client to seralize
-//! and persist the underlying data.
+//! client.
 use crate::{
     attributes::{ObjectAttributesBuilder, SessionAttributesBuilder},
     constants::{tss::*, SessionType, Tss2ResponseCodeKind},
@@ -116,10 +109,10 @@ pub struct ObjectWrapper {
 /// Structure offering an abstracted programming experience.
 ///
 /// The `TransientKeyContext` makes use of a root key from which the other, client-controlled
-/// keyes are derived.
+/// keys are derived.
 ///
-/// The main goal of this abstraction is to make public key cryptography more accessible,
-/// focusing on asymmetric encryption and signatures in particular.
+/// This abstraction makes public key cryptography more accessible, focusing on asymmetric
+/// encryption and signatures in particular, by allowing users to offload object and session management.
 #[allow(clippy::module_name_repetitions)]
 #[derive(Debug)]
 pub struct TransientKeyContext {

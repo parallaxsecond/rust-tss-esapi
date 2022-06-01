@@ -35,9 +35,26 @@
 //! at varying levels of abstraction.
 //! Only platforms based on processors with a word size of at least 16 bits are supported.
 //!
+//! # Relevant specifications
+//! This library is built with insight from Trusted Computing Group specifications. The specs most relevant
+//! here are:
+//! * the [Trusted Platform Module Library Specification, Family “2.0”, Level 00, Revision 01.59](https://trustedcomputinggroup.org/work-groups/trusted-platform-module/)
+//! * the [TCG TSS 2.0 Enhanced System API (ESAPI) Specification, version 1.00, revision 14](https://trustedcomputinggroup.org/resource/tcg-tss-2-0-enhanced-system-api-esapi-specification/)
+//!
+//! The different parts of the first spec mentioned above (henceforth called the TPM2 spec) can be
+//! referenced individually throughout the documentation of this crate, using their part number or name.
+//! For example,
+//! [Part 1, Architecture](https://trustedcomputinggroup.org/wp-content/uploads/TCG_TPM2_r1p59_Part1_Architecture_pub.pdf)
+//! could be referenced as "the Architecture spec" or "part 1 of the TPM2 spec".
+//!
+//! The second spec mentioned above will henceforth be called the ESAPI or ESys spec.
+//!
+//! Some parts of the code relate to features or functionality defined in other specifications (such as the
+//! [Marshaling/Unmarshaling API v1, rev7 spec](https://trustedcomputinggroup.org/resource/tcg-tss-2-0-marshalingunmarshaling-api-specification/)),
+//! and in such cases the specification should be linked and referenced in full.
+//!
 //! # Code structure
-//! Our code structure is mostly derived from
-//! [part 2 of the TPM2 TCG spec](https://trustedcomputinggroup.org/wp-content/uploads/TCG_TPM2_r1p59_Part2_Structures_pub.pdf).
+//! Our code structure is mostly derived from part 2 of the TPM2 spec.
 //! For simplicity, however, we have reduced the depth of the import tree, so most (if not all) types
 //! are at most one level away from root.
 //!
