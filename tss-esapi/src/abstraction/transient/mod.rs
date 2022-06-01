@@ -56,7 +56,9 @@ pub enum KeyParams {
         scheme: RsaScheme,
         /// Public exponent of the key
         ///
-        /// If set to 0, it will default to 2^16 - 1
+        /// If set to 0, it will default to 2^16 - 1.
+        ///
+        /// (Note that the default value for [`RsaExponent`] is 0)
         pub_exponent: RsaExponent,
     },
     Ecc {
@@ -71,6 +73,9 @@ pub enum KeyParams {
 ///
 /// The `public` field represents the public part of the key in plain text,
 /// while `private` is the encrypted version of the private key.
+///
+/// For information on public key formats, see the documentation of [`PublicKey`].
+/// The private part of the key should be treated as an opaque binary blob.
 ///
 /// # Warning
 ///
@@ -94,6 +99,13 @@ impl KeyMaterial {
     }
 }
 
+/// Structure containing all the defining elements of a TPM key
+///
+/// - `material` identifies the numeric value of the key object
+/// - `params` identifies the algorithm to use on the key and other relevant
+/// parameters
+/// - `auth` identifies the optional authentication value to be used with the
+/// key
 #[derive(Debug, Clone)]
 pub struct ObjectWrapper {
     pub material: KeyMaterial,
@@ -106,11 +118,8 @@ pub struct ObjectWrapper {
 /// The `TransientKeyContext` makes use of a root key from which the other, client-controlled
 /// keyes are derived.
 ///
-/// Currently, only functionality necessary for RSA key creation and usage (for signing,
-/// verifying signatures, encryption and decryption) is implemented. The RSA SSA
-/// asymmetric scheme with SHA256 is used for all created and imported signing keys.
-/// The RSA OAEP asymmetric scheme with SHA256 is used for all created and imported
-/// signing/encryption/decryption keys.
+/// The main goal of this abstraction is to make public key cryptography more accessible,
+/// focusing on asymmetric encryption and signatures in particular.
 #[allow(clippy::module_name_repetitions)]
 #[derive(Debug)]
 pub struct TransientKeyContext {
@@ -125,6 +134,10 @@ impl TransientKeyContext {
     ///
     /// If successful, the result contains the [KeyMaterial] of the key and a vector of
     /// bytes forming the authentication value for said key.
+    ///
+    /// The following key attributes are always **set**: `fixed_tpm`, `fixed_parent`, `sensitive_data_origin`,
+    /// `user_with_auth`. The `restricted` attribute is **not set**. See section 8.3 in the Structures
+    /// spec for a detailed description of these attributes.
     ///
     /// # Constraints
     /// * `auth_size` must be at most 32
@@ -170,7 +183,7 @@ impl TransientKeyContext {
 
     /// Load the public part of a key.
     ///
-    /// Returns the key context.
+    /// Returns the appropriate key material after verifying that the key can be loaded.
     pub fn load_external_public_key(
         &mut self,
         public_key: PublicKey,
@@ -190,8 +203,10 @@ impl TransientKeyContext {
 
     /// Encrypt a message with an existing key.
     ///
-    /// Takes the key as a parameter, encrypts the message and returns the ciphertext. A label (i.e.
-    /// nonce) can also be provided.
+    /// Takes the key as a set of parameters (`key_material`, `key_params`, `key_auth`), encrypts the message
+    /// and returns the ciphertext. A label can also be provided which will be associated with the ciphertext.
+    ///
+    /// Note: the data passed as `label` MUST end in a `0x00` byte.
     pub fn rsa_encrypt(
         &mut self,
         key_material: KeyMaterial,
@@ -228,8 +243,10 @@ impl TransientKeyContext {
 
     /// Decrypt ciphertext with an existing key.
     ///
-    /// Takes the key as a parameter, decrypts the ciphertext and returns the plaintext. A label (i.e.
-    /// nonce) can also be provided.
+    /// Takes the key as a set of parameters (`key_material`, `key_params`, `key_auth`), decrypts the ciphertext
+    /// and returns the plaintext. A label which was associated with the ciphertext can also be provided.
+    ///
+    /// Note: the data passed as `label` MUST end in a `0x00` byte.
     pub fn rsa_decrypt(
         &mut self,
         key_material: KeyMaterial,
@@ -266,7 +283,7 @@ impl TransientKeyContext {
 
     /// Sign a digest with an existing key.
     ///
-    /// Takes the key as a parameter, signs and returns the signature.
+    /// Takes the key as a set of parameters (`key_material`, `key_params`, `key_auth`), signs and returns the signature.
     pub fn sign(
         &mut self,
         key_material: KeyMaterial,
