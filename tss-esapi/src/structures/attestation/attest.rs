@@ -27,7 +27,7 @@ pub struct Attest {
 }
 
 impl Attest {
-    /// Returns ttestation type
+    /// Returns attestation type
     pub const fn attestation_type(&self) -> AttestationType {
         self.attestation_type
     }
@@ -37,7 +37,7 @@ impl Attest {
         &self.qualified_signer
     }
 
-    /// Retirns the extra data specified by the caller.
+    /// Returns the extra data specified by the caller.
     pub const fn extra_data(&self) -> &Data {
         &self.extra_data
     }
@@ -121,6 +121,7 @@ impl TryFrom<TPMS_ATTEST> for Attest {
 impl Marshall for Attest {
     const BUFFER_SIZE: usize = std::mem::size_of::<TPMS_ATTEST>();
 
+    /// Produce a marshalled [`TPMS_ATTEST`]
     fn marshall(&self) -> Result<Vec<u8>> {
         let mut buffer = vec![0; Self::BUFFER_SIZE];
         let mut offset = 0;
@@ -153,6 +154,7 @@ impl Marshall for Attest {
 }
 
 impl UnMarshall for Attest {
+    /// Unmarshall the structure from [`TPMS_ATTEST`]
     fn unmarshall(marshalled_data: &[u8]) -> Result<Self> {
         let mut dest = TPMS_ATTEST::default();
         let mut offset = 0;
