@@ -166,6 +166,9 @@ impl TryFrom<TPMT_SENSITIVE> for Sensitive {
 impl Marshall for Sensitive {
     const BUFFER_SIZE: usize = std::mem::size_of::<TPMT_SENSITIVE>();
 
+    /// Produce a marshalled [`TPMT_SENSITIVE`]
+    ///
+    /// Note: for [TPM2B_SENSITIVE] marshalling use [SensitiveBuffer][`crate::structures::SensitiveBuffer]
     fn marshall(&self) -> Result<Vec<u8>> {
         let mut buffer = vec![0; Self::BUFFER_SIZE];
         let mut offset = 0;
@@ -198,6 +201,9 @@ impl Marshall for Sensitive {
 }
 
 impl UnMarshall for Sensitive {
+    /// Unmarshall the structure from [`TPMT_SENSITIVE`]
+    ///
+    /// Note: for [TPM2B_SENSITIVE] marshalling use [SensitiveBuffer][`crate::structures::SensitiveBuffer]
     fn unmarshall(marshalled_data: &[u8]) -> Result<Self> {
         let mut dest = TPMT_SENSITIVE::default();
         let mut offset = 0;

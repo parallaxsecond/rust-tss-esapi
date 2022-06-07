@@ -10,6 +10,9 @@ use log::error;
 use std::convert::{TryFrom, TryInto};
 
 /// Type holding RSA signature information.
+///
+/// For more information about the contents of `signature` see Annex B
+/// in the Architecture spec.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct RsaSignature {
     hashing_algorithm: HashingAlgorithm,
@@ -70,6 +73,9 @@ impl TryFrom<TPMS_SIGNATURE_RSA> for RsaSignature {
 }
 
 /// Type holding ECC signature information.
+///
+/// For more information about the contents of `signature_r` and `signature_s`
+/// see Annex B in the Architecture spec (or Annex D for SM2 signatures).
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct EccSignature {
     hashing_algorithm: HashingAlgorithm,

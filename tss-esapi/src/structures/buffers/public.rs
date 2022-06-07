@@ -119,6 +119,7 @@ impl TryFrom<Public> for PublicBuffer {
 impl Marshall for PublicBuffer {
     const BUFFER_SIZE: usize = std::mem::size_of::<TPM2B_PUBLIC>();
 
+    /// Produce a marshalled [`TPM2B_PUBLIC`]
     fn marshall(&self) -> Result<Vec<u8>> {
         let mut buffer = vec![0; Self::BUFFER_SIZE];
         let mut offset = 0;
@@ -151,6 +152,7 @@ impl Marshall for PublicBuffer {
 }
 
 impl UnMarshall for PublicBuffer {
+    /// Unmarshall the structure from [`TPM2B_PUBLIC`]
     fn unmarshall(marshalled_data: &[u8]) -> Result<Self> {
         let mut dest = TPM2B_PUBLIC::default();
         let mut offset = 0;

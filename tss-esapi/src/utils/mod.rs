@@ -272,9 +272,20 @@ pub fn create_unrestricted_signing_ecc_public(
         .build()
 }
 
+/// Container for public key values
 #[derive(Debug, Clone, Serialize, Deserialize, Zeroize, PartialEq, Eq)]
 pub enum PublicKey {
+    /// RSA public modulus (see 27.5.3.4 in the Architecture spec)
+    ///
+    /// This is the value extracted from the `unique` part of `TPMT_PUBLIC`.
+    /// The exponent is not included here as the expectation is that the
+    /// exponent is always pinned to 65537 (2^16 + 1).
+    ///
+    /// The modulus is in Big-Endian format.
     Rsa(Vec<u8>),
+    /// Public elliptic curve point (see 27.5.3.5 in the Architecture spec)
+    ///
+    /// The x and y coordinates are given uncompressed.
     Ecc { x: Vec<u8>, y: Vec<u8> },
 }
 

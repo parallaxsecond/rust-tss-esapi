@@ -76,7 +76,7 @@ impl PublicBuilder {
         self
     }
 
-    /// Adds the name hash algorithm for the [Public] strucutre
+    /// Adds the name hash algorithm for the [Public] structure
     /// to the builder.
     pub const fn with_name_hashing_algorithm(
         mut self,
@@ -86,7 +86,7 @@ impl PublicBuilder {
         self
     }
 
-    /// Adds the auth policy for the [Public] strucutre
+    /// Adds the auth policy for the [Public] structure
     /// to the builder
     pub fn with_auth_policy(mut self, auth_policy: Digest) -> Self {
         self.auth_policy = Some(auth_policy);
@@ -494,6 +494,9 @@ impl TryFrom<TPMT_PUBLIC> for Public {
 impl Marshall for Public {
     const BUFFER_SIZE: usize = std::mem::size_of::<TPMT_PUBLIC>();
 
+    /// Produce a marshalled [TPMT_PUBLIC]
+    ///
+    /// Note: for [TPM2B_PUBLIC] marshalling use [PublicBuffer][`crate::structures::PublicBuffer]
     fn marshall(&self) -> Result<Vec<u8>> {
         let mut buffer = vec![0; Self::BUFFER_SIZE];
         let mut offset = 0;
@@ -526,6 +529,9 @@ impl Marshall for Public {
 }
 
 impl UnMarshall for Public {
+    /// Unmarshall the structure from [`TPMT_PUBLIC`]
+    ///
+    /// Note: for [TPM2B_PUBLIC] unmarshalling use [PublicBuffer][`crate::structures::PublicBuffer]
     fn unmarshall(marshalled_data: &[u8]) -> Result<Self> {
         let mut dest = TPMT_PUBLIC::default();
         let mut offset = 0;

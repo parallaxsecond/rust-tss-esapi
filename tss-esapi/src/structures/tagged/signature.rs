@@ -132,6 +132,7 @@ impl TryFrom<TPMT_SIGNATURE> for Signature {
 impl Marshall for Signature {
     const BUFFER_SIZE: usize = std::mem::size_of::<TPMT_SIGNATURE>();
 
+    /// Produce a marshalled [`TPMT_SIGNATURE`]
     fn marshall(&self) -> Result<Vec<u8>> {
         let tpmt_sig = TPMT_SIGNATURE::try_from(self.clone())?;
         let mut offset = 0;
@@ -164,6 +165,7 @@ impl Marshall for Signature {
 }
 
 impl UnMarshall for Signature {
+    /// Unmarshall the structure from [`TPMT_SIGNATURE`]
     fn unmarshall(public_buffer: &[u8]) -> Result<Self> {
         let mut tpmt_sig = TPMT_SIGNATURE::default();
         let mut offset = 0;
