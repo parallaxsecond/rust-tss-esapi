@@ -1,3 +1,5 @@
+// Copyright 2021 Contributors to the Parsec project.
+// SPDX-License-Identifier: Apache-2.0
 use tss_esapi::{
     constants::tss::{
         TPM2_ST_ATTEST_CERTIFY, TPM2_ST_ATTEST_COMMAND_AUDIT, TPM2_ST_ATTEST_CREATION,
@@ -5,9 +7,11 @@ use tss_esapi::{
     },
     tss2_esys::{
         TPMS_ALG_PROPERTY, TPMS_ATTEST, TPMS_CERTIFY_INFO, TPMS_CLOCK_INFO,
-        TPMS_COMMAND_AUDIT_INFO, TPMS_CREATION_INFO, TPMS_NV_CERTIFY_INFO, TPMS_PCR_SELECTION,
-        TPMS_QUOTE_INFO, TPMS_SESSION_AUDIT_INFO, TPMS_TAGGED_PCR_SELECT, TPMS_TAGGED_PROPERTY,
-        TPMS_TIME_ATTEST_INFO, TPMS_TIME_INFO,
+        TPMS_COMMAND_AUDIT_INFO, TPMS_CREATION_INFO, TPMS_ECC_PARMS, TPMS_KEYEDHASH_PARMS,
+        TPMS_NV_CERTIFY_INFO, TPMS_PCR_SELECTION, TPMS_QUOTE_INFO, TPMS_RSA_PARMS,
+        TPMS_SCHEME_ECDAA, TPMS_SCHEME_HASH, TPMS_SCHEME_HMAC, TPMS_SCHEME_XOR,
+        TPMS_SESSION_AUDIT_INFO, TPMS_SYMCIPHER_PARMS, TPMS_TAGGED_PCR_SELECT,
+        TPMS_TAGGED_PROPERTY, TPMS_TIME_ATTEST_INFO, TPMS_TIME_INFO,
     },
 };
 
@@ -242,4 +246,78 @@ pub fn ensure_tpms_tagged_pcr_select_equality(
         expected.pcrSelect, actual.pcrSelect,
         "'pcrSelect' value TPMS_TAGGED_PCR_SELECT, mismatch between actual and expected"
     );
+}
+
+pub fn ensure_tpms_rsa_parms_equality(expected: &TPMS_RSA_PARMS, actual: &TPMS_RSA_PARMS) {
+    crate::common::ensure_tpmt_sym_def_object_equality(&expected.symmetric, &actual.symmetric);
+    crate::common::ensure_tpmt_rsa_scheme_equality(&expected.scheme, &actual.scheme);
+    assert_eq!(
+        expected.keyBits, actual.keyBits,
+        "'keyBits' value TPMS_RSA_PARMS, mismatch between actual and expected"
+    );
+
+    assert_eq!(
+        expected.exponent, actual.exponent,
+        "'exponent' value TPMS_RSA_PARMS, mismatch between actual and expected"
+    );
+}
+
+pub fn ensure_tpms_scheme_hash_equality(expected: &TPMS_SCHEME_HASH, actual: &TPMS_SCHEME_HASH) {
+    assert_eq!(
+        expected.hashAlg, actual.hashAlg,
+        "'hashAlg' value TPMS_SCHEME_HASH, mismatch between actual and expected"
+    );
+}
+
+pub fn ensure_tpms_ecc_parms_equality(expected: &TPMS_ECC_PARMS, actual: &TPMS_ECC_PARMS) {
+    crate::common::ensure_tpmt_sym_def_object_equality(&expected.symmetric, &actual.symmetric);
+    crate::common::ensure_tpmt_ecc_scheme_equality(&expected.scheme, &actual.scheme);
+    assert_eq!(
+        expected.curveID, actual.curveID,
+        "'curveID' value TPMS_ECC_PARMS, mismatch between actual and expected"
+    );
+    crate::common::ensure_tpmt_kdf_scheme_equality(&expected.kdf, &actual.kdf);
+}
+
+pub fn ensure_tpms_scheme_ecdaa_equality(expected: &TPMS_SCHEME_ECDAA, actual: &TPMS_SCHEME_ECDAA) {
+    assert_eq!(
+        expected.hashAlg, actual.hashAlg,
+        "'hashAlg' value TPMS_SCHEME_ECDAA, mismatch between actual and expected"
+    );
+    assert_eq!(
+        expected.count, actual.count,
+        "'count' value TPMS_SCHEME_ECDAA, mismatch between actual and expected"
+    );
+}
+
+pub fn ensure_tpms_keyedhash_parms_equality(
+    expected: &TPMS_KEYEDHASH_PARMS,
+    actual: &TPMS_KEYEDHASH_PARMS,
+) {
+    crate::common::ensure_tpmt_keyedhash_scheme_equality(&expected.scheme, &actual.scheme);
+}
+
+pub fn ensure_tpms_scheme_xor_equality(expected: &TPMS_SCHEME_XOR, actual: &TPMS_SCHEME_XOR) {
+    assert_eq!(
+        expected.hashAlg, actual.hashAlg,
+        "'hashAlg' value TPMS_SCHEME_XOR, mismatch between actual and expected"
+    );
+    assert_eq!(
+        expected.kdf, actual.kdf,
+        "'count' value TPMS_SCHEME_XOR, mismatch between actual and expected"
+    );
+}
+
+pub fn ensure_tpms_scheme_hmac_equality(expected: &TPMS_SCHEME_HMAC, actual: &TPMS_SCHEME_HMAC) {
+    assert_eq!(
+        expected.hashAlg, actual.hashAlg,
+        "'hashAlg' value TPMS_SCHEME_HMAC, mismatch between actual and expected"
+    );
+}
+
+pub fn ensure_tpms_symcipher_parms_equality(
+    expected: &TPMS_SYMCIPHER_PARMS,
+    actual: &TPMS_SYMCIPHER_PARMS,
+) {
+    crate::common::ensure_tpmt_sym_def_object_equality(&expected.sym, &actual.sym)
 }
