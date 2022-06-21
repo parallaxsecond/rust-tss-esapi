@@ -13,7 +13,7 @@ use crate::{
         Esys_ObjectChangeAuth, Esys_ReadPublic, Esys_Unseal, TPM2B_SENSITIVE_CREATE,
         TPMS_SENSITIVE_CREATE,
     },
-    Context, Error, Result,
+    Context, Result, ReturnCode,
 };
 use log::error;
 use std::convert::{TryFrom, TryInto};
@@ -66,43 +66,41 @@ impl Context {
         let mut creation_hash_ptr = null_mut();
         let mut creation_ticket_ptr = null_mut();
 
-        let ret = unsafe {
-            Esys_Create(
-                self.mut_context(),
-                parent_handle.into(),
-                self.optional_session_1(),
-                self.optional_session_2(),
-                self.optional_session_3(),
-                &sensitive_create,
-                &public.try_into()?,
-                &outside_info.unwrap_or_default().into(),
-                &creation_pcrs.into(),
-                &mut out_private_ptr,
-                &mut out_public_ptr,
-                &mut creation_data_ptr,
-                &mut creation_hash_ptr,
-                &mut creation_ticket_ptr,
-            )
-        };
-        let ret = Error::from_tss_rc(ret);
-
-        if ret.is_success() {
-            let out_private_owned = Context::ffi_data_to_owned(out_private_ptr);
-            let out_public_owned = Context::ffi_data_to_owned(out_public_ptr);
-            let creation_data_owned = Context::ffi_data_to_owned(creation_data_ptr);
-            let creation_hash_owned = Context::ffi_data_to_owned(creation_hash_ptr);
-            let creation_ticket_owned = Context::ffi_data_to_owned(creation_ticket_ptr);
-            Ok(CreateKeyResult {
-                out_private: Private::try_from(out_private_owned)?,
-                out_public: Public::try_from(out_public_owned)?,
-                creation_data: CreationData::try_from(creation_data_owned)?,
-                creation_hash: Digest::try_from(creation_hash_owned)?,
-                creation_ticket: CreationTicket::try_from(creation_ticket_owned)?,
-            })
-        } else {
-            error!("Error in creating derived key: {}", ret);
-            Err(ret)
-        }
+        ReturnCode::ensure_success(
+            unsafe {
+                Esys_Create(
+                    self.mut_context(),
+                    parent_handle.into(),
+                    self.optional_session_1(),
+                    self.optional_session_2(),
+                    self.optional_session_3(),
+                    &sensitive_create,
+                    &public.try_into()?,
+                    &outside_info.unwrap_or_default().into(),
+                    &creation_pcrs.into(),
+                    &mut out_private_ptr,
+                    &mut out_public_ptr,
+                    &mut creation_data_ptr,
+                    &mut creation_hash_ptr,
+                    &mut creation_ticket_ptr,
+                )
+            },
+            |ret| {
+                error!("Error in creating derived key: {}", ret);
+            },
+        )?;
+        let out_private_owned = Context::ffi_data_to_owned(out_private_ptr);
+        let out_public_owned = Context::ffi_data_to_owned(out_public_ptr);
+        let creation_data_owned = Context::ffi_data_to_owned(creation_data_ptr);
+        let creation_hash_owned = Context::ffi_data_to_owned(creation_hash_ptr);
+        let creation_ticket_owned = Context::ffi_data_to_owned(creation_ticket_ptr);
+        Ok(CreateKeyResult {
+            out_private: Private::try_from(out_private_owned)?,
+            out_public: Public::try_from(out_public_owned)?,
+            creation_data: CreationData::try_from(creation_data_owned)?,
+            creation_hash: Digest::try_from(creation_hash_owned)?,
+            creation_ticket: CreationTicket::try_from(creation_ticket_owned)?,
+        })
     }
 
     /// Load a previously generated key back into the TPM and return its new handle.
@@ -113,28 +111,27 @@ impl Context {
         public: Public,
     ) -> Result<KeyHandle> {
         let mut object_handle = ObjectHandle::None.into();
-        let ret = unsafe {
-            Esys_Load(
-                self.mut_context(),
-                parent_handle.into(),
-                self.optional_session_1(),
-                self.optional_session_2(),
-                self.optional_session_3(),
-                &private.into(),
-                &public.try_into()?,
-                &mut object_handle,
-            )
-        };
-        let ret = Error::from_tss_rc(ret);
-        if ret.is_success() {
-            let key_handle = KeyHandle::from(object_handle);
-            self.handle_manager
-                .add_handle(key_handle.into(), HandleDropAction::Flush)?;
-            Ok(key_handle)
-        } else {
-            error!("Error in loading: {}", ret);
-            Err(ret)
-        }
+        ReturnCode::ensure_success(
+            unsafe {
+                Esys_Load(
+                    self.mut_context(),
+                    parent_handle.into(),
+                    self.optional_session_1(),
+                    self.optional_session_2(),
+                    self.optional_session_3(),
+                    &private.into(),
+                    &public.try_into()?,
+                    &mut object_handle,
+                )
+            },
+            |ret| {
+                error!("Error in loading: {}", ret);
+            },
+        )?;
+        let key_handle = KeyHandle::from(object_handle);
+        self.handle_manager
+            .add_handle(key_handle.into(), HandleDropAction::Flush)?;
+        Ok(key_handle)
     }
 
     /// Load an external key into the TPM and return its new handle.
@@ -145,34 +142,32 @@ impl Context {
         hierarchy: Hierarchy,
     ) -> Result<KeyHandle> {
         let mut object_handle = ObjectHandle::None.into();
-        let ret = unsafe {
-            Esys_LoadExternal(
-                self.mut_context(),
-                self.optional_session_1(),
-                self.optional_session_2(),
-                self.optional_session_3(),
-                &private.try_into()?,
-                &public.try_into()?,
-                if cfg!(tpm2_tss_version = "3") {
-                    ObjectHandle::from(hierarchy).into()
-                } else {
-                    TpmHandle::from(hierarchy).into()
-                },
-                &mut object_handle,
-            )
-        };
+        ReturnCode::ensure_success(
+            unsafe {
+                Esys_LoadExternal(
+                    self.mut_context(),
+                    self.optional_session_1(),
+                    self.optional_session_2(),
+                    self.optional_session_3(),
+                    &private.try_into()?,
+                    &public.try_into()?,
+                    if cfg!(hierarchy_is_esys_tr) {
+                        ObjectHandle::from(hierarchy).into()
+                    } else {
+                        TpmHandle::from(hierarchy).into()
+                    },
+                    &mut object_handle,
+                )
+            },
+            |ret| {
+                error!("Error in loading external object: {}", ret);
+            },
+        )?;
 
-        let ret = Error::from_tss_rc(ret);
-
-        if ret.is_success() {
-            let key_handle = KeyHandle::from(object_handle);
-            self.handle_manager
-                .add_handle(key_handle.into(), HandleDropAction::Flush)?;
-            Ok(key_handle)
-        } else {
-            error!("Error in loading external object: {}", ret);
-            Err(ret)
-        }
+        let key_handle = KeyHandle::from(object_handle);
+        self.handle_manager
+            .add_handle(key_handle.into(), HandleDropAction::Flush)?;
+        Ok(key_handle)
     }
 
     /// Load the public part of an external key and return its new handle.
@@ -182,34 +177,32 @@ impl Context {
         hierarchy: Hierarchy,
     ) -> Result<KeyHandle> {
         let mut object_handle = ObjectHandle::None.into();
-        let ret = unsafe {
-            Esys_LoadExternal(
-                self.mut_context(),
-                self.optional_session_1(),
-                self.optional_session_2(),
-                self.optional_session_3(),
-                null(),
-                &public.try_into()?,
-                if cfg!(tpm2_tss_version = "3") {
-                    ObjectHandle::from(hierarchy).into()
-                } else {
-                    TpmHandle::from(hierarchy).into()
-                },
-                &mut object_handle,
-            )
-        };
+        ReturnCode::ensure_success(
+            unsafe {
+                Esys_LoadExternal(
+                    self.mut_context(),
+                    self.optional_session_1(),
+                    self.optional_session_2(),
+                    self.optional_session_3(),
+                    null(),
+                    &public.try_into()?,
+                    if cfg!(hierarchy_is_esys_tr) {
+                        ObjectHandle::from(hierarchy).into()
+                    } else {
+                        TpmHandle::from(hierarchy).into()
+                    },
+                    &mut object_handle,
+                )
+            },
+            |ret| {
+                error!("Error in loading external public object: {}", ret);
+            },
+        )?;
 
-        let ret = Error::from_tss_rc(ret);
-
-        if ret.is_success() {
-            let key_handle = KeyHandle::from(object_handle);
-            self.handle_manager
-                .add_handle(key_handle.into(), HandleDropAction::Flush)?;
-            Ok(key_handle)
-        } else {
-            error!("Error in loading external public object: {}", ret);
-            Err(ret)
-        }
+        let key_handle = KeyHandle::from(object_handle);
+        self.handle_manager
+            .add_handle(key_handle.into(), HandleDropAction::Flush)?;
+        Ok(key_handle)
     }
 
     /// Read the public part of a key currently in the TPM and return it.
@@ -217,30 +210,28 @@ impl Context {
         let mut out_public_ptr = null_mut();
         let mut name_ptr = null_mut();
         let mut qualified_name_ptr = null_mut();
-        let ret = unsafe {
-            Esys_ReadPublic(
-                self.mut_context(),
-                key_handle.into(),
-                self.optional_session_1(),
-                self.optional_session_2(),
-                self.optional_session_3(),
-                &mut out_public_ptr,
-                &mut name_ptr,
-                &mut qualified_name_ptr,
-            )
-        };
-        let ret = Error::from_tss_rc(ret);
-
-        if ret.is_success() {
-            Ok((
-                Public::try_from(Context::ffi_data_to_owned(out_public_ptr))?,
-                Name::try_from(Context::ffi_data_to_owned(name_ptr))?,
-                Name::try_from(Context::ffi_data_to_owned(qualified_name_ptr))?,
-            ))
-        } else {
-            error!("Error in reading public part of object: {}", ret);
-            Err(ret)
-        }
+        ReturnCode::ensure_success(
+            unsafe {
+                Esys_ReadPublic(
+                    self.mut_context(),
+                    key_handle.into(),
+                    self.optional_session_1(),
+                    self.optional_session_2(),
+                    self.optional_session_3(),
+                    &mut out_public_ptr,
+                    &mut name_ptr,
+                    &mut qualified_name_ptr,
+                )
+            },
+            |ret| {
+                error!("Error in reading public part of object: {}", ret);
+            },
+        )?;
+        Ok((
+            Public::try_from(Context::ffi_data_to_owned(out_public_ptr))?,
+            Name::try_from(Context::ffi_data_to_owned(name_ptr))?,
+            Name::try_from(Context::ffi_data_to_owned(qualified_name_ptr))?,
+        ))
     }
 
     /// Activates a credential in a way that ensures parameters are validated.
@@ -252,28 +243,26 @@ impl Context {
         secret: EncryptedSecret,
     ) -> Result<Digest> {
         let mut cert_info_ptr = null_mut();
-        let ret = unsafe {
-            Esys_ActivateCredential(
-                self.mut_context(),
-                activate_handle.into(),
-                key_handle.into(),
-                self.required_session_1()?,
-                self.required_session_2()?,
-                self.optional_session_3(),
-                &credential_blob.into(),
-                &secret.into(),
-                &mut cert_info_ptr,
-            )
-        };
+        ReturnCode::ensure_success(
+            unsafe {
+                Esys_ActivateCredential(
+                    self.mut_context(),
+                    activate_handle.into(),
+                    key_handle.into(),
+                    self.required_session_1()?,
+                    self.required_session_2()?,
+                    self.optional_session_3(),
+                    &credential_blob.into(),
+                    &secret.into(),
+                    &mut cert_info_ptr,
+                )
+            },
+            |ret| {
+                error!("Error when activating credential: {}", ret);
+            },
+        )?;
 
-        let ret = Error::from_tss_rc(ret);
-
-        if ret.is_success() {
-            Digest::try_from(Context::ffi_data_to_owned(cert_info_ptr))
-        } else {
-            error!("Error when activating credential: {}", ret);
-            Err(ret)
-        }
+        Digest::try_from(Context::ffi_data_to_owned(cert_info_ptr))
     }
 
     /// Perform actions to create a [IdObject] containing an activation credential.
@@ -287,55 +276,50 @@ impl Context {
     ) -> Result<(IdObject, EncryptedSecret)> {
         let mut credential_blob_ptr = null_mut();
         let mut secret_ptr = null_mut();
-        let ret = unsafe {
-            Esys_MakeCredential(
-                self.mut_context(),
-                key_handle.into(),
-                self.optional_session_1(),
-                self.optional_session_2(),
-                self.optional_session_3(),
-                &credential.into(),
-                object_name.as_ref(),
-                &mut credential_blob_ptr,
-                &mut secret_ptr,
-            )
-        };
-
-        let ret = Error::from_tss_rc(ret);
-
-        if ret.is_success() {
-            Ok((
-                IdObject::try_from(Context::ffi_data_to_owned(credential_blob_ptr))?,
-                EncryptedSecret::try_from(Context::ffi_data_to_owned(secret_ptr))?,
-            ))
-        } else {
-            error!("Error when making credential: {}", ret);
-            Err(ret)
-        }
+        ReturnCode::ensure_success(
+            unsafe {
+                Esys_MakeCredential(
+                    self.mut_context(),
+                    key_handle.into(),
+                    self.optional_session_1(),
+                    self.optional_session_2(),
+                    self.optional_session_3(),
+                    &credential.into(),
+                    object_name.as_ref(),
+                    &mut credential_blob_ptr,
+                    &mut secret_ptr,
+                )
+            },
+            |ret| {
+                error!("Error when making credential: {}", ret);
+            },
+        )?;
+        Ok((
+            IdObject::try_from(Context::ffi_data_to_owned(credential_blob_ptr))?,
+            EncryptedSecret::try_from(Context::ffi_data_to_owned(secret_ptr))?,
+        ))
     }
 
     /// Unseal and return data from a Sealed Data Object
     pub fn unseal(&mut self, item_handle: ObjectHandle) -> Result<SensitiveData> {
         let mut out_data_ptr = null_mut();
 
-        let ret = unsafe {
-            Esys_Unseal(
-                self.mut_context(),
-                item_handle.into(),
-                self.optional_session_1(),
-                self.optional_session_2(),
-                self.optional_session_3(),
-                &mut out_data_ptr,
-            )
-        };
-        let ret = Error::from_tss_rc(ret);
-
-        if ret.is_success() {
-            SensitiveData::try_from(Context::ffi_data_to_owned(out_data_ptr))
-        } else {
-            error!("Error in unsealing: {}", ret);
-            Err(ret)
-        }
+        ReturnCode::ensure_success(
+            unsafe {
+                Esys_Unseal(
+                    self.mut_context(),
+                    item_handle.into(),
+                    self.optional_session_1(),
+                    self.optional_session_2(),
+                    self.optional_session_3(),
+                    &mut out_data_ptr,
+                )
+            },
+            |ret| {
+                error!("Error in unsealing: {}", ret);
+            },
+        )?;
+        SensitiveData::try_from(Context::ffi_data_to_owned(out_data_ptr))
     }
 
     /// Change authorization for a TPM-resident object.
@@ -346,25 +330,24 @@ impl Context {
         new_auth: Auth,
     ) -> Result<Private> {
         let mut out_private_ptr = null_mut();
-        let ret = unsafe {
-            Esys_ObjectChangeAuth(
-                self.mut_context(),
-                object_handle.into(),
-                parent_handle.into(),
-                self.required_session_1()?,
-                self.optional_session_2(),
-                self.optional_session_3(),
-                &new_auth.into(),
-                &mut out_private_ptr,
-            )
-        };
-        let ret = Error::from_tss_rc(ret);
-        if ret.is_success() {
-            Private::try_from(Context::ffi_data_to_owned(out_private_ptr))
-        } else {
-            error!("Error changing object auth: {}", ret);
-            Err(ret)
-        }
+        ReturnCode::ensure_success(
+            unsafe {
+                Esys_ObjectChangeAuth(
+                    self.mut_context(),
+                    object_handle.into(),
+                    parent_handle.into(),
+                    self.required_session_1()?,
+                    self.optional_session_2(),
+                    self.optional_session_3(),
+                    &new_auth.into(),
+                    &mut out_private_ptr,
+                )
+            },
+            |ret| {
+                error!("Error changing object auth: {}", ret);
+            },
+        )?;
+        Private::try_from(Context::ffi_data_to_owned(out_private_ptr))
     }
 
     // Missing function: CreateLoaded

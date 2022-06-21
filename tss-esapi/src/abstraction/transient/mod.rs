@@ -8,7 +8,8 @@
 //! client.
 use crate::{
     attributes::{ObjectAttributesBuilder, SessionAttributesBuilder},
-    constants::{tss::*, SessionType, Tss2ResponseCodeKind},
+    constants::{tss::*, SessionType, TpmFormatZeroError},
+    error::{TpmFormatZeroResponseCode, TpmResponseCode},
     handles::{KeyHandle, SessionHandle},
     interface_types::{
         algorithm::{HashingAlgorithm, PublicAlgorithm},
@@ -24,7 +25,7 @@ use crate::{
     tcti_ldr::TctiNameConf,
     tss2_esys::*,
     utils::{create_restricted_decryption_rsa_public, PublicKey, TpmsContext},
-    Context, Error, Result, WrapperErrorKind as ErrorKind,
+    Context, Error, Result, ReturnCode, WrapperErrorKind as ErrorKind,
 };
 
 use log::error;
@@ -372,10 +373,13 @@ impl TransientKeyContext {
                 auth.unwrap_or_default(),
             )
             .or_else(|e| {
-                if let Error::Tss2Error(resp_code) = e {
+                if let Error::TssError(ReturnCode::Tpm(TpmResponseCode::FormatZero(
+                    TpmFormatZeroResponseCode::Error(error),
+                ))) = e
+                {
                     // If we get `AuthUnavailable` it means the private part of the key has not been
                     // loaded, and this is thus a public key
-                    if resp_code.kind() == Some(Tss2ResponseCodeKind::AuthUnavailable) {
+                    if error.error_number() == TpmFormatZeroError::AuthUnavailable {
                         return Ok(Default::default());
                     }
                 }

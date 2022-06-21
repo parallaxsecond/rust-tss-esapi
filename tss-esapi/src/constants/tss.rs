@@ -630,3 +630,108 @@ pub const TPMA_CC_RHANDLE: TPMA_CC = 0x10000000; /* SET 1 indicates the presence
 pub const TPMA_CC_V: TPMA_CC = 0x20000000; /* SET 1 indicates that the command is vendor-specific. CLEAR 0 indicates that the command is defined in a version of this specification */
 pub const TPMA_CC_RES_MASK: TPMA_CC = 0xC0000000; /* allocated for software shall be zero */
 pub const TPMA_CC_RES_SHIFT: u32 = 30;
+
+pub const TSS2_RC_LAYER_MASK: u32 = 0x00FF0000;
+
+pub const TSS2_TPM_RC_LAYER: TSS2_RC = 0x00000000; /* base is a TPM2_RC_* */
+pub const TSS2_FEATURE_RC_LAYER: TSS2_RC = 0x00060000; /* base is a TSS2_BASE_RC_* */
+pub const TSS2_ESYS_RC_LAYER: TSS2_RC = 0x00070000; /* base is a TSS2_BASE_RC_* */
+pub const TSS2_SYS_RC_LAYER: TSS2_RC = 0x00080000; /* base is a TSS2_BASE_RC_* */
+pub const TSS2_MU_RC_LAYER: TSS2_RC = 0x00090000; /* base is a TSS2_BASE_RC_* */
+pub const TSS2_TCTI_RC_LAYER: TSS2_RC = 0x000A0000; /* base is a TSS2_BASE_RC_* */
+pub const TSS2_RESMGR_RC_LAYER: TSS2_RC = 0x000B0000; /* base is a TSS2_BASE_RC_* */
+pub const TSS2_RESMGR_TPM_RC_LAYER: TSS2_RC = 0x000C0000; /* base is a TPM2_RC_* */
+
+pub const TSS2_RC_SUCCESS: TSS2_RC = 0x00000000;
+
+pub use crate::tss2_esys::TSS2_BASE_RC_ABI_MISMATCH; /* Passed in ABI version doesn't match called module's ABI version */
+pub use crate::tss2_esys::TSS2_BASE_RC_BAD_CONTEXT; /* A context structure is bad */
+pub use crate::tss2_esys::TSS2_BASE_RC_BAD_REFERENCE; /* A pointer is NULL that isn't allowed to be NULL. */
+pub use crate::tss2_esys::TSS2_BASE_RC_BAD_SEQUENCE; /* Function called in the wrong order */
+pub use crate::tss2_esys::TSS2_BASE_RC_BAD_SIZE; /* If size of a parameter is incorrect */
+pub use crate::tss2_esys::TSS2_BASE_RC_BAD_TCTI_STRUCTURE; /* TCTI context is bad. */
+pub use crate::tss2_esys::TSS2_BASE_RC_BAD_TR; /* Invalid ESYS_TR handle */
+pub use crate::tss2_esys::TSS2_BASE_RC_BAD_VALUE; /* A parameter has a bad value */
+pub use crate::tss2_esys::TSS2_BASE_RC_GENERAL_FAILURE; /* Catch all for all errors not otherwise specifed */
+pub use crate::tss2_esys::TSS2_BASE_RC_INCOMPATIBLE_TCTI; /* Unknown or unusable TCTI version */
+pub use crate::tss2_esys::TSS2_BASE_RC_INSUFFICIENT_BUFFER; /* A buffer isn't large enough */
+pub use crate::tss2_esys::TSS2_BASE_RC_INSUFFICIENT_CONTEXT; /* Context not large enough */
+pub use crate::tss2_esys::TSS2_BASE_RC_INSUFFICIENT_RESPONSE; /* Response is not long enough */
+pub use crate::tss2_esys::TSS2_BASE_RC_INVALID_SESSIONS; /* The TPM command doesn't use the number of sessions provided by the caller */
+pub use crate::tss2_esys::TSS2_BASE_RC_IO_ERROR; /* IO failure */
+pub use crate::tss2_esys::TSS2_BASE_RC_MALFORMED_RESPONSE; /* Response is malformed */
+pub use crate::tss2_esys::TSS2_BASE_RC_MEMORY; /* Memory allocation failed */
+pub use crate::tss2_esys::TSS2_BASE_RC_MULTIPLE_DECRYPT_SESSIONS; /* More than one session with TPMA_SESSION_DECRYPT bit set */
+pub use crate::tss2_esys::TSS2_BASE_RC_MULTIPLE_ENCRYPT_SESSIONS; /* More than one session with TPMA_SESSION_ENCRYPT bit set */
+pub use crate::tss2_esys::TSS2_BASE_RC_NOT_IMPLEMENTED; /* If called functionality isn't implemented */
+pub use crate::tss2_esys::TSS2_BASE_RC_NOT_PERMITTED; /* Operation not permitted. */
+pub use crate::tss2_esys::TSS2_BASE_RC_NOT_SUPPORTED; /* Functionality not supported. */
+pub use crate::tss2_esys::TSS2_BASE_RC_NO_CONNECTION; /* Fails to connect to next lower layer */
+pub use crate::tss2_esys::TSS2_BASE_RC_NO_DECRYPT_PARAM; /* A session with its TPMA_SESSION_DECRYPT bit set was passed to a TPM command that doesn't support encryption of the first command parameter. */
+pub use crate::tss2_esys::TSS2_BASE_RC_NO_ENCRYPT_PARAM; /* A session with its TPMA_SESSION_ENCRYPT bit set was passed to a TPM command that doesn't support encryption of the first response parameter. */
+pub use crate::tss2_esys::TSS2_BASE_RC_RSP_AUTH_FAILED; /* Authorizing the TPM response failed */
+pub use crate::tss2_esys::TSS2_BASE_RC_TRY_AGAIN; /* Operation timed out; function must be called again to be completed */
+
+cfg_if::cfg_if! {
+    if #[cfg(has_tss_base_rc_values_28_to_51_req)] {
+        pub use crate::tss2_esys::TSS2_BASE_RC_NO_CONFIG; /* No config is available */
+        pub use crate::tss2_esys::TSS2_BASE_RC_BAD_PATH; /* The provided path is bad */
+        pub use crate::tss2_esys::TSS2_BASE_RC_NOT_DELETABLE; /* The object is not deletable */
+        pub use crate::tss2_esys::TSS2_BASE_RC_PATH_ALREADY_EXISTS; /* The provided path already exists */
+        pub use crate::tss2_esys::TSS2_BASE_RC_KEY_NOT_FOUND; /* The key was not found */
+        pub use crate::tss2_esys::TSS2_BASE_RC_SIGNATURE_VERIFICATION_FAILED; /* Signature verification failed */
+        pub use crate::tss2_esys::TSS2_BASE_RC_HASH_MISMATCH; /* Hashes mismatch */
+        pub use crate::tss2_esys::TSS2_BASE_RC_KEY_NOT_DUPLICABLE; /* Key is not duplicatable */
+        pub use crate::tss2_esys::TSS2_BASE_RC_PATH_NOT_FOUND; /* The path was not found */
+        pub use crate::tss2_esys::TSS2_BASE_RC_NO_CERT; /* No certificate */
+        pub use crate::tss2_esys::TSS2_BASE_RC_NO_PCR; /* No PCR */
+        pub use crate::tss2_esys::TSS2_BASE_RC_PCR_NOT_RESETTABLE; /* PCR not resettable */
+        pub use crate::tss2_esys::TSS2_BASE_RC_BAD_TEMPLATE; /* The template is bad */
+        pub use crate::tss2_esys::TSS2_BASE_RC_AUTHORIZATION_FAILED; /* Authorization failed */
+        pub use crate::tss2_esys::TSS2_BASE_RC_AUTHORIZATION_UNKNOWN; /* Authorization is unknown */
+        pub use crate::tss2_esys::TSS2_BASE_RC_NV_NOT_READABLE; /* NV is not readable */
+        pub use crate::tss2_esys::TSS2_BASE_RC_NV_TOO_SMALL; /* NV is too small */
+        pub use crate::tss2_esys::TSS2_BASE_RC_NV_NOT_WRITEABLE; /* NV is not writable */
+        pub use crate::tss2_esys::TSS2_BASE_RC_POLICY_UNKNOWN; /* The policy is unknown */
+        pub use crate::tss2_esys::TSS2_BASE_RC_NV_WRONG_TYPE; /* The NV type is wrong */
+        pub use crate::tss2_esys::TSS2_BASE_RC_NAME_ALREADY_EXISTS; /* The name already exists */
+        pub use crate::tss2_esys::TSS2_BASE_RC_NO_TPM; /* No TPM available */
+        pub use crate::tss2_esys::TSS2_BASE_RC_BAD_KEY; /* The key is bad */
+        pub use crate::tss2_esys::TSS2_BASE_RC_NO_HANDLE; /* No handle provided */
+    } else {
+        pub const TSS2_BASE_RC_NO_CONFIG: u32 = 28; /* No config is available */
+        pub const TSS2_BASE_RC_BAD_PATH: u32 = 29; /* The provided path is bad */
+        pub const TSS2_BASE_RC_NOT_DELETABLE: u32 = 30; /* The object is not deletable */
+        pub const TSS2_BASE_RC_PATH_ALREADY_EXISTS: u32 = 31; /* The provided path already exists */
+        pub const TSS2_BASE_RC_KEY_NOT_FOUND: u32 = 32; /* The key was not found */
+        pub const TSS2_BASE_RC_SIGNATURE_VERIFICATION_FAILED: u32 = 33; /* Signature verification failed */
+        pub const TSS2_BASE_RC_HASH_MISMATCH: u32 = 34; /* Hashes mismatch */
+        pub const TSS2_BASE_RC_KEY_NOT_DUPLICABLE: u32 = 35; /* Key is not duplicatable */
+        pub const TSS2_BASE_RC_PATH_NOT_FOUND: u32 = 36; /* The path was not found */
+        pub const TSS2_BASE_RC_NO_CERT: u32 = 37; /* No certificate */
+        pub const TSS2_BASE_RC_NO_PCR: u32 = 38; /* No PCR */
+        pub const TSS2_BASE_RC_PCR_NOT_RESETTABLE: u32 = 39; /* PCR not resettable */
+        pub const TSS2_BASE_RC_BAD_TEMPLATE: u32 = 40; /* The template is bad */
+        pub const TSS2_BASE_RC_AUTHORIZATION_FAILED: u32 = 41; /* Authorization failed */
+        pub const TSS2_BASE_RC_AUTHORIZATION_UNKNOWN: u32 = 42; /* Authorization is unknown */
+        pub const TSS2_BASE_RC_NV_NOT_READABLE: u32 = 43; /* NV is not readable */
+        pub const TSS2_BASE_RC_NV_TOO_SMALL: u32 = 44; /* NV is too small */
+        pub const TSS2_BASE_RC_NV_NOT_WRITEABLE: u32 = 45; /* NV is not writable */
+        pub const TSS2_BASE_RC_POLICY_UNKNOWN: u32 = 46; /* The policy is unknown */
+        pub const TSS2_BASE_RC_NV_WRONG_TYPE: u32 = 47; /* The NV type is wrong */
+        pub const TSS2_BASE_RC_NAME_ALREADY_EXISTS: u32 = 48; /* The name already exists */
+        pub const TSS2_BASE_RC_NO_TPM: u32 = 49; /* No TPM available */
+        pub const TSS2_BASE_RC_BAD_KEY: u32 = 50; /* The key is bad */
+        pub const TSS2_BASE_RC_NO_HANDLE: u32 = 51; /* No handle provided */
+    }
+}
+
+cfg_if::cfg_if! {
+    if #[cfg(has_tss_base_rc_values_52_to_53_req)] {
+        pub use crate::tss2_esys::TSS2_BASE_RC_NOT_PROVISIONED; /* Provisioning was not executed */
+        pub use crate::tss2_esys::TSS2_BASE_RC_ALREADY_PROVISIONED; /* Already provisioned */
+    } else {
+        pub const TSS2_BASE_RC_NOT_PROVISIONED: u32 = 52; /* Provisioning was not executed */
+        pub const TSS2_BASE_RC_ALREADY_PROVISIONED: u32 = 53; /* Already provisioned */
+    }
+}

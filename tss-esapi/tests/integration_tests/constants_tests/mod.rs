@@ -5,3 +5,4 @@ mod capabilities_tests;
 mod command_code_tests;
 mod nv_index_type_tests;
 mod pcr_property_tag_tests;
+mod return_code_tests;

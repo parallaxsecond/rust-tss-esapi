@@ -5,7 +5,7 @@ use crate::{
     interface_types::YesNo,
     structures::{CapabilityData, PublicParameters},
     tss2_esys::{Esys_GetCapability, Esys_TestParms},
-    Context, Error, Result,
+    Context, Result, ReturnCode,
 };
 use log::{error, warn};
 use std::convert::TryFrom;
@@ -49,30 +49,29 @@ impl Context {
         let mut capability_data_ptr = null_mut();
         let mut more_data = YesNo::No.into();
 
-        let ret = unsafe {
-            Esys_GetCapability(
-                self.mut_context(),
-                self.optional_session_1(),
-                self.optional_session_2(),
-                self.optional_session_3(),
-                capability.into(),
-                property,
-                property_count,
-                &mut more_data,
-                &mut capability_data_ptr,
-            )
-        };
-        let ret = Error::from_tss_rc(ret);
+        ReturnCode::ensure_success(
+            unsafe {
+                Esys_GetCapability(
+                    self.mut_context(),
+                    self.optional_session_1(),
+                    self.optional_session_2(),
+                    self.optional_session_3(),
+                    capability.into(),
+                    property,
+                    property_count,
+                    &mut more_data,
+                    &mut capability_data_ptr,
+                )
+            },
+            |ret| {
+                error!("Error when getting capabilities: {}", ret);
+            },
+        )?;
 
-        if ret.is_success() {
-            Ok((
-                CapabilityData::try_from(Context::ffi_data_to_owned(capability_data_ptr))?,
-                YesNo::try_from(more_data)?.into(),
-            ))
-        } else {
-            error!("Error when getting capabilities: {}", ret);
-            Err(ret)
-        }
+        Ok((
+            CapabilityData::try_from(Context::ffi_data_to_owned(capability_data_ptr))?,
+            YesNo::try_from(more_data)?.into(),
+        ))
     }
 
     /// Test if the given parameters are supported by the TPM.
@@ -81,22 +80,19 @@ impl Context {
     /// * if any of the public parameters is not compatible with the TPM,
     /// an `Err` containing the specific unmarshalling error will be returned.
     pub fn test_parms(&mut self, public_parmeters: PublicParameters) -> Result<()> {
-        let ret = unsafe {
-            Esys_TestParms(
-                self.mut_context(),
-                self.optional_session_1(),
-                self.optional_session_2(),
-                self.optional_session_3(),
-                &public_parmeters.into(),
-            )
-        };
-
-        let ret = Error::from_tss_rc(ret);
-        if ret.is_success() {
-            Ok(())
-        } else {
-            warn!("Parameters under test could not be unmarshalled: {}", ret);
-            Err(ret)
-        }
+        ReturnCode::ensure_success(
+            unsafe {
+                Esys_TestParms(
+                    self.mut_context(),
+                    self.optional_session_1(),
+                    self.optional_session_2(),
+                    self.optional_session_3(),
+                    &public_parmeters.into(),
+                )
+            },
+            |ret| {
+                warn!("Parameters under test could not be unmarshalled: {}", ret);
+            },
+        )
     }
 }

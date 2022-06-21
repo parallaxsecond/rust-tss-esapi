@@ -41,7 +41,7 @@ pub mod session_type;
 pub mod capabilities;
 
 /// Representation of the return code TSS2_RC (TPM_RC)
-pub mod response_code;
+pub mod return_code;
 
 /// Representation of the constants defined in the
 /// NV Storage -> TPM_NT section of the specification
@@ -65,7 +65,9 @@ pub use ecc::EccCurveIdentifier;
 pub use nv_index_type::NvIndexType;
 pub use pcr_property_tag::PcrPropertyTag;
 pub use property_tag::PropertyTag;
-pub use response_code::{ResponseCode, Tss2ResponseCode, Tss2ResponseCodeKind};
+pub use return_code::{
+    BaseError, ReturnCodeLayer, TpmFormatOneError, TpmFormatZeroError, TpmFormatZeroWarning,
+};
 pub use session_type::SessionType;
 pub use startup_type::StartupType;
 pub use structure_tags::StructureTag;

@@ -4,7 +4,7 @@ use crate::{
     interface_types::YesNo,
     structures::MaxBuffer,
     tss2_esys::{Esys_GetTestResult, Esys_SelfTest},
-    Context, Error, Result,
+    Context, Result, ReturnCode,
 };
 use log::error;
 use std::convert::TryFrom;
@@ -13,23 +13,20 @@ use std::ptr::null_mut;
 impl Context {
     /// Execute the TPM self test and returns the result
     pub fn self_test(&mut self, full_test: bool) -> Result<()> {
-        let ret = unsafe {
-            Esys_SelfTest(
-                self.mut_context(),
-                self.optional_session_1(),
-                self.optional_session_2(),
-                self.optional_session_3(),
-                YesNo::from(full_test).into(),
-            )
-        };
-        let ret = Error::from_tss_rc(ret);
-
-        if ret.is_success() {
-            Ok(())
-        } else {
-            error!("Error in self-test: {}", ret);
-            Err(ret)
-        }
+        ReturnCode::ensure_success(
+            unsafe {
+                Esys_SelfTest(
+                    self.mut_context(),
+                    self.optional_session_1(),
+                    self.optional_session_2(),
+                    self.optional_session_3(),
+                    YesNo::from(full_test).into(),
+                )
+            },
+            |ret| {
+                error!("Error in self-test: {}", ret);
+            },
+        )
     }
 
     // Missing function: incremental_self_test
@@ -41,30 +38,24 @@ impl Context {
         let mut out_data_ptr = null_mut();
         let mut test_result: u32 = 0;
 
-        let ret = unsafe {
-            Esys_GetTestResult(
-                self.mut_context(),
-                self.optional_session_1(),
-                self.optional_session_2(),
-                self.optional_session_3(),
-                &mut out_data_ptr,
-                &mut test_result,
-            )
-        };
-        let ret = Error::from_tss_rc(ret);
-
-        if ret.is_success() {
-            let out_data = MaxBuffer::try_from(Context::ffi_data_to_owned(out_data_ptr))?;
-            let test_result_rc = Error::from_tss_rc(test_result);
-            let test_result_rc = if test_result_rc.is_success() {
-                Ok(())
-            } else {
-                Err(test_result_rc)
-            };
-            Ok((out_data, test_result_rc))
-        } else {
-            error!("Error getting test result: {}", ret);
-            Err(ret)
-        }
+        ReturnCode::ensure_success(
+            unsafe {
+                Esys_GetTestResult(
+                    self.mut_context(),
+                    self.optional_session_1(),
+                    self.optional_session_2(),
+                    self.optional_session_3(),
+                    &mut out_data_ptr,
+                    &mut test_result,
+                )
+            },
+            |ret| {
+                error!("Error getting test result: {}", ret);
+            },
+        )?;
+        Ok((
+            MaxBuffer::try_from(Context::ffi_data_to_owned(out_data_ptr))?,
+            ReturnCode::ensure_success(test_result, |_| {}),
+        ))
     }
 }

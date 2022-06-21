@@ -91,22 +91,23 @@
 //! controlled through environment variables as explained
 //! [here](https://github.com/tpm2-software/tpm2-tss/blob/main/doc/logging.md#runtime-log-level).
 //!
-pub use abstraction::transient::TransientKeyContext;
-pub use context::Context;
-pub use error::{Error, Result, WrapperErrorKind};
-pub use tcti_ldr::TctiNameConf;
-// To replace painlessly the old Tcti structure, should maybe be deprecated at some point.
-pub use tcti_ldr::TctiNameConf as Tcti;
+mod context;
 
+pub mod error;
 pub use tss_esapi_sys as tss2_esys;
 pub mod abstraction;
 pub mod attributes;
 pub mod constants;
-mod context;
-mod error;
 pub mod handles;
 pub mod interface_types;
 pub mod structures;
 pub mod tcti_ldr;
 pub mod traits;
 pub mod utils;
+
+pub use abstraction::transient::TransientKeyContext;
+pub use context::Context;
+pub use error::{Error, Result, ReturnCode, WrapperErrorKind};
+pub use tcti_ldr::TctiNameConf;
+// To replace painlessly the old Tcti structure, should maybe be deprecated at some point.
+pub use tcti_ldr::TctiNameConf as Tcti;

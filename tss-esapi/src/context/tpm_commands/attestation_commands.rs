@@ -4,7 +4,7 @@ use crate::{
     handles::{KeyHandle, ObjectHandle},
     structures::{Attest, AttestBuffer, Data, PcrSelectionList, Signature, SignatureScheme},
     tss2_esys::{Esys_Certify, Esys_Quote},
-    Context, Error, Result,
+    Context, Result, ReturnCode,
 };
 use log::error;
 use std::convert::TryFrom;
@@ -124,33 +124,32 @@ impl Context {
     ) -> Result<(Attest, Signature)> {
         let mut certify_info_ptr = null_mut();
         let mut signature_ptr = null_mut();
-        let ret = unsafe {
-            Esys_Certify(
-                self.mut_context(),
-                object_handle.into(),
-                signing_key_handle.into(),
-                self.required_session_1()?,
-                self.required_session_2()?,
-                self.optional_session_3(),
-                &qualifying_data.into(),
-                &signing_scheme.into(),
-                &mut certify_info_ptr,
-                &mut signature_ptr,
-            )
-        };
-        let ret = Error::from_tss_rc(ret);
+        ReturnCode::ensure_success(
+            unsafe {
+                Esys_Certify(
+                    self.mut_context(),
+                    object_handle.into(),
+                    signing_key_handle.into(),
+                    self.required_session_1()?,
+                    self.required_session_2()?,
+                    self.optional_session_3(),
+                    &qualifying_data.into(),
+                    &signing_scheme.into(),
+                    &mut certify_info_ptr,
+                    &mut signature_ptr,
+                )
+            },
+            |ret| {
+                error!("Error in certifying: {}", ret);
+            },
+        )?;
 
-        if ret.is_success() {
-            let certify_info = Context::ffi_data_to_owned(certify_info_ptr);
-            let signature = Context::ffi_data_to_owned(signature_ptr);
-            Ok((
-                Attest::try_from(AttestBuffer::try_from(certify_info)?)?,
-                Signature::try_from(signature)?,
-            ))
-        } else {
-            error!("Error in certifying: {}", ret);
-            Err(ret)
-        }
+        let certify_info = Context::ffi_data_to_owned(certify_info_ptr);
+        let signature = Context::ffi_data_to_owned(signature_ptr);
+        Ok((
+            Attest::try_from(AttestBuffer::try_from(certify_info)?)?,
+            Signature::try_from(signature)?,
+        ))
     }
 
     // Missing function: CertifyCreation
@@ -168,33 +167,32 @@ impl Context {
     ) -> Result<(Attest, Signature)> {
         let mut quoted_ptr = null_mut();
         let mut signature_ptr = null_mut();
-        let ret = unsafe {
-            Esys_Quote(
-                self.mut_context(),
-                signing_key_handle.into(),
-                self.optional_session_1(),
-                self.optional_session_2(),
-                self.optional_session_3(),
-                &qualifying_data.into(),
-                &signing_scheme.into(),
-                &pcr_selection_list.into(),
-                &mut quoted_ptr,
-                &mut signature_ptr,
-            )
-        };
-        let ret = Error::from_tss_rc(ret);
+        ReturnCode::ensure_success(
+            unsafe {
+                Esys_Quote(
+                    self.mut_context(),
+                    signing_key_handle.into(),
+                    self.optional_session_1(),
+                    self.optional_session_2(),
+                    self.optional_session_3(),
+                    &qualifying_data.into(),
+                    &signing_scheme.into(),
+                    &pcr_selection_list.into(),
+                    &mut quoted_ptr,
+                    &mut signature_ptr,
+                )
+            },
+            |ret| {
+                error!("Error in quoting PCR: {}", ret);
+            },
+        )?;
 
-        if ret.is_success() {
-            let quoted = Context::ffi_data_to_owned(quoted_ptr);
-            let signature = Context::ffi_data_to_owned(signature_ptr);
-            Ok((
-                Attest::try_from(AttestBuffer::try_from(quoted)?)?,
-                Signature::try_from(signature)?,
-            ))
-        } else {
-            error!("Error in quoting PCR: {}", ret);
-            Err(ret)
-        }
+        let quoted = Context::ffi_data_to_owned(quoted_ptr);
+        let signature = Context::ffi_data_to_owned(signature_ptr);
+        Ok((
+            Attest::try_from(AttestBuffer::try_from(quoted)?)?,
+            Signature::try_from(signature)?,
+        ))
     }
 
     // Missing function: GetSessionAuditDigest

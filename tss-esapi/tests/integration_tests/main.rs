@@ -7,6 +7,7 @@ mod abstraction_tests;
 mod attributes_tests;
 mod constants_tests;
 mod context_tests;
+mod error_tests;
 mod handles_tests;
 mod interface_types_tests;
 mod structures_tests;
