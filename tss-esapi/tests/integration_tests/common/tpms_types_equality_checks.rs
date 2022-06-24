@@ -15,29 +15,9 @@ use tss_esapi::{
     },
 };
 
-macro_rules! ensure_sized_buffer_field_equality {
-    ($expected:ident, $actual:ident, $field_name:ident, $buffer_field_name:ident, $tss_type:ident) => {
-        assert_eq!(
-            $expected.$field_name.size,
-            $actual.$field_name.size,
-            "'size' value for {} field in {}, mismatch between actual and expected",
-            stringify!($field_name),
-            stringify!($tss_type),
-        );
-        assert_eq!(
-            $expected.$field_name.$buffer_field_name,
-            $actual.$field_name.$buffer_field_name,
-            "'{}' value for {} field in {}, mismatch between actual and expected",
-            stringify!($buffer_field_name),
-            stringify!($field_name),
-            stringify!($tss_type),
-        );
-    };
-}
-
 pub fn ensure_tpms_certify_info_equality(expected: &TPMS_CERTIFY_INFO, actual: &TPMS_CERTIFY_INFO) {
-    ensure_sized_buffer_field_equality!(expected, actual, name, name, TPM2B_NAME);
-    ensure_sized_buffer_field_equality!(expected, actual, qualifiedName, name, TPM2B_NAME);
+    crate::common::ensure_tpm2b_name_equality(&expected.name, &actual.name);
+    crate::common::ensure_tpm2b_name_equality(&expected.qualifiedName, &actual.qualifiedName);
 }
 
 pub fn ensure_tpms_clock_info_equality(expected: &TPMS_CLOCK_INFO, actual: &TPMS_CLOCK_INFO) {
@@ -60,7 +40,7 @@ pub fn ensure_tpms_clock_info_equality(expected: &TPMS_CLOCK_INFO, actual: &TPMS
 }
 
 pub fn ensure_tpms_quote_info_equality(expected: &TPMS_QUOTE_INFO, actual: &TPMS_QUOTE_INFO) {
-    ensure_sized_buffer_field_equality!(expected, actual, pcrDigest, buffer, TPM2B_DIGEST);
+    crate::common::ensure_tpm2b_digest_equality(&expected.pcrDigest, &actual.pcrDigest);
     crate::common::ensure_tpml_pcr_selection_equality(&expected.pcrSelect, &actual.pcrSelect);
 }
 
@@ -113,8 +93,8 @@ pub fn ensure_tpms_command_audit_info_equality(
         expected.digestAlg, actual.digestAlg,
         "'digestAlg' value in TPMS_COMMAND_AUDIT_INFO, mismatch between actual and expected",
     );
-    ensure_sized_buffer_field_equality!(expected, actual, auditDigest, buffer, TPM2B_DIGEST);
-    ensure_sized_buffer_field_equality!(expected, actual, commandDigest, buffer, TPM2B_DIGEST);
+    crate::common::ensure_tpm2b_digest_equality(&expected.auditDigest, &actual.auditDigest);
+    crate::common::ensure_tpm2b_digest_equality(&expected.commandDigest, &actual.commandDigest);
 }
 
 pub fn ensure_tpms_session_audit_info_equality(
@@ -125,27 +105,27 @@ pub fn ensure_tpms_session_audit_info_equality(
         expected.exclusiveSession, actual.exclusiveSession,
         "'exclusiveSession' value in TPMS_SESSION_AUDIT_INFO, mismatch between actual and expected",
     );
-    ensure_sized_buffer_field_equality!(expected, actual, sessionDigest, buffer, TPM2B_DIGEST);
+    crate::common::ensure_tpm2b_digest_equality(&expected.sessionDigest, &actual.sessionDigest);
 }
 
 pub fn ensure_tpms_creation_info_equality(
     expected: &TPMS_CREATION_INFO,
     actual: &TPMS_CREATION_INFO,
 ) {
-    ensure_sized_buffer_field_equality!(expected, actual, objectName, name, TPM2B_NAME);
-    ensure_sized_buffer_field_equality!(expected, actual, creationHash, buffer, TPM2B_DIGEST);
+    crate::common::ensure_tpm2b_name_equality(&expected.objectName, &actual.objectName);
+    crate::common::ensure_tpm2b_digest_equality(&expected.creationHash, &actual.creationHash);
 }
 
 pub fn ensure_tpms_nv_certify_info_equality(
     expected: &TPMS_NV_CERTIFY_INFO,
     actual: &TPMS_NV_CERTIFY_INFO,
 ) {
-    ensure_sized_buffer_field_equality!(expected, actual, indexName, name, TPM2B_NAME);
+    crate::common::ensure_tpm2b_name_equality(&expected.indexName, &actual.indexName);
     assert_eq!(
         expected.offset, actual.offset,
         "'offset' value in TPMS_NV_CERTIFY_INFO, mismatch between actual and expected",
     );
-    ensure_sized_buffer_field_equality!(expected, actual, nvContents, buffer, TPM2B_MAX_NV_BUFFER);
+    crate::common::ensure_tpm2b_max_nv_buffer_equality(&expected.nvContents, &actual.nvContents);
 }
 
 pub fn ensure_tpms_attest_equality(expected: &TPMS_ATTEST, actual: &TPMS_ATTEST) {
@@ -157,8 +137,8 @@ pub fn ensure_tpms_attest_equality(expected: &TPMS_ATTEST, actual: &TPMS_ATTEST)
         expected.type_, actual.type_,
         "'type_' value in TPMS_ATTEST, mismatch between actual and expected",
     );
-    ensure_sized_buffer_field_equality!(expected, actual, qualifiedSigner, name, TPM2B_NAME);
-    ensure_sized_buffer_field_equality!(expected, actual, extraData, buffer, TPM2B_DATA);
+    crate::common::ensure_tpm2b_name_equality(&expected.qualifiedSigner, &actual.qualifiedSigner);
+    crate::common::ensure_tpm2b_data_equality(&expected.extraData, &actual.extraData);
     ensure_tpms_clock_info_equality(&expected.clockInfo, &actual.clockInfo);
     assert_eq!(
         expected.firmwareVersion, actual.firmwareVersion,
