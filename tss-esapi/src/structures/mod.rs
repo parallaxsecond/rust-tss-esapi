@@ -40,7 +40,8 @@ pub use self::buffers::{
     max_buffer::MaxBuffer, max_nv_buffer::MaxNvBuffer, nonce::Nonce, private::Private,
     private_key_rsa::PrivateKeyRsa, private_vendor_specific::PrivateVendorSpecific,
     public::PublicBuffer, public_key_rsa::PublicKeyRsa, sensitive::SensitiveBuffer,
-    sensitive_data::SensitiveData, symmetric_key::SymmetricKey, timeout::Timeout,
+    sensitive_create::SensitiveCreateBuffer, sensitive_data::SensitiveData,
+    symmetric_key::SymmetricKey, timeout::Timeout,
 };
 /////////////////////////////////////////////////////////
 /// The creation section
@@ -206,3 +207,8 @@ pub use property::{
 /////////////////////////////////////////////////////////
 mod nv;
 pub use nv::storage::{NvPublic, NvPublicBuilder};
+/////////////////////////////////////////////////////////
+/// Algorithm Structures
+/////////////////////////////////////////////////////////
+mod algorithm;
+pub use algorithm::symmetric::sensitive_create::SensitiveCreate;

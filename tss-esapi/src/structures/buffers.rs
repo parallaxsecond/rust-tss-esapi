@@ -95,6 +95,7 @@ macro_rules! buffer_type {
 pub mod attest;
 pub mod public;
 pub mod sensitive;
+pub mod sensitive_create;
 
 pub mod auth {
     buffer_type!(Auth, 64, TPM2B_AUTH);
