@@ -6,12 +6,9 @@ use crate::{
     interface_types::{resource_handles::Hierarchy, YesNo},
     structures::{
         Auth, CreatePrimaryKeyResult, CreationData, CreationTicket, Data, Digest, PcrSelectionList,
-        Public, SensitiveData,
+        Public, SensitiveCreate, SensitiveData,
     },
-    tss2_esys::{
-        Esys_Clear, Esys_ClearControl, Esys_CreatePrimary, Esys_HierarchyChangeAuth,
-        TPM2B_SENSITIVE_CREATE, TPMS_SENSITIVE_CREATE,
-    },
+    tss2_esys::{Esys_Clear, Esys_ClearControl, Esys_CreatePrimary, Esys_HierarchyChangeAuth},
     Context, Result, ReturnCode,
 };
 use log::error;
@@ -38,15 +35,10 @@ impl Context {
         outside_info: Option<Data>,
         creation_pcrs: Option<PcrSelectionList>,
     ) -> Result<CreatePrimaryKeyResult> {
-        let sensitive_create = TPM2B_SENSITIVE_CREATE {
-            size: std::mem::size_of::<TPMS_SENSITIVE_CREATE>()
-                .try_into()
-                .unwrap(),
-            sensitive: TPMS_SENSITIVE_CREATE {
-                userAuth: auth_value.unwrap_or_default().into(),
-                data: initial_data.unwrap_or_default().into(),
-            },
-        };
+        let sensitive_create = SensitiveCreate::new(
+            auth_value.unwrap_or_default(),
+            initial_data.unwrap_or_default(),
+        );
         let creation_pcrs = PcrSelectionList::list_from_option(creation_pcrs);
 
         let mut out_public_ptr = null_mut();
@@ -63,7 +55,7 @@ impl Context {
                     self.optional_session_1(),
                     self.optional_session_2(),
                     self.optional_session_3(),
-                    &sensitive_create,
+                    &sensitive_create.try_into()?,
                     &public.try_into()?,
                     &outside_info.unwrap_or_default().into(),
                     &creation_pcrs.into(),
