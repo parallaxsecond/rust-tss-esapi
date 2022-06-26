@@ -24,55 +24,52 @@ use tss_esapi::{
             TSS2_BASE_RC_PATH_ALREADY_EXISTS, TSS2_BASE_RC_PATH_NOT_FOUND,
             TSS2_BASE_RC_PCR_NOT_RESETTABLE, TSS2_BASE_RC_POLICY_UNKNOWN,
             TSS2_BASE_RC_RSP_AUTH_FAILED, TSS2_BASE_RC_SIGNATURE_VERIFICATION_FAILED,
-            TSS2_BASE_RC_TRY_AGAIN, TSS2_RESMGR_RC_LAYER,
+            TSS2_BASE_RC_TRY_AGAIN,
         },
         BaseError,
     },
-    error::{BaseReturnCode, ReturnCode},
+    error::BaseReturnCode,
     tss2_esys::TSS2_LAYER_IMPLEMENTATION_SPECIFIC_OFFSET,
     Error, WrapperErrorKind,
 };
 
-// This basically tests BaseReturnCode as well.
-
 macro_rules! test_valid_conversion {
     ($tss_rc_base_error:ident, BaseError::$base_error:ident) => {
-        let expected_tss_rc = TSS2_RESMGR_RC_LAYER | $tss_rc_base_error;
-        let expected_resmgr_rc = BaseReturnCode::from(BaseError::$base_error);
+        let expected_base_rc = BaseReturnCode::from(BaseError::$base_error);
 
         assert_eq!(
             BaseError::$base_error,
-            expected_resmgr_rc.into(),
+            expected_base_rc.into(),
             "BaseReturnCode did not convert into the expected {}",
             std::stringify!(BaseError::$base_error)
         );
 
         assert_eq!(
             BaseError::$base_error,
-            expected_resmgr_rc.base_error(),
-            "base_error() did not return the expected "
+            expected_base_rc.base_error(),
+            "base_error() did not return the expected {}",
+            std::stringify!(BaseError::$base_error)
         );
 
-        let actual_rc = ReturnCode::try_from(expected_tss_rc)
-            .expect("Failed to convert TSS2_RC into a ReturnCode");
-
-        if let ReturnCode::ResourceManager(actual_resmgr_rc) = actual_rc {
-            assert_eq!(
-                expected_resmgr_rc,
-                actual_resmgr_rc,
-                "{} in the RESMGR layer did not convert into the expected BaseReturnCode",
-                std::stringify!($tss_rc_base_error),
-            );
-        } else {
-            panic!("RESMGR TSS2_RC layer did no not convert into ReturnCode::ResourceManager");
-        }
-
         assert_eq!(
-            expected_tss_rc,
-            actual_rc.into(),
-            "BaseReturnCode with {} did not convert into expected {} TSS2_RC in the RESMGR layer.",
+            expected_base_rc,
+            BaseReturnCode::try_from($tss_rc_base_error as u16).expect(&format!(
+                "Failed to convert {} into a BaseReturnCode",
+                std::stringify!($tss_rc_base_error)
+            )),
+            "{} did not convert into the expected BaseReturnCode",
+            std::stringify!($tss_rc_base_error)
+        );
+    };
+}
+
+macro_rules! test_display_trait_impl {
+    ($expected_error_message:tt, BaseError::$base_error:ident) => {
+        assert_eq!(
+            format!("{}", BaseReturnCode::from(BaseError::$base_error)),
+            $expected_error_message,
+            "BaseReturnCode with {} did not produce the expected error message",
             std::stringify!(BaseError::$base_error),
-            std::stringify!($tss_rc_base_error),
         );
     };
 }
@@ -167,11 +164,74 @@ fn test_valid_conversions() {
 
 #[test]
 fn test_invalid_conversions() {
-    let tss_invalid_resmgr_rc =
-        TSS2_RESMGR_RC_LAYER | (TSS2_LAYER_IMPLEMENTATION_SPECIFIC_OFFSET + 1);
+    let tss_invalid_base_rc = TSS2_LAYER_IMPLEMENTATION_SPECIFIC_OFFSET + 1;
     assert_eq!(
-        ReturnCode::try_from(tss_invalid_resmgr_rc),
+        BaseReturnCode::try_from(tss_invalid_base_rc as u16),
         Err(Error::WrapperError(WrapperErrorKind::InvalidParam)),
-        "Converting invalid RESMGR layer resposne code did not produce the expected error"
+        "Converting invalid base resposne code did not produce the expected error",
     );
+}
+
+#[test]
+fn test_display() {
+    test_display_trait_impl!("General Error", BaseError::GeneralFailure);
+    test_display_trait_impl!("Not Implemented", BaseError::NotImplemented);
+    test_display_trait_impl!("Bad Context", BaseError::BadContext);
+    test_display_trait_impl!("ABI Mismatch", BaseError::AbiMismatch);
+    test_display_trait_impl!("Bad Reference", BaseError::BadReference);
+    test_display_trait_impl!("Insufficient Buffer", BaseError::InsufficientBuffer);
+    test_display_trait_impl!("Bad Sequence", BaseError::BadSequence);
+    test_display_trait_impl!("No Connection", BaseError::NoConnection);
+    test_display_trait_impl!("Try Again", BaseError::TryAgain);
+    test_display_trait_impl!("IO Error", BaseError::IoError);
+    test_display_trait_impl!("Bad Value", BaseError::BadValue);
+    test_display_trait_impl!("Not Permitted", BaseError::NotPermitted);
+    test_display_trait_impl!("Invalid Sessions", BaseError::InvalidSessions);
+    test_display_trait_impl!("No Decrypt Param", BaseError::NoDecryptParam);
+    test_display_trait_impl!("No Encrypt Param", BaseError::NoEncryptParam);
+    test_display_trait_impl!("Bad Size", BaseError::BadSize);
+    test_display_trait_impl!("Malformed Response", BaseError::MalformedResponse);
+    test_display_trait_impl!("Insufficient Context", BaseError::InsufficientContext);
+    test_display_trait_impl!("Insufficient Response", BaseError::InsufficientResponse);
+    test_display_trait_impl!("Incompatible TCTI", BaseError::IncompatibleTcti);
+    test_display_trait_impl!("Not Supported", BaseError::NotSupported);
+    test_display_trait_impl!("Bad TCTI Structure", BaseError::BadTctiStructure);
+    test_display_trait_impl!("Memory", BaseError::Memory);
+    test_display_trait_impl!("Bad TR", BaseError::BadTr);
+    test_display_trait_impl!(
+        "Multiple Decrypt Sessions",
+        BaseError::MultipleDecryptSessions
+    );
+    test_display_trait_impl!(
+        "Multiple Encrypt Sessions",
+        BaseError::MultipleEncryptSessions
+    );
+    test_display_trait_impl!("RSP Auth Failed", BaseError::RspAuthFailed);
+    test_display_trait_impl!("No Config", BaseError::NoConfig);
+    test_display_trait_impl!("Bad Path", BaseError::BadPath);
+    test_display_trait_impl!("Not Deletable", BaseError::NotDeletable);
+    test_display_trait_impl!("Path Already Exists", BaseError::PathAlreadyExists);
+    test_display_trait_impl!("Key Not Found", BaseError::KeyNotFound);
+    test_display_trait_impl!(
+        "Signature Verification Failed",
+        BaseError::SignatureVerificationFailed
+    );
+    test_display_trait_impl!("Hash Mismatch", BaseError::HashMismatch);
+    test_display_trait_impl!("Key Not Duplicable", BaseError::KeyNotDuplicable);
+    test_display_trait_impl!("Path Not Found", BaseError::PathNotFound);
+    test_display_trait_impl!("No Cert", BaseError::NoCert);
+    test_display_trait_impl!("No PCR", BaseError::NoPcr);
+    test_display_trait_impl!("PCR Not Resettable", BaseError::PcrNotResettable);
+    test_display_trait_impl!("Bad Template", BaseError::BadTemplate);
+    test_display_trait_impl!("Authorization Failed", BaseError::AuthorizationFailed);
+    test_display_trait_impl!("Authorization Unknown", BaseError::AuthorizationUnknown);
+    test_display_trait_impl!("NV Not Readable", BaseError::NvNotReadable);
+    test_display_trait_impl!("NV Too Small", BaseError::NvTooSmall);
+    test_display_trait_impl!("NV Not Writeable", BaseError::NvNotWriteable);
+    test_display_trait_impl!("Policy Unknown", BaseError::PolicyUnknown);
+    test_display_trait_impl!("NV Wrong Type", BaseError::NvWrongType);
+    test_display_trait_impl!("Name Already Exists", BaseError::NameAlreadyExists);
+    test_display_trait_impl!("No TPM", BaseError::NoTpm);
+    test_display_trait_impl!("Bad Key", BaseError::BadKey);
+    test_display_trait_impl!("No Handle", BaseError::NoHandle);
 }
