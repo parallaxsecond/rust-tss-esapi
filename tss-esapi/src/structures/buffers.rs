@@ -9,9 +9,9 @@ macro_rules! named_field_buffer_type {
         use log::error;
         use std::convert::TryFrom;
         use std::ops::Deref;
-        use zeroize::Zeroizing;
+        use zeroize::{Zeroize, Zeroizing};
 
-        #[derive(Debug, Clone, PartialEq, Eq)]
+        #[derive(Debug, Clone, PartialEq, Eq, Zeroize)]
         pub struct $native_type(Zeroizing<Vec<u8>>);
 
         impl Default for $native_type {

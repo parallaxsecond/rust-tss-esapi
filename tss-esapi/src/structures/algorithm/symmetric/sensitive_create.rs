@@ -8,6 +8,7 @@ use crate::{
 };
 use log::error;
 use std::convert::{TryFrom, TryInto};
+use zeroize::Zeroize;
 
 /// Structure that defines the values to be placed in the sensitive
 /// area of a created object.
@@ -18,7 +19,7 @@ use std::convert::{TryFrom, TryInto};
 ///
 /// There is a corresponding buffer type [SensitiveCreateBuffer](crate::structures::SensitiveCreateBuffer)
 /// that holds the data in a marshalled form.
-#[derive(Debug, Clone, Eq, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq, Zeroize)]
 pub struct SensitiveCreate {
     user_auth: Auth,
     data: SensitiveData,
