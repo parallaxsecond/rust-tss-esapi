@@ -8,3 +8,4 @@ mod max_buffer_tests;
 mod nonce_tests;
 mod public;
 mod sensitive;
+mod sensitive_create_buffer_tests;

@@ -6,12 +6,12 @@ use crate::{
     interface_types::resource_handles::Hierarchy,
     structures::{
         Auth, CreateKeyResult, CreationData, CreationTicket, Data, Digest, EncryptedSecret,
-        IdObject, Name, PcrSelectionList, Private, Public, Sensitive, SensitiveData,
+        IdObject, Name, PcrSelectionList, Private, Public, Sensitive, SensitiveCreate,
+        SensitiveData,
     },
     tss2_esys::{
         Esys_ActivateCredential, Esys_Create, Esys_Load, Esys_LoadExternal, Esys_MakeCredential,
-        Esys_ObjectChangeAuth, Esys_ReadPublic, Esys_Unseal, TPM2B_SENSITIVE_CREATE,
-        TPMS_SENSITIVE_CREATE,
+        Esys_ObjectChangeAuth, Esys_ReadPublic, Esys_Unseal,
     },
     Context, Result, ReturnCode,
 };
@@ -49,15 +49,10 @@ impl Context {
         outside_info: Option<Data>,
         creation_pcrs: Option<PcrSelectionList>,
     ) -> Result<CreateKeyResult> {
-        let sensitive_create = TPM2B_SENSITIVE_CREATE {
-            size: std::mem::size_of::<TPMS_SENSITIVE_CREATE>()
-                .try_into()
-                .unwrap(), // will not fail on targets of at least 16 bits
-            sensitive: TPMS_SENSITIVE_CREATE {
-                userAuth: auth_value.unwrap_or_default().into(),
-                data: sensitive_data.unwrap_or_default().into(),
-            },
-        };
+        let sensitive_create = SensitiveCreate::new(
+            auth_value.unwrap_or_default(),
+            sensitive_data.unwrap_or_default(),
+        );
         let creation_pcrs = PcrSelectionList::list_from_option(creation_pcrs);
 
         let mut out_public_ptr = null_mut();
@@ -74,7 +69,7 @@ impl Context {
                     self.optional_session_1(),
                     self.optional_session_2(),
                     self.optional_session_3(),
-                    &sensitive_create,
+                    &sensitive_create.try_into()?,
                     &public.try_into()?,
                     &outside_info.unwrap_or_default().into(),
                     &creation_pcrs.into(),
