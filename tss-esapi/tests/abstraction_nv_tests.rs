@@ -64,9 +64,9 @@ fn read_full() {
     // Now read it back
     let read_result = nv::read_full(&mut context, NvAuth::Owner, nv_index);
 
-    let _ = context
+    context
         .nv_undefine_space(Provision::Owner, owner_nv_index_handle)
-        .unwrap();
+        .expect("Call to nv_undefine_space failed");
 
     let read_result = read_result.unwrap();
     assert_eq!(read_result.len(), 1540);

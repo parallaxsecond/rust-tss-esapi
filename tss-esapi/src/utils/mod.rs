@@ -1289,7 +1289,7 @@ impl PcrData {
     }
 }
 
-impl<'a> IntoIterator for PcrData {
+impl IntoIterator for PcrData {
     type Item = (HashingAlgorithm, PcrBank);
     type IntoIter = ::std::vec::IntoIter<(HashingAlgorithm, PcrBank)>;
 
