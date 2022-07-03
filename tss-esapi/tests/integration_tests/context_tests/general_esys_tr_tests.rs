@@ -63,7 +63,9 @@ mod test_tr_from_tpm_public {
                        fn_name: &str|
          -> tss_esapi::Error {
             // Set password authorization
-            let _ = context.nv_undefine_space(Provision::Owner, handle).unwrap();
+            context
+                .nv_undefine_space(Provision::Owner, handle)
+                .expect("Call to nv_undefine_space failed");
             panic!("{} failed: {}", fn_name, e);
         };
 
@@ -113,9 +115,9 @@ mod test_tr_from_tpm_public {
             .unwrap();
         //////////////////////////////////////////////
         // Remove undefine the space
-        let _ = context
+        context
             .nv_undefine_space(Provision::Owner, new_nv_index_handle.into())
-            .unwrap();
+            .expect("Call to nv_undefine_space failed");
 
         assert_eq!(expected_name, actual_name);
     }
@@ -140,7 +142,7 @@ mod test_tr_from_tpm_public {
          -> tss_esapi::Error {
             // Set password authorization
             context.set_sessions((Some(AuthSession::Password), None, None));
-            let _ = context
+            context
                 .nv_undefine_space(Provision::Owner, handle)
                 .expect("Failed to call nv_undefine_space");
             panic!("{} failed: {}", fn_name, e);
@@ -213,9 +215,9 @@ mod test_tr_from_tpm_public {
         //
         // Set password authorization
         context.set_sessions((Some(AuthSession::Password), None, None));
-        let _ = context
+        context
             .nv_undefine_space(Provision::Owner, new_nv_index_handle.into())
-            .expect("Failed to call nv_undefine_space");
+            .expect("Call to nv_undefine_space failed");
         ///////////////////////////////////////////////////////////////
         // Check that we got the correct name
         //
@@ -243,7 +245,9 @@ mod test_tr_from_tpm_public {
          -> tss_esapi::Error {
             // Set password authorization
             context.set_sessions((Some(AuthSession::Password), None, None));
-            let _ = context.nv_undefine_space(Provision::Owner, handle).unwrap();
+            context
+                .nv_undefine_space(Provision::Owner, handle)
+                .expect("Call to nv_undefine_space failed");
             panic!("{} failed: {}", fn_name, e);
         };
 
@@ -362,9 +366,9 @@ mod test_tr_from_tpm_public {
         //
         // Set password authorization
         context.set_sessions((Some(AuthSession::Password), None, None));
-        let _ = context
+        context
             .nv_undefine_space(Provision::Owner, new_nv_index_handle)
-            .unwrap();
+            .expect("Call to nv_undefine_space failed");
         ///////////////////////////////////////////////////////////////
         // The name will have changed
         //

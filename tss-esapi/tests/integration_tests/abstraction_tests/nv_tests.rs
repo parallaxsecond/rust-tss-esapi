@@ -80,9 +80,9 @@ fn list() {
         .map(|(public, _)| public.nv_index())
         .any(|x| x == nv_index));
 
-    let _ = context
+    context
         .nv_undefine_space(Provision::Owner, owner_nv_index_handle)
-        .unwrap();
+        .expect("Call to nv_undefine_space failed");
 }
 
 #[test]
@@ -96,9 +96,9 @@ fn read_full() {
     // Now read it back
     let read_result = nv::read_full(&mut context, NvAuth::Owner, nv_index);
 
-    let _ = context
+    context
         .nv_undefine_space(Provision::Owner, owner_nv_index_handle)
-        .unwrap();
+        .expect("Call to nv_undefine_space failed");
 
     let read_result = read_result.unwrap();
     assert_eq!(read_result.len(), 1540);
@@ -154,8 +154,8 @@ fn write() {
 
     let owner_nv_index_handle = context
         .execute_without_session(|ctx| ctx.tr_from_tpm_public(nv_index.into()))
-        .unwrap();
+        .expect("Call to tr_from_tpm_public failed");
     context
         .nv_undefine_space(Provision::Owner, owner_nv_index_handle.into())
-        .unwrap();
+        .expect("Call to nv_undefine_space failed");
 }
