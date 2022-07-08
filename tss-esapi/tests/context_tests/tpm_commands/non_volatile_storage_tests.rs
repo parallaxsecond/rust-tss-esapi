@@ -97,7 +97,7 @@ mod test_nv_define_space {
             .nv_define_space(Provision::Owner, None, &owner_nv_public)
             .expect("Call to nv_define_space failed");
 
-        let _ = context
+        context
             .nv_undefine_space(Provision::Owner, owner_nv_index_handle)
             .expect("Call to nv_undefine_space failed");
 
@@ -108,7 +108,7 @@ mod test_nv_define_space {
             .nv_define_space(Provision::Platform, None, &platform_nv_public)
             .expect("Call to nv_define_space failed");
 
-        let _ = context
+        context
             .nv_undefine_space(Provision::Platform, platform_nv_index_handle)
             .expect("Call to nv_undefine_space failed");
     }
@@ -149,7 +149,7 @@ mod test_nv_undefine_space {
             .expect("Call to nv_define_space failed");
 
         // Succedes
-        let _ = context
+        context
             .nv_undefine_space(Provision::Owner, owner_nv_index_handle)
             .expect("Call to nv_undefine_space failed");
     }
@@ -190,7 +190,7 @@ mod test_nv_read_public {
 
         let read_public_result = context.nv_read_public(nv_index_handle);
 
-        let _ = context
+        context
             .nv_undefine_space(Provision::Owner, nv_index_handle)
             .unwrap();
 
@@ -251,7 +251,7 @@ mod test_nv_write {
             0,
         );
 
-        let _ = context
+        context
             .nv_undefine_space(Provision::Owner, owner_nv_index_handle)
             .expect("Call to nv_undefine_space failed");
 
@@ -309,7 +309,7 @@ mod test_nv_read {
         // read data using owner authorization
         let read_result =
             context.nv_read(NvAuth::Owner, owner_nv_index_handle, value.len() as u16, 0);
-        let _ = context
+        context
             .nv_undefine_space(Provision::Owner, owner_nv_index_handle)
             .expect("Call to nv_undefine_space failed");
 
