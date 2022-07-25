@@ -328,3 +328,90 @@ mod test_nv_read {
         assert_eq!(expected_data, actual_data);
     }
 }
+
+mod test_nv_increment {
+    use crate::common::create_ctx_with_session;
+    use std::convert::TryInto;
+    use tss_esapi::{
+        attributes::NvIndexAttributesBuilder,
+        constants::nv_index_type::NvIndexType,
+        handles::NvIndexTpmHandle,
+        interface_types::{
+            algorithm::HashingAlgorithm,
+            resource_handles::{NvAuth, Provision},
+        },
+        structures::NvPublicBuilder,
+    };
+    #[test]
+    fn test_nv_increment() {
+        let mut context = create_ctx_with_session();
+        let nv_index = NvIndexTpmHandle::new(0x01500021).unwrap();
+
+        // Create owner nv public.
+        let owner_nv_index_attributes = NvIndexAttributesBuilder::new()
+            .with_owner_write(true)
+            .with_owner_read(true)
+            .with_nv_index_type(NvIndexType::Counter)
+            .build()
+            .expect("Failed to create owner nv index attributes");
+
+        let owner_nv_public = NvPublicBuilder::new()
+            .with_nv_index(nv_index)
+            .with_index_name_algorithm(HashingAlgorithm::Sha256)
+            .with_index_attributes(owner_nv_index_attributes)
+            .with_data_area_size(8)
+            .build()
+            .expect("Failed to build NvPublic for owner");
+
+        let owner_nv_index_handle = context
+            .nv_define_space(Provision::Owner, None, owner_nv_public)
+            .expect("Call to nv_define_space failed");
+
+        // Increment the counter using Owner authorization. This call initializes the counter
+        let increment_result = context.nv_increment(NvAuth::Owner, owner_nv_index_handle);
+        if let Err(e) = increment_result {
+            panic!("Failed to perform nv increment: {}", e);
+        }
+
+        // Read the counter using owner authorization (first call)
+        let read_result_first_value = context.nv_read(NvAuth::Owner, owner_nv_index_handle, 8, 0);
+
+        // Increment the counter using Owner authorization (second increment)
+        let increment_result = context.nv_increment(NvAuth::Owner, owner_nv_index_handle);
+        if let Err(e) = increment_result {
+            panic!("Failed to perform nv increment: {}", e);
+        }
+
+        // Read the counter using owner authorization
+        let read_result_second_value = context.nv_read(NvAuth::Owner, owner_nv_index_handle, 8, 0);
+
+        context
+            .nv_undefine_space(Provision::Owner, owner_nv_index_handle)
+            .expect("Call to nv_undefine_space failed");
+
+        // Report error
+        if let Err(e) = read_result_first_value {
+            panic!("Failed to read public of nv index: {}", e);
+        }
+        if let Err(e) = read_result_second_value {
+            panic!("Failed to read public of nv index: {}", e);
+        }
+
+        // Check result.
+        let first_value = u64::from_be_bytes(
+            read_result_first_value
+                .unwrap()
+                .to_vec()
+                .try_into()
+                .unwrap(),
+        );
+        let second_value = u64::from_be_bytes(
+            read_result_second_value
+                .unwrap()
+                .to_vec()
+                .try_into()
+                .unwrap(),
+        );
+        assert_eq!(first_value + 1, second_value);
+    }
+}
