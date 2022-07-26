@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 use crate::{
     structures::SensitiveCreate,
-    traits::{Marshall, UnMarshall},
+    traits::{InPlaceFfiDataZeroizer, Marshall, UnMarshall},
     tss2_esys::{TPM2B_SENSITIVE_CREATE, TPMS_SENSITIVE_CREATE},
     Error, Result, ReturnCode, WrapperErrorKind,
 };
@@ -53,6 +53,13 @@ impl Deref for SensitiveCreateBuffer {
 
     fn deref(&self) -> &Self::Target {
         &self.0
+    }
+}
+
+impl InPlaceFfiDataZeroizer<TPM2B_SENSITIVE_CREATE> for SensitiveCreateBuffer {
+    fn zeroize_ffi_data_in_place(ffi_data: &mut TPM2B_SENSITIVE_CREATE) {
+        ffi_data.size.zeroize();
+        SensitiveCreate::zeroize_ffi_data_in_place(&mut ffi_data.sensitive);
     }
 }
 
