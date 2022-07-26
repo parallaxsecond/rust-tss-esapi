@@ -11,7 +11,7 @@ use std::{
     convert::{TryFrom, TryInto},
     ops::Deref,
 };
-use zeroize::Zeroize;
+use zeroize::{Zeroize, ZeroizeOnDrop};
 
 /// The [SensitiveCreate] buffer type.
 ///
@@ -19,8 +19,7 @@ use zeroize::Zeroize;
 /// The SensitiveCreateBuffer contains [SensitiveCreate] in marshalled
 /// form. It can be unmarshalled into [SensitiveCreate] or [TPM2B_SENSITIVE_CREATE].
 /// structure.
-#[derive(Debug, Clone, PartialEq, Eq, Zeroize)]
-#[zeroize(drop)]
+#[derive(Debug, Clone, PartialEq, Eq, Zeroize, ZeroizeOnDrop)]
 pub struct SensitiveCreateBuffer(Vec<u8>);
 
 impl SensitiveCreateBuffer {

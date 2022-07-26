@@ -21,10 +21,9 @@ use crate::structures::{
 };
 use crate::tss2_esys::*;
 use crate::{Context, Error, Result, WrapperErrorKind};
-use zeroize::Zeroize;
-
 use serde::{Deserialize, Serialize};
 use std::convert::{TryFrom, TryInto};
+use zeroize::{Zeroize, ZeroizeOnDrop};
 
 /// Rust native wrapper for `TPMS_CONTEXT` objects.
 ///
@@ -32,8 +31,7 @@ use std::convert::{TryFrom, TryInto};
 /// saving the context of an object is to be able to re-use it later, on demand, a serializable
 /// structure is most commonly needed. `TpmsContext` implements the `Serialize` and `Deserialize`
 /// defined by `serde`.
-#[derive(Debug, Serialize, Deserialize, Clone, Zeroize)]
-#[zeroize(drop)]
+#[derive(Debug, Serialize, Deserialize, Clone, Zeroize, ZeroizeOnDrop)]
 pub struct TpmsContext {
     sequence: u64,
     saved_handle: TPMI_DH_CONTEXT,

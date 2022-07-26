@@ -11,7 +11,7 @@ use std::{
     convert::{TryFrom, TryInto},
     ops::Deref,
 };
-use zeroize::Zeroize;
+use zeroize::{Zeroize, ZeroizeOnDrop};
 
 /// Sensitive data buffer.
 ///
@@ -19,8 +19,7 @@ use zeroize::Zeroize;
 /// Corresponds to `TPM2B_SENSITIVE`. The contents of
 /// the buffer can be unmarshalled into a [Sensitive]
 /// structure.
-#[derive(Debug, Clone, PartialEq, Eq, Zeroize)]
-#[zeroize(drop)]
+#[derive(Debug, Clone, PartialEq, Eq, Zeroize, ZeroizeOnDrop)]
 pub struct SensitiveBuffer(Vec<u8>);
 
 impl SensitiveBuffer {

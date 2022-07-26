@@ -12,7 +12,7 @@ use std::{
     convert::{TryFrom, TryInto},
     ops::Deref,
 };
-use zeroize::Zeroize;
+use zeroize::{Zeroize, ZeroizeOnDrop};
 
 /// Public data buffer.
 ///
@@ -20,8 +20,7 @@ use zeroize::Zeroize;
 /// Corresponds to `TPM2B_PUBLIC`. The contents of
 /// the buffer can be unmarshalled into a [Public]
 /// structure.
-#[derive(Debug, Clone, PartialEq, Eq, Zeroize)]
-#[zeroize(drop)]
+#[derive(Debug, Clone, PartialEq, Eq, Zeroize, ZeroizeOnDrop)]
 pub struct PublicBuffer(Vec<u8>);
 
 impl PublicBuffer {
