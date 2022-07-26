@@ -16,3 +16,9 @@ pub trait UnMarshall: Sized {
     /// Creates the type from marshalled data.
     fn unmarshall(marshalled_data: &[u8]) -> Result<Self>;
 }
+
+/// Trait for types that can zeroize their
+/// associated FFI data in place.
+pub trait InPlaceFfiDataZeroizer<T> {
+    fn zeroize_ffi_data_in_place(ffi_data: &mut T);
+}
