@@ -37,10 +37,10 @@ impl SensitiveCreateBuffer {
             Ok(())
         } else {
             error!(
-                "Error: Invalid {} size ({} >= {} >= {})",
+                "Size {} for {} is not in valid range(({} >= ) AND ( >= {}))",
+                buffer_size,
                 container_name,
                 Self::MAX_SIZE,
-                buffer_size,
                 Self::MIN_SIZE,
             );
             Err(Error::local_error(WrapperErrorKind::WrongParamSize))
