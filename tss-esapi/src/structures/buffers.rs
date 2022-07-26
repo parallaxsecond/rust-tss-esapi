@@ -71,10 +71,12 @@ macro_rules! named_field_buffer_type {
         impl TryFrom<$tss_type> for $native_type {
             type Error = Error;
 
-            fn try_from(tss: $tss_type) -> Result<Self> {
+            fn try_from(mut tss: $tss_type) -> Result<Self> {
                 let size = tss.size as usize;
                 Self::ensure_valid_size(size, "buffer")?;
-                Ok($native_type(tss.$buffer_field_name[..size].to_vec().into()))
+                let native = $native_type(tss.$buffer_field_name[..size].to_vec().into());
+                Self::zeroize_ffi_data_in_place(&mut tss);
+                Ok(native)
             }
         }
 
