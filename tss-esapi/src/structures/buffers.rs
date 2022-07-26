@@ -4,11 +4,11 @@
 #[allow(unused_macros)]
 macro_rules! named_field_buffer_type {
     ($native_type:ident,$MAX:expr,$tss_type:ident,$buffer_field_name:ident) => {
-        use crate::tss2_esys::$tss_type;
-        use crate::{Error, Result, WrapperErrorKind};
+        use crate::{
+            traits::InPlaceFfiDataZeroizer, tss2_esys::$tss_type, Error, Result, WrapperErrorKind,
+        };
         use log::error;
-        use std::convert::TryFrom;
-        use std::ops::Deref;
+        use std::{convert::TryFrom, ops::Deref};
         use zeroize::{Zeroize, Zeroizing};
 
         #[derive(Debug, Clone, PartialEq, Eq, Zeroize)]
@@ -40,6 +40,13 @@ macro_rules! named_field_buffer_type {
             type Target = Vec<u8>;
             fn deref(&self) -> &Self::Target {
                 &self.0
+            }
+        }
+
+        impl InPlaceFfiDataZeroizer<$tss_type> for $native_type {
+            fn zeroize_ffi_data_in_place(ffi_data: &mut $tss_type) {
+                ffi_data.size.zeroize();
+                ffi_data.$buffer_field_name.zeroize();
             }
         }
 
