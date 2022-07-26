@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 use crate::{
     structures::{Auth, SensitiveData},
-    traits::{Marshall, UnMarshall},
+    traits::{InPlaceFfiDataZeroizer, Marshall, UnMarshall},
     tss2_esys::{TPM2B_SENSITIVE_CREATE, TPMS_SENSITIVE_CREATE},
     Error, Result, ReturnCode, WrapperErrorKind,
 };
@@ -39,6 +39,13 @@ impl SensitiveCreate {
     /// Returns the sensitive data
     pub const fn data(&self) -> &SensitiveData {
         &self.data
+    }
+}
+
+impl InPlaceFfiDataZeroizer<TPMS_SENSITIVE_CREATE> for SensitiveCreate {
+    fn zeroize_ffi_data_in_place(ffi_data: &mut TPMS_SENSITIVE_CREATE) {
+        Auth::zeroize_ffi_data_in_place(&mut ffi_data.userAuth);
+        SensitiveData::zeroize_ffi_data_in_place(&mut ffi_data.data);
     }
 }
 
