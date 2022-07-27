@@ -46,7 +46,7 @@ mod test_nv_define_space {
             .build()
             .unwrap();
 
-        // Fails because attributes dont match hierarchy auth.
+        // Fails because attributes don't match hierarchy auth.
         context
             .nv_define_space(Provision::Platform, None, owner_nv_public)
             .unwrap_err();
@@ -188,19 +188,16 @@ mod test_nv_read_public {
             .nv_define_space(Provision::Owner, None, expected_nv_public.clone())
             .expect("Call to nv_define_space failed");
 
-        let read_public_result = context.nv_read_public(nv_index_handle);
+        let nv_read_public_result = context.nv_read_public(nv_index_handle);
 
         context
             .nv_undefine_space(Provision::Owner, nv_index_handle)
             .expect("Call to nv_undefine_space failed");
 
-        // Report error
-        if let Err(e) = read_public_result {
-            panic!("Failed to read public of nv index: {}", e);
-        }
+        // Process result
+        let (actual_nv_public, _) = nv_read_public_result.expect("Call to nv_read_public failed");
 
         // Check result.
-        let (actual_nv_public, _name) = read_public_result.unwrap();
         assert_eq!(expected_nv_public, actual_nv_public);
     }
 }
@@ -217,6 +214,7 @@ mod test_nv_write {
         },
         structures::{MaxNvBuffer, NvPublicBuilder},
     };
+
     #[test]
     fn test_nv_write() {
         let mut context = create_ctx_with_session();
@@ -238,25 +236,21 @@ mod test_nv_write {
             .build()
             .expect("Failed to build NvPublic for owner");
 
+        let data = MaxNvBuffer::try_from(vec![1, 2, 3, 4, 5, 6, 7])
+            .expect("Failed to create MaxNvBuffer from vec");
+
         let owner_nv_index_handle = context
             .nv_define_space(Provision::Owner, None, owner_nv_public)
             .expect("Call to nv_define_space failed");
 
         // Use owner authorization
-        let write_result = context.nv_write(
-            NvAuth::Owner,
-            owner_nv_index_handle,
-            MaxNvBuffer::try_from([1, 2, 3, 4, 5, 6, 7].to_vec()).unwrap(),
-            0,
-        );
+        let nv_write_result = context.nv_write(NvAuth::Owner, owner_nv_index_handle, data, 0);
 
         context
             .nv_undefine_space(Provision::Owner, owner_nv_index_handle)
             .expect("Call to nv_undefine_space failed");
 
-        if let Err(e) = write_result {
-            panic!("Failed to perform nv write: {}", e);
-        }
+        nv_write_result.expect("Call to nv_write failed");
     }
 }
 
@@ -272,6 +266,7 @@ mod test_nv_read {
         },
         structures::{MaxNvBuffer, NvPublicBuilder},
     };
+
     #[test]
     fn test_nv_read() {
         let mut context = create_ctx_with_session();
@@ -293,38 +288,33 @@ mod test_nv_read {
             .build()
             .expect("Failed to build NvPublic for owner");
 
-        let owner_nv_index_handle = context
-            .nv_define_space(Provision::Owner, None, owner_nv_public)
-            .expect("Call to nv_define_space failed");
-
         let value = [1, 2, 3, 4, 5, 6, 7];
         let expected_data =
             MaxNvBuffer::try_from(value.to_vec()).expect("Failed to create MaxBuffer from data");
 
+        let owner_nv_index_handle = context
+            .nv_define_space(Provision::Owner, None, owner_nv_public)
+            .expect("Call to nv_define_space failed");
+
         // Write the data using Owner authorization
-        let write_result = context.nv_write(
+        let nv_write_result = context.nv_write(
             NvAuth::Owner,
             owner_nv_index_handle,
             expected_data.clone(),
             0,
         );
         // read data using owner authorization
-        let read_result =
+        let nv_read_result =
             context.nv_read(NvAuth::Owner, owner_nv_index_handle, value.len() as u16, 0);
         context
             .nv_undefine_space(Provision::Owner, owner_nv_index_handle)
             .expect("Call to nv_undefine_space failed");
 
-        // Report error
-        if let Err(e) = write_result {
-            panic!("Failed to perform nv write: {}", e);
-        }
-        if let Err(e) = read_result {
-            panic!("Failed to read public of nv index: {}", e);
-        }
+        // Process results
+        nv_write_result.expect("Call to nv_write failed.");
+        let actual_data = nv_read_result.expect("Call to nv_read failed.");
 
         // Check result.
-        let actual_data = read_result.unwrap();
         assert_eq!(expected_data, actual_data);
     }
 }
@@ -411,7 +401,7 @@ mod test_nv_increment {
         //    least significant bit and is the least significant bit in the last
         //    octet in the array."
         //
-        // According to the specification he index counter is an 8 byte
+        // According to the specification the index counter is an 8 byte
         // unsigned big-endian value so it will be parsed as u64.
 
         // Check result.
