@@ -328,3 +328,106 @@ mod test_nv_read {
         assert_eq!(expected_data, actual_data);
     }
 }
+
+mod test_nv_increment {
+    use crate::common::create_ctx_with_session;
+    use std::convert::TryInto;
+    use tss_esapi::{
+        attributes::NvIndexAttributesBuilder,
+        constants::nv_index_type::NvIndexType,
+        handles::NvIndexTpmHandle,
+        interface_types::{
+            algorithm::HashingAlgorithm,
+            resource_handles::{NvAuth, Provision},
+        },
+        structures::NvPublicBuilder,
+    };
+
+    #[test]
+    fn test_nv_increment() {
+        let mut context = create_ctx_with_session();
+        let nv_index = NvIndexTpmHandle::new(0x01500021).unwrap();
+
+        // Create owner nv public.
+        let owner_nv_index_attributes = NvIndexAttributesBuilder::new()
+            .with_owner_write(true)
+            .with_owner_read(true)
+            .with_nv_index_type(NvIndexType::Counter)
+            .build()
+            .expect("Failed to create owner nv index attributes");
+
+        let owner_nv_public = NvPublicBuilder::new()
+            .with_nv_index(nv_index)
+            .with_index_name_algorithm(HashingAlgorithm::Sha256)
+            .with_index_attributes(owner_nv_index_attributes)
+            .with_data_area_size(8)
+            .build()
+            .expect("Failed to build NvPublic for owner");
+
+        let owner_nv_index_handle = context
+            .nv_define_space(Provision::Owner, None, owner_nv_public)
+            .expect("Call to nv_define_space failed");
+
+        // Increment the counter using Owner authorization. This call initializes the counter
+        let first_nv_increment_result = context.nv_increment(NvAuth::Owner, owner_nv_index_handle);
+
+        // Read the counter using owner authorization (first call)
+        let first_nv_read_result = context.nv_read(NvAuth::Owner, owner_nv_index_handle, 8, 0);
+
+        // Increment the counter using Owner authorization (second increment)
+        let second_nv_increment_result = context.nv_increment(NvAuth::Owner, owner_nv_index_handle);
+
+        // Read the counter using owner authorization
+        let second_nv_read_result = context.nv_read(NvAuth::Owner, owner_nv_index_handle, 8, 0);
+
+        context
+            .nv_undefine_space(Provision::Owner, owner_nv_index_handle)
+            .expect("Call to nv_undefine_space failed");
+
+        // Process results and report errors.
+        first_nv_increment_result.expect("First call to nv_increment failed");
+        let first_nv_read_value = first_nv_read_result.expect("First call to nv_read failed");
+        second_nv_increment_result.expect("Second call to nv_increment failed");
+        let second_nv_read_value = second_nv_read_result.expect("Second call to nv_read failed");
+
+        // Parse the values
+        // From various parts of the specification:
+        // - "If nvIndexType is TPM_NT_COUNTER, TPM_NT_BITS, TPM_NT_PIN_FAIL,
+        //    or TPM_NT_PIN_PASS, then publicInfo→dataSize shall be set to
+        //    eight (8) or the TPM shall return TPM_RC_SIZE."
+        //
+        // - "NOTE 1 The NV Index counter is an unsigned value."
+        //
+        // - "Counter – contains an 8-octet value that is to be used as a
+        //    counter and can only be modified with TPM2_NV_Increment()"
+        //
+        // - "Counter – an Index with an NV Index type of TPM_NT_COUNTER
+        //    contains a 64-bit counter that is modified using
+        //    TPM2_NV_Increment()."
+        //
+        // - "An integer value is considered to be an array of one or more octets.
+        //    The octet at offset zero within the array is the most significant
+        //    octet (MSO) of the integer. Bit number 0 of that integer is its
+        //    least significant bit and is the least significant bit in the last
+        //    octet in the array."
+        //
+        // According to the specification he index counter is an 8 byte
+        // unsigned big-endian value so it will be parsed as u64.
+
+        // Check result.
+        let first_value = u64::from_be_bytes(
+            first_nv_read_value
+                .to_vec()
+                .try_into()
+                .expect("Failed to convert first_nv_read_value as a vector into an 8 byte array"),
+        );
+        let second_value = u64::from_be_bytes(
+            second_nv_read_value
+                .to_vec()
+                .try_into()
+                .expect("Failed to convert second_nv_read_value as a vector into an 8 byte array"),
+        );
+
+        assert_eq!(first_value + 1, second_value);
+    }
+}
