@@ -6,7 +6,8 @@ use crate::{
     interface_types::resource_handles::{NvAuth, Provision},
     structures::{Auth, MaxNvBuffer, Name, NvPublic},
     tss2_esys::{
-        Esys_NV_DefineSpace, Esys_NV_Read, Esys_NV_ReadPublic, Esys_NV_UndefineSpace, Esys_NV_Write,
+        Esys_NV_DefineSpace, Esys_NV_Increment, Esys_NV_Read, Esys_NV_ReadPublic,
+        Esys_NV_UndefineSpace, Esys_NV_Write,
     },
     Context, Result, ReturnCode,
 };
@@ -153,7 +154,31 @@ impl Context {
         )
     }
 
-    // Missing function: NV_Increment
+    /// Increment monotonic counter index
+    ///
+    /// # Details
+    /// This method is used to increment monotonic counter
+    /// in the TPM.
+    pub fn nv_increment(
+        &mut self,
+        auth_handle: NvAuth,
+        nv_index_handle: NvIndexHandle,
+    ) -> Result<()> {
+        ReturnCode::ensure_success(
+            unsafe {
+                Esys_NV_Increment(
+                    self.mut_context(),
+                    AuthHandle::from(auth_handle).into(),
+                    nv_index_handle.into(),
+                    self.optional_session_1(),
+                    self.optional_session_2(),
+                    self.optional_session_3(),
+                )
+            },
+            |ret| error!("Error when incrementing NV: {}", ret),
+        )
+    }
+
     // Missing function: NV_Extend
     // Missing function: NV_SetBits
     // Missing function: NV_WriteLock
