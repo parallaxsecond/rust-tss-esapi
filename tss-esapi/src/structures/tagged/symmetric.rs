@@ -1,3 +1,5 @@
+use zeroize::Zeroize;
+
 // Copyright 2021 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
 use crate::{
@@ -5,6 +7,7 @@ use crate::{
         algorithm::{HashingAlgorithm, SymmetricAlgorithm, SymmetricMode, SymmetricObject},
         key_bits::{AesKeyBits, CamelliaKeyBits, Sm4KeyBits},
     },
+    traits::InPlaceFfiDataZeroizer,
     tss2_esys::{TPMT_SYM_DEF, TPMT_SYM_DEF_OBJECT, TPMU_SYM_KEY_BITS, TPMU_SYM_MODE},
     Error, Result, WrapperErrorKind,
 };
@@ -250,5 +253,28 @@ impl TryFrom<TPMT_SYM_DEF_OBJECT> for SymmetricDefinitionObject {
                 Err(Error::local_error(WrapperErrorKind::WrongValueFromTpm))
             }
         }
+    }
+}
+
+impl InPlaceFfiDataZeroizer<TPMT_SYM_DEF_OBJECT> for SymmetricDefinitionObject {
+    fn zeroize_ffi_data_in_place(ffi_data: &mut TPMT_SYM_DEF_OBJECT) {
+        if let Ok(algorithm) = SymmetricObject::try_from(ffi_data.algorithm) {
+            match algorithm {
+                SymmetricObject::Aes => {
+                    unsafe { ffi_data.keyBits.aes }.zeroize();
+                    unsafe { ffi_data.mode.aes }.zeroize();
+                }
+                SymmetricObject::Sm4 => {
+                    unsafe { ffi_data.keyBits.sm4 }.zeroize();
+                    unsafe { ffi_data.mode.sm4 }.zeroize();
+                }
+                SymmetricObject::Camellia => {
+                    unsafe { ffi_data.keyBits.camellia }.zeroize();
+                    unsafe { ffi_data.mode.camellia }.zeroize();
+                }
+                SymmetricObject::Null | SymmetricObject::Tdes => {}
+            }
+        }
+        ffi_data.algorithm.zeroize();
     }
 }
