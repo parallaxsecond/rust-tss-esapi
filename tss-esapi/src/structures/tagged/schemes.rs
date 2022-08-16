@@ -6,6 +6,7 @@ use crate::{
         RsaDecryptAlgorithm, RsaSchemeAlgorithm, SignatureSchemeAlgorithm,
     },
     structures::schemes::{EcDaaScheme, HashScheme, HmacScheme, XorScheme},
+    traits::InPlaceFfiDataZeroizer,
     tss2_esys::{
         TPMT_ECC_SCHEME, TPMT_KDF_SCHEME, TPMT_KEYEDHASH_SCHEME, TPMT_RSA_DECRYPT, TPMT_RSA_SCHEME,
         TPMT_SIG_SCHEME, TPMU_ASYM_SCHEME, TPMU_KDF_SCHEME, TPMU_SCHEME_KEYEDHASH, TPMU_SIG_SCHEME,
@@ -14,6 +15,7 @@ use crate::{
 };
 use log::error;
 use std::convert::{TryFrom, TryInto};
+use zeroize::Zeroize;
 
 /// Enum representing the keyed hash scheme.
 ///
@@ -67,6 +69,26 @@ impl TryFrom<TPMT_KEYEDHASH_SCHEME> for KeyedHashScheme {
             }),
             KeyedHashSchemeAlgorithm::Null => Ok(KeyedHashScheme::Null),
         }
+    }
+}
+
+impl InPlaceFfiDataZeroizer<TPMT_KEYEDHASH_SCHEME> for KeyedHashScheme {
+    fn zeroize_ffi_data_in_place(ffi_data: &mut TPMT_KEYEDHASH_SCHEME) {
+        if let Ok(keyed_hash_scheme_algorithm) = KeyedHashSchemeAlgorithm::try_from(ffi_data.scheme)
+        {
+            match keyed_hash_scheme_algorithm {
+                KeyedHashSchemeAlgorithm::Xor => {
+                    XorScheme::zeroize_ffi_data_in_place(&mut unsafe {
+                        ffi_data.details.exclusiveOr
+                    })
+                }
+                KeyedHashSchemeAlgorithm::Hmac => {
+                    HmacScheme::zeroize_ffi_data_in_place(&mut unsafe { ffi_data.details.hmac })
+                }
+                KeyedHashSchemeAlgorithm::Null => {}
+            }
+        }
+        ffi_data.scheme.zeroize();
     }
 }
 
@@ -202,6 +224,27 @@ impl TryFrom<TPMT_RSA_SCHEME> for RsaScheme {
             )),
             RsaSchemeAlgorithm::Null => Ok(RsaScheme::Null),
         }
+    }
+}
+
+impl InPlaceFfiDataZeroizer<TPMT_RSA_SCHEME> for RsaScheme {
+    fn zeroize_ffi_data_in_place(ffi_data: &mut TPMT_RSA_SCHEME) {
+        if let Ok(rsa_scheme_algorithm) = RsaSchemeAlgorithm::try_from(ffi_data.scheme) {
+            match rsa_scheme_algorithm {
+                RsaSchemeAlgorithm::RsaSsa => {
+                    HashScheme::zeroize_ffi_data_in_place(&mut unsafe { ffi_data.details.rsassa })
+                }
+                RsaSchemeAlgorithm::RsaEs => {}
+                RsaSchemeAlgorithm::RsaPss => {
+                    HashScheme::zeroize_ffi_data_in_place(&mut unsafe { ffi_data.details.rsapss })
+                }
+                RsaSchemeAlgorithm::Oaep => {
+                    HashScheme::zeroize_ffi_data_in_place(&mut unsafe { ffi_data.details.oaep })
+                }
+                RsaSchemeAlgorithm::Null => {}
+            }
+        }
+        ffi_data.scheme.zeroize();
     }
 }
 
@@ -371,6 +414,37 @@ impl TryFrom<TPMT_ECC_SCHEME> for EccScheme {
     }
 }
 
+impl InPlaceFfiDataZeroizer<TPMT_ECC_SCHEME> for EccScheme {
+    fn zeroize_ffi_data_in_place(ffi_data: &mut TPMT_ECC_SCHEME) {
+        if let Ok(ecc_scheme_algorithm) = EccSchemeAlgorithm::try_from(ffi_data.scheme) {
+            match ecc_scheme_algorithm {
+                EccSchemeAlgorithm::EcDsa => {
+                    HashScheme::zeroize_ffi_data_in_place(&mut unsafe { ffi_data.details.ecdsa })
+                }
+                EccSchemeAlgorithm::EcDh => {
+                    HashScheme::zeroize_ffi_data_in_place(&mut unsafe { ffi_data.details.ecdh })
+                }
+                EccSchemeAlgorithm::EcDaa => {
+                    EcDaaScheme::zeroize_ffi_data_in_place(&mut unsafe { ffi_data.details.ecdaa })
+                }
+                EccSchemeAlgorithm::Sm2 => {
+                    HashScheme::zeroize_ffi_data_in_place(&mut unsafe { ffi_data.details.sm2 })
+                }
+                EccSchemeAlgorithm::EcSchnorr => {
+                    HashScheme::zeroize_ffi_data_in_place(&mut unsafe {
+                        ffi_data.details.ecschnorr
+                    })
+                }
+                EccSchemeAlgorithm::EcMqv => {
+                    HashScheme::zeroize_ffi_data_in_place(&mut unsafe { ffi_data.details.ecmqv })
+                }
+                EccSchemeAlgorithm::Null => {}
+            }
+        }
+        ffi_data.scheme.zeroize();
+    }
+}
+
 /// Enum representing the kdf scheme
 ///
 /// # Details
@@ -438,6 +512,33 @@ impl TryFrom<TPMT_KDF_SCHEME> for KeyDerivationFunctionScheme {
             )),
             KeyDerivationFunction::Null => Ok(KeyDerivationFunctionScheme::Null),
         }
+    }
+}
+
+impl InPlaceFfiDataZeroizer<TPMT_KDF_SCHEME> for KeyDerivationFunctionScheme {
+    fn zeroize_ffi_data_in_place(ffi_data: &mut TPMT_KDF_SCHEME) {
+        if let Ok(key_derivation_function) = KeyDerivationFunction::try_from(ffi_data.scheme) {
+            match key_derivation_function {
+                KeyDerivationFunction::Kdf1Sp800_56a => {
+                    HashScheme::zeroize_ffi_data_in_place(&mut unsafe {
+                        ffi_data.details.kdf1_sp800_56a
+                    })
+                }
+                KeyDerivationFunction::Kdf2 => {
+                    HashScheme::zeroize_ffi_data_in_place(&mut unsafe { ffi_data.details.kdf2 })
+                }
+                KeyDerivationFunction::Kdf1Sp800_108 => {
+                    HashScheme::zeroize_ffi_data_in_place(&mut unsafe {
+                        ffi_data.details.kdf1_sp800_108
+                    })
+                }
+                KeyDerivationFunction::Mgf1 => {
+                    HashScheme::zeroize_ffi_data_in_place(&mut unsafe { ffi_data.details.mgf1 })
+                }
+                KeyDerivationFunction::Null => {}
+            }
+        }
+        ffi_data.scheme.zeroize();
     }
 }
 
