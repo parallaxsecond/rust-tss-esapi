@@ -1,12 +1,16 @@
 // Copyright 2020 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
-use crate::interface_types::algorithm::HashingAlgorithm;
-use crate::structures::{PcrSelectSize, PcrSelection, PcrSlot};
-use crate::tss2_esys::TPML_PCR_SELECTION;
-use crate::{Error, Result, WrapperErrorKind};
+use crate::{
+    interface_types::algorithm::HashingAlgorithm,
+    structures::{PcrSelectSize, PcrSelection, PcrSlot},
+    traits::InPlaceFfiDataZeroizer,
+    tss2_esys::TPML_PCR_SELECTION,
+    Error, Result, WrapperErrorKind,
+};
 use log::error;
 use std::collections::HashMap;
 use std::convert::TryFrom;
+use zeroize::Zeroize;
 
 /// A struct representing a pcr selection list. This
 /// corresponds to the TSS TPML_PCR_SELECTION.
@@ -121,6 +125,16 @@ impl TryFrom<TPML_PCR_SELECTION> for PcrSelectionList {
             items.push(parsed_pcr_selection);
         }
         Ok(PcrSelectionList { items })
+    }
+}
+
+impl InPlaceFfiDataZeroizer<TPML_PCR_SELECTION> for PcrSelectionList {
+    fn zeroize_ffi_data_in_place(ffi_data: &mut TPML_PCR_SELECTION) {
+        ffi_data.count.zeroize();
+        ffi_data
+            .pcrSelections
+            .iter_mut()
+            .for_each(PcrSelection::zeroize_ffi_data_in_place)
     }
 }
 
