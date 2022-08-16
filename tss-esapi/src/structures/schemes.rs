@@ -2,10 +2,12 @@
 // SPDX-License-Identifier: Apache-2.0
 use crate::{
     interface_types::algorithm::{HashingAlgorithm, KeyDerivationFunction},
+    traits::InPlaceFfiDataZeroizer,
     tss2_esys::{TPMS_SCHEME_ECDAA, TPMS_SCHEME_HASH, TPMS_SCHEME_HMAC, TPMS_SCHEME_XOR},
     Error, Result,
 };
 use std::convert::{TryFrom, TryInto};
+use zeroize::Zeroize;
 /// Struct for holding the hash scheme
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct HashScheme {
@@ -38,6 +40,12 @@ impl From<HashScheme> for TPMS_SCHEME_HASH {
         TPMS_SCHEME_HASH {
             hashAlg: hash_scheme.hashing_algorithm.into(),
         }
+    }
+}
+
+impl InPlaceFfiDataZeroizer<TPMS_SCHEME_HASH> for HashScheme {
+    fn zeroize_ffi_data_in_place(ffi_data: &mut TPMS_SCHEME_HASH) {
+        ffi_data.hashAlg.zeroize();
     }
 }
 
@@ -87,6 +95,12 @@ impl From<HmacScheme> for TPMS_SCHEME_HMAC {
     }
 }
 
+impl InPlaceFfiDataZeroizer<TPMS_SCHEME_HMAC> for HmacScheme {
+    fn zeroize_ffi_data_in_place(ffi_data: &mut TPMS_SCHEME_HMAC) {
+        ffi_data.hashAlg.zeroize();
+    }
+}
+
 /// Struct for holding the xor scheme
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct XorScheme {
@@ -123,6 +137,13 @@ impl From<XorScheme> for TPMS_SCHEME_XOR {
             hashAlg: xor_scheme.hashing_algorithm.into(),
             kdf: xor_scheme.key_derivation_function.into(),
         }
+    }
+}
+
+impl InPlaceFfiDataZeroizer<TPMS_SCHEME_XOR> for XorScheme {
+    fn zeroize_ffi_data_in_place(ffi_data: &mut TPMS_SCHEME_XOR) {
+        ffi_data.hashAlg.zeroize();
+        ffi_data.kdf.zeroize();
     }
 }
 
@@ -173,5 +194,12 @@ impl TryFrom<TPMS_SCHEME_ECDAA> for EcDaaScheme {
             hashing_algorithm: tpms_scheme_ecdaa.hashAlg.try_into()?,
             count: tpms_scheme_ecdaa.count,
         })
+    }
+}
+
+impl InPlaceFfiDataZeroizer<TPMS_SCHEME_ECDAA> for EcDaaScheme {
+    fn zeroize_ffi_data_in_place(ffi_data: &mut TPMS_SCHEME_ECDAA) {
+        ffi_data.hashAlg.zeroize();
+        ffi_data.count.zeroize();
     }
 }
