@@ -3,11 +3,13 @@
 use crate::{
     interface_types::{algorithm::RsaSchemeAlgorithm, key_bits::RsaKeyBits},
     structures::{RsaScheme, SymmetricDefinitionObject},
+    traits::InPlaceFfiDataZeroizer,
     tss2_esys::{TPMS_RSA_PARMS, UINT32},
     Error, Result, WrapperErrorKind,
 };
 use log::error;
 use std::convert::{TryFrom, TryInto};
+use zeroize::Zeroize;
 
 /// Builder for `TPMS_RSA_PARMS` values.
 #[derive(Copy, Clone, Default, Debug)]
@@ -350,5 +352,14 @@ impl TryFrom<TPMS_RSA_PARMS> for PublicRsaParameters {
             key_bits: tpms_rsa_parms.keyBits.try_into()?,
             exponent: tpms_rsa_parms.exponent.try_into()?,
         })
+    }
+}
+
+impl InPlaceFfiDataZeroizer<TPMS_RSA_PARMS> for PublicRsaParameters {
+    fn zeroize_ffi_data_in_place(ffi_data: &mut TPMS_RSA_PARMS) {
+        SymmetricDefinitionObject::zeroize_ffi_data_in_place(&mut ffi_data.symmetric);
+        RsaScheme::zeroize_ffi_data_in_place(&mut ffi_data.scheme);
+        ffi_data.keyBits.zeroize();
+        ffi_data.exponent.zeroize();
     }
 }
