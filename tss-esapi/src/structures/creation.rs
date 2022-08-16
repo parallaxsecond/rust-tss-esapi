@@ -1,11 +1,14 @@
 // Copyright 2020 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
 
+use zeroize::Zeroize;
+
 use crate::{
     attributes::LocalityAttributes,
     constants::AlgorithmIdentifier,
     interface_types::algorithm::HashingAlgorithm,
     structures::{Data, Digest, Name, PcrSelectionList},
+    traits::InPlaceFfiDataZeroizer,
     tss2_esys::{TPM2B_CREATION_DATA, TPMS_CREATION_DATA},
     Error, Result,
 };
@@ -61,5 +64,23 @@ impl From<CreationData> for TPMS_CREATION_DATA {
             parentQualifiedName: creation_data.parent_qualified_name.into(),
             outsideInfo: creation_data.outside_info.into(),
         }
+    }
+}
+
+impl InPlaceFfiDataZeroizer<TPMS_CREATION_DATA> for CreationData {
+    fn zeroize_ffi_data_in_place(ffi_data: &mut TPMS_CREATION_DATA) {
+        PcrSelectionList::zeroize_ffi_data_in_place(&mut ffi_data.pcrSelect);
+        Digest::zeroize_ffi_data_in_place(&mut ffi_data.pcrDigest);
+        ffi_data.locality.zeroize();
+        ffi_data.parentNameAlg.zeroize();
+        Name::zeroize_ffi_data_in_place(&mut ffi_data.parentName);
+        Name::zeroize_ffi_data_in_place(&mut ffi_data.parentQualifiedName);
+        Data::zeroize_ffi_data_in_place(&mut ffi_data.outsideInfo);
+    }
+}
+
+impl InPlaceFfiDataZeroizer<TPM2B_CREATION_DATA> for CreationData {
+    fn zeroize_ffi_data_in_place(ffi_data: &mut TPM2B_CREATION_DATA) {
+        CreationData::zeroize_ffi_data_in_place(&mut ffi_data.creationData);
     }
 }
