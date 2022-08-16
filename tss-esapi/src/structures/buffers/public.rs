@@ -3,6 +3,7 @@
 
 use crate::{
     structures::Public,
+    traits::InPlaceFfiDataZeroizer,
     traits::{Marshall, UnMarshall},
     tss2_esys::{TPM2B_PUBLIC, TPMT_PUBLIC},
     Error, Result, ReturnCode, WrapperErrorKind,
@@ -171,5 +172,12 @@ impl UnMarshall for PublicBuffer {
         )?;
 
         PublicBuffer::try_from(dest)
+    }
+}
+
+impl InPlaceFfiDataZeroizer<TPM2B_PUBLIC> for PublicBuffer {
+    fn zeroize_ffi_data_in_place(ffi_data: &mut TPM2B_PUBLIC) {
+        ffi_data.size.zeroize();
+        Public::zeroize_ffi_data_in_place(&mut ffi_data.publicArea);
     }
 }
