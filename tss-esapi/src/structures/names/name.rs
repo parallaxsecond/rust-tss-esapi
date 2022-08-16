@@ -1,9 +1,11 @@
 // Copyright 2020 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
-use crate::tss2_esys::TPM2B_NAME;
-use crate::{Error, Result, WrapperErrorKind};
+use crate::{
+    traits::InPlaceFfiDataZeroizer, tss2_esys::TPM2B_NAME, Error, Result, WrapperErrorKind,
+};
 use log::error;
 use std::convert::TryFrom;
+use zeroize::Zeroize;
 /// Structure holding the data representing names
 #[allow(missing_copy_implementations)]
 #[derive(Debug, Clone)]
@@ -63,5 +65,12 @@ impl From<Name> for TPM2B_NAME {
 impl AsRef<TPM2B_NAME> for Name {
     fn as_ref(&self) -> &TPM2B_NAME {
         &self.value
+    }
+}
+
+impl InPlaceFfiDataZeroizer<TPM2B_NAME> for Name {
+    fn zeroize_ffi_data_in_place(ffi_data: &mut TPM2B_NAME) {
+        ffi_data.size.zeroize();
+        ffi_data.name.zeroize();
     }
 }
