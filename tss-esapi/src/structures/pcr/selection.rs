@@ -3,11 +3,13 @@
 use crate::{
     interface_types::algorithm::HashingAlgorithm,
     structures::{PcrSelectSize, PcrSlot, PcrSlotCollection},
+    traits::InPlaceFfiDataZeroizer,
     tss2_esys::TPMS_PCR_SELECTION,
     Error, Result, WrapperErrorKind,
 };
 use log::error;
 use std::convert::TryFrom;
+use zeroize::Zeroize;
 /// This module contains the PcrSelection struct.
 /// The TSS counterpart of this struct is the
 /// TPMS_PCR_SELECTION.
@@ -161,5 +163,13 @@ impl From<PcrSelection> for TPMS_PCR_SELECTION {
             sizeofSelect: size_of_select,
             pcrSelect: pcr_select,
         }
+    }
+}
+
+impl InPlaceFfiDataZeroizer<TPMS_PCR_SELECTION> for PcrSelection {
+    fn zeroize_ffi_data_in_place(ffi_data: &mut TPMS_PCR_SELECTION) {
+        ffi_data.hash.zeroize();
+        ffi_data.sizeofSelect.zeroize();
+        ffi_data.pcrSelect.zeroize();
     }
 }
