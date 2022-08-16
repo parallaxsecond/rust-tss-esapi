@@ -3,11 +3,13 @@
 use crate::{
     interface_types::{algorithm::EccSchemeAlgorithm, ecc::EccCurve},
     structures::{EccScheme, KeyDerivationFunctionScheme, SymmetricDefinitionObject},
+    traits::InPlaceFfiDataZeroizer,
     tss2_esys::TPMS_ECC_PARMS,
     Error, Result, WrapperErrorKind,
 };
 use log::error;
 use std::convert::{TryFrom, TryInto};
+use zeroize::Zeroize;
 
 /// Builder for PublicEccParameters.
 #[derive(Copy, Clone, Debug, Default)]
@@ -285,5 +287,14 @@ impl TryFrom<TPMS_ECC_PARMS> for PublicEccParameters {
             ecc_curve: tpms_ecc_parms.curveID.try_into()?,
             key_derivation_function_scheme: tpms_ecc_parms.kdf.try_into()?,
         })
+    }
+}
+
+impl InPlaceFfiDataZeroizer<TPMS_ECC_PARMS> for PublicEccParameters {
+    fn zeroize_ffi_data_in_place(ffi_data: &mut TPMS_ECC_PARMS) {
+        SymmetricDefinitionObject::zeroize_ffi_data_in_place(&mut ffi_data.symmetric);
+        EccScheme::zeroize_ffi_data_in_place(&mut ffi_data.scheme);
+        ffi_data.curveID.zeroize();
+        KeyDerivationFunctionScheme::zeroize_ffi_data_in_place(&mut ffi_data.kdf);
     }
 }
