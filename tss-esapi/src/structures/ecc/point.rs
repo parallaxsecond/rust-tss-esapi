@@ -2,7 +2,10 @@ use tss_esapi_sys::TPM2B_ECC_POINT;
 
 // Copyright 2021 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
-use crate::{structures::EccParameter, tss2_esys::TPMS_ECC_POINT, Error, Result};
+use crate::{
+    structures::EccParameter, traits::InPlaceFfiDataZeroizer, tss2_esys::TPMS_ECC_POINT, Error,
+    Result,
+};
 use std::convert::{TryFrom, TryInto};
 
 /// Structure holding ecc point information
@@ -68,5 +71,12 @@ impl TryFrom<TPMS_ECC_POINT> for EccPoint {
             x: tpms_ecc_point.x.try_into()?,
             y: tpms_ecc_point.y.try_into()?,
         })
+    }
+}
+
+impl InPlaceFfiDataZeroizer<TPMS_ECC_POINT> for EccPoint {
+    fn zeroize_ffi_data_in_place(ffi_data: &mut TPMS_ECC_POINT) {
+        EccParameter::zeroize_ffi_data_in_place(&mut ffi_data.x);
+        EccParameter::zeroize_ffi_data_in_place(&mut ffi_data.y);
     }
 }
