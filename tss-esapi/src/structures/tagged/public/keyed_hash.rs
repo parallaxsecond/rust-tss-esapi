@@ -1,6 +1,9 @@
 // Copyright 2021 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
-use crate::{structures::KeyedHashScheme, tss2_esys::TPMS_KEYEDHASH_PARMS, Error, Result};
+use crate::{
+    structures::KeyedHashScheme, traits::InPlaceFfiDataZeroizer, tss2_esys::TPMS_KEYEDHASH_PARMS,
+    Error, Result,
+};
 use std::convert::{TryFrom, TryInto};
 
 /// Keyed hash parameters
@@ -35,5 +38,11 @@ impl From<PublicKeyedHashParameters> for TPMS_KEYEDHASH_PARMS {
         TPMS_KEYEDHASH_PARMS {
             scheme: public_keyed_hash_prams.keyed_hash_scheme.into(),
         }
+    }
+}
+
+impl InPlaceFfiDataZeroizer<TPMS_KEYEDHASH_PARMS> for PublicKeyedHashParameters {
+    fn zeroize_ffi_data_in_place(ffi_data: &mut TPMS_KEYEDHASH_PARMS) {
+        KeyedHashScheme::zeroize_ffi_data_in_place(&mut ffi_data.scheme);
     }
 }
