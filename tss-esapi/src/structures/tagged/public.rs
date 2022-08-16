@@ -8,14 +8,15 @@ use crate::{
     attributes::ObjectAttributes,
     interface_types::algorithm::{HashingAlgorithm, PublicAlgorithm},
     structures::{Digest, EccPoint, PublicKeyRsa, SymmetricCipherParameters},
+    traits::InPlaceFfiDataZeroizer,
     traits::{Marshall, UnMarshall},
     tss2_esys::{TPM2B_PUBLIC, TPMT_PUBLIC},
     Error, Result, ReturnCode, WrapperErrorKind,
 };
-
 use ecc::PublicEccParameters;
 use keyed_hash::PublicKeyedHashParameters;
 use rsa::PublicRsaParameters;
+use zeroize::Zeroize;
 
 use log::error;
 use std::convert::{TryFrom, TryInto};
@@ -593,5 +594,50 @@ impl TryFrom<Public> for TPM2B_PUBLIC {
             })?,
             publicArea: public_area,
         })
+    }
+}
+
+impl InPlaceFfiDataZeroizer<TPMT_PUBLIC> for Public {
+    fn zeroize_ffi_data_in_place(ffi_data: &mut TPMT_PUBLIC) {
+        if let Ok(public_algorithm) = PublicAlgorithm::try_from(ffi_data.type_) {
+            match public_algorithm {
+                PublicAlgorithm::Rsa => {
+                    ffi_data.objectAttributes.zeroize();
+                    ffi_data.nameAlg.zeroize();
+                    Digest::zeroize_ffi_data_in_place(&mut ffi_data.authPolicy);
+                    PublicRsaParameters::zeroize_ffi_data_in_place(&mut unsafe {
+                        ffi_data.parameters.rsaDetail
+                    });
+                    PublicKeyRsa::zeroize_ffi_data_in_place(&mut unsafe { ffi_data.unique.rsa });
+                }
+                PublicAlgorithm::KeyedHash => {
+                    ffi_data.objectAttributes.zeroize();
+                    ffi_data.nameAlg.zeroize();
+                    Digest::zeroize_ffi_data_in_place(&mut ffi_data.authPolicy);
+                    PublicKeyedHashParameters::zeroize_ffi_data_in_place(&mut unsafe {
+                        ffi_data.parameters.keyedHashDetail
+                    });
+                    Digest::zeroize_ffi_data_in_place(&mut unsafe { ffi_data.unique.keyedHash });
+                }
+                PublicAlgorithm::Ecc => {
+                    ffi_data.objectAttributes.zeroize();
+                    ffi_data.nameAlg.zeroize();
+                    Digest::zeroize_ffi_data_in_place(&mut ffi_data.authPolicy);
+                    PublicEccParameters::zeroize_ffi_data_in_place(&mut unsafe {
+                        ffi_data.parameters.eccDetail
+                    });
+                    EccPoint::zeroize_ffi_data_in_place(&mut unsafe { ffi_data.unique.ecc });
+                }
+                PublicAlgorithm::SymCipher => {
+                    ffi_data.objectAttributes.zeroize();
+                    ffi_data.nameAlg.zeroize();
+                    Digest::zeroize_ffi_data_in_place(&mut ffi_data.authPolicy);
+                    SymmetricCipherParameters::zeroize_ffi_data_in_place(&mut unsafe {
+                        ffi_data.parameters.symDetail
+                    });
+                    Digest::zeroize_ffi_data_in_place(&mut unsafe { ffi_data.unique.sym });
+                }
+            }
+        }
     }
 }
