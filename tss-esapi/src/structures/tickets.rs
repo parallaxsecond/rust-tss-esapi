@@ -4,20 +4,21 @@ use crate::{
     constants::StructureTag,
     handles::TpmHandle,
     interface_types::resource_handles::Hierarchy,
+    traits::InPlaceFfiDataZeroizer,
     tss2_esys::{
         TPM2B_DIGEST, TPMT_TK_AUTH, TPMT_TK_CREATION, TPMT_TK_HASHCHECK, TPMT_TK_VERIFIED,
     },
     Error, Result, WrapperErrorKind,
 };
-
 use log::error;
 use std::convert::{TryFrom, TryInto};
+use zeroize::Zeroize;
 
 /// Macro used for implementing try_from
 /// TssTicketType -> TicketType
 /// TicketType -> TssTicketType
 const TPM2B_DIGEST_BUFFER_SIZE: usize = 64;
-macro_rules! impl_ticket_try_froms {
+macro_rules! impl_common_ticket_traits {
     ($ticket_type:ident, $tss_ticket_type:ident) => {
         impl TryFrom<$ticket_type> for $tss_ticket_type {
             type Error = Error;
@@ -77,6 +78,14 @@ macro_rules! impl_ticket_try_froms {
                 })
             }
         }
+
+        impl InPlaceFfiDataZeroizer<$tss_ticket_type> for $ticket_type {
+            fn zeroize_ffi_data_in_place(ffi_data: &mut $tss_ticket_type) {
+                ffi_data.tag.zeroize();
+                ffi_data.hierarchy.zeroize();
+                crate::structures::Digest::zeroize_ffi_data_in_place(&mut ffi_data.digest);
+            }
+        }
     };
 }
 
@@ -115,7 +124,7 @@ impl Ticket for AuthTicket {
     }
 }
 
-impl_ticket_try_froms!(AuthTicket, TPMT_TK_AUTH);
+impl_common_ticket_traits!(AuthTicket, TPMT_TK_AUTH);
 
 #[derive(Debug, Clone)]
 pub struct HashcheckTicket {
@@ -144,7 +153,7 @@ impl Ticket for HashcheckTicket {
     }
 }
 
-impl_ticket_try_froms!(HashcheckTicket, TPMT_TK_HASHCHECK);
+impl_common_ticket_traits!(HashcheckTicket, TPMT_TK_HASHCHECK);
 
 /// Rust native wrapper for `TPMT_TK_VERIFIED` objects.
 #[derive(Debug)]
@@ -172,7 +181,7 @@ impl Ticket for VerifiedTicket {
     }
 }
 
-impl_ticket_try_froms!(VerifiedTicket, TPMT_TK_VERIFIED);
+impl_common_ticket_traits!(VerifiedTicket, TPMT_TK_VERIFIED);
 
 /// Rust native wrapper for `TPMT_TK_CREATION` objects.
 #[derive(Debug)]
@@ -202,4 +211,4 @@ impl Ticket for CreationTicket {
     }
 }
 
-impl_ticket_try_froms!(CreationTicket, TPMT_TK_CREATION);
+impl_common_ticket_traits!(CreationTicket, TPMT_TK_CREATION);
