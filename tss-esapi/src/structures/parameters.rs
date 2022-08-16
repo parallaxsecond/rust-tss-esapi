@@ -2,7 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use crate::{
-    structures::SymmetricDefinitionObject, tss2_esys::TPMS_SYMCIPHER_PARMS, Error, Result,
+    structures::SymmetricDefinitionObject, traits::InPlaceFfiDataZeroizer,
+    tss2_esys::TPMS_SYMCIPHER_PARMS, Error, Result,
 };
 
 use std::convert::{TryFrom, TryInto};
@@ -43,5 +44,11 @@ impl From<SymmetricCipherParameters> for TPMS_SYMCIPHER_PARMS {
                 .symmetric_definition_object
                 .into(),
         }
+    }
+}
+
+impl InPlaceFfiDataZeroizer<TPMS_SYMCIPHER_PARMS> for SymmetricCipherParameters {
+    fn zeroize_ffi_data_in_place(ffi_data: &mut TPMS_SYMCIPHER_PARMS) {
+        SymmetricDefinitionObject::zeroize_ffi_data_in_place(&mut ffi_data.sym);
     }
 }
