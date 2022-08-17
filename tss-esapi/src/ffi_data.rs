@@ -7,7 +7,6 @@ use std::ops::DerefMut;
 /// Function for taking ownership of data that has been
 /// allocated with C memory allocation functions in TSS while also
 /// zeroizing the memory before freeing it.
-#[allow(dead_code)]
 pub(crate) fn to_owned_with_zeroized_source<T, U>(data_ptr: *mut T) -> T
 where
     T: Copy,
