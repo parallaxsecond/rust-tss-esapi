@@ -15,7 +15,7 @@ pub type Result<T> = std::result::Result<T, Error>;
 /// Main error type used by the crate to return issues with a method call. The value can either be
 /// a TSS-generated response code or a wrapper error - marking an issue caught within the wrapping
 /// layer.
-#[derive(Copy, Clone, PartialEq, Debug)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum Error {
     WrapperError(WrapperErrorKind),
     TssError(ReturnCode),

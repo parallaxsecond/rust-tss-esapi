@@ -29,7 +29,7 @@ pub use tpm::{
 
 /// Enum representing return codes and response codes
 /// from the TSS and the TPM that indicates an error.
-#[derive(Debug, Copy, Clone, PartialEq)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum ReturnCode {
     Tpm(TpmResponseCode),
     Fapi(FapiReturnCode),

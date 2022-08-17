@@ -91,7 +91,7 @@ impl std::fmt::Display for TpmFormatZeroResponseCode {
 }
 
 bitfield! {
-    #[derive(PartialEq, Copy, Clone)]
+    #[derive(Copy, Clone, PartialEq, Eq)]
     pub struct FormatZeroResponseCodeStructure(u16);
     impl Debug;
     u8, error_number, set_error_number: 6, 0;
