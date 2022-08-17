@@ -14,8 +14,7 @@ use crate::{
 use handle_manager::HandleManager;
 use log::{error, info};
 use mbox::MBox;
-use std::collections::HashMap;
-use std::ptr::null_mut;
+use std::{collections::HashMap, ptr::null_mut};
 
 /// Safe abstraction over an ESYS_CONTEXT.
 ///

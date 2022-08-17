@@ -93,6 +93,8 @@
 //!
 mod context;
 
+pub(crate) mod ffi_data;
+
 pub mod error;
 pub use tss_esapi_sys as tss2_esys;
 pub mod abstraction;
