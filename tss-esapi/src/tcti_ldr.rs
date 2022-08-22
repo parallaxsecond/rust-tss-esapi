@@ -125,7 +125,7 @@ impl Drop for TctiInfo {
 
 /// Placeholder TCTI types that can be used when initialising a `Context` to determine which
 /// interface will be used to communicate with the TPM.
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub enum TctiNameConf {
     /// Connect to a TPM available as a device node on the system
     ///
@@ -313,7 +313,7 @@ fn validate_from_str_tcti() {
 ///
 /// The default configuration uses the library default of
 /// `/dev/tpm0`.
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct DeviceConfig {
     /// Path to the device node to connect to
     ///
@@ -355,7 +355,7 @@ fn validate_from_str_device_config() {
 /// Configuration for an Mssim TCTI context
 ///
 /// The default configuration will point to `localhost:2321`
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct NetworkTPMConfig {
     /// Address of the server to connect to
     ///
@@ -455,7 +455,7 @@ fn validate_from_str_networktpm_config() {
 /// Address of a TPM server
 ///
 /// The default value is `localhost`
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub enum ServerAddress {
     /// IPv4 or IPv6 address
     Ip(IpAddr),
@@ -498,7 +498,7 @@ impl Default for ServerAddress {
 }
 
 /// Configuration for a TABRMD TCTI context
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct TabrmdConfig {
     /// Bus name to be used by TABRMD
     ///
@@ -555,7 +555,7 @@ impl FromStr for TabrmdConfig {
 }
 
 /// DBus type for usage with TABRMD
-#[derive(Copy, Clone, Debug, PartialEq)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum BusType {
     System,
     Session,

@@ -1,7 +1,7 @@
 // Copyright 2022 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
 /// List of error types that might occur in the wrapper.
-#[derive(Copy, Clone, PartialEq, Debug)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
 #[non_exhaustive]
 pub enum WrapperErrorKind {
     /// Returned when a size or length-defined parameter does not conform with the size

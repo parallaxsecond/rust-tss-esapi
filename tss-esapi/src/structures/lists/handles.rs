@@ -11,7 +11,7 @@ use std::ops::Deref;
 ///
 /// # Details
 /// This corresponds to `TPML_HANDLE`.
-#[derive(Debug, Clone, Default, PartialEq)]
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub struct HandleList {
     handles: Vec<TpmHandle>,
 }
