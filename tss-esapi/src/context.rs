@@ -281,17 +281,21 @@ impl Context {
         F: FnOnce(&mut Context) -> std::result::Result<T, E>,
         E: From<Error>,
     {
-        let auth_session = match self.start_auth_session(
-            None,
-            None,
-            None,
-            SessionType::Hmac,
-            SymmetricDefinition::AES_128_CFB,
-            HashingAlgorithm::Sha256,
-        )? {
-            Some(ses) => ses,
-            None => return Err(E::from(Error::local_error(ErrorKind::WrongValueFromTpm))),
-        };
+        let auth_session = self
+            .execute_without_session(|ctx| {
+                ctx.start_auth_session(
+                    None,
+                    None,
+                    None,
+                    SessionType::Hmac,
+                    SymmetricDefinition::AES_128_CFB,
+                    HashingAlgorithm::Sha256,
+                )
+            })?
+            .ok_or_else(|| {
+                error!("start_auth_session returned NONE session handle.");
+                E::from(Error::local_error(ErrorKind::WrongValueFromTpm))
+            })?;
 
         let (session_attributes, session_attributes_mask) = SessionAttributesBuilder::new()
             .with_decrypt(true)
