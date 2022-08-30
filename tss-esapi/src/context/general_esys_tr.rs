@@ -85,6 +85,22 @@ impl Context {
         Ok(())
     }
 
+    #[cfg(has_esys_tr_get_tpm_handle)]
+    /// Retrieve the `TpmHandle` stored in the given object.
+    pub fn tr_get_tpm_handle(&mut self, object_handle: ObjectHandle) -> Result<TpmHandle> {
+        use crate::{constants::tss::TPM2_RH_UNASSIGNED, tss2_esys::Esys_TR_GetTpmHandle};
+        let mut tpm_handle = TPM2_RH_UNASSIGNED;
+        ReturnCode::ensure_success(
+            unsafe {
+                Esys_TR_GetTpmHandle(self.mut_context(), object_handle.into(), &mut tpm_handle)
+            },
+            |ret| {
+                error!("Error when getting TPM handle from ESYS handle: {}", ret);
+            },
+        )?;
+        TpmHandle::try_from(tpm_handle)
+    }
+
     // Missing function: Esys_TR_Serialize
     // Missing function: Esys_TR_Deserialize
 }

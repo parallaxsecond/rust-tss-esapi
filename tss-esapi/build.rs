@@ -37,4 +37,12 @@ fn main() {
     if has_tss_base_rc_values_52_to_53_req.matches(&tss_version) {
         println!("cargo:rustc-cfg=has_tss_base_rc_values_52_to_53")
     }
+
+    #[cfg(feature = "generate-bindings")]
+    {
+        let has_esys_tr_get_tpm_handle_req = VersionReq::parse(">=2.4.0").unwrap();
+        if has_esys_tr_get_tpm_handle_req.matches(&tss_version) {
+            println!("cargo:rustc-cfg=has_esys_tr_get_tpm_handle")
+        }
+    }
 }
