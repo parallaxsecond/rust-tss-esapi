@@ -375,4 +375,73 @@ mod test_tr_from_tpm_public {
         assert_eq!(expected_name, actual_name);
         assert_eq!(expected_data, actual_data);
     }
+
+    #[cfg(has_esys_tr_get_tpm_handle)]
+    #[test]
+    fn test_tr_get_tpm_handle() {
+        use tss_esapi::handles::TpmHandle;
+
+        let nv_index_tpm_handle = NvIndexTpmHandle::new(0x01500024).unwrap();
+        remove_nv_index_handle_from_tpm(nv_index_tpm_handle, Provision::Owner);
+
+        let mut context = create_ctx_without_session();
+
+        // closure for cleaning up if a call fails.
+        let cleanup = |context: &mut Context,
+                       e: tss_esapi::Error,
+                       handle: NvIndexHandle,
+                       fn_name: &str|
+         -> tss_esapi::Error {
+            // Set password authorization
+            context.set_sessions((Some(AuthSession::Password), None, None));
+            context
+                .nv_undefine_space(Provision::Owner, handle)
+                .expect("Failed to call nv_undefine_space");
+            panic!("{} failed: {}", fn_name, e);
+        };
+
+        // Create nv public.
+        let nv_index_attributes = NvIndexAttributesBuilder::new()
+            .with_owner_write(true)
+            .with_owner_read(true)
+            .build()
+            .expect("Failed to create owner nv index attributes");
+
+        let nv_public = NvPublicBuilder::new()
+            .with_nv_index(nv_index_tpm_handle)
+            .with_index_name_algorithm(HashingAlgorithm::Sha256)
+            .with_index_attributes(nv_index_attributes)
+            .with_data_area_size(32)
+            .build()
+            .unwrap();
+        ///////////////////////////////////////////////////////////////
+        // Define space
+        //
+        // Set password authorization when creating the space.
+        context.set_sessions((Some(AuthSession::Password), None, None));
+        let nv_index_handle = context
+            .nv_define_space(Provision::Owner, None, nv_public)
+            .expect("Failed to call nv_define_space");
+        ///////////////////////////////////////////////////////////////
+        // Get the TPM handle from the NV index handle object handle.
+        //
+        // Set password authorization
+        let actual = context
+            .tr_get_tpm_handle(nv_index_handle.into())
+            .map_err(|e| cleanup(&mut context, e, nv_index_handle, "tr_get"))
+            .expect("Failed to get TPM handle");
+        ///////////////////////////////////////////////////////////////
+        // Remove undefine the space
+        //
+        // Set password authorization
+        context.set_sessions((Some(AuthSession::Password), None, None));
+        context
+            .nv_undefine_space(Provision::Owner, nv_index_handle)
+            .expect("Failed to call nv_undefine_space");
+        ///////////////////////////////////////////////////////////////
+        // Check that we got the correct handle
+        //
+        let expected = TpmHandle::NvIndex(nv_index_tpm_handle);
+        assert_eq!(expected, actual);
+    }
 }
