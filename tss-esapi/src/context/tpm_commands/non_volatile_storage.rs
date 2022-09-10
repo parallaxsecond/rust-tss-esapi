@@ -22,6 +22,9 @@ impl Context {
     /// This method will instruct the TPM to reserve space for an NV index
     /// with the attributes defined in the provided parameters.
     ///
+    /// Please beware
+    /// that this method requires an authorization session handle to be present.
+    ///
     /// # Arguments
     /// * `nv_auth` - The [Provision] used for authorization.
     /// * `auth` - The authorization value.
@@ -106,7 +109,7 @@ impl Context {
                 Esys_NV_DefineSpace(
                     self.mut_context(),
                     AuthHandle::from(nv_auth).into(),
-                    self.optional_session_1(),
+                    self.required_session_1()?,
                     self.optional_session_2(),
                     self.optional_session_3(),
                     &auth.unwrap_or_default().into(),
@@ -129,6 +132,9 @@ impl Context {
     /// # Details
     /// The method will instruct the TPM to remove a
     /// nv index.
+    ///
+    /// Please beware that this method requires an authorization
+    /// session handle to be present.
     ///
     /// # Arguments
     /// * `nv_auth` - The [Provision] used for authorization.
@@ -207,7 +213,7 @@ impl Context {
                     self.mut_context(),
                     AuthHandle::from(nv_auth).into(),
                     nv_index_handle.into(),
-                    self.optional_session_1(),
+                    self.required_session_1()?,
                     self.optional_session_2(),
                     self.optional_session_3(),
                 )
@@ -339,6 +345,9 @@ impl Context {
     /// This method is used to write a value to
     /// the nv memory in the TPM.
     ///
+    /// Please beware that this method requires an authorization
+    /// session handle to be present.
+    ///
     /// # Arguments
     /// * `auth_handle` - Handle indicating the source of authorization value.
     /// * `nv_index_handle` - The [NvIndexHandle] associated with NV memory
@@ -432,7 +441,7 @@ impl Context {
                     self.mut_context(),
                     AuthHandle::from(auth_handle).into(),
                     nv_index_handle.into(),
-                    self.optional_session_1(),
+                    self.required_session_1()?,
                     self.optional_session_2(),
                     self.optional_session_3(),
                     &data.into(),
@@ -450,6 +459,9 @@ impl Context {
     /// # Details
     /// This method is used to increment monotonic counter
     /// in the TPM.
+    ///
+    /// Please beware that this method requires an authorization
+    /// session handle to be present.
     ///
     /// # Arguments
     /// * `auth_handle` - Handle indicating the source of authorization value.
@@ -535,7 +547,7 @@ impl Context {
                     self.mut_context(),
                     AuthHandle::from(auth_handle).into(),
                     nv_index_handle.into(),
-                    self.optional_session_1(),
+                    self.required_session_1()?,
                     self.optional_session_2(),
                     self.optional_session_3(),
                 )
@@ -554,6 +566,9 @@ impl Context {
     /// # Details
     /// This method is used to read a value from an area in
     /// NV memory of the TPM.
+    ///
+    /// Please beware that this method requires an authorization
+    /// session handle to be present.
     ///
     /// # Arguments
     /// * `auth_handle` - Handle indicating the source of authorization value.
@@ -656,7 +671,7 @@ impl Context {
                     self.mut_context(),
                     AuthHandle::from(auth_handle).into(),
                     nv_index_handle.into(),
-                    self.optional_session_1(),
+                    self.required_session_1()?,
                     self.optional_session_2(),
                     self.optional_session_3(),
                     size,
