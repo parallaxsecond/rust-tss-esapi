@@ -54,7 +54,7 @@ mod test_tr_from_tpm_public {
     fn test_tr_from_tpm_public_owner_auth() {
         let mut context = create_ctx_without_session();
 
-        let nv_index_tpm_handle = NvIndexTpmHandle::new(0x01500021).unwrap();
+        let nv_index_tpm_handle = NvIndexTpmHandle::new(0x01500301).unwrap();
 
         // closure for cleaning up if a call fails.
         let cleanup = |context: &mut Context,
@@ -124,7 +124,7 @@ mod test_tr_from_tpm_public {
 
     #[test]
     fn test_tr_from_tpm_public_password_auth() {
-        let nv_index_tpm_handle = NvIndexTpmHandle::new(0x01500022).unwrap();
+        let nv_index_tpm_handle = NvIndexTpmHandle::new(0x01500302).unwrap();
         remove_nv_index_handle_from_tpm(nv_index_tpm_handle, Provision::Owner);
 
         let mut context = create_ctx_without_session();
@@ -226,7 +226,7 @@ mod test_tr_from_tpm_public {
 
     #[test]
     fn read_from_retrieved_handle_using_password_authorization() {
-        let nv_index_tpm_handle = NvIndexTpmHandle::new(0x01500023).unwrap();
+        let nv_index_tpm_handle = NvIndexTpmHandle::new(0x01500303).unwrap();
 
         remove_nv_index_handle_from_tpm(nv_index_tpm_handle, Provision::Owner);
 
@@ -381,7 +381,7 @@ mod test_tr_from_tpm_public {
     fn test_tr_get_tpm_handle() {
         use tss_esapi::handles::TpmHandle;
 
-        let nv_index_tpm_handle = NvIndexTpmHandle::new(0x01500024).unwrap();
+        let nv_index_tpm_handle = NvIndexTpmHandle::new(0x01500304).unwrap();
         remove_nv_index_handle_from_tpm(nv_index_tpm_handle, Provision::Owner);
 
         let mut context = create_ctx_without_session();
