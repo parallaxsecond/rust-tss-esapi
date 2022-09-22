@@ -30,6 +30,15 @@ impl PublicBuffer {
     pub fn value(&self) -> &[u8] {
         &self.0
     }
+
+    /// Private function for ensuring that a buffer size is valid.
+    fn ensure_valid_buffer_size(buffer_size: usize, container_name: &str) -> Result<()> {
+        if buffer_size > Self::MAX_SIZE {
+            error!("Invalid {} size(> {})", container_name, Self::MAX_SIZE);
+            return Err(Error::local_error(WrapperErrorKind::WrongParamSize));
+        }
+        Ok(())
+    }
 }
 
 impl Deref for PublicBuffer {
@@ -44,14 +53,7 @@ impl TryFrom<Vec<u8>> for PublicBuffer {
     type Error = Error;
 
     fn try_from(bytes: Vec<u8>) -> Result<Self> {
-        if bytes.len() > Self::MAX_SIZE {
-            error!(
-                "Error: Invalid Vec<u8> size ({} > {})",
-                bytes.len(),
-                Self::MAX_SIZE
-            );
-            return Err(Error::local_error(WrapperErrorKind::WrongParamSize));
-        }
+        Self::ensure_valid_buffer_size(bytes.len(), "Vec<u8>")?;
         Ok(PublicBuffer(bytes))
     }
 }
@@ -60,14 +62,7 @@ impl TryFrom<&[u8]> for PublicBuffer {
     type Error = Error;
 
     fn try_from(bytes: &[u8]) -> Result<Self> {
-        if bytes.len() > Self::MAX_SIZE {
-            error!(
-                "Error: Invalid &[u8] size ({} > {})",
-                bytes.len(),
-                Self::MAX_SIZE
-            );
-            return Err(Error::local_error(WrapperErrorKind::WrongParamSize));
-        }
+        Self::ensure_valid_buffer_size(bytes.len(), "&[u8]")?;
         Ok(PublicBuffer(bytes.to_vec()))
     }
 }
@@ -77,12 +72,10 @@ impl TryFrom<TPM2B_PUBLIC> for PublicBuffer {
 
     fn try_from(tss: TPM2B_PUBLIC) -> Result<Self> {
         let size = tss.size as usize;
-        if size > Self::MAX_SIZE {
-            error!("Error: Invalid buffer size ({} > {})", size, Self::MAX_SIZE);
-            return Err(Error::local_error(WrapperErrorKind::WrongParamSize));
-        }
-        let public = Public::try_from(tss.publicArea)?;
-        Ok(PublicBuffer(public.marshall()?))
+        Self::ensure_valid_buffer_size(size, "buffer")?;
+        Public::try_from(tss.publicArea)
+            .and_then(|public| public.marshall())
+            .map(PublicBuffer)
     }
 }
 

@@ -80,8 +80,9 @@ impl TryFrom<TPM2B_SENSITIVE_CREATE> for SensitiveCreateBuffer {
 
     fn try_from(tss: TPM2B_SENSITIVE_CREATE) -> Result<Self> {
         Self::ensure_valid_buffer_size(tss.size as usize, "buffer")?;
-        let sensitive_create = SensitiveCreate::try_from(tss.sensitive)?;
-        Ok(SensitiveCreateBuffer(sensitive_create.marshall()?))
+        SensitiveCreate::try_from(tss.sensitive)
+            .and_then(|sensitive_create| sensitive_create.marshall())
+            .map(SensitiveCreateBuffer)
     }
 }
 

@@ -29,6 +29,15 @@ impl SensitiveBuffer {
     pub fn value(&self) -> &[u8] {
         &self.0
     }
+
+    /// Private function for ensuring that a buffer size is valid.
+    fn ensure_valid_buffer_size(buffer_size: usize, container_name: &str) -> Result<()> {
+        if buffer_size > Self::MAX_SIZE {
+            error!("Invalid {} size(> {})", container_name, Self::MAX_SIZE);
+            return Err(Error::local_error(WrapperErrorKind::WrongParamSize));
+        }
+        Ok(())
+    }
 }
 
 impl Deref for SensitiveBuffer {
@@ -43,14 +52,7 @@ impl TryFrom<Vec<u8>> for SensitiveBuffer {
     type Error = Error;
 
     fn try_from(bytes: Vec<u8>) -> Result<Self> {
-        if bytes.len() > Self::MAX_SIZE {
-            error!(
-                "Error: Invalid Vec<u8> size ({} > {})",
-                bytes.len(),
-                Self::MAX_SIZE
-            );
-            return Err(Error::local_error(WrapperErrorKind::WrongParamSize));
-        }
+        Self::ensure_valid_buffer_size(bytes.len(), "Vec<u8>")?;
         Ok(SensitiveBuffer(bytes))
     }
 }
@@ -59,14 +61,7 @@ impl TryFrom<&[u8]> for SensitiveBuffer {
     type Error = Error;
 
     fn try_from(bytes: &[u8]) -> Result<Self> {
-        if bytes.len() > Self::MAX_SIZE {
-            error!(
-                "Error: Invalid &[u8] size ({} > {})",
-                bytes.len(),
-                Self::MAX_SIZE
-            );
-            return Err(Error::local_error(WrapperErrorKind::WrongParamSize));
-        }
+        Self::ensure_valid_buffer_size(bytes.len(), "&[u8]")?;
         Ok(SensitiveBuffer(bytes.to_vec()))
     }
 }
@@ -76,12 +71,10 @@ impl TryFrom<TPM2B_SENSITIVE> for SensitiveBuffer {
 
     fn try_from(tss: TPM2B_SENSITIVE) -> Result<Self> {
         let size = tss.size as usize;
-        if size > Self::MAX_SIZE {
-            error!("Error: Invalid buffer size ({} > {})", size, Self::MAX_SIZE);
-            return Err(Error::local_error(WrapperErrorKind::WrongParamSize));
-        }
-        let sensitive = Sensitive::try_from(tss.sensitiveArea)?;
-        Ok(SensitiveBuffer(sensitive.marshall()?))
+        Self::ensure_valid_buffer_size(size, "buffer")?;
+        Sensitive::try_from(tss.sensitiveArea)
+            .and_then(|sensitive| sensitive.marshall())
+            .map(SensitiveBuffer)
     }
 }
 

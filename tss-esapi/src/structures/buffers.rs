@@ -26,6 +26,15 @@ macro_rules! named_field_buffer_type {
             pub fn value(&self) -> &[u8] {
                 &self.0
             }
+
+            /// Private function for ensuring that a buffer size is valid.
+            fn ensure_valid_buffer_size(buffer_size: usize, container_name: &str) -> Result<()> {
+                if buffer_size > Self::MAX_SIZE {
+                    error!("Invalid {} size(> {})", container_name, Self::MAX_SIZE);
+                    return Err(Error::local_error(WrapperErrorKind::WrongParamSize));
+                }
+                Ok(())
+            }
         }
 
         impl Deref for $native_type {
@@ -39,10 +48,7 @@ macro_rules! named_field_buffer_type {
             type Error = Error;
 
             fn try_from(bytes: Vec<u8>) -> Result<Self> {
-                if bytes.len() > Self::MAX_SIZE {
-                    error!("Invalid Vec<u8> size(> {})", Self::MAX_SIZE);
-                    return Err(Error::local_error(WrapperErrorKind::WrongParamSize));
-                }
+                Self::ensure_valid_buffer_size(bytes.len(), "Vec<u8>")?;
                 Ok($native_type(bytes.into()))
             }
         }
@@ -51,10 +57,7 @@ macro_rules! named_field_buffer_type {
             type Error = Error;
 
             fn try_from(bytes: &[u8]) -> Result<Self> {
-                if bytes.len() > Self::MAX_SIZE {
-                    error!("Invalid &[u8] size(> {})", Self::MAX_SIZE);
-                    return Err(Error::local_error(WrapperErrorKind::WrongParamSize));
-                }
+                Self::ensure_valid_buffer_size(bytes.len(), "&[u8]")?;
                 Ok($native_type(bytes.to_vec().into()))
             }
         }
@@ -64,10 +67,7 @@ macro_rules! named_field_buffer_type {
 
             fn try_from(tss: $tss_type) -> Result<Self> {
                 let size = tss.size as usize;
-                if size > Self::MAX_SIZE {
-                    error!("Invalid buffer size(> {})", Self::MAX_SIZE);
-                    return Err(Error::local_error(WrapperErrorKind::WrongParamSize));
-                }
+                Self::ensure_valid_buffer_size(size, "buffer")?;
                 Ok($native_type(tss.$buffer_field_name[..size].to_vec().into()))
             }
         }
