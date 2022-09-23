@@ -168,6 +168,38 @@ pub mod digest {
             Ok(result)
         }
     }
+
+    impl From<[u8; 20]> for Digest {
+        fn from(mut value: [u8; 20]) -> Self {
+            let value_as_vec = value.to_vec();
+            value.zeroize();
+            Digest(value_as_vec.into())
+        }
+    }
+
+    impl From<[u8; 32]> for Digest {
+        fn from(mut value: [u8; 32]) -> Self {
+            let value_as_vec = value.to_vec();
+            value.zeroize();
+            Digest(value_as_vec.into())
+        }
+    }
+
+    impl From<[u8; 48]> for Digest {
+        fn from(mut value: [u8; 48]) -> Self {
+            let value_as_vec = value.to_vec();
+            value.zeroize();
+            Digest(value_as_vec.into())
+        }
+    }
+
+    impl From<[u8; 64]> for Digest {
+        fn from(mut value: [u8; 64]) -> Self {
+            let value_as_vec = value.to_vec();
+            value.zeroize();
+            Digest(value_as_vec.into())
+        }
+    }
 }
 
 pub mod ecc_parameter {
