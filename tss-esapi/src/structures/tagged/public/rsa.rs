@@ -36,7 +36,7 @@ impl PublicRsaParametersBuilder {
     }
 
     /// Creates a [PublicRsaParametersBuilder] that is setup
-    /// to build a restructed decryption key.
+    /// to build a restricted decryption key.
     pub const fn new_restricted_decryption_key(
         symmetric: SymmetricDefinitionObject,
         key_bits: RsaKeyBits,
@@ -99,7 +99,7 @@ impl PublicRsaParametersBuilder {
     /// for signing to the [PublicRsaParametersBuilder].
     ///
     /// # Arguments
-    /// * `set` - `true` inidcates that the key is going to be used for signing operations.
+    /// * `set` - `true` indicates that the key is going to be used for signing operations.
     ///           `false` indicates that the key is not going to be used for signing operations.
     pub const fn with_is_signing_key(mut self, set: bool) -> Self {
         self.is_signing_key = set;
@@ -117,7 +117,7 @@ impl PublicRsaParametersBuilder {
         self
     }
 
-    /// Adds a flag that inidcates if the key is going to be restrictied to
+    /// Adds a flag that indicates if the key is going to be restricted to
     /// the [PublicRsaParametersBuilder].
     ///
     /// # Arguments

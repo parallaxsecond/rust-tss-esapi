@@ -154,7 +154,7 @@ fn test_esapi_error_from_context_method() {
         .expect("Failed to set attributes for second session");
 
     // Creating primary with two sessions that both have encrypt set.
-    // This is expected to result in 'mutiple encrypt sessions' ESAPI error.
+    // This is expected to result in 'multiple encrypt sessions' ESAPI error.
     let result =
         context.execute_with_sessions((Some(first_session), Some(second_session), None), |ctx| {
             ctx.create_primary(
@@ -173,10 +173,10 @@ fn test_esapi_error_from_context_method() {
                 assert_eq!(
                 esapi_return_code.base_error(),
                 BaseError::MultipleEncryptSessions,
-                "Calling 'create_primary' with two encrypt session did not result in the expected ESPI TSS error",
+                "Calling 'create_primary' with two encrypt session did not result in the expected ESAPI TSS error",
             );
             } else {
-                panic!("Calling 'create_primary' with two encrypt session did not result in an ESPI TSS error");
+                panic!("Calling 'create_primary' with two encrypt session did not result in an ESAPI TSS error");
             }
         } else {
             panic!(

@@ -94,7 +94,7 @@ impl PublicEccParametersBuilder {
     /// for signing to the [PublicEccParametersBuilder].
     ///
     /// # Arguments
-    /// * `set` - `true` inidcates that the key is going to be used for signing operations.
+    /// * `set` - `true` indicates that the key is going to be used for signing operations.
     ///           `false` indicates that the key is not going to be used for signing operations.
     pub const fn with_is_signing_key(mut self, set: bool) -> Self {
         self.is_signing_key = set;
@@ -112,7 +112,7 @@ impl PublicEccParametersBuilder {
         self
     }
 
-    /// Adds a flag that inidcates if the key is going to be restrictied to
+    /// Adds a flag that indicates if the key is going to be restricted to
     /// the [PublicEccParametersBuilder].
     ///
     /// # Arguments
