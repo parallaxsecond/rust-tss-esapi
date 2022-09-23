@@ -23,8 +23,15 @@ macro_rules! named_field_buffer_type {
         impl $native_type {
             pub const MAX_SIZE: usize = $MAX;
 
-            pub fn value(&self) -> &[u8] {
-                &self.0
+            pub fn from_bytes(bytes: &[u8]) -> Result<Self> {
+                Self::ensure_valid_buffer_size(bytes.len(), "bytes(&[u8])")?;
+                Ok($native_type(bytes.to_vec().into()))
+            }
+
+            /// Returns the content of the buffer type as
+            /// a slice of bytes.
+            pub fn as_bytes(&self) -> &[u8] {
+                self.0.as_slice()
             }
 
             /// Private function for ensuring that a buffer size is valid.
@@ -50,15 +57,6 @@ macro_rules! named_field_buffer_type {
             fn try_from(bytes: Vec<u8>) -> Result<Self> {
                 Self::ensure_valid_buffer_size(bytes.len(), "Vec<u8>")?;
                 Ok($native_type(bytes.into()))
-            }
-        }
-
-        impl TryFrom<&[u8]> for $native_type {
-            type Error = Error;
-
-            fn try_from(bytes: &[u8]) -> Result<Self> {
-                Self::ensure_valid_buffer_size(bytes.len(), "&[u8]")?;
-                Ok($native_type(bytes.to_vec().into()))
             }
         }
 
@@ -119,7 +117,7 @@ pub mod digest {
 
         fn try_from(value: Digest) -> Result<Self> {
             value
-                .value()
+                .as_bytes()
                 .try_into()
                 .map_err(|_| Error::local_error(WrapperErrorKind::WrongParamSize))
         }
@@ -130,7 +128,7 @@ pub mod digest {
 
         fn try_from(value: Digest) -> Result<Self> {
             value
-                .value()
+                .as_bytes()
                 .try_into()
                 .map_err(|_| Error::local_error(WrapperErrorKind::WrongParamSize))
         }
@@ -141,13 +139,13 @@ pub mod digest {
         type Error = Error;
 
         fn try_from(value: Digest) -> Result<Self> {
-            if value.value().len() != 48 {
+            if value.len() != 48 {
                 return Err(Error::local_error(WrapperErrorKind::WrongParamSize));
             }
 
             let mut result = [0; 48];
 
-            result.copy_from_slice(value.value());
+            result.copy_from_slice(value.as_bytes());
 
             Ok(result)
         }
@@ -157,13 +155,13 @@ pub mod digest {
         type Error = Error;
 
         fn try_from(value: Digest) -> Result<Self> {
-            if value.value().len() != 64 {
+            if value.len() != 64 {
                 return Err(Error::local_error(WrapperErrorKind::WrongParamSize));
             }
 
             let mut result = [0; 64];
 
-            result.copy_from_slice(value.value());
+            result.copy_from_slice(value.as_bytes());
 
             Ok(result)
         }
@@ -300,12 +298,12 @@ pub mod public_key_rsa {
         type Error = Error;
 
         fn try_from(public_key_rsa: PublicKeyRsa) -> Result<Self> {
-            if public_key_rsa.value().len() > 128 {
+            if public_key_rsa.len() > 128 {
                 return Err(Error::local_error(WrapperErrorKind::WrongParamSize));
             }
 
             let mut value = [0u8; 128];
-            value.copy_from_slice(public_key_rsa.value());
+            value.copy_from_slice(public_key_rsa.as_bytes());
             Ok(value)
         }
     }
@@ -314,12 +312,12 @@ pub mod public_key_rsa {
         type Error = Error;
 
         fn try_from(public_key_rsa: PublicKeyRsa) -> Result<Self> {
-            if public_key_rsa.value().len() > 256 {
+            if public_key_rsa.len() > 256 {
                 return Err(Error::local_error(WrapperErrorKind::WrongParamSize));
             }
 
             let mut value = [0u8; 256];
-            value.copy_from_slice(public_key_rsa.value());
+            value.copy_from_slice(public_key_rsa.as_bytes());
             Ok(value)
         }
     }
@@ -328,12 +326,12 @@ pub mod public_key_rsa {
         type Error = Error;
 
         fn try_from(public_key_rsa: PublicKeyRsa) -> Result<Self> {
-            if public_key_rsa.value().len() > 384 {
+            if public_key_rsa.len() > 384 {
                 return Err(Error::local_error(WrapperErrorKind::WrongParamSize));
             }
 
             let mut value = [0u8; 384];
-            value.copy_from_slice(public_key_rsa.value());
+            value.copy_from_slice(public_key_rsa.as_bytes());
             Ok(value)
         }
     }
@@ -342,12 +340,12 @@ pub mod public_key_rsa {
         type Error = Error;
 
         fn try_from(public_key_rsa: PublicKeyRsa) -> Result<Self> {
-            if public_key_rsa.value().len() > 512 {
+            if public_key_rsa.len() > 512 {
                 return Err(Error::local_error(WrapperErrorKind::WrongParamSize));
             }
 
             let mut value = [0u8; 512];
-            value.copy_from_slice(public_key_rsa.value());
+            value.copy_from_slice(public_key_rsa.as_bytes());
             Ok(value)
         }
     }

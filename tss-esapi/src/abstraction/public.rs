@@ -84,13 +84,13 @@ fn public_to_decoded_key(public: &Public) -> Result<DecodedKey, Error> {
             }
             .to_be_bytes();
             Ok(DecodedKey::RsaPublicKey(RsaPublicKey {
-                modulus: IntegerAsn1::from_bytes_be_unsigned(unique.value().to_vec()),
+                modulus: IntegerAsn1::from_bytes_be_unsigned(unique.as_bytes().to_vec()),
                 public_exponent: IntegerAsn1::from_bytes_be_signed(exponent.to_vec()),
             }))
         }
         Public::Ecc { unique, .. } => {
-            let x = unique.x().value().to_vec();
-            let y = unique.y().value().to_vec();
+            let x = unique.x().as_bytes().to_vec();
+            let y = unique.y().as_bytes().to_vec();
             Ok(DecodedKey::EcPoint(OctetStringAsn1(
                 elliptic_curve_point_to_octet_string(x, y),
             )))

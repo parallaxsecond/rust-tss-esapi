@@ -294,10 +294,10 @@ impl TryFrom<Public> for PublicKey {
 
     fn try_from(public: Public) -> Result<Self> {
         match public {
-            Public::Rsa { unique, .. } => Ok(PublicKey::Rsa(unique.value().to_vec())),
+            Public::Rsa { unique, .. } => Ok(PublicKey::Rsa(unique.as_bytes().to_vec())),
             Public::Ecc { unique, .. } => Ok(PublicKey::Ecc {
-                x: unique.x().value().to_vec(),
-                y: unique.y().value().to_vec(),
+                x: unique.x().as_bytes().to_vec(),
+                y: unique.y().as_bytes().to_vec(),
             }),
             _ => Err(Error::local_error(WrapperErrorKind::WrongValueFromTpm)),
         }

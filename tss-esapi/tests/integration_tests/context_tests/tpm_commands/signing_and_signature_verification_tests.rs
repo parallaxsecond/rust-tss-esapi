@@ -14,7 +14,7 @@ mod test_verify_signature {
     fn test_verify_signature() {
         let mut context = create_ctx_with_session();
         let random_digest = context.get_random(16).unwrap();
-        let key_auth = Auth::try_from(random_digest.value().to_vec()).unwrap();
+        let key_auth = Auth::try_from(random_digest.as_bytes().to_vec()).unwrap();
 
         let key_handle = context
             .create_primary(
@@ -55,7 +55,7 @@ mod test_verify_signature {
     fn test_verify_wrong_signature() {
         let mut context = create_ctx_with_session();
         let random_digest = context.get_random(16).unwrap();
-        let key_auth = Auth::try_from(random_digest.value().to_vec()).unwrap();
+        let key_auth = Auth::try_from(random_digest.as_bytes().to_vec()).unwrap();
 
         let key_handle = context
             .create_primary(
@@ -84,7 +84,7 @@ mod test_verify_signature {
             .unwrap();
 
         if let Signature::RsaSsa(rsa_signature) = &mut signature {
-            let mut key_data: Vec<u8> = rsa_signature.signature().value().to_vec();
+            let mut key_data: Vec<u8> = rsa_signature.signature().as_bytes().to_vec();
             key_data.reverse();
             *rsa_signature = RsaSignature::create(
                 rsa_signature.hashing_algorithm(),
@@ -106,7 +106,7 @@ mod test_verify_signature {
     fn test_verify_wrong_signature_2() {
         let mut context = create_ctx_with_session();
         let random_digest = context.get_random(16).unwrap();
-        let key_auth = Auth::try_from(random_digest.value().to_vec()).unwrap();
+        let key_auth = Auth::try_from(random_digest.as_bytes().to_vec()).unwrap();
 
         let key_handle = context
             .create_primary(
@@ -142,7 +142,7 @@ mod test_verify_signature {
     fn test_verify_wrong_signature_3() {
         let mut context = create_ctx_with_session();
         let random_digest = context.get_random(16).unwrap();
-        let key_auth = Auth::try_from(random_digest.value().to_vec()).unwrap();
+        let key_auth = Auth::try_from(random_digest.as_bytes().to_vec()).unwrap();
 
         let key_handle = context
             .create_primary(
@@ -188,7 +188,7 @@ mod test_sign {
     fn test_sign() {
         let mut context = create_ctx_with_session();
         let random_digest = context.get_random(16).unwrap();
-        let key_auth = Auth::try_from(random_digest.value().to_vec()).unwrap();
+        let key_auth = Auth::try_from(random_digest.as_bytes().to_vec()).unwrap();
 
         let key_handle = context
             .create_primary(
@@ -221,7 +221,7 @@ mod test_sign {
     fn test_sign_empty_digest() {
         let mut context = create_ctx_with_session();
         let random_digest = context.get_random(16).unwrap();
-        let key_auth = Auth::try_from(random_digest.value().to_vec()).unwrap();
+        let key_auth = Auth::try_from(random_digest.as_bytes().to_vec()).unwrap();
 
         let key_handle = context
             .create_primary(
@@ -254,7 +254,7 @@ mod test_sign {
     fn test_sign_large_digest() {
         let mut context = create_ctx_with_session();
         let random_digest = context.get_random(16).unwrap();
-        let key_auth = Auth::try_from(random_digest.value().to_vec()).unwrap();
+        let key_auth = Auth::try_from(random_digest.as_bytes().to_vec()).unwrap();
 
         let key_handle = context
             .create_primary(

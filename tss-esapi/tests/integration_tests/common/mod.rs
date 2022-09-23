@@ -298,13 +298,13 @@ pub fn get_pcr_policy_digest(
             .unwrap()
             .get_digest(PcrSlot::Slot0)
             .unwrap()
-            .value(),
+            .as_bytes(),
         pcr_data
             .pcr_bank(HashingAlgorithm::Sha256)
             .unwrap()
             .get_digest(PcrSlot::Slot1)
             .unwrap()
-            .value(),
+            .as_bytes(),
     ]
     .concat();
 

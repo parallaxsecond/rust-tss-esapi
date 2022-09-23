@@ -6,8 +6,6 @@ use tss_esapi::{
     Error, WrapperErrorKind,
 };
 
-use std::convert::TryFrom;
-
 #[test]
 fn test_valid_to_tpml_digest_conversion() {
     let pcr_selection_list_1 = PcrSelectionListBuilder::new()
@@ -31,7 +29,7 @@ fn test_valid_to_tpml_digest_conversion() {
     for i in 0u8..8u8 {
         let value: [u8; 1] = [i];
         pcr_digest_list_1
-            .add(Digest::try_from(&value[..]).expect("Failed to create digest value"))
+            .add(Digest::from_bytes(&value[..]).expect("Failed to create digest value"))
             .expect("Failed to add value to digest");
     }
 
@@ -56,7 +54,7 @@ fn test_valid_to_tpml_digest_conversion() {
     for i in 8u8..16u8 {
         let value: [u8; 1] = [i];
         pcr_digest_list_2
-            .add(Digest::try_from(&value[..]).expect("Failed to create digest value"))
+            .add(Digest::from_bytes(&value[..]).expect("Failed to create digest value"))
             .expect("Failed to add value to digest");
     }
 
@@ -116,7 +114,7 @@ fn test_invalid_to_tpml_digest_conversion() {
     for i in 0u8..7u8 {
         let value: [u8; 1] = [i];
         pcr_digest_list_1
-            .add(Digest::try_from(&value[..]).expect("Failed to create digest value"))
+            .add(Digest::from_bytes(&value[..]).expect("Failed to create digest value"))
             .expect("Failed to add value to digest");
     }
 

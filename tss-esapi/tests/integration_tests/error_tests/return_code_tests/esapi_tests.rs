@@ -129,7 +129,7 @@ fn test_invalid_conversions() {
 fn test_esapi_error_from_context_method() {
     let mut context = create_ctx_with_session();
     let random_digest = context.get_random(16).unwrap();
-    let key_auth = Auth::try_from(random_digest.value().to_vec()).unwrap();
+    let key_auth = Auth::try_from(random_digest.as_bytes().to_vec()).unwrap();
 
     let first_session = context.sessions().0.expect("Missing first session");
     let second_session = context

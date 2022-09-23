@@ -29,7 +29,7 @@ mod test_encrypt_decrypt_2 {
             context
                 .get_random(16)
                 .expect("get_rand call failed")
-                .value()
+                .as_bytes()
                 .to_vec(),
         )
         .expect("Failed to create primary key auth");
@@ -82,7 +82,7 @@ mod test_encrypt_decrypt_2 {
             context
                 .get_random(16)
                 .expect("get_rand call failed")
-                .value()
+                .as_bytes()
                 .to_vec(),
         )
         .expect("Failed to create symmetric key auth");

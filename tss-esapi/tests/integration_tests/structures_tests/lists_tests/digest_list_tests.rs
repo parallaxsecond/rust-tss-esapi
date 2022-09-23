@@ -24,7 +24,7 @@ fn test_conversion_from_tss_digest_list() {
     for actual_digest in digest_list.value().iter() {
         match expected_digests
             .iter()
-            .position(|v| v.value() == actual_digest.value())
+            .position(|v| v.as_bytes() == actual_digest.as_bytes())
         {
             Some(pos) => {
                 expected_digests.remove(pos);

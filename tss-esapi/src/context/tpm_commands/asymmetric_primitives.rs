@@ -128,7 +128,7 @@ impl Context {
     /// #     .expect("Failed to set attributes on session");
     /// # context.set_sessions((Some(session), None, None));
     /// # let random_digest = context.get_random(16).unwrap();
-    /// # let key_auth = Auth::try_from(random_digest.value().to_vec()).unwrap();
+    /// # let key_auth = Auth::from_bytes(random_digest.as_bytes()).unwrap();
     /// #
     /// // Create a key suitable for ECDH key generation
     /// let ecc_parms = PublicEccParametersBuilder::new()
@@ -263,7 +263,7 @@ impl Context {
     /// #     .expect("Failed to set attributes on session");
     /// # context.set_sessions((Some(session), None, None));
     /// # let random_digest = context.get_random(16).unwrap();
-    /// # let key_auth = Auth::try_from(random_digest.value().to_vec()).unwrap();
+    /// # let key_auth = Auth::from_bytes(random_digest.as_bytes()).unwrap();
     /// #
     /// // Create a key suitable for ECDH key generation
     /// let ecc_parms = PublicEccParametersBuilder::new()
@@ -313,7 +313,7 @@ impl Context {
     /// // Generate ephemeral key pair and a shared secret
     /// let (z_point, pub_point) = context.ecdh_key_gen(key_handle).unwrap();
     /// let z_point_gen = context.ecdh_z_gen(key_handle, pub_point).unwrap();
-    /// assert_eq!(z_point.x().value(), z_point_gen.x().value());
+    /// assert_eq!(z_point.x().as_bytes(), z_point_gen.x().as_bytes());
     /// ```
     pub fn ecdh_z_gen(&mut self, key_handle: KeyHandle, in_point: EccPoint) -> Result<EccPoint> {
         let mut out_point_ptr = null_mut();

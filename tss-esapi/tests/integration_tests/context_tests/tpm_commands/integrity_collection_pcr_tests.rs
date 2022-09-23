@@ -41,10 +41,10 @@ mod test_pcr_extend_reset {
             .for_each(|(pcr_selection, digest)| {
                 if pcr_selection.hashing_algorithm() == HashingAlgorithm::Sha1 {
                     assert_eq!(digest.len(), 20);
-                    assert_eq!(digest.value(), [0; 20]);
+                    assert_eq!(digest.as_bytes(), [0; 20]);
                 } else if pcr_selection.hashing_algorithm() == HashingAlgorithm::Sha256 {
                     assert_eq!(digest.len(), 32);
-                    assert_eq!(digest.value(), [0; 32]);
+                    assert_eq!(digest.as_bytes(), [0; 32]);
                 } else {
                     panic!("Read pcr selections contained unexpected HashingAlgorithm");
                 }
@@ -96,7 +96,7 @@ mod test_pcr_extend_reset {
                 if pcr_selection.hashing_algorithm() == HashingAlgorithm::Sha1 {
                     assert_eq!(digest.len(), 20);
                     assert_eq!(
-                        digest.value(),
+                        digest.as_bytes(),
                         [
                             0x5f, 0x42, 0x0e, 0x04, 0x95, 0x8b, 0x2e, 0x3f, 0x18, 0x07, 0x39, 0x1e,
                             0x99, 0xd9, 0x49, 0x2c, 0x67, 0xaa, 0xef, 0xfd
@@ -105,7 +105,7 @@ mod test_pcr_extend_reset {
                 } else if pcr_selection.hashing_algorithm() == HashingAlgorithm::Sha256 {
                     assert_eq!(digest.len(), 32);
                     assert_eq!(
-                        digest.value(),
+                        digest.as_bytes(),
                         [
                             0x0b, 0x8f, 0x4c, 0x5b, 0x6a, 0xdc, 0x4c, 0x08, 0x7a, 0xb9, 0xf4, 0x3a,
                             0xae, 0xb6, 0x00, 0x70, 0x84, 0xc2, 0x64, 0xad, 0xca, 0xa3, 0xcb, 0x07,
@@ -141,8 +141,8 @@ mod test_pcr_extend_reset {
         let pcr_sha1_value = pcr_sha1_bank.get_digest(PcrSlot::Slot16).unwrap();
         let pcr_sha256_value = pcr_sha256_bank.get_digest(PcrSlot::Slot16).unwrap();
         // Needs to have the length of associated with the hashing algorithm
-        assert_eq!(pcr_sha1_value.value(), [0; 20]);
-        assert_eq!(pcr_sha256_value.value(), [0; 32]);
+        assert_eq!(pcr_sha1_value.as_bytes(), [0; 20]);
+        assert_eq!(pcr_sha256_value.as_bytes(), [0; 32]);
     }
 }
 

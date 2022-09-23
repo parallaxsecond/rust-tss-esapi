@@ -125,7 +125,7 @@ impl From<PcrData> for Vec<TPML_DIGEST> {
                     tpml_digest.count += 1;
                     tpml_digest.digests[index].size = digest.len() as u16;
                     tpml_digest.digests[index].buffer[..digest.len()]
-                        .copy_from_slice(digest.value());
+                        .copy_from_slice(digest.as_bytes());
                 }
                 tpml_digest
             })

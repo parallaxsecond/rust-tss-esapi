@@ -195,7 +195,7 @@ fn sign_with_bad_auth() {
     };
     let (key, key_auth) = ctx.create_key(key_params, 16).unwrap();
     let auth_value = key_auth.unwrap();
-    let mut bad_auth_values = auth_value.value().to_vec();
+    let mut bad_auth_values = auth_value.as_bytes().to_vec();
     bad_auth_values[6..10].copy_from_slice(&[0xDE, 0xAD, 0xBE, 0xEF]);
     ctx.sign(
         key,
@@ -249,12 +249,12 @@ fn encrypt_decrypt() {
             None,
         )
         .unwrap();
-    assert_ne!(message, ciphertext.value());
+    assert_ne!(message, ciphertext.as_bytes());
 
     let plaintext = ctx
         .rsa_decrypt(dec_key, key_params, auth, ciphertext, None)
         .unwrap();
-    assert_eq!(message, plaintext.value());
+    assert_eq!(message, plaintext.as_bytes());
 }
 
 #[test]
@@ -294,8 +294,8 @@ fn two_signatures_different_digest() {
     if let Signature::RsaSsa(rsa_signature_1) = signature1 {
         if let Signature::RsaSsa(rsa_signature_2) = signature2 {
             assert!(
-                rsa_signature_1.signature().value().to_vec()
-                    != rsa_signature_2.signature().value().to_vec()
+                rsa_signature_1.signature().as_bytes().to_vec()
+                    != rsa_signature_2.signature().as_bytes().to_vec()
             );
         } else {
             panic!("Unexpected signature for signature 2");
@@ -505,7 +505,7 @@ fn ctx_migration_test() {
     // one for just the public part of the key
     let mut basic_ctx = crate::common::create_ctx_with_session();
     let random_digest = basic_ctx.get_random(16).unwrap();
-    let key_auth = Auth::try_from(random_digest.value().to_vec()).unwrap();
+    let key_auth = Auth::from_bytes(random_digest.as_bytes()).unwrap();
     let prim_key_handle = basic_ctx
         .create_primary(
             Hierarchy::Owner,
@@ -590,11 +590,11 @@ fn ctx_migration_test() {
     } = result
     {
         assert_eq!(
-            PublicKey::Rsa(unique.value().to_vec()),
+            PublicKey::Rsa(unique.as_bytes().to_vec()),
             pub_key.public().clone()
         );
         assert_eq!(
-            PublicKey::Rsa(unique.value().to_vec()),
+            PublicKey::Rsa(unique.as_bytes().to_vec()),
             key.public().clone()
         );
     } else {
@@ -674,7 +674,12 @@ fn activate_credential() {
     // Create a new Transient key context and activate the credential
     let mut ctx = create_ctx();
     let cred_back = ctx
-        .activate_credential(obj, None, cred.value().to_vec(), secret.value().to_vec())
+        .activate_credential(
+            obj,
+            None,
+            cred.as_bytes().to_vec(),
+            secret.as_bytes().to_vec(),
+        )
         .unwrap();
 
     assert_eq!(cred_back, credential);
@@ -798,8 +803,8 @@ fn activate_credential_wrong_key() {
         .activate_credential(
             wrong_obj,
             None,
-            cred.value().to_vec(),
-            secret.value().to_vec(),
+            cred.as_bytes().to_vec(),
+            secret.as_bytes().to_vec(),
         )
         .unwrap_err();
     if let Error::TssError(ReturnCode::Tpm(TpmResponseCode::FormatOne(error))) = e {
