@@ -2,14 +2,13 @@
 // SPDX-License-Identifier: Apache-2.0
 mod test_ctx_save {
     use crate::common::{create_ctx_with_session, decryption_key_pub, signing_key_pub};
-    use std::convert::TryFrom;
     use tss_esapi::{interface_types::resource_handles::Hierarchy, structures::Auth};
 
     #[test]
     fn test_ctx_save() {
         let mut context = create_ctx_with_session();
         let random_digest = context.get_random(16).unwrap();
-        let key_auth = Auth::try_from(random_digest.value().to_vec()).unwrap();
+        let key_auth = Auth::from_bytes(random_digest.as_bytes()).unwrap();
 
         let key_handle = context
             .create_primary(
@@ -29,7 +28,7 @@ mod test_ctx_save {
     fn test_ctx_save_leaf() {
         let mut context = create_ctx_with_session();
         let random_digest = context.get_random(16).unwrap();
-        let key_auth = Auth::try_from(random_digest.value().to_vec()).unwrap();
+        let key_auth = Auth::from_bytes(random_digest.as_bytes()).unwrap();
 
         let prim_key_handle = context
             .create_primary(
@@ -64,7 +63,6 @@ mod test_ctx_save {
 
 mod test_ctx_load {
     use crate::common::{create_ctx_with_session, decryption_key_pub, signing_key_pub};
-    use std::convert::TryFrom;
     use tss_esapi::{
         handles::KeyHandle, interface_types::resource_handles::Hierarchy, structures::Auth,
     };
@@ -78,7 +76,7 @@ mod test_ctx_load {
             .create_primary(
                 Hierarchy::Owner,
                 decryption_key_pub(),
-                Some(Auth::try_from(key_auth.value().to_vec()).unwrap()),
+                Some(Auth::from_bytes(key_auth.as_bytes()).unwrap()),
                 None,
                 None,
                 None,
@@ -90,7 +88,7 @@ mod test_ctx_load {
             .create(
                 prim_key_handle,
                 signing_key_pub(),
-                Some(Auth::try_from(key_auth.value().to_vec()).unwrap()),
+                Some(Auth::from_bytes(key_auth.as_bytes()).unwrap()),
                 None,
                 None,
                 None,
@@ -109,14 +107,13 @@ mod test_ctx_load {
 
 mod test_flush_context {
     use crate::common::{create_ctx_with_session, decryption_key_pub, signing_key_pub};
-    use std::convert::TryFrom;
     use tss_esapi::{interface_types::resource_handles::Hierarchy, structures::Auth};
 
     #[test]
     fn test_flush_ctx() {
         let mut context = create_ctx_with_session();
         let random_digest = context.get_random(16).unwrap();
-        let key_auth = Auth::try_from(random_digest.value().to_vec()).unwrap();
+        let key_auth = Auth::from_bytes(random_digest.as_bytes()).unwrap();
 
         let key_handle = context
             .create_primary(
@@ -137,7 +134,7 @@ mod test_flush_context {
     fn test_flush_parent_ctx() {
         let mut context = create_ctx_with_session();
         let random_digest = context.get_random(16).unwrap();
-        let key_auth = Auth::try_from(random_digest.value().to_vec()).unwrap();
+        let key_auth = Auth::from_bytes(random_digest.as_bytes()).unwrap();
 
         let prim_key_handle = context
             .create_primary(

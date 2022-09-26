@@ -267,13 +267,13 @@ mod test_policy_pcr {
                     .unwrap()
                     .get_digest(PcrSlot::Slot0)
                     .unwrap()
-                    .value(),
+                    .as_bytes(),
                 pcr_data
                     .pcr_bank(HashingAlgorithm::Sha256)
                     .unwrap()
                     .get_digest(PcrSlot::Slot1)
                     .unwrap()
-                    .value(),
+                    .as_bytes(),
             ]
             .concat()
             .to_vec(),
@@ -541,7 +541,7 @@ mod test_policy_authorize {
     fn test_policy_authorize() {
         let mut context = create_ctx_with_session();
         let random_digest = context.get_random(16).unwrap();
-        let key_auth = Auth::try_from(random_digest.value().to_vec()).unwrap();
+        let key_auth = Auth::from_bytes(random_digest.as_bytes()).unwrap();
 
         let key_handle = context
             .create_primary(
@@ -562,7 +562,7 @@ mod test_policy_authorize {
         // aHash ≔ H_{aHashAlg}(approvedPolicy || policyRef)
         let ahash = context
             .hash(
-                MaxBuffer::try_from(policy_digest.value().to_vec()).unwrap(),
+                MaxBuffer::from_bytes(policy_digest.as_bytes()).unwrap(),
                 HashingAlgorithm::Sha256,
                 Hierarchy::Null,
             )
@@ -763,13 +763,13 @@ mod test_policy_get_digest {
                     .unwrap()
                     .get_digest(PcrSlot::Slot0)
                     .unwrap()
-                    .value(),
+                    .as_bytes(),
                 pcr_data
                     .pcr_bank(HashingAlgorithm::Sha256)
                     .unwrap()
                     .get_digest(PcrSlot::Slot1)
                     .unwrap()
-                    .value(),
+                    .as_bytes(),
             ]
             .concat()
             .to_vec(),
@@ -792,7 +792,7 @@ mod test_policy_get_digest {
         let retrieved_policy_digest = context.policy_get_digest(trial_policy_session).unwrap();
 
         // The algorithm is SHA256 so the expected size of the digest should be 32.
-        assert_eq!(retrieved_policy_digest.value().len(), 32);
+        assert_eq!(retrieved_policy_digest.as_bytes().len(), 32);
     }
 }
 

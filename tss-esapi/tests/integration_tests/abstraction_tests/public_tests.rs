@@ -60,7 +60,7 @@ mod public_rsa_test {
                 .expect("Failed to create rsa parameters for public structure"),
             )
             .with_rsa_unique_identifier(
-                PublicKeyRsa::try_from(&RSA_KEY[..])
+                PublicKeyRsa::from_bytes(&RSA_KEY[..])
                     .expect("Failed to create Public RSA key from buffer"),
             )
             .build()
@@ -129,9 +129,9 @@ mod public_ecc_test {
 
     pub fn get_ecc_point() -> EccPoint {
         let x =
-            EccParameter::try_from(&EC_POINT[1..33]).expect("Failed to construct x EccParameter");
+            EccParameter::from_bytes(&EC_POINT[1..33]).expect("Failed to construct x EccParameter");
         let y: EccParameter =
-            EccParameter::try_from(&EC_POINT[33..]).expect("Failed to construct y EccParameter");
+            EccParameter::from_bytes(&EC_POINT[33..]).expect("Failed to construct y EccParameter");
         EccPoint::new(x, y)
     }
 

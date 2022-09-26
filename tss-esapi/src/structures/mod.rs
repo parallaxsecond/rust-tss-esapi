@@ -15,7 +15,7 @@
 /// Chapter 10: Structure Definitions
 
 /////////////////////////////////////////////////////////
-/// The capabilitydata section
+/// The capability data section
 /////////////////////////////////////////////////////////
 mod capability_data;
 pub use self::capability_data::CapabilityData;

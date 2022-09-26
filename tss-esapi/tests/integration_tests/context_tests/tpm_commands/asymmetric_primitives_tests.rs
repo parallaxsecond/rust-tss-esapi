@@ -20,7 +20,7 @@ mod test_rsa_encrypt_decrypt {
     fn test_encrypt_decrypt() {
         let mut context = create_ctx_with_session();
         let random_digest = context.get_random(16).unwrap();
-        let key_auth = Auth::try_from(random_digest.value().to_vec()).unwrap();
+        let key_auth = Auth::from_bytes(random_digest.as_bytes()).unwrap();
 
         let key_handle = context
             .create_primary(
@@ -47,20 +47,20 @@ mod test_rsa_encrypt_decrypt {
             .rsa_encrypt(key_handle, plaintext, scheme, Data::default())
             .unwrap();
 
-        assert_ne!(plaintext_bytes, ciphertext.value());
+        assert_ne!(plaintext_bytes, ciphertext.as_bytes());
 
         let decrypted = context
             .rsa_decrypt(key_handle, ciphertext, scheme, Data::default())
             .unwrap();
 
-        assert_eq!(plaintext_bytes, decrypted.value());
+        assert_eq!(plaintext_bytes, decrypted.as_bytes());
     }
 
     #[test]
     fn test_ecdh() {
         let mut context = create_ctx_with_session();
         let random_digest = context.get_random(16).unwrap();
-        let key_auth = Auth::try_from(random_digest.value().to_vec()).unwrap();
+        let key_auth = Auth::from_bytes(random_digest.as_bytes()).unwrap();
 
         let ecc_parms = PublicEccParametersBuilder::new()
             .with_ecc_scheme(EccScheme::EcDh(HashScheme::new(HashingAlgorithm::Sha256)))
@@ -101,6 +101,6 @@ mod test_rsa_encrypt_decrypt {
 
         let param = context.ecdh_z_gen(key_handle, pub_point).unwrap();
 
-        assert_eq!(z_point.x().value(), param.x().value());
+        assert_eq!(z_point.x().as_bytes(), param.x().as_bytes());
     }
 }

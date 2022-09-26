@@ -123,7 +123,7 @@ mod test_quote {
 
         assert_eq!(attest.attestation_type(), AttestationType::Certify);
         assert!(matches!(attest.attested(), AttestInfo::Certify { .. }));
-        assert_eq!(attest.extra_data().value(), qualifying_data);
+        assert_eq!(attest.extra_data().as_bytes(), qualifying_data);
     }
 
     #[test]

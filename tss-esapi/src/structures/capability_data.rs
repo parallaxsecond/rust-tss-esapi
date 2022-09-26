@@ -13,7 +13,7 @@ use log::error;
 use std::convert::{TryFrom, TryInto};
 use std::mem::size_of;
 
-/// A representation of all the capabilites that can be associated
+/// A representation of all the capabilities that can be associated
 /// with a TPM.
 ///
 /// # Details

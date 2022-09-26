@@ -149,7 +149,7 @@ impl TransientKeyContext {
         let key_auth = if auth_size > 0 {
             self.set_session_attrs()?;
             let random_bytes = self.context.get_random(auth_size)?;
-            Some(Auth::try_from(random_bytes.value().to_vec())?)
+            Some(Auth::from_bytes(random_bytes.as_bytes())?)
         } else {
             None
         };
@@ -170,7 +170,7 @@ impl TransientKeyContext {
 
         let key_material = KeyMaterial {
             public: out_public.try_into()?,
-            private: out_private.value().to_vec(),
+            private: out_private.as_bytes().to_vec(),
         };
         Ok((key_material, key_auth))
     }
@@ -390,7 +390,7 @@ impl TransientKeyContext {
 
         let key_material = KeyMaterial {
             public: public.try_into()?,
-            private: private.value().to_vec(),
+            private: private.as_bytes().to_vec(),
         };
 
         self.context.flush_context(key_handle.into())?;
@@ -670,7 +670,7 @@ impl TransientKeyContextBuilder {
 
         let root_key_auth = if self.root_key_auth_size > 0 {
             let random = context.get_random(self.root_key_auth_size)?;
-            Some(Auth::try_from(random.value().to_vec())?)
+            Some(Auth::from_bytes(random.as_bytes())?)
         } else {
             None
         };

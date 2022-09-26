@@ -9,7 +9,7 @@ mod test_create {
     fn test_create() {
         let mut context = create_ctx_with_session();
         let random_digest = context.get_random(16).unwrap();
-        let key_auth = Auth::try_from(random_digest.value().to_vec()).unwrap();
+        let key_auth = Auth::try_from(random_digest.as_bytes().to_vec()).unwrap();
 
         let prim_key_handle = context
             .create_primary(
@@ -45,7 +45,7 @@ mod test_load {
     fn test_load() {
         let mut context = create_ctx_with_session();
         let random_digest = context.get_random(16).unwrap();
-        let key_auth = Auth::try_from(random_digest.value().to_vec()).unwrap();
+        let key_auth = Auth::try_from(random_digest.as_bytes().to_vec()).unwrap();
 
         let prim_key_handle = context
             .create_primary(
@@ -78,7 +78,6 @@ mod test_load {
 
 mod test_load_external_public {
     use crate::common::{create_ctx_with_session, KEY};
-    use std::convert::TryFrom;
     use tss_esapi::{
         attributes::ObjectAttributesBuilder,
         interface_types::{
@@ -113,7 +112,7 @@ mod test_load_external_public {
                 .expect("Failed to create rsa parameters for public structure"),
             )
             .with_rsa_unique_identifier(
-                PublicKeyRsa::try_from(&KEY[..256])
+                PublicKeyRsa::from_bytes(&KEY[..256])
                     .expect("Failed to create Public RSA key from buffer"),
             )
             .build()
@@ -133,7 +132,7 @@ mod test_load_external_public {
 
 mod test_load_external {
     use crate::common::create_ctx_with_session;
-    use std::convert::{TryFrom, TryInto};
+    use std::convert::TryInto;
     use tss_esapi::{
         attributes::ObjectAttributesBuilder,
         interface_types::{
@@ -211,7 +210,7 @@ mod test_load_external {
                 .expect("Failed to create rsa parameters for public structure"),
             )
             .with_rsa_unique_identifier(
-                PublicKeyRsa::try_from(&KEY[..])
+                PublicKeyRsa::from_bytes(&KEY[..])
                     .expect("Failed to create Public RSA key from buffer"),
             )
             .build()
@@ -233,14 +232,13 @@ mod test_load_external {
 
 mod test_read_public {
     use crate::common::{create_ctx_with_session, signing_key_pub};
-    use std::convert::TryFrom;
     use tss_esapi::{interface_types::resource_handles::Hierarchy, structures::Auth};
 
     #[test]
     fn test_read_public() {
         let mut context = create_ctx_with_session();
         let random_digest = context.get_random(16).unwrap();
-        let key_auth = Auth::try_from(random_digest.value().to_vec()).unwrap();
+        let key_auth = Auth::from_bytes(random_digest.as_bytes()).unwrap();
 
         let key_handle = context
             .create_primary(
@@ -424,7 +422,7 @@ mod test_unseal {
             .load(key_handle_unseal, result.out_private, result.out_public)
             .unwrap();
         let unsealed = context.unseal(loaded_key.into()).unwrap();
-        let unsealed = unsealed.value();
+        let unsealed = unsealed.as_bytes();
         assert!(unsealed == testbytes);
     }
 }

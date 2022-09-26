@@ -55,13 +55,11 @@ impl TryFrom<TPMT_HA> for HashAgile {
         Ok(HashAgile {
             algorithm,
             digest: match algorithm {
-                HashingAlgorithm::Sha1 => unsafe { tpmt_ha.digest.sha1 }.as_ref().try_into()?,
-                HashingAlgorithm::Sha256 => unsafe { tpmt_ha.digest.sha256 }.as_ref().try_into()?,
-                HashingAlgorithm::Sha384 => unsafe { tpmt_ha.digest.sha384 }.as_ref().try_into()?,
-                HashingAlgorithm::Sha512 => unsafe { tpmt_ha.digest.sha512 }.as_ref().try_into()?,
-                HashingAlgorithm::Sm3_256 => {
-                    unsafe { tpmt_ha.digest.sm3_256 }.as_ref().try_into()?
-                }
+                HashingAlgorithm::Sha1 => unsafe { tpmt_ha.digest.sha1 }.into(),
+                HashingAlgorithm::Sha256 => unsafe { tpmt_ha.digest.sha256 }.into(),
+                HashingAlgorithm::Sha384 => unsafe { tpmt_ha.digest.sha384 }.into(),
+                HashingAlgorithm::Sha512 => unsafe { tpmt_ha.digest.sha512 }.into(),
+                HashingAlgorithm::Sm3_256 => unsafe { tpmt_ha.digest.sm3_256 }.into(),
                 _ => return Err(Error::local_error(WrapperErrorKind::WrongValueFromTpm)),
             },
         })

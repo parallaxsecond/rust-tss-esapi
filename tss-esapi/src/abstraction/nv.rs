@@ -213,8 +213,7 @@ impl std::io::Write for NvReaderWriter<'_> {
         let desired_size = std::cmp::min(buf.len(), self.data_size - self.offset);
         let size = std::cmp::min(self.buffer_size, desired_size) as u16;
 
-        let data = buf[0..size.into()]
-            .try_into()
+        let data = MaxNvBuffer::from_bytes(&buf[0..size.into()])
             .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))?;
         self.context
             .nv_write(self.auth_handle, self.nv_idx, data, self.offset as u16)

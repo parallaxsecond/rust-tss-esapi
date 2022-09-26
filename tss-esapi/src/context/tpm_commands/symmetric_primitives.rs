@@ -60,7 +60,7 @@ impl Context {
     /// #     context
     /// #         .get_random(16)
     /// #         .expect("get_rand call failed")
-    /// #         .value()
+    /// #         .as_bytes()
     /// #         .to_vec(),
     /// # )
     /// # .expect("Failed to create primary key auth");
@@ -107,7 +107,7 @@ impl Context {
     /// #     context
     /// #         .get_random(16)
     /// #         .expect("get_rand call failed")
-    /// #         .value()
+    /// #         .as_bytes()
     /// #         .to_vec(),
     /// # )
     /// # .expect("Failed to create symmetric key auth");

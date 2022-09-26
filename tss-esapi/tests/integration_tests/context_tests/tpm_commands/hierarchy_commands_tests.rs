@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 mod test_create_primary {
     use crate::common::{create_ctx_with_session, decryption_key_pub};
-    use std::convert::TryFrom;
     use tss_esapi::{
         handles::ObjectHandle, interface_types::resource_handles::Hierarchy, structures::Auth,
     };
@@ -11,7 +10,7 @@ mod test_create_primary {
     fn test_create_primary() {
         let mut context = create_ctx_with_session();
         let random_digest = context.get_random(16).unwrap();
-        let key_auth = Auth::try_from(random_digest.value().to_vec()).unwrap();
+        let key_auth = Auth::from_bytes(random_digest.as_bytes()).unwrap();
 
         let key_handle = context
             .create_primary(
@@ -57,7 +56,6 @@ mod test_clear_control {
 
 mod test_change_auth {
     use crate::common::{create_ctx_with_session, decryption_key_pub};
-    use std::convert::TryFrom;
     use tss_esapi::{
         handles::AuthHandle, interface_types::resource_handles::Hierarchy, structures::Auth,
     };
@@ -96,7 +94,7 @@ mod test_change_auth {
             .unwrap();
 
         let random_digest = context.get_random(16).unwrap();
-        let new_key_auth = Auth::try_from(random_digest.value().to_vec()).unwrap();
+        let new_key_auth = Auth::from_bytes(random_digest.as_bytes()).unwrap();
 
         let new_private = context
             .object_change_auth(loaded_key.into(), prim_key_handle.into(), new_key_auth)
@@ -111,7 +109,7 @@ mod test_change_auth {
         let mut context = create_ctx_with_session();
 
         let random_digest = context.get_random(16).unwrap();
-        let new_auth = Auth::try_from(random_digest.value().to_vec()).unwrap();
+        let new_auth = Auth::from_bytes(random_digest.as_bytes()).unwrap();
 
         // NOTE: If this test failed on your system, you are probably running it against a
         //  real (hardware) TPM or one that is provisioned. This hierarchy is supposed to be

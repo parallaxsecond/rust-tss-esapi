@@ -53,7 +53,7 @@ impl TransientKeyContext {
     /// the credential
     ///
     /// **Note**: If no `key` is given, the default Endorsement Key
-    /// will be used.  
+    /// will be used.
     pub fn get_make_cred_params(
         &mut self,
         object: ObjectWrapper,
@@ -131,7 +131,7 @@ impl TransientKeyContext {
         self.context.flush_context(key_handle.into())?;
         self.context
             .flush_context(SessionHandle::from(session_2).into())?;
-        Ok(credential.value().to_vec())
+        Ok(credential.as_bytes().to_vec())
     }
 
     // No key was given, use the EK. This requires using a Policy session
