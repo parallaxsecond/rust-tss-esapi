@@ -614,7 +614,7 @@ impl Context {
     /// #     .expect("Failed to set attributes on session");
     /// # context.set_sessions((Some(session), None, None));
     /// #
-    /// # let nv_index = NvIndexTpmHandle::new(0x01500025)
+    /// # let nv_index = NvIndexTpmHandle::new(0x01500027)
     /// #     .expect("Failed to create NV index tpm handle");
     /// #
     /// # // Create NV index attributes
