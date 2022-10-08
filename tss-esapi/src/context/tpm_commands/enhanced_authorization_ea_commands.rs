@@ -60,7 +60,7 @@ impl Context {
                 )
             },
             |ret| {
-                error!("Error when sending policy signed: {}", ret);
+                error!("Error when sending policy signed: {:#010X}", ret);
             },
         )?;
         Ok((
@@ -102,7 +102,7 @@ impl Context {
                 )
             },
             |ret| {
-                error!("Error when sending policy secret: {}", ret);
+                error!("Error when sending policy secret: {:#010X}", ret);
             },
         )?;
         Ok((
@@ -150,7 +150,7 @@ impl Context {
                 )
             },
             |ret| {
-                error!("Error when computing policy OR: {}", ret);
+                error!("Error when computing policy OR: {:#010X}", ret);
             },
         )
     }
@@ -185,7 +185,7 @@ impl Context {
                 )
             },
             |ret| {
-                error!("Error when computing policy PCR: {}", ret);
+                error!("Error when computing policy PCR: {:#010X}", ret);
             },
         )
     }
@@ -211,7 +211,7 @@ impl Context {
                 )
             },
             |ret| {
-                error!("Error when computing policy locality: {}", ret);
+                error!("Error when computing policy locality: {:#010X}", ret);
             },
         )
     }
@@ -240,7 +240,7 @@ impl Context {
                 )
             },
             |ret| {
-                error!("Error when computing policy command code: {}", ret);
+                error!("Error when computing policy command code: {:#010X}", ret);
             },
         )
     }
@@ -261,7 +261,10 @@ impl Context {
                 )
             },
             |ret| {
-                error!("Error when computing policy physical presence: {}", ret);
+                error!(
+                    "Error when computing policy physical presence: {:#010X}",
+                    ret
+                );
             },
         )
     }
@@ -287,7 +290,10 @@ impl Context {
                 )
             },
             |ret| {
-                error!("Error when computing policy command parameters: {}", ret);
+                error!(
+                    "Error when computing policy command parameters: {:#010X}",
+                    ret
+                );
             },
         )
     }
@@ -313,7 +319,7 @@ impl Context {
                 )
             },
             |ret| {
-                error!("Error when computing policy name hash: {}", ret);
+                error!("Error when computing policy name hash: {:#010X}", ret);
             },
         )
     }
@@ -419,7 +425,10 @@ impl Context {
                 )
             },
             |ret| {
-                error!("Error when computing policy duplication select: {}", ret);
+                error!(
+                    "Error when computing policy duplication select: {:#010X}",
+                    ret
+                );
             },
         )
     }
@@ -454,7 +463,7 @@ impl Context {
                 )
             },
             |ret| {
-                error!("Error when computing policy authorize: {}", ret);
+                error!("Error when computing policy authorize: {:#010X}", ret);
             },
         )
     }
@@ -475,7 +484,7 @@ impl Context {
                 )
             },
             |ret| {
-                error!("Error when computing policy auth value: {}", ret);
+                error!("Error when computing policy auth value: {:#010X}", ret);
             },
         )
     }
@@ -496,7 +505,7 @@ impl Context {
                 )
             },
             |ret| {
-                error!("Error when computing policy password: {}", ret);
+                error!("Error when computing policy password: {:#010X}", ret);
             },
         )
     }
@@ -518,7 +527,7 @@ impl Context {
             },
             |ret| {
                 error!(
-                    "Error failed to perform policy get digest operation: {}.",
+                    "Error failed to perform policy get digest operation: {:#010X}.",
                     ret
                 );
             },
@@ -547,7 +556,10 @@ impl Context {
                 )
             },
             |ret| {
-                error!("Error when computing policy NV written state: {}", ret);
+                error!(
+                    "Error when computing policy NV written state: {:#010X}",
+                    ret
+                );
             },
         )
     }
@@ -575,7 +587,7 @@ impl Context {
             },
             |ret| {
                 error!(
-                    "Failed to bind template to a specific creation template: {}",
+                    "Failed to bind template to a specific creation template: {:#010X}",
                     ret
                 );
             },

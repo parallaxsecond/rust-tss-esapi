@@ -27,7 +27,7 @@ impl Context {
                 )
             },
             |ret| {
-                error!("Error when setting session attributes: {}", ret);
+                error!("Error when setting session attributes: {:#010X}", ret);
             },
         )
     }
@@ -44,7 +44,7 @@ impl Context {
                 )
             },
             |ret| {
-                error!("Error when getting session attributes: {}", ret);
+                error!("Error when getting session attributes: {:#010X}", ret);
             },
         )?;
         Ok(SessionAttributes(flags))

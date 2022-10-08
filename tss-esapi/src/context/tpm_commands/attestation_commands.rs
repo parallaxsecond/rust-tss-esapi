@@ -140,7 +140,7 @@ impl Context {
                 )
             },
             |ret| {
-                error!("Error in certifying: {}", ret);
+                error!("Error in certifying: {:#010X}", ret);
             },
         )?;
 
@@ -183,7 +183,7 @@ impl Context {
                 )
             },
             |ret| {
-                error!("Error in quoting PCR: {}", ret);
+                error!("Error in quoting PCR: {:#010X}", ret);
             },
         )?;
 

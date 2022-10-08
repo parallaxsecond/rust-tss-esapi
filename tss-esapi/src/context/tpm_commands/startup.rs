@@ -13,7 +13,7 @@ impl Context {
         ReturnCode::ensure_success(
             unsafe { Esys_Startup(self.mut_context(), startup_type.into()) },
             |ret| {
-                error!("Error while starting up TPM: {}", ret);
+                error!("Error while starting up TPM: {:#010X}", ret);
             },
         )
     }
@@ -31,7 +31,7 @@ impl Context {
                 )
             },
             |ret| {
-                error!("Error while shutting down TPM: {}", ret);
+                error!("Error while shutting down TPM: {:#010X}", ret);
             },
         )
     }

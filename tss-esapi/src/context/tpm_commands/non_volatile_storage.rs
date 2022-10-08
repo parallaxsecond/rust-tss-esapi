@@ -118,7 +118,7 @@ impl Context {
                 )
             },
             |ret| {
-                error!("Error when defining NV space: {}", ret);
+                error!("Error when defining NV space: {:#010X}", ret);
             },
         )?;
 
@@ -219,7 +219,7 @@ impl Context {
                 )
             },
             |ret| {
-                error!("Error when undefining NV space: {}", ret);
+                error!("Error when undefining NV space: {:#010X}", ret);
             },
         )?;
 
@@ -329,7 +329,7 @@ impl Context {
                 )
             },
             |ret| {
-                error!("Error when reading NV public: {}", ret);
+                error!("Error when reading NV public: {:#010X}", ret);
             },
         )?;
 
@@ -449,7 +449,7 @@ impl Context {
                 )
             },
             |ret| {
-                error!("Error when writing NV: {}", ret);
+                error!("Error when writing NV: {:#010X}", ret);
             },
         )
     }
@@ -552,7 +552,7 @@ impl Context {
                     self.optional_session_3(),
                 )
             },
-            |ret| error!("Error when incrementing NV: {}", ret),
+            |ret| error!("Error when incrementing NV: {:#010X}", ret),
         )
     }
 
@@ -680,7 +680,7 @@ impl Context {
                 )
             },
             |ret| {
-                error!("Error when reading NV: {}", ret);
+                error!("Error when reading NV: {:#010X}", ret);
             },
         )?;
         MaxNvBuffer::try_from(Context::ffi_data_to_owned(data_ptr))

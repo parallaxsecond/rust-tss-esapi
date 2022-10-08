@@ -81,7 +81,7 @@ impl Context {
                 )
             },
             |ret| {
-                error!("Error in creating derived key: {}", ret);
+                error!("Error in creating derived key: {:#010X}", ret);
             },
         )?;
         let out_private_owned = Context::ffi_data_to_owned(out_private_ptr);
@@ -120,7 +120,7 @@ impl Context {
                 )
             },
             |ret| {
-                error!("Error in loading: {}", ret);
+                error!("Error in loading: {:#010X}", ret);
             },
         )?;
         let key_handle = KeyHandle::from(object_handle);
@@ -155,7 +155,7 @@ impl Context {
                 )
             },
             |ret| {
-                error!("Error in loading external object: {}", ret);
+                error!("Error in loading external object: {:#010X}", ret);
             },
         )?;
 
@@ -190,7 +190,7 @@ impl Context {
                 )
             },
             |ret| {
-                error!("Error in loading external public object: {}", ret);
+                error!("Error in loading external public object: {:#010X}", ret);
             },
         )?;
 
@@ -219,7 +219,7 @@ impl Context {
                 )
             },
             |ret| {
-                error!("Error in reading public part of object: {}", ret);
+                error!("Error in reading public part of object: {:#010X}", ret);
             },
         )?;
         Ok((
@@ -253,7 +253,7 @@ impl Context {
                 )
             },
             |ret| {
-                error!("Error when activating credential: {}", ret);
+                error!("Error when activating credential: {:#010X}", ret);
             },
         )?;
 
@@ -286,7 +286,7 @@ impl Context {
                 )
             },
             |ret| {
-                error!("Error when making credential: {}", ret);
+                error!("Error when making credential: {:#010X}", ret);
             },
         )?;
         Ok((
@@ -311,7 +311,7 @@ impl Context {
                 )
             },
             |ret| {
-                error!("Error in unsealing: {}", ret);
+                error!("Error in unsealing: {:#010X}", ret);
             },
         )?;
         SensitiveData::try_from(Context::ffi_data_to_owned(out_data_ptr))
@@ -339,7 +339,7 @@ impl Context {
                 )
             },
             |ret| {
-                error!("Error changing object auth: {}", ret);
+                error!("Error changing object auth: {:#010X}", ret);
             },
         )?;
         Private::try_from(Context::ffi_data_to_owned(out_private_ptr))
