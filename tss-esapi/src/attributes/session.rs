@@ -1,10 +1,11 @@
-use crate::tss2_esys::TPMA_SESSION;
+use crate::{tss2_esys::TPMA_SESSION, Error, Result, WrapperErrorKind};
 use bitfield::bitfield;
+use std::convert::TryFrom;
 
 // SESSION ATTRIBUTES
 
 bitfield! {
-    /// Bitfield representing the session attributes.
+    /// Struct representing the session attributes.
     #[derive(Copy, Clone, Eq, PartialEq)]
     pub struct SessionAttributes(TPMA_SESSION);
     impl Debug;
@@ -15,7 +16,7 @@ bitfield! {
     pub audit_exclusive, _: 1;
     _, set_audit_reset: 2;
     pub audit_reset, _: 2;
-    // Reserved 3,4 (Shall be clear)
+    reserved, _: 4, 3; // Reserved 3,4 (Shall be clear)
     _, set_decrypt: 5;
     pub decrypt, _: 5;
     _, set_encrypt: 6;
@@ -29,24 +30,39 @@ impl SessionAttributes {
     pub const fn builder() -> SessionAttributesBuilder {
         SessionAttributesBuilder::new()
     }
-}
 
-impl From<TPMA_SESSION> for SessionAttributes {
-    fn from(tss_session_attributes: TPMA_SESSION) -> SessionAttributes {
-        SessionAttributes(tss_session_attributes)
+    /// Validates the session attributes
+    pub fn validate(&self) -> Result<()> {
+        if self.reserved() != 0 {
+            return Err(Error::local_error(WrapperErrorKind::InvalidParam));
+        }
+        Ok(())
     }
 }
 
-impl From<SessionAttributes> for TPMA_SESSION {
-    fn from(session_attributes: SessionAttributes) -> TPMA_SESSION {
-        session_attributes.0
+impl TryFrom<TPMA_SESSION> for SessionAttributes {
+    type Error = Error;
+
+    fn try_from(tss_session_attributes: TPMA_SESSION) -> Result<SessionAttributes> {
+        let result = SessionAttributes(tss_session_attributes);
+        result.validate()?;
+        Ok(result)
+    }
+}
+
+impl TryFrom<SessionAttributes> for TPMA_SESSION {
+    type Error = Error;
+
+    fn try_from(session_attributes: SessionAttributes) -> Result<TPMA_SESSION> {
+        session_attributes.validate()?;
+        Ok(session_attributes.0)
     }
 }
 
 // SESSION ATTRIBUTES MASK
 
 bitfield! {
-    /// Bitfield representing the session attributes mask.
+    /// Struct representing the session attributes mask.
     #[derive(Copy, Clone, Eq, PartialEq)]
     pub struct SessionAttributesMask(TPMA_SESSION);
     impl Debug;
@@ -54,7 +70,7 @@ bitfield! {
     _, use_continue_session: 0;
     _, use_audit_exclusive: 1;
     _, use_audit_reset: 2;
-    // Reserved 3,4 (Shall be clear)
+    reserved, _: 4, 3; // Reserved 3,4 (Shall be clear)
     _, use_decrypt: 5;
     _, use_encrypt: 6;
     _, use_audit: 7;
@@ -65,17 +81,32 @@ impl SessionAttributesMask {
     pub const fn builder() -> SessionAttributesBuilder {
         SessionAttributesBuilder::new()
     }
-}
 
-impl From<TPMA_SESSION> for SessionAttributesMask {
-    fn from(tss_session_attributes: TPMA_SESSION) -> SessionAttributesMask {
-        SessionAttributesMask(tss_session_attributes)
+    /// Validates the session attributes
+    pub fn validate(&self) -> Result<()> {
+        if self.reserved() != 0 {
+            return Err(Error::local_error(WrapperErrorKind::InvalidParam));
+        }
+        Ok(())
     }
 }
 
-impl From<SessionAttributesMask> for TPMA_SESSION {
-    fn from(session_attributes_mask: SessionAttributesMask) -> TPMA_SESSION {
-        session_attributes_mask.0
+impl TryFrom<TPMA_SESSION> for SessionAttributesMask {
+    type Error = Error;
+
+    fn try_from(tpma_session: TPMA_SESSION) -> Result<SessionAttributesMask> {
+        let result = SessionAttributesMask(tpma_session);
+        result.validate()?;
+        Ok(result)
+    }
+}
+
+impl TryFrom<SessionAttributesMask> for TPMA_SESSION {
+    type Error = Error;
+
+    fn try_from(session_attributes_mask: SessionAttributesMask) -> Result<TPMA_SESSION> {
+        session_attributes_mask.validate()?;
+        Ok(session_attributes_mask.0)
     }
 }
 

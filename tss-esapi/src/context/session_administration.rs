@@ -8,6 +8,7 @@ use crate::{
     Context, Result, ReturnCode,
 };
 use log::error;
+use std::convert::TryInto;
 
 impl Context {
     /// Set the given attributes on a given session.
@@ -22,8 +23,8 @@ impl Context {
                 Esys_TRSess_SetAttributes(
                     self.mut_context(),
                     SessionHandle::from(session).into(),
-                    attributes.into(),
-                    mask.into(),
+                    attributes.try_into()?,
+                    mask.try_into()?,
                 )
             },
             |ret| {
