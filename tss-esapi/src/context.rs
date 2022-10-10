@@ -101,7 +101,7 @@ impl Context {
                 )
             },
             |ret| {
-                error!("Error when creating a new context: {}", ret);
+                error!("Error when creating a new context: {:#010X}", ret);
             },
         )?;
 

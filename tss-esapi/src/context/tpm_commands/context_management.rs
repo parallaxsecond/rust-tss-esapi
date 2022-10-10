@@ -23,7 +23,7 @@ impl Context {
         ReturnCode::ensure_success(
             unsafe { Esys_ContextSave(self.mut_context(), handle.into(), &mut context_ptr) },
             |ret| {
-                error!("Error in saving context: {}", ret);
+                error!("Error in saving context: {:#010X}", ret);
             },
         )?;
         TpmsContext::try_from(Context::ffi_data_to_owned(context_ptr))
@@ -45,7 +45,7 @@ impl Context {
                 )
             },
             |ret| {
-                error!("Error in loading context: {}", ret);
+                error!("Error in loading context: {:#010X}", ret);
             },
         )?;
         let loaded_handle = ObjectHandle::from(esys_loaded_handle);
@@ -137,7 +137,7 @@ impl Context {
         ReturnCode::ensure_success(
             unsafe { Esys_FlushContext(self.mut_context(), handle.try_into_not_none()?) },
             |ret| {
-                error!("Error in flushing context: {}", ret);
+                error!("Error in flushing context: {:#010X}", ret);
             },
         )?;
         self.handle_manager.set_as_flushed(handle)
@@ -430,7 +430,7 @@ impl Context {
                 )
             },
             |ret| {
-                error!("Error in evict control: {}", ret);
+                error!("Error in evict control: {:#010X}", ret);
             },
         )?;
         let new_object_handle = ObjectHandle::from(new_object_handle);

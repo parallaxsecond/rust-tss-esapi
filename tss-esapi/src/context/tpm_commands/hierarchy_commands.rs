@@ -67,7 +67,7 @@ impl Context {
                 )
             },
             |ret| {
-                error!("Error in creating primary key: {}", ret);
+                error!("Error in creating primary key: {:#010X}", ret);
             },
         )?;
         let out_public_owned = Context::ffi_data_to_owned(out_public_ptr);
@@ -105,7 +105,7 @@ impl Context {
                 )
             },
             |ret| {
-                error!("Error in clearing TPM hierarchy: {}", ret);
+                error!("Error in clearing TPM hierarchy: {:#010X}", ret);
             },
         )
     }
@@ -124,7 +124,7 @@ impl Context {
                 )
             },
             |ret| {
-                error!("Error in controlling clear command: {}", ret);
+                error!("Error in controlling clear command: {:#010X}", ret);
             },
         )
     }
@@ -143,7 +143,7 @@ impl Context {
                 )
             },
             |ret| {
-                error!("Error changing hierarchy auth: {}", ret);
+                error!("Error changing hierarchy auth: {:#010X}", ret);
             },
         )
     }

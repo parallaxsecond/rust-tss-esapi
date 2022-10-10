@@ -322,7 +322,7 @@ impl Context {
                 )
             },
             |ret| {
-                error!("Error when performing duplication: {}", ret);
+                error!("Error when performing duplication: {:#010X}", ret);
             },
         )?;
 
@@ -680,7 +680,7 @@ impl Context {
                 )
             },
             |ret| {
-                error!("Error when performing import: {}", ret);
+                error!("Error when performing import: {:#010X}", ret);
             },
         )?;
         Private::try_from(Context::ffi_data_to_owned(out_private_ptr))

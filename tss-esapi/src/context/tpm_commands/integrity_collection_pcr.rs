@@ -100,7 +100,7 @@ impl Context {
                 )
             },
             |ret| {
-                error!("Error when extending PCR: {}", ret);
+                error!("Error when extending PCR: {:#010X}", ret);
             },
         )
     }
@@ -169,7 +169,7 @@ impl Context {
                 )
             },
             |ret| {
-                error!("Error when reading PCR: {}", ret);
+                error!("Error when reading PCR: {:#010X}", ret);
             },
         )?;
 
@@ -249,7 +249,7 @@ impl Context {
                 )
             },
             |ret| {
-                error!("Error when resetting PCR: {}", ret);
+                error!("Error when resetting PCR: {:#010X}", ret);
             },
         )
     }

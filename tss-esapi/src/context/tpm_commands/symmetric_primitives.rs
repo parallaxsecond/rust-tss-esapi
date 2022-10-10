@@ -211,7 +211,7 @@ impl Context {
             },
             |ret| {
                 error!(
-                    "Error failed to perform encrypt or decrypt operations {}",
+                    "Error failed to perform encrypt or decrypt operations {:#010X}",
                     ret
                 );
             },
@@ -288,7 +288,7 @@ impl Context {
                 )
             },
             |ret| {
-                error!("Error failed to perform hash operation: {}", ret);
+                error!("Error failed to perform hash operation: {:#010X}", ret);
             },
         )?;
         Ok((
@@ -368,7 +368,7 @@ impl Context {
                 )
             },
             |ret| {
-                error!("Error in hmac: {}", ret);
+                error!("Error in hmac: {:#010X}", ret);
             },
         )?;
         Digest::try_from(Context::ffi_data_to_owned(out_hmac_ptr))

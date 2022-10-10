@@ -36,7 +36,7 @@ impl Context {
                 )
             },
             |ret| {
-                error!("Error when performing RSA encryption: {}", ret);
+                error!("Error when performing RSA encryption: {:#010X}", ret);
             },
         )?;
         PublicKeyRsa::try_from(Context::ffi_data_to_owned(out_data_ptr))
@@ -66,7 +66,7 @@ impl Context {
                 )
             },
             |ret| {
-                error!("Error when performing RSA decryption: {}", ret);
+                error!("Error when performing RSA decryption: {:#010X}", ret);
             },
         )?;
         PublicKeyRsa::try_from(Context::ffi_data_to_owned(message_ptr))
@@ -194,7 +194,7 @@ impl Context {
                 )
             },
             |ret| {
-                error!("Error when generating ECDH keypair: {}", ret);
+                error!("Error when generating ECDH keypair: {:#010X}", ret);
             },
         )?;
 
@@ -330,7 +330,7 @@ impl Context {
                 )
             },
             |ret| {
-                error!("Error when performing ECDH ZGen: {}", ret);
+                error!("Error when performing ECDH ZGen: {:#010X}", ret);
             },
         )?;
         let out_point = Context::ffi_data_to_owned(out_point_ptr);

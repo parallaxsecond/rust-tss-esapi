@@ -33,7 +33,7 @@ impl Context {
                 )
             },
             |ret| {
-                error!("Error when verifying signature: {}", ret);
+                error!("Error when verifying signature: {:#010X}", ret);
             },
         )?;
         VerifiedTicket::try_from(Context::ffi_data_to_owned(validation_ptr))
@@ -63,7 +63,7 @@ impl Context {
                 )
             },
             |ret| {
-                error!("Error when signing: {}", ret);
+                error!("Error when signing: {:#010X}", ret);
             },
         )?;
         Signature::try_from(Context::ffi_data_to_owned(signature_ptr))
