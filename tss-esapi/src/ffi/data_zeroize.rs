@@ -101,7 +101,6 @@ implement_ffi_data_zeroizer_trait_for_buffer_type!(TPM2B_IV);
 implement_ffi_data_zeroizer_trait_for_buffer_type!(TPM2B_MAX_BUFFER);
 implement_ffi_data_zeroizer_trait_for_buffer_type!(TPM2B_MAX_NV_BUFFER);
 implement_ffi_data_zeroizer_trait_for_buffer_type!(TPM2B_PRIVATE);
-//implement_ffi_data_zeroizer_trait_for_buffer_type!(TPM2B_PUBLIC);
 implement_ffi_data_zeroizer_trait_for_buffer_type!(TPM2B_PRIVATE_KEY_RSA);
 implement_ffi_data_zeroizer_trait_for_buffer_type!(TPM2B_PRIVATE_VENDOR_SPECIFIC);
 implement_ffi_data_zeroizer_trait_for_buffer_type!(TPM2B_PUBLIC_KEY_RSA);
