@@ -552,7 +552,7 @@ impl Context {
                     self.optional_session_1(),
                     self.optional_session_2(),
                     self.optional_session_3(),
-                    if written_set { 1 } else { 0 },
+                    written_set.into(),
                 )
             },
             |ret| {
