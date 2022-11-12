@@ -110,3 +110,6 @@ pub use error::{Error, Result, ReturnCode, WrapperErrorKind};
 pub use tcti_ldr::TctiNameConf;
 // To replace painlessly the old Tcti structure, should maybe be deprecated at some point.
 pub use tcti_ldr::TctiNameConf as Tcti;
+
+// Internal modules
+pub(crate) mod ffi;
