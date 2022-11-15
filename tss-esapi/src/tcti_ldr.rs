@@ -177,21 +177,25 @@ impl TryFrom<TctiNameConf> for CString {
         };
 
         let tcti_conf = match tcti {
-            TctiNameConf::Mssim(config) => {
-                if let ServerAddress::Hostname(name) = &config.host {
+            TctiNameConf::Mssim(NetworkTPMConfig::Tcp { host, port }) => {
+                if let ServerAddress::Hostname(name) = &host {
                     if !hostname_validator::is_valid(name) {
                         return Err(Error::WrapperError(WrapperErrorKind::InvalidParam));
                     }
                 }
-                format!("host={},port={}", config.host, config.port)
+                format!("host={},port={}", host, port)
             }
-            TctiNameConf::Swtpm(config) => {
-                if let ServerAddress::Hostname(name) = &config.host {
+            TctiNameConf::Swtpm(NetworkTPMConfig::Tcp { host, port }) => {
+                if let ServerAddress::Hostname(name) = &host {
                     if !hostname_validator::is_valid(name) {
                         return Err(Error::WrapperError(WrapperErrorKind::InvalidParam));
                     }
                 }
-                format!("host={},port={}", config.host, config.port)
+                format!("host={},port={}", host, port)
+            }
+            TctiNameConf::Mssim(NetworkTPMConfig::Unix { path })
+            | TctiNameConf::Swtpm(NetworkTPMConfig::Unix { path }) => {
+                format!("path={}", path)
             }
             TctiNameConf::Device(DeviceConfig { path }) => path
                 .to_str()
@@ -252,7 +256,7 @@ fn validate_from_str_tcti() {
     let tcti = TctiNameConf::from_str("mssim:port=1234,host=168.0.0.1").unwrap();
     assert_eq!(
         tcti,
-        TctiNameConf::Mssim(NetworkTPMConfig {
+        TctiNameConf::Mssim(NetworkTPMConfig::Tcp {
             port: 1234,
             host: ServerAddress::Ip(IpAddr::V4(std::net::Ipv4Addr::new(168, 0, 0, 1)))
         })
@@ -261,16 +265,24 @@ fn validate_from_str_tcti() {
     let tcti = TctiNameConf::from_str("mssim").unwrap();
     assert_eq!(
         tcti,
-        TctiNameConf::Mssim(NetworkTPMConfig {
+        TctiNameConf::Mssim(NetworkTPMConfig::Tcp {
             port: DEFAULT_SERVER_PORT,
             host: Default::default()
+        })
+    );
+
+    let tcti = TctiNameConf::from_str("mssim:path=/foo/bar").unwrap();
+    assert_eq!(
+        tcti,
+        TctiNameConf::Mssim(NetworkTPMConfig::Unix {
+            path: "/foo/bar".to_string(),
         })
     );
 
     let tcti = TctiNameConf::from_str("swtpm:port=1234,host=168.0.0.1").unwrap();
     assert_eq!(
         tcti,
-        TctiNameConf::Swtpm(NetworkTPMConfig {
+        TctiNameConf::Swtpm(NetworkTPMConfig::Tcp {
             port: 1234,
             host: ServerAddress::Ip(IpAddr::V4(std::net::Ipv4Addr::new(168, 0, 0, 1)))
         })
@@ -279,9 +291,17 @@ fn validate_from_str_tcti() {
     let tcti = TctiNameConf::from_str("swtpm").unwrap();
     assert_eq!(
         tcti,
-        TctiNameConf::Swtpm(NetworkTPMConfig {
+        TctiNameConf::Swtpm(NetworkTPMConfig::Tcp {
             port: DEFAULT_SERVER_PORT,
             host: Default::default()
+        })
+    );
+
+    let tcti = TctiNameConf::from_str("swtpm:path=/foo/bar").unwrap();
+    assert_eq!(
+        tcti,
+        TctiNameConf::Swtpm(NetworkTPMConfig::Unix {
+            path: "/foo/bar".to_string(),
         })
     );
 
@@ -356,22 +376,27 @@ fn validate_from_str_device_config() {
 ///
 /// The default configuration will point to `localhost:2321`
 #[derive(Clone, Debug, PartialEq, Eq)]
-pub struct NetworkTPMConfig {
-    /// Address of the server to connect to
-    ///
-    /// Defaults to `localhost`
-    host: ServerAddress,
-    /// Port used by the server at the address given in `host`
-    ///
-    /// Defaults to `2321`
-    port: u16,
+pub enum NetworkTPMConfig {
+    /// Connects to tpm over TCP
+    Tcp {
+        /// Address of the server to connect to
+        ///
+        /// Defaults to `localhost`
+        host: ServerAddress,
+        /// Port used by the server at the address given in `host`
+        ///
+        /// Defaults to `2321`
+        port: u16,
+    },
+    /// Connects to tpm over Unix socket
+    Unix { path: String },
 }
 
 const DEFAULT_SERVER_PORT: u16 = 2321;
 
 impl Default for NetworkTPMConfig {
     fn default() -> Self {
-        NetworkTPMConfig {
+        NetworkTPMConfig::Tcp {
             host: Default::default(),
             port: DEFAULT_SERVER_PORT,
         }
@@ -385,6 +410,17 @@ impl FromStr for NetworkTPMConfig {
         if config_str.is_empty() {
             return Ok(Default::default());
         }
+        let path_pattern = Regex::new(r"(,|^)path=(.*?)(,|$)").unwrap(); // should not fail
+        if let Some(path) = path_pattern
+            .captures(config_str)
+            .and_then(|c| c.get(2))
+            .map(|m| m.as_str())
+        {
+            return Ok(NetworkTPMConfig::Unix {
+                path: path.to_string(),
+            });
+        }
+
         let host_pattern = Regex::new(r"(,|^)host=(.*?)(,|$)").unwrap(); // should not fail
         let host = host_pattern
             .captures(config_str)
@@ -400,7 +436,8 @@ impl FromStr for NetworkTPMConfig {
                     u16::from_str(captures.get(2).map_or("", |m| m.as_str()))
                         .or(Err(Error::WrapperError(WrapperErrorKind::InvalidParam)))
                 })?;
-        Ok(NetworkTPMConfig { host, port })
+
+        Ok(NetworkTPMConfig::Tcp { host, port })
     }
 }
 
@@ -414,34 +451,56 @@ fn validate_from_str_networktpm_config() {
 
     let config = NetworkTPMConfig::from_str("host=127.0.0.1,random=value").unwrap();
     assert_eq!(
-        config.host,
-        ServerAddress::Ip(IpAddr::V4(std::net::Ipv4Addr::new(127, 0, 0, 1)))
+        config,
+        NetworkTPMConfig::Tcp {
+            host: ServerAddress::Ip(IpAddr::V4(std::net::Ipv4Addr::new(127, 0, 0, 1))),
+            port: DEFAULT_SERVER_PORT
+        }
     );
-    assert_eq!(config.port, DEFAULT_SERVER_PORT);
 
     let config = NetworkTPMConfig::from_str("port=1234,random=value").unwrap();
-    assert_eq!(config.host, Default::default());
-    assert_eq!(config.port, 1234);
+    assert_eq!(
+        config,
+        NetworkTPMConfig::Tcp {
+            host: Default::default(),
+            port: 1234
+        }
+    );
 
     let config = NetworkTPMConfig::from_str("host=localhost,port=1234").unwrap();
     assert_eq!(
-        config.host,
-        ServerAddress::Hostname(String::from("localhost"))
+        config,
+        NetworkTPMConfig::Tcp {
+            host: ServerAddress::Hostname(String::from("localhost")),
+            port: 1234
+        }
     );
-    assert_eq!(config.port, 1234);
 
     let config = NetworkTPMConfig::from_str("port=1234,host=localhost").unwrap();
-    assert_eq!(config.host, "localhost".parse::<ServerAddress>().unwrap());
-    assert_eq!(config.port, 1234);
+    assert_eq!(
+        config,
+        NetworkTPMConfig::Tcp {
+            host: ServerAddress::Hostname(String::from("localhost")),
+            port: 1234
+        }
+    );
 
     let config = NetworkTPMConfig::from_str("port=1234,host=localhost,random=value").unwrap();
-    assert_eq!(config.host, "localhost".parse::<ServerAddress>().unwrap());
-    assert_eq!(config.port, 1234);
+    assert_eq!(
+        config,
+        NetworkTPMConfig::Tcp {
+            host: "localhost".parse::<ServerAddress>().unwrap(),
+            port: 1234
+        }
+    );
 
     let config = NetworkTPMConfig::from_str("host=1234.1234.1234.1234.12445.111").unwrap();
     assert_eq!(
-        config.host,
-        ServerAddress::Hostname(String::from("1234.1234.1234.1234.12445.111"))
+        config,
+        NetworkTPMConfig::Tcp {
+            host: ServerAddress::Hostname(String::from("1234.1234.1234.1234.12445.111")),
+            port: DEFAULT_SERVER_PORT
+        }
     );
 
     let _ = NetworkTPMConfig::from_str("port=abdef").unwrap_err();
