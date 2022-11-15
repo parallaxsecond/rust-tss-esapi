@@ -23,7 +23,7 @@ jobs:
       - uses: actions/checkout@v2
       - name: Check formatting
         run: cargo fmt --all -- --check
-  # Check that it builds with the Minimum Supported Rust Version      
+  # Check that it builds with the Minimum Supported Rust Version
   msrv:
     name: Check minimum supported rust version (MSRV)
     runs-on: ubuntu-latest
@@ -32,7 +32,7 @@ jobs:
       - name: Build the container
         run: docker build -t ubuntucontainer tss-esapi/tests/ --file tss-esapi/tests/Dockerfile-ubuntu
       - name: Run the container
-        run: docker run -v $(pwd):/tmp/rust-tss-esapi -w /tmp/rust-tss-esapi/tss-esapi --env RUST_TOOLCHAIN_VERSION=1.53.0 ubuntucontainer /tmp/rust-tss-esapi/tss-esapi/tests/all-ubuntu.sh
+        run: docker run -v $(pwd):/tmp/rust-tss-esapi -w /tmp/rust-tss-esapi/tss-esapi --env RUST_TOOLCHAIN_VERSION=1.56.0 ubuntucontainer /tmp/rust-tss-esapi/tss-esapi/tests/all-ubuntu.sh
   # All in one job as I think it is a big overhead to build and run the Docker
   # container?
   tests-ubuntu:
