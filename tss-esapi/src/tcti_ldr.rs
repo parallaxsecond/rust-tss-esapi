@@ -134,11 +134,11 @@ pub enum TctiNameConf {
     /// Connect to a TPM (simulator) available as a network device via the MSSIM protocol
     ///
     /// For more information about configuration, see [this page](https://www.mankier.com/3/Tss2_Tcti_Mssim_Init)
-    Mssim(TPMSimulatorConfig),
+    Mssim(TpmSimulatorConfig),
     /// Connect to a TPM (simulator) available as a network device via the SWTPM protocol
     ///
     /// For more information about configuration, see [this page](https://www.mankier.com/3/Tss2_Tcti_Mssim_Init)
-    Swtpm(TPMSimulatorConfig),
+    Swtpm(TpmSimulatorConfig),
     /// Connect to a TPM through an Access Broker/Resource Manager daemon
     ///
     /// For more information about configuration, see [this page](https://www.mankier.com/3/Tss2_Tcti_Tabrmd_Init)
@@ -177,7 +177,7 @@ impl TryFrom<TctiNameConf> for CString {
         };
 
         let tcti_conf = match tcti {
-            TctiNameConf::Mssim(TPMSimulatorConfig::Tcp { host, port }) => {
+            TctiNameConf::Mssim(TpmSimulatorConfig::Tcp { host, port }) => {
                 if let ServerAddress::Hostname(name) = &host {
                     if !hostname_validator::is_valid(name) {
                         return Err(Error::WrapperError(WrapperErrorKind::InvalidParam));
@@ -185,7 +185,7 @@ impl TryFrom<TctiNameConf> for CString {
                 }
                 format!("host={},port={}", host, port)
             }
-            TctiNameConf::Swtpm(TPMSimulatorConfig::Tcp { host, port }) => {
+            TctiNameConf::Swtpm(TpmSimulatorConfig::Tcp { host, port }) => {
                 if let ServerAddress::Hostname(name) = &host {
                     if !hostname_validator::is_valid(name) {
                         return Err(Error::WrapperError(WrapperErrorKind::InvalidParam));
@@ -194,8 +194,8 @@ impl TryFrom<TctiNameConf> for CString {
                 format!("host={},port={}", host, port)
             }
             #[cfg(has_simulator_unix_socket)]
-            TctiNameConf::Mssim(TPMSimulatorConfig::Unix { path })
-            | TctiNameConf::Swtpm(TPMSimulatorConfig::Unix { path }) => {
+            TctiNameConf::Mssim(TpmSimulatorConfig::Unix { path })
+            | TctiNameConf::Swtpm(TpmSimulatorConfig::Unix { path }) => {
                 format!("path={}", path)
             }
             TctiNameConf::Device(DeviceConfig { path }) => path
@@ -229,14 +229,14 @@ impl FromStr for TctiNameConf {
 
         let mssim_pattern = Regex::new(r"^mssim(:(.*))?$").unwrap(); //should not fail
         if let Some(captures) = mssim_pattern.captures(config_str) {
-            return Ok(TctiNameConf::Mssim(TPMSimulatorConfig::from_str(
+            return Ok(TctiNameConf::Mssim(TpmSimulatorConfig::from_str(
                 captures.get(2).map_or("", |m| m.as_str()),
             )?));
         }
 
         let swtpm_pattern = Regex::new(r"^swtpm(:(.*))?$").unwrap(); //should not fail
         if let Some(captures) = swtpm_pattern.captures(config_str) {
-            return Ok(TctiNameConf::Swtpm(TPMSimulatorConfig::from_str(
+            return Ok(TctiNameConf::Swtpm(TpmSimulatorConfig::from_str(
                 captures.get(2).map_or("", |m| m.as_str()),
             )?));
         }
@@ -257,7 +257,7 @@ fn validate_from_str_tcti() {
     let tcti = TctiNameConf::from_str("mssim:port=1234,host=168.0.0.1").unwrap();
     assert_eq!(
         tcti,
-        TctiNameConf::Mssim(TPMSimulatorConfig::Tcp {
+        TctiNameConf::Mssim(TpmSimulatorConfig::Tcp {
             port: 1234,
             host: ServerAddress::Ip(IpAddr::V4(std::net::Ipv4Addr::new(168, 0, 0, 1)))
         })
@@ -266,8 +266,8 @@ fn validate_from_str_tcti() {
     let tcti = TctiNameConf::from_str("mssim").unwrap();
     assert_eq!(
         tcti,
-        TctiNameConf::Mssim(TPMSimulatorConfig::Tcp {
-            port: TPMSimulatorConfig::DEFAULT_PORT_CONFIG,
+        TctiNameConf::Mssim(TpmSimulatorConfig::Tcp {
+            port: TpmSimulatorConfig::DEFAULT_PORT_CONFIG,
             host: Default::default()
         })
     );
@@ -275,7 +275,7 @@ fn validate_from_str_tcti() {
     let tcti = TctiNameConf::from_str("mssim:path=/foo/bar").unwrap();
     assert_eq!(
         tcti,
-        TctiNameConf::Mssim(TPMSimulatorConfig::Unix {
+        TctiNameConf::Mssim(TpmSimulatorConfig::Unix {
             path: "/foo/bar".to_string(),
         })
     );
@@ -283,7 +283,7 @@ fn validate_from_str_tcti() {
     let tcti = TctiNameConf::from_str("swtpm:port=1234,host=168.0.0.1").unwrap();
     assert_eq!(
         tcti,
-        TctiNameConf::Swtpm(TPMSimulatorConfig::Tcp {
+        TctiNameConf::Swtpm(TpmSimulatorConfig::Tcp {
             port: 1234,
             host: ServerAddress::Ip(IpAddr::V4(std::net::Ipv4Addr::new(168, 0, 0, 1)))
         })
@@ -292,8 +292,8 @@ fn validate_from_str_tcti() {
     let tcti = TctiNameConf::from_str("swtpm").unwrap();
     assert_eq!(
         tcti,
-        TctiNameConf::Swtpm(TPMSimulatorConfig::Tcp {
-            port: TPMSimulatorConfig::DEFAULT_PORT_CONFIG,
+        TctiNameConf::Swtpm(TpmSimulatorConfig::Tcp {
+            port: TpmSimulatorConfig::DEFAULT_PORT_CONFIG,
             host: Default::default()
         })
     );
@@ -301,7 +301,7 @@ fn validate_from_str_tcti() {
     let tcti = TctiNameConf::from_str("swtpm:path=/foo/bar").unwrap();
     assert_eq!(
         tcti,
-        TctiNameConf::Swtpm(TPMSimulatorConfig::Unix {
+        TctiNameConf::Swtpm(TpmSimulatorConfig::Unix {
             path: "/foo/bar".to_string(),
         })
     );
@@ -377,7 +377,7 @@ fn validate_from_str_device_config() {
 ///
 /// The default configuration will point to `localhost:2321`
 #[derive(Clone, Debug, PartialEq, Eq)]
-pub enum TPMSimulatorConfig {
+pub enum TpmSimulatorConfig {
     /// Connects to tpm over TCP
     Tcp {
         /// Address of the server to connect to
@@ -394,20 +394,20 @@ pub enum TPMSimulatorConfig {
     Unix { path: String },
 }
 
-impl TPMSimulatorConfig {
+impl TpmSimulatorConfig {
     const DEFAULT_PORT_CONFIG: u16 = 2321;
 }
 
-impl Default for TPMSimulatorConfig {
+impl Default for TpmSimulatorConfig {
     fn default() -> Self {
-        TPMSimulatorConfig::Tcp {
+        TpmSimulatorConfig::Tcp {
             host: Default::default(),
-            port: TPMSimulatorConfig::DEFAULT_PORT_CONFIG,
+            port: TpmSimulatorConfig::DEFAULT_PORT_CONFIG,
         }
     }
 }
 
-impl FromStr for TPMSimulatorConfig {
+impl FromStr for TpmSimulatorConfig {
     type Err = Error;
 
     fn from_str(config_str: &str) -> Result<Self> {
@@ -423,7 +423,7 @@ impl FromStr for TPMSimulatorConfig {
                 .and_then(|c| c.get(2))
                 .map(|m| m.as_str())
             {
-                return Ok(TPMSimulatorConfig::Unix {
+                return Ok(TpmSimulatorConfig::Unix {
                     path: path.to_string(),
                 });
             }
@@ -438,85 +438,85 @@ impl FromStr for TPMSimulatorConfig {
 
         let port_pattern = Regex::new(r"(,|^)port=(.*?)(,|$)").unwrap(); // should not fail
         let port = port_pattern.captures(config_str).map_or(
-            Ok(TPMSimulatorConfig::DEFAULT_PORT_CONFIG),
+            Ok(TpmSimulatorConfig::DEFAULT_PORT_CONFIG),
             |captures| {
                 u16::from_str(captures.get(2).map_or("", |m| m.as_str()))
                     .or(Err(Error::WrapperError(WrapperErrorKind::InvalidParam)))
             },
         )?;
 
-        Ok(TPMSimulatorConfig::Tcp { host, port })
+        Ok(TpmSimulatorConfig::Tcp { host, port })
     }
 }
 
 #[test]
 fn validate_from_str_networktpm_config() {
-    let config = TPMSimulatorConfig::from_str("").unwrap();
+    let config = TpmSimulatorConfig::from_str("").unwrap();
     assert_eq!(config, Default::default());
 
-    let config = TPMSimulatorConfig::from_str("fjshd89943r=joishdf894u9r,sio0983=9u98jj").unwrap();
+    let config = TpmSimulatorConfig::from_str("fjshd89943r=joishdf894u9r,sio0983=9u98jj").unwrap();
     assert_eq!(config, Default::default());
 
-    let config = TPMSimulatorConfig::from_str("host=127.0.0.1,random=value").unwrap();
+    let config = TpmSimulatorConfig::from_str("host=127.0.0.1,random=value").unwrap();
     assert_eq!(
         config,
-        TPMSimulatorConfig::Tcp {
+        TpmSimulatorConfig::Tcp {
             host: ServerAddress::Ip(IpAddr::V4(std::net::Ipv4Addr::new(127, 0, 0, 1))),
-            port: TPMSimulatorConfig::DEFAULT_PORT_CONFIG
+            port: TpmSimulatorConfig::DEFAULT_PORT_CONFIG
         }
     );
 
-    let config = TPMSimulatorConfig::from_str("port=1234,random=value").unwrap();
+    let config = TpmSimulatorConfig::from_str("port=1234,random=value").unwrap();
     assert_eq!(
         config,
-        TPMSimulatorConfig::Tcp {
+        TpmSimulatorConfig::Tcp {
             host: Default::default(),
             port: 1234
         }
     );
 
-    let config = TPMSimulatorConfig::from_str("host=localhost,port=1234").unwrap();
+    let config = TpmSimulatorConfig::from_str("host=localhost,port=1234").unwrap();
     assert_eq!(
         config,
-        TPMSimulatorConfig::Tcp {
+        TpmSimulatorConfig::Tcp {
             host: ServerAddress::Hostname(String::from("localhost")),
             port: 1234
         }
     );
 
-    let config = TPMSimulatorConfig::from_str("port=1234,host=localhost").unwrap();
+    let config = TpmSimulatorConfig::from_str("port=1234,host=localhost").unwrap();
     assert_eq!(
         config,
-        TPMSimulatorConfig::Tcp {
+        TpmSimulatorConfig::Tcp {
             host: ServerAddress::Hostname(String::from("localhost")),
             port: 1234
         }
     );
 
-    let config = TPMSimulatorConfig::from_str("port=1234,host=localhost,random=value").unwrap();
+    let config = TpmSimulatorConfig::from_str("port=1234,host=localhost,random=value").unwrap();
     assert_eq!(
         config,
-        TPMSimulatorConfig::Tcp {
+        TpmSimulatorConfig::Tcp {
             host: "localhost".parse::<ServerAddress>().unwrap(),
             port: 1234
         }
     );
 
-    let config = TPMSimulatorConfig::from_str("host=1234.1234.1234.1234.12445.111").unwrap();
+    let config = TpmSimulatorConfig::from_str("host=1234.1234.1234.1234.12445.111").unwrap();
     assert_eq!(
         config,
-        TPMSimulatorConfig::Tcp {
+        TpmSimulatorConfig::Tcp {
             host: ServerAddress::Hostname(String::from("1234.1234.1234.1234.12445.111")),
-            port: TPMSimulatorConfig::DEFAULT_PORT_CONFIG
+            port: TpmSimulatorConfig::DEFAULT_PORT_CONFIG
         }
     );
 
-    let _ = TPMSimulatorConfig::from_str("port=abdef").unwrap_err();
-    let _ = TPMSimulatorConfig::from_str("host=-timey-wimey").unwrap_err();
-    let _ = TPMSimulatorConfig::from_str("host=abc@def").unwrap_err();
-    let _ = TPMSimulatorConfig::from_str("host=").unwrap_err();
-    let _ = TPMSimulatorConfig::from_str("port=").unwrap_err();
-    let _ = TPMSimulatorConfig::from_str("port=,host=,yas").unwrap_err();
+    let _ = TpmSimulatorConfig::from_str("port=abdef").unwrap_err();
+    let _ = TpmSimulatorConfig::from_str("host=-timey-wimey").unwrap_err();
+    let _ = TpmSimulatorConfig::from_str("host=abc@def").unwrap_err();
+    let _ = TpmSimulatorConfig::from_str("host=").unwrap_err();
+    let _ = TpmSimulatorConfig::from_str("port=").unwrap_err();
+    let _ = TpmSimulatorConfig::from_str("port=,host=,yas").unwrap_err();
 }
 
 /// Address of a TPM server
