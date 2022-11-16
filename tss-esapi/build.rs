@@ -12,6 +12,11 @@ fn main() {
     let supported_tss_version =
         VersionReq::parse("<4.0.0, >=2.3.3").expect("Failed to parse supported TSS version");
 
+    let has_simulator_unix_socket = VersionReq::parse(">=3.2.0").unwrap();
+    if has_simulator_unix_socket.matches(&tss_version) {
+        println!("cargo:rustc-cfg=has_simulator_unix_socket")
+    }
+
     let hierarchy_is_esys_tr_req = VersionReq::parse(">=3.0.0").unwrap();
     if hierarchy_is_esys_tr_req.matches(&tss_version) {
         println!("cargo:rustc-cfg=hierarchy_is_esys_tr")
