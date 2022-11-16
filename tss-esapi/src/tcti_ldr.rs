@@ -272,13 +272,16 @@ fn validate_from_str_tcti() {
         })
     );
 
-    let tcti = TctiNameConf::from_str("mssim:path=/foo/bar").unwrap();
-    assert_eq!(
-        tcti,
-        TctiNameConf::Mssim(TpmSimulatorConfig::Unix {
-            path: "/foo/bar".to_string(),
-        })
-    );
+    #[cfg(has_simulator_unix_socket)]
+    {
+        let tcti = TctiNameConf::from_str("mssim:path=/foo/bar").unwrap();
+        assert_eq!(
+            tcti,
+            TctiNameConf::Mssim(TpmSimulatorConfig::Unix {
+                path: "/foo/bar".to_string(),
+            })
+        );
+    }
 
     let tcti = TctiNameConf::from_str("swtpm:port=1234,host=168.0.0.1").unwrap();
     assert_eq!(
@@ -298,13 +301,16 @@ fn validate_from_str_tcti() {
         })
     );
 
-    let tcti = TctiNameConf::from_str("swtpm:path=/foo/bar").unwrap();
-    assert_eq!(
-        tcti,
-        TctiNameConf::Swtpm(TpmSimulatorConfig::Unix {
-            path: "/foo/bar".to_string(),
-        })
-    );
+    #[cfg(has_simulator_unix_socket)]
+    {
+        let tcti = TctiNameConf::from_str("swtpm:path=/foo/bar").unwrap();
+        assert_eq!(
+            tcti,
+            TctiNameConf::Swtpm(TpmSimulatorConfig::Unix {
+                path: "/foo/bar".to_string(),
+            })
+        );
+    }
 
     let tcti = TctiNameConf::from_str("device:/try/this/path").unwrap();
     assert_eq!(
