@@ -379,9 +379,14 @@ fn validate_from_str_device_config() {
     assert_eq!(config.path, PathBuf::from("/dev/tpm0"));
 }
 
-/// Configuration for an Mssim TCTI context
+/// Configuration for an Mssim or Swtpm TCTI context
 ///
 /// The default configuration will point to `localhost:2321`
+///
+/// Examples:
+///  - Use of a TCP connection: `swtpm:host=localhost,port=2321`
+///  - Use of a unix socket: `swtpm:path=/path/to/sock`
+///    Available on tpm2-tss >= 3.2.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum TpmSimulatorConfig {
     /// Connects to tpm over TCP
