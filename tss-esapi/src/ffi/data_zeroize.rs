@@ -369,3 +369,76 @@ implement_ffi_data_zeroizer_trait_for_ticket_type!(TPMT_TK_CREATION);
 implement_ffi_data_zeroizer_trait_for_ticket_type!(TPMT_TK_VERIFIED);
 implement_ffi_data_zeroizer_trait_for_ticket_type!(TPMT_TK_AUTH);
 implement_ffi_data_zeroizer_trait_for_ticket_type!(TPMT_TK_HASHCHECK);
+
+///////////////////////////////////////////////////////////////////////////
+/// UNIT TESTS FOR FFI DATA ZEROIZE
+///////////////////////////////////////////////////////////////////////////
+macro_rules! implement_zeroize_test_for_named_field_structured_buffer_type {
+    ($tss_type:ident, $buffer_field_name:ident, $fn_name:ident) => {
+        #[test]
+        fn $fn_name() {
+            const fn fill_with_ones<const SIZE: usize>() -> [u8; SIZE] {
+                [1u8; SIZE]
+            }
+
+            let expected: $tss_type = unsafe { std::mem::zeroed() };
+            let mut actual = $tss_type {
+                size: 10,
+                $buffer_field_name: fill_with_ones(),
+            };
+            actual.ffi_data_zeroize();
+            assert_eq!(expected.size, actual.size);
+            assert_eq!(expected.$buffer_field_name, actual.$buffer_field_name);
+        }
+    };
+}
+
+macro_rules! implement_zeroize_test_buffer_type {
+    ($tss_type:ident, $fn_name:ident) => {
+        implement_zeroize_test_for_named_field_structured_buffer_type!($tss_type, buffer, $fn_name);
+    };
+}
+
+implement_zeroize_test_buffer_type!(TPM2B_DIGEST, test_tpm2b_digest_ffi_data_zeroize);
+implement_zeroize_test_buffer_type!(TPM2B_DATA, test_tpm2b_data_ffi_data_zeroize);
+implement_zeroize_test_buffer_type!(TPM2B_ECC_PARAMETER, test_tpm2b_parameter_ffi_data_zeroize);
+implement_zeroize_test_for_named_field_structured_buffer_type!(
+    TPM2B_ENCRYPTED_SECRET,
+    secret,
+    test_tpm2b_encrypted_secret_ffi_data_zeroize
+);
+implement_zeroize_test_for_named_field_structured_buffer_type!(
+    TPM2B_ID_OBJECT,
+    credential,
+    test_tpm2b_id_object_ffi_data_zeroize
+);
+implement_zeroize_test_buffer_type!(TPM2B_IV, test_tpm2b_iv_ffi_data_zeroize);
+implement_zeroize_test_buffer_type!(TPM2B_MAX_BUFFER, test_tpm2b_max_buffer_ffi_data_zeroize);
+implement_zeroize_test_buffer_type!(
+    TPM2B_MAX_NV_BUFFER,
+    test_tpm2b_max_nv_buffer_ffi_data_zeroize
+);
+implement_zeroize_test_buffer_type!(TPM2B_PRIVATE, test_tpm2b_private_ffi_data_zeroize);
+implement_zeroize_test_buffer_type!(
+    TPM2B_PRIVATE_KEY_RSA,
+    test_tpm2b_private_key_rsa_ffi_data_zeroize
+);
+implement_zeroize_test_buffer_type!(
+    TPM2B_PRIVATE_VENDOR_SPECIFIC,
+    test_tpm2b_private_vendor_specific_ffi_data_zeroize
+);
+implement_zeroize_test_buffer_type!(
+    TPM2B_PUBLIC_KEY_RSA,
+    test_tpm2b_public_key_rsa_ffi_data_zeroize
+);
+implement_zeroize_test_buffer_type!(
+    TPM2B_SENSITIVE_DATA,
+    test_tpm2b_sensitive_data_ffi_data_zeroize
+);
+implement_zeroize_test_buffer_type!(TPM2B_SYM_KEY, test_tpm2b_sym_key_ffi_data_zeroize);
+
+implement_zeroize_test_for_named_field_structured_buffer_type!(
+    TPM2B_NAME,
+    name,
+    test_tpm2b_name_ffi_data_zeroize
+);
