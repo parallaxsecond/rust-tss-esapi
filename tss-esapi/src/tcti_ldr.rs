@@ -193,7 +193,6 @@ impl TryFrom<TctiNameConf> for CString {
                 }
                 format!("host={},port={}", host, port)
             }
-            #[cfg(has_simulator_unix_socket)]
             TctiNameConf::Mssim(TpmSimulatorConfig::Unix { path })
             | TctiNameConf::Swtpm(TpmSimulatorConfig::Unix { path }) => {
                 format!("path={}", path)
@@ -272,16 +271,13 @@ fn validate_from_str_tcti() {
         })
     );
 
-    #[cfg(has_simulator_unix_socket)]
-    {
-        let tcti = TctiNameConf::from_str("mssim:path=/foo/bar").unwrap();
-        assert_eq!(
-            tcti,
-            TctiNameConf::Mssim(TpmSimulatorConfig::Unix {
-                path: "/foo/bar".to_string(),
-            })
-        );
-    }
+    let tcti = TctiNameConf::from_str("mssim:path=/foo/bar").unwrap();
+    assert_eq!(
+        tcti,
+        TctiNameConf::Mssim(TpmSimulatorConfig::Unix {
+            path: "/foo/bar".to_string(),
+        })
+    );
 
     let tcti = TctiNameConf::from_str("swtpm:port=1234,host=168.0.0.1").unwrap();
     assert_eq!(
@@ -301,16 +297,13 @@ fn validate_from_str_tcti() {
         })
     );
 
-    #[cfg(has_simulator_unix_socket)]
-    {
-        let tcti = TctiNameConf::from_str("swtpm:path=/foo/bar").unwrap();
-        assert_eq!(
-            tcti,
-            TctiNameConf::Swtpm(TpmSimulatorConfig::Unix {
-                path: "/foo/bar".to_string(),
-            })
-        );
-    }
+    let tcti = TctiNameConf::from_str("swtpm:path=/foo/bar").unwrap();
+    assert_eq!(
+        tcti,
+        TctiNameConf::Swtpm(TpmSimulatorConfig::Unix {
+            path: "/foo/bar".to_string(),
+        })
+    );
 
     let tcti = TctiNameConf::from_str("device:/try/this/path").unwrap();
     assert_eq!(
@@ -400,8 +393,11 @@ pub enum TpmSimulatorConfig {
         /// Defaults to `2321`
         port: u16,
     },
-    #[cfg(has_simulator_unix_socket)]
     /// Connects to tpm over Unix socket
+    ///
+    /// If used with a library without unix socket support (< 3.2.0),
+    /// a [`Error::TssError`] error will be returned.
+    /// `base_error()` of which will be a `BaseError::BadValue`.
     Unix { path: String },
 }
 
@@ -426,18 +422,15 @@ impl FromStr for TpmSimulatorConfig {
             return Ok(Default::default());
         }
 
-        #[cfg(has_simulator_unix_socket)]
+        let path_pattern = Regex::new(r"(,|^)path=(.*?)(,|$)").unwrap(); // should not fail
+        if let Some(path) = path_pattern
+            .captures(config_str)
+            .and_then(|c| c.get(2))
+            .map(|m| m.as_str())
         {
-            let path_pattern = Regex::new(r"(,|^)path=(.*?)(,|$)").unwrap(); // should not fail
-            if let Some(path) = path_pattern
-                .captures(config_str)
-                .and_then(|c| c.get(2))
-                .map(|m| m.as_str())
-            {
-                return Ok(TpmSimulatorConfig::Unix {
-                    path: path.to_string(),
-                });
-            }
+            return Ok(TpmSimulatorConfig::Unix {
+                path: path.to_string(),
+            });
         }
 
         let host_pattern = Regex::new(r"(,|^)host=(.*?)(,|$)").unwrap(); // should not fail
