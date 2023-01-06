@@ -19,6 +19,21 @@ use crate::{
 };
 use std::convert::TryFrom;
 use zeroize::Zeroize;
+// /////////////////////////////////////////////////////////////////////////
+// This module provides a the internal FfiDataZeroize trait
+// and implementations of this trait for several of the
+// generated TPM types that is used in TSS. In order to be
+// able to zeroize sensitive information that may be stored
+// in these types when using them in calls to the TSS APIs.
+// To zeroize sensitive data when no longer needed is considered
+// good cryptographic hygiene and reduces the chances of sensitive data
+// being leaked.
+//
+// This has been implemented as trait in order to have a consistent way
+// to use the zeroize functionality on the TSS FFI types and to be able
+// to use it in generic functions that deal with taking ownership of data
+// that has been allocated by TSS in order to zeroize the source memory.
+// /////////////////////////////////////////////////////////////////////////
 
 /// A trait for zeroizing FFI data.
 pub(crate) trait FfiDataZeroize {
@@ -370,9 +385,12 @@ implement_ffi_data_zeroizer_trait_for_ticket_type!(TPMT_TK_VERIFIED);
 implement_ffi_data_zeroizer_trait_for_ticket_type!(TPMT_TK_AUTH);
 implement_ffi_data_zeroizer_trait_for_ticket_type!(TPMT_TK_HASHCHECK);
 
-///////////////////////////////////////////////////////////////////////////
-/// UNIT TESTS FOR FFI DATA ZEROIZE
-///////////////////////////////////////////////////////////////////////////
+// /////////////////////////////////////////////////////////////////////////
+// UNIT TESTS FOR FFI DATA ZEROIZE
+//
+// These unit tests needs to be here because the trait is internal to the crate
+// and can there for not be tested using integration tests.
+// /////////////////////////////////////////////////////////////////////////
 macro_rules! implement_zeroize_test_for_named_field_structured_buffer_type {
     ($tss_type:ident, $buffer_field_name:ident, $fn_name:ident) => {
         #[test]
