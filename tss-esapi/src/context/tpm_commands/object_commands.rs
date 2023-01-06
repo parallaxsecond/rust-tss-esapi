@@ -1,13 +1,15 @@
 // Copyright 2021 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
+mod create_command_input;
+mod create_command_output;
+
 use crate::{
     context::handle_manager::HandleDropAction,
     handles::{KeyHandle, ObjectHandle, TpmHandle},
     interface_types::resource_handles::Hierarchy,
     structures::{
-        Auth, CreateKeyResult, CreationData, CreationTicket, Data, Digest, EncryptedSecret,
-        IdObject, Name, PcrSelectionList, Private, Public, Sensitive, SensitiveCreate,
-        SensitiveData,
+        Auth, CreateKeyResult, Data, Digest, EncryptedSecret, IdObject, Name, PcrSelectionList,
+        Private, Public, Sensitive, SensitiveData,
     },
     tss2_esys::{
         Esys_ActivateCredential, Esys_Create, Esys_Load, Esys_LoadExternal, Esys_MakeCredential,
@@ -15,6 +17,8 @@ use crate::{
     },
     Context, Result, ReturnCode,
 };
+use create_command_input::CreateCommandInputHandler;
+use create_command_output::CreateCommandOutputHandler;
 use log::error;
 use std::convert::{TryFrom, TryInto};
 use std::ptr::{null, null_mut};
@@ -49,53 +53,42 @@ impl Context {
         outside_info: Option<Data>,
         creation_pcrs: Option<PcrSelectionList>,
     ) -> Result<CreateKeyResult> {
-        let sensitive_create = SensitiveCreate::new(
-            auth_value.unwrap_or_default(),
-            sensitive_data.unwrap_or_default(),
-        );
-        let creation_pcrs = PcrSelectionList::list_from_option(creation_pcrs);
+        let input_parameters = CreateCommandInputHandler::create(
+            parent_handle,
+            public,
+            auth_value,
+            sensitive_data,
+            outside_info,
+            creation_pcrs,
+        )?;
 
-        let mut out_public_ptr = null_mut();
-        let mut out_private_ptr = null_mut();
-        let mut creation_data_ptr = null_mut();
-        let mut creation_hash_ptr = null_mut();
-        let mut creation_ticket_ptr = null_mut();
+        let mut output_parameters = CreateCommandOutputHandler::new();
 
         ReturnCode::ensure_success(
             unsafe {
                 Esys_Create(
                     self.mut_context(),
-                    parent_handle.into(),
+                    input_parameters.ffi_in_parent_handle(),
                     self.optional_session_1(),
                     self.optional_session_2(),
                     self.optional_session_3(),
-                    &sensitive_create.try_into()?,
-                    &public.try_into()?,
-                    &outside_info.unwrap_or_default().into(),
-                    &creation_pcrs.into(),
-                    &mut out_private_ptr,
-                    &mut out_public_ptr,
-                    &mut creation_data_ptr,
-                    &mut creation_hash_ptr,
-                    &mut creation_ticket_ptr,
+                    input_parameters.ffi_in_sensitive(),
+                    input_parameters.ffi_in_public(),
+                    input_parameters.ffi_outside_info(),
+                    input_parameters.ffi_creation_pcr(),
+                    output_parameters.ffi_out_private_ptr(),
+                    output_parameters.ffi_out_public_ptr(),
+                    output_parameters.ffi_creation_data_ptr(),
+                    output_parameters.ffi_creation_hash_ptr(),
+                    output_parameters.ffi_creation_ticket_ptr(),
                 )
             },
             |ret| {
                 error!("Error in creating derived key: {:#010X}", ret);
             },
         )?;
-        let out_private_owned = Context::ffi_data_to_owned(out_private_ptr);
-        let out_public_owned = Context::ffi_data_to_owned(out_public_ptr);
-        let creation_data_owned = Context::ffi_data_to_owned(creation_data_ptr);
-        let creation_hash_owned = Context::ffi_data_to_owned(creation_hash_ptr);
-        let creation_ticket_owned = Context::ffi_data_to_owned(creation_ticket_ptr);
-        Ok(CreateKeyResult {
-            out_private: Private::try_from(out_private_owned)?,
-            out_public: Public::try_from(out_public_owned)?,
-            creation_data: CreationData::try_from(creation_data_owned)?,
-            creation_hash: Digest::try_from(creation_hash_owned)?,
-            creation_ticket: CreationTicket::try_from(creation_ticket_owned)?,
-        })
+
+        output_parameters.try_into()
     }
 
     /// Load a previously generated key back into the TPM and return its new handle.
