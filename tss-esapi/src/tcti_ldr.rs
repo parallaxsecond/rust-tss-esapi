@@ -206,7 +206,7 @@ impl TryFrom<TctiNameConf> for CString {
         if tcti_conf.is_empty() {
             CString::new(tcti_name).or(Err(Error::WrapperError(WrapperErrorKind::InvalidParam)))
         } else {
-            CString::new(format!("{}:{}", tcti_name, tcti_conf))
+            CString::new(format!("{tcti_name}:{tcti_conf}"))
                 .or(Err(Error::WrapperError(WrapperErrorKind::InvalidParam)))
         }
     }

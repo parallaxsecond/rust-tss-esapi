@@ -279,10 +279,10 @@ impl Context {
                 self.optional_session_3(),
                 &data.into(),
                 hashing_algorithm.into(),
-                if cfg!(tpm2_tss_version = "3") {
-                    ObjectHandle::from(hierarchy).into()
-                } else {
+                if cfg!(tpm2_tss_version = "2") {
                     TpmHandle::from(hierarchy).into()
+                } else {
+                    ObjectHandle::from(hierarchy).into()
                 },
                 &mut out_hash_ptr,
                 &mut validation_ptr,

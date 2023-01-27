@@ -153,10 +153,10 @@ impl Context {
                 self.optional_session_3(),
                 &private.try_into()?,
                 &public.try_into()?,
-                if cfg!(tpm2_tss_version = "3") {
-                    ObjectHandle::from(hierarchy).into()
-                } else {
+                if cfg!(tpm2_tss_version = "2") {
                     TpmHandle::from(hierarchy).into()
+                } else {
+                    ObjectHandle::from(hierarchy).into()
                 },
                 &mut object_handle,
             )
@@ -190,10 +190,10 @@ impl Context {
                 self.optional_session_3(),
                 null(),
                 &public.try_into()?,
-                if cfg!(tpm2_tss_version = "3") {
-                    ObjectHandle::from(hierarchy).into()
-                } else {
+                if cfg!(tpm2_tss_version = "2") {
                     TpmHandle::from(hierarchy).into()
+                } else {
+                    ObjectHandle::from(hierarchy).into()
                 },
                 &mut object_handle,
             )
