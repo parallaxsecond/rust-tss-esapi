@@ -96,13 +96,13 @@ pub fn generate_from_system(esapi_out: PathBuf) {
         .expect("Error converting OsString to String.");
 
     bindgen::Builder::default()
-        .clang_arg(format!("-I{}/tss2/", tss2_esys_include_path))
-        .clang_arg(format!("-I{}/tss2/", tss2_tctildr_include_path))
-        .clang_arg(format!("-I{}/tss2/", tss2_mu_include_path))
+        .clang_arg(format!("-I{tss2_esys_include_path}/tss2/"))
+        .clang_arg(format!("-I{tss2_tctildr_include_path}/tss2/"))
+        .clang_arg(format!("-I{tss2_mu_include_path}/tss2/"))
         .rustfmt_bindings(true)
-        .header(format!("{}/tss2/tss2_esys.h", tss2_esys_include_path))
-        .header(format!("{}/tss2/tss2_tctildr.h", tss2_tctildr_include_path))
-        .header(format!("{}/tss2/tss2_mu.h", tss2_mu_include_path))
+        .header(format!("{tss2_esys_include_path}/tss2/tss2_esys.h"))
+        .header(format!("{tss2_tctildr_include_path}/tss2/tss2_tctildr.h"))
+        .header(format!("{tss2_mu_include_path}/tss2/tss2_mu.h"))
         // See this issue: https://github.com/parallaxsecond/rust-cryptoki/issues/12
         .blocklist_type("max_align_t")
         .generate_comments(false)

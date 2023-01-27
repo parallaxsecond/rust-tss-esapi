@@ -430,7 +430,7 @@ impl Context {
                 self.optional_session_3(),
                 &object_name.into(),
                 &new_parent_name.into(),
-                if include_object { 1 } else { 0 },
+                u8::from(include_object),
             )
         };
         let ret = Error::from_tss_rc(ret);
