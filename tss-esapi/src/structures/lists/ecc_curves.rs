@@ -11,7 +11,7 @@ use std::ops::Deref;
 ///
 /// # Details
 /// This corresponds to `TPML_ECC_CURVE`.
-#[derive(Debug, Clone, Default, PartialEq)]
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub struct EccCurveList {
     ecc_curves: Vec<EccCurveIdentifier>,
 }

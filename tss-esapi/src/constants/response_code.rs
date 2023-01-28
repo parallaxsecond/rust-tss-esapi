@@ -16,7 +16,7 @@ bitfield! {
 }
 
 bitfield! {
-    #[derive(PartialEq, Copy, Clone)]
+    #[derive(PartialEq, Eq, Copy, Clone)]
     pub struct FormatZeroResponseCode(TSS2_RC);
     impl Debug;
     error_number, _: 6, 0;
@@ -36,7 +36,7 @@ impl std::fmt::Display for FormatZeroResponseCode {
 impl std::error::Error for FormatZeroResponseCode {}
 
 bitfield! {
-    #[derive(PartialEq, Copy, Clone)]
+    #[derive(PartialEq, Eq, Copy, Clone)]
     pub struct FormatOneResponseCode(TSS2_RC);
     impl Debug;
     error_number, _: 5, 0;
@@ -56,7 +56,7 @@ impl std::error::Error for FormatOneResponseCode {}
 
 /// Rust native representation of the TSS2 response codes as defined in the spec.
 #[allow(clippy::module_name_repetitions)]
-#[derive(Copy, Clone, PartialEq, Debug)]
+#[derive(Copy, Clone, PartialEq, Eq, Debug)]
 pub enum Tss2ResponseCode {
     Success,
     FormatZero(FormatZeroResponseCode),
@@ -234,7 +234,7 @@ impl Tss2ResponseCode {
 }
 
 /// Rust enum representation of TSS 2 error codes.
-#[derive(PartialEq, Copy, Clone, Debug)]
+#[derive(PartialEq, Eq, Copy, Clone, Debug)]
 pub enum Tss2ResponseCodeKind {
     // FormatZero errors
     Success,
