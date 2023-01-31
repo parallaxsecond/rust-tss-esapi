@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 use semver::{Version, VersionReq};
 
+#[allow(clippy::uninlined_format_args)]
 fn main() {
     let tss_version_string = std::env::var("DEP_TSS2_ESYS_VERSION")
         .expect("Failed to parse ENV variable DEP_TSS2_ESYS_VERSION as string");
@@ -10,7 +11,7 @@ fn main() {
         .expect("Failed to parse the DEP_TSS2_ESYS_VERSION variable as a semver version");
 
     let supported_tss_version =
-        VersionReq::parse("<4.0.0, >=2.3.3").expect("Failed to parse supported TSS version");
+        VersionReq::parse("<5.0.0, >=2.3.3").expect("Failed to parse supported TSS version");
 
     let hierarchy_is_esys_tr_req = VersionReq::parse(">=3.0.0").unwrap();
     if hierarchy_is_esys_tr_req.matches(&tss_version) {

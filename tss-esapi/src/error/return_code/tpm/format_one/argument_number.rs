@@ -47,6 +47,7 @@ impl From<ArgumentNumber> for u8 {
     }
 }
 
+#[allow(clippy::uninlined_format_args)]
 impl std::fmt::Display for ArgumentNumber {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
