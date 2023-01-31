@@ -60,6 +60,7 @@ fn write_nv_index(context: &mut Context, nv_index: NvIndexTpmHandle) -> NvIndexH
     owner_nv_index_handle
 }
 
+#[ignore = "issues with tpm2-tss"]
 #[test]
 fn list() {
     let mut context = create_ctx_with_session();
@@ -85,6 +86,7 @@ fn list() {
         .expect("Call to nv_undefine_space failed");
 }
 
+#[ignore = "issues with tpm2-tss"]
 #[test]
 fn read_full() {
     let mut context = create_ctx_with_session();
