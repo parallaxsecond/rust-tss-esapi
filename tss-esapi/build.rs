@@ -6,6 +6,7 @@ fn main() {
         match tss2_esys_version.chars().next().unwrap() {
             '2' => println!("cargo:rustc-cfg=tpm2_tss_version=\"2\""),
             '3' => println!("cargo:rustc-cfg=tpm2_tss_version=\"3\""),
+            '4' => println!("cargo:rustc-cfg=tpm2_tss_version=\"4\""),
             major => panic!("Unsupported TSS version: {}", major),
         }
     }

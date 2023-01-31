@@ -7,7 +7,7 @@ use crate::tss2_esys::TSS2_RC;
 /// layer.
 pub type Result<T> = std::result::Result<T, Error>;
 
-#[derive(Copy, Clone, PartialEq, Debug)]
+#[derive(Copy, Clone, PartialEq, Eq, Debug)]
 pub enum Error {
     WrapperError(WrapperErrorKind),
     Tss2Error(Tss2ResponseCode),
@@ -51,7 +51,7 @@ impl std::error::Error for Error {
 }
 
 /// List of error types that might occur in the wrapper.
-#[derive(Copy, Clone, PartialEq, Debug)]
+#[derive(Copy, Clone, PartialEq, Eq, Debug)]
 pub enum WrapperErrorKind {
     /// Returned when a size or length-defined parameter does not conform with the size
     /// restrictions for it.
