@@ -42,6 +42,8 @@ pub fn read_full(
 }
 
 /// Returns the NvPublic and Name associated with an NV index TPM handle
+///
+/// NOTE: This call _may_ close existing ESYS handles to the NV Index.
 fn get_nv_index_info(
     context: &mut Context,
     nv_index_tpm_handle: NvIndexTpmHandle,
@@ -63,6 +65,8 @@ fn get_nv_index_info(
 }
 
 /// Lists all the currently defined NV Indexes' names and public components
+///
+/// NOTE: This call _may_ close existing ESYS handles to the NV Index.
 pub fn list(context: &mut Context) -> Result<Vec<(NvPublic, Name)>> {
     context.execute_without_session(|ctx| {
         ctx.get_capability(
@@ -166,6 +170,8 @@ pub fn max_nv_buffer_size(ctx: &mut Context) -> Result<usize> {
 /// Provides methods and trait implementations to interact with a non-volatile storage index that has been opened.
 ///
 /// Use [`NvOpenOptions::open`] to obtain an [`NvReaderWriter`] object.
+///
+/// NOTE: When the `NvReaderWriter` is dropped, any existing ESYS handles to NV Indexes _may_ be closed.
 #[derive(Debug)]
 pub struct NvReaderWriter<'a> {
     context: &'a mut Context,
