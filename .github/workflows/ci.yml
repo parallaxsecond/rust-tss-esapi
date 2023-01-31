@@ -70,6 +70,17 @@ jobs:
       - name: Run the tests
         run: docker run -v $(pwd):/tmp/rust-tss-esapi -w /tmp/rust-tss-esapi/tss-esapi fedoracontainer dbus-run-session -- /tmp/rust-tss-esapi/tss-esapi/tests/all-fedora.sh
 
+  tests-fedora-rawhide:
+    name: Fedora rawhide tests
+    # We just build a container... GitHub doesn't like Fedora :(
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build the container
+        run: docker build -t fedoracontainer tss-esapi/tests/ --file tss-esapi/tests/Dockerfile-fedora-rawhide
+      - name: Run the tests
+        run: docker run -v $(pwd):/tmp/rust-tss-esapi -w /tmp/rust-tss-esapi/tss-esapi --security-opt seccomp=unconfined fedoracontainer dbus-run-session -- /tmp/rust-tss-esapi/tss-esapi/tests/all-fedora.sh
+
   tests-valgrind:
     name: Valgrind test run
     runs-on: ubuntu-latest

@@ -165,6 +165,7 @@ impl TctiNameConf {
     }
 }
 
+#[allow(clippy::uninlined_format_args)]
 impl TryFrom<TctiNameConf> for CString {
     type Error = Error;
 
