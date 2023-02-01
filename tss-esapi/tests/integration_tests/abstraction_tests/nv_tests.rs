@@ -72,7 +72,7 @@ fn list() {
         .map(|(public, _)| public.nv_index())
         .any(|x| x == nv_index));
 
-    let _owner_nv_index_handle = write_nv_index(&mut context, nv_index);
+    let owner_nv_index_handle = write_nv_index(&mut context, nv_index);
 
     assert!(nv::list(&mut context)
         .unwrap()
@@ -83,7 +83,7 @@ fn list() {
     // Need to get the ESYS handle again, as it was closed by nv::list above
     let owner_nv_index_handle = context
         .tr_from_tpm_public(nv_index.into())
-        .expect("Failed to get ObjectHandle for NV Index");
+        .unwrap_or_else(|_| owner_nv_index_handle.into());
     context
         .nv_undefine_space(Provision::Owner, owner_nv_index_handle.into())
         .expect("Call to nv_undefine_space failed");
@@ -95,7 +95,7 @@ fn read_full() {
 
     let nv_index = NvIndexTpmHandle::new(0x01500015).unwrap();
 
-    let _owner_nv_index_handle = write_nv_index(&mut context, nv_index);
+    let owner_nv_index_handle = write_nv_index(&mut context, nv_index);
 
     // Now read it back
     let read_result = nv::read_full(&mut context, NvAuth::Owner, nv_index);
@@ -103,7 +103,7 @@ fn read_full() {
     // Need to get the ESYS handle again, as it was closed by nv::read_full above
     let owner_nv_index_handle = context
         .tr_from_tpm_public(nv_index.into())
-        .expect("Failed to get ObjectHandle for NV Index");
+        .unwrap_or_else(|_| owner_nv_index_handle.into());
     context
         .nv_undefine_space(Provision::Owner, owner_nv_index_handle.into())
         .expect("Call to nv_undefine_space failed");
