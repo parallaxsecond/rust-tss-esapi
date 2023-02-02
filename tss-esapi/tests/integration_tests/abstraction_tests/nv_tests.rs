@@ -60,7 +60,6 @@ fn write_nv_index(context: &mut Context, nv_index: NvIndexTpmHandle) -> NvIndexH
     owner_nv_index_handle
 }
 
-#[cfg_attr(tpm2_tss_version = "4", ignore = "issues with tpm2-tss")]
 #[test]
 fn list() {
     let mut context = create_ctx_with_session();
@@ -81,12 +80,15 @@ fn list() {
         .map(|(public, _)| public.nv_index())
         .any(|x| x == nv_index));
 
+    // Need to get the ESYS handle again, as it was closed by nv::list above
+    let owner_nv_index_handle = context
+        .tr_from_tpm_public(nv_index.into())
+        .unwrap_or_else(|_| owner_nv_index_handle.into());
     context
-        .nv_undefine_space(Provision::Owner, owner_nv_index_handle)
+        .nv_undefine_space(Provision::Owner, owner_nv_index_handle.into())
         .expect("Call to nv_undefine_space failed");
 }
 
-#[cfg_attr(tpm2_tss_version = "4", ignore = "issues with tpm2-tss")]
 #[test]
 fn read_full() {
     let mut context = create_ctx_with_session();
@@ -98,8 +100,12 @@ fn read_full() {
     // Now read it back
     let read_result = nv::read_full(&mut context, NvAuth::Owner, nv_index);
 
+    // Need to get the ESYS handle again, as it was closed by nv::read_full above
+    let owner_nv_index_handle = context
+        .tr_from_tpm_public(nv_index.into())
+        .unwrap_or_else(|_| owner_nv_index_handle.into());
     context
-        .nv_undefine_space(Provision::Owner, owner_nv_index_handle)
+        .nv_undefine_space(Provision::Owner, owner_nv_index_handle.into())
         .expect("Call to nv_undefine_space failed");
 
     let read_result = read_result.unwrap();
