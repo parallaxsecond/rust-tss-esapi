@@ -40,9 +40,8 @@ impl HandleManager {
             return Err(Error::local_error(WrapperErrorKind::InvalidParam));
         }
 
-        if self.open_handles.contains_key(&handle) {
-            // It is safe to call unwrap because the existance of the key has already been verified.
-            let stored_handle_drop_action = self.open_handles.get(&handle).unwrap();
+        // The TSS might return the same handle, see #383
+        if let Some(stored_handle_drop_action) = self.open_handles.get(&handle) {
             if handle_drop_action != *stored_handle_drop_action {
                 error!("Handle drop action inconsistency");
                 return Err(Error::local_error(WrapperErrorKind::InconsistentParams));
