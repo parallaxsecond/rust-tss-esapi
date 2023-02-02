@@ -8,7 +8,6 @@ use tss_esapi::{
 
 use crate::common::create_ctx_without_session;
 
-#[ignore = "issues with tpm2-tss"]
 #[test]
 fn test_retrieve_ek_pubcert() {
     let mut context = create_ctx_without_session();

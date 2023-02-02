@@ -40,10 +40,14 @@ impl HandleManager {
             return Err(Error::local_error(WrapperErrorKind::InvalidParam));
         }
 
-        if self.open_handles.contains_key(&handle) {
-            error!("Handle({}) is already open", ESYS_TR::from(handle));
-            return Err(Error::local_error(WrapperErrorKind::InvalidHandleState));
+        // The TSS might return the same handle, see #383
+        if let Some(stored_handle_drop_action) = self.open_handles.get(&handle) {
+            if handle_drop_action != *stored_handle_drop_action {
+                error!("Handle drop action inconsistency");
+                return Err(Error::local_error(WrapperErrorKind::InconsistentParams));
+            }
         }
+
         let _ = self.open_handles.insert(handle, handle_drop_action);
         Ok(())
     }
