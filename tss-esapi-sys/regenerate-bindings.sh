@@ -11,7 +11,7 @@ set -euf -o pipefail
 OPENSSL_GIT="https://github.com/openssl/openssl.git"
 OPENSSL_VERSION="OpenSSL_1_1_1j"
 TPM2_TSS_GIT="https://github.com/tpm2-software/tpm2-tss.git"
-TPM2_TSS_VERSION="3.2.1"
+TPM2_TSS_VERSION="2.3.3"
 
 export SYSROOT="/tmp/sysroot"
 
