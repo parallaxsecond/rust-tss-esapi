@@ -8,70 +8,81 @@
 
 set -euf -o pipefail
 
+OPENSSL_GIT="https://github.com/openssl/openssl.git"
 OPENSSL_VERSION="OpenSSL_1_1_1j"
+TPM2_TSS_GIT="https://github.com/tpm2-software/tpm2-tss.git"
+TPM2_TSS_VERSION="2.3.3"
+
+export SYSROOT="/tmp/sysroot"
+
+git_checkout() {
+    if [ ! -d "/tmp/$(basename "$1" ".git")" ]; then
+	pushd /tmp
+	git clone "$1" --branch "$2"
+	popd
+    fi
+}
+
+prepare_sysroot() {
+    # Prepare the SYSROOT
+    [ -d "$SYSROOT" ] && rm -fr "$SYSROOT"
+    mkdir -p "$SYSROOT"
+
+    # Allow the `pkg-config` crate to cross-compile
+    export PKG_CONFIG_ALLOW_CROSS=1
+    export PKG_CONFIG_PATH="$SYSROOT"/lib/pkgconfig:"$SYSROOT"/share/pkgconfig
+    export PKG_CONFIG_SYSROOT_DIR="$SYSROOT"
+}
 
 cross-compile-openssl() {
-    # Prepare directory for cross-compiled OpenSSL files
-    mkdir -p /tmp/openssl-$1
-    export INSTALL_DIR=/tmp/openssl-$1
-
     pushd /tmp/openssl
     # Compile and copy files over
-    ./Configure $2 shared --prefix=$INSTALL_DIR --openssldir=$INSTALL_DIR/openssl --cross-compile-prefix=$1-
+    ./Configure $2 shared --prefix="$SYSROOT" --openssldir="$SYSROOT"/openssl --cross-compile-prefix=$1-
     make clean
     make depend
     make -j$(nproc)
-    make install
+    make install_sw
     popd
-
-    export INSTALL_DIR=
 }
 
 cross-compile-tpm2-tss() {
-    # Prepare directory for cross-compiled TSS lib
-    # `DESTDIR` is used in `make install` below to set the root of the installation paths.
-    # The `./configure` script accepts a `--prefix` input variable which sets the same root,
-    # but also adds it to the paths in `.pc` files used by `pkg-config`. This prevents the 
-    # use of `PKG_CONFIG_SYSROOT_DIR`.
-    mkdir -p /tmp/tpm2-tss-$1
-    export DESTDIR=/tmp/tpm2-tss-$1
-    # Set sysroot to be used by the `pkg-config` wrapper
-    export SYSROOT=/tmp/tpm2-tss-$1
-
-    pushd /tpm2-tss
-    # Compile and copy files over
-    ./configure --build=x86_64-pc-linux-gnu --host=$1 --target=$1 CC=$1-gcc \
-        LIBCRYPTO_CFLAGS="-I/tmp/openssl-$1/include" LIBCRYPTO_LIBS="-L/tmp/openssl-$1/lib -lcrypto"
+    pushd /tmp/tpm2-tss
+    [ ! -f configure ] && ./bootstrap
+    ./configure --enable-fapi=no --prefix=/ --build=x86_64-pc-linux-gnu --host=$1 --target=$1 CC=$1-gcc
     make clean
     make -j$(nproc)
-    make install
+    make DESTDIR="$SYSROOT" install
     popd
-
-    export DESTDIR=
 }
 
 # Download cross-compilers
-apt update
-apt install -y gcc-multilib
-apt install -y gcc-arm-linux-gnueabi
-apt install -y gcc-aarch64-linux-gnu
+sudo apt update
+sudo apt install -y gcc-multilib
+sudo apt install -y gcc-arm-linux-gnueabi
+sudo apt install -y gcc-aarch64-linux-gnu
 
-# Download OpenSSL source code
-if [ ! -d "/tmp/openssl" ]; then
-    pushd /tmp
-    git clone https://github.com/openssl/openssl.git --branch $OPENSSL_VERSION
-    popd
-fi
+# Download development version for tpm2-tss
+sudo apt install -y libtss2-dev
+
+# Download other dependencies
+sudo apt install -y autoconf
+sudo apt install -y autoconf-archive
+sudo apt install -y cmake
+sudo apt install -y libclang-dev
+sudo apt install -y libtool
+sudo apt install -y pkgconf
+
+# Download OpenSSL, tpm2-tss and dependencies source code
+git_checkout "$OPENSSL_GIT" "$OPENSSL_VERSION"
+git_checkout "$TPM2_TSS_GIT" "$TPM2_TSS_VERSION"
 
 # Regenerate bindings for x86_64-unknown-linux-gnu
 cargo clean
 cargo build --features generate-bindings
 find ../target -name tss_esapi_bindings.rs -exec cp {} ./src/bindings/x86_64-unknown-linux-gnu.rs \;
 
-# Allow the `pkg-config` crate to cross-compile
-export PKG_CONFIG_ALLOW_CROSS=1
-# Make the `pkg-config` crate use our wrapper
-export PKG_CONFIG=$(pwd)/../tss-esapi/tests/pkg-config
+# Clean and prepare SYSROOT
+prepare_sysroot
 
 # Regenerate bindings for aarch64-unknown-linux-gnu
 cross-compile-openssl aarch64-linux-gnu linux-generic64
@@ -81,6 +92,9 @@ rustup target add aarch64-unknown-linux-gnu
 cargo clean
 cargo build --features generate-bindings --target aarch64-unknown-linux-gnu
 find ../target -name tss_esapi_bindings.rs -exec cp {} ./src/bindings/aarch64-unknown-linux-gnu.rs \;
+
+# Clean and prepare SYSROOT
+prepare_sysroot
 
 # Regenerate bindings for armv7-unknown-linux-gnueabi
 cross-compile-openssl arm-linux-gnueabi linux-generic32
