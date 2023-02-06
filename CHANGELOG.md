@@ -1,5 +1,14 @@
 # Changelog
 
+## [tss-esapi-7.2.0](https://github.com/parallaxsecond/rust-tss-esapi/tree/tss-esapi-7.2.0) (2023-02-07)
+## [tss-esapi-sys-0.4.0](https://github.com/parallaxsecond/rust-tss-esapi/tree/tss-esapi-sys-0.4.0) (2023-02-07)
+
+[Full Changelog](https://github.com/parallaxsecond/rust-tss-esapi/compare/tss-esapi-7.1.0...tss-esapi-7.2.0)
+
+- Expanded the list of supported `tpm2-tss` versions to include v4. [#382](https://github.com/parallaxsecond/rust-tss-esapi/issues/382)
+- Fixed a bug in handle management that hindered some use cases. [#383](https://github.com/parallaxsecond/rust-tss-esapi/issues/383)
+- Updated the FFI bindings using v0.63 of bindgen. [#392](https://github.com/parallaxsecond/rust-tss-esapi/pull/392)
+
 ## [tss-esapi-7.1.0](https://github.com/parallaxsecond/rust-tss-esapi/tree/tss-esapi-7.1.0) (2022-05-25)
 
 - Fixed a security vulnerability related to using nonces when opening auth sessions. For more details see #344 .
