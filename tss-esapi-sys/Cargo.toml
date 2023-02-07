@@ -1,6 +1,6 @@
 [package]
 name = "tss-esapi-sys"
-version = "0.3.0"
+version = "0.4.0"
 authors = ["Parsec Project Contributors"]
 edition = "2018"
 description = "FFI wrapper around TSS 2.0 Enhanced System API"
@@ -13,7 +13,7 @@ documentation = "https://docs.rs/crate/tss-esapi-sys"
 links = "tss2-esys"
 
 [build-dependencies]
-bindgen = { version = "0.59.1", optional = true }
+bindgen = { version = "0.63.0", optional = true }
 pkg-config = "0.3.18"
 target-lexicon = "0.12.0"
 

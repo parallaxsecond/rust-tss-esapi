@@ -97,6 +97,7 @@ pub fn generate_from_system(esapi_out: PathBuf) {
         .expect("Error converting OsString to String.");
 
     bindgen::Builder::default()
+        .size_t_is_usize(false)
         .clang_arg(format!("-I{}/tss2/", tss2_esys_include_path))
         .clang_arg(format!("-I{}/tss2/", tss2_tctildr_include_path))
         .clang_arg(format!("-I{}/tss2/", tss2_mu_include_path))
