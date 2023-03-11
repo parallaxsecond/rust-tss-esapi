@@ -31,27 +31,27 @@ impl std::fmt::Display for WrapperErrorKind {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             WrapperErrorKind::WrongParamSize => {
-                write!(f, "parameter provided is of the wrong size")
+                write!(f, "Parameter provided is of the wrong size.")
             }
             WrapperErrorKind::ParamsMissing => {
-                write!(f, "some of the required parameters were not provided")
+                write!(f, "Some of the required parameters were not provided.")
             }
             WrapperErrorKind::InconsistentParams => write!(
                 f,
-                "the provided parameters have inconsistent values or variants"
+                "The provided parameters have inconsistent values or variants."
             ),
             WrapperErrorKind::UnsupportedParam => write!(
                 f,
-                "the provided parameter is not yet supported by the library"
+                "The provided parameter is not yet supported by the library."
             ),
             WrapperErrorKind::InvalidParam => {
-                write!(f, "the provided parameter is invalid for that type.")
+                write!(f, "The provided parameter is invalid for that type.")
             }
-            WrapperErrorKind::WrongValueFromTpm => write!(f, "the TPM returned an invalid value."),
-            WrapperErrorKind::MissingAuthSession => write!(f, "Missing authorization session"),
-            WrapperErrorKind::InvalidHandleState => write!(f, "Invalid handle state"),
+            WrapperErrorKind::WrongValueFromTpm => write!(f, "The TPM returned an invalid value."),
+            WrapperErrorKind::MissingAuthSession => write!(f, "Missing authorization session."),
+            WrapperErrorKind::InvalidHandleState => write!(f, "Invalid handle state."),
             WrapperErrorKind::InternalError => {
-                write!(f, "an unexpected error occurred within the crate")
+                write!(f, "An unexpected error occurred within the crate.")
             }
         }
     }
