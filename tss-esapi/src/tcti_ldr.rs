@@ -633,6 +633,7 @@ pub enum BusType {
     Session,
 }
 
+#[allow(clippy::derivable_impls)] // Remove this when MSRV is higher then 1.57
 impl Default for BusType {
     fn default() -> Self {
         BusType::System
