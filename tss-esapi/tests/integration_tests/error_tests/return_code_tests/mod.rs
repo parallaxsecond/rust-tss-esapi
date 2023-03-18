@@ -5,6 +5,7 @@ mod esapi_tests;
 mod fapi_tests;
 mod muapi_tests;
 mod resource_manager_tests;
+mod resource_manager_tpm_tests;
 mod sapi_tests;
 mod tcti_tests;
 mod tpm_tests;
