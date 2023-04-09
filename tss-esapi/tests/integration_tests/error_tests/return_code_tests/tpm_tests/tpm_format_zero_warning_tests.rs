@@ -60,8 +60,22 @@ macro_rules! test_valid_conversion {
             expected_tss_rc,
             actual_rc.into(),
             "TpmFormatZeroResponseCode with {} did not convert into expected {} TSS2_RC in the TPM layer.",
-            std::stringify!(TpmFormatZeroError::$item),
+            std::stringify!(TpmFormatZeroWarning::$item),
             std::stringify!($tpm_rc),
+        );
+    };
+}
+
+macro_rules! test_display_trait_impl {
+    ($expected_error_message:tt, TpmFormatZeroWarning::$zero_warning:ident) => {
+        assert_eq!(
+            format!(
+                "{}",
+                TpmFormatZeroWarningResponseCode::from(TpmFormatZeroWarning::$zero_warning)
+            ),
+            $expected_error_message,
+            "BaseReturnCode with {} did not produce the expected error message",
+            std::stringify!(TpmFormatZeroWarning::$zero_warning),
         );
     };
 }
@@ -103,5 +117,116 @@ fn test_invalid_conversions() {
         ReturnCode::try_from(tss_invalid_tpm_format_zero_error_rc),
         Err(Error::WrapperError(WrapperErrorKind::InvalidParam)),
         "Converting invalid TPM layer response code did not produce the expected error"
+    );
+}
+
+#[test]
+fn test_display_implementation() {
+    test_display_trait_impl!(
+        "Gap for context ID is too large.",
+        TpmFormatZeroWarning::ContextGap
+    );
+    test_display_trait_impl!(
+        "Out of memory for object contexts.",
+        TpmFormatZeroWarning::ObjectMemory
+    );
+    test_display_trait_impl!(
+        "Out of memory for session contexts.",
+        TpmFormatZeroWarning::SessionMemory
+    );
+    test_display_trait_impl!(
+        "Out of shared object or session memory or need space for internal operations.",
+        TpmFormatZeroWarning::Memory
+    );
+    test_display_trait_impl!(
+        "Out of session handles.",
+        TpmFormatZeroWarning::SessionHandles
+    );
+    test_display_trait_impl!(
+        "Out of object handles.",
+        TpmFormatZeroWarning::ObjectHandles
+    );
+    test_display_trait_impl!("Bad locality.", TpmFormatZeroWarning::Locality);
+    test_display_trait_impl!(
+        "The TPM has suspended operation on the command; forward progress was made and the command may be retried.",
+        TpmFormatZeroWarning::Yielded
+    );
+    test_display_trait_impl!("The command was canceled.", TpmFormatZeroWarning::Canceled);
+    test_display_trait_impl!(
+        "TPM is performing self-tests.",
+        TpmFormatZeroWarning::Testing
+    );
+    test_display_trait_impl!(
+        "The 1st handle in the handle area references a transient object or session that is not loaded.",
+        TpmFormatZeroWarning::ReferenceH0
+    );
+    test_display_trait_impl!(
+        "The 2nd handle in the handle area references a transient object or session that is not loaded.",
+        TpmFormatZeroWarning::ReferenceH1
+    );
+    test_display_trait_impl!(
+        "The 3rd handle in the handle area references a transient object or session that is not loaded.",
+        TpmFormatZeroWarning::ReferenceH2
+    );
+    test_display_trait_impl!(
+        "The 4th handle in the handle area references a transient object or session that is not loaded.",
+        TpmFormatZeroWarning::ReferenceH3
+    );
+    test_display_trait_impl!(
+        "The 5th handle in the handle area references a transient object or session that is not loaded.",
+        TpmFormatZeroWarning::ReferenceH4
+    );
+    test_display_trait_impl!(
+        "The 6th handle in the handle area references a transient object or session that is not loaded.",
+        TpmFormatZeroWarning::ReferenceH5
+    );
+    test_display_trait_impl!(
+        "The 7th handle in the handle area references a transient object or session that is not loaded.",
+        TpmFormatZeroWarning::ReferenceH6
+    );
+
+    test_display_trait_impl!(
+        "The 1st authorization session handle references a session that is not loaded.",
+        TpmFormatZeroWarning::ReferenceS0
+    );
+    test_display_trait_impl!(
+        "The 2nd authorization session handle references a session that is not loaded.",
+        TpmFormatZeroWarning::ReferenceS1
+    );
+    test_display_trait_impl!(
+        "The 3rd authorization session handle references a session that is not loaded.",
+        TpmFormatZeroWarning::ReferenceS2
+    );
+    test_display_trait_impl!(
+        "The 4th authorization session handle references a session that is not loaded.",
+        TpmFormatZeroWarning::ReferenceS3
+    );
+    test_display_trait_impl!(
+        "The 5th session handle references a session that is not loaded.",
+        TpmFormatZeroWarning::ReferenceS4
+    );
+    test_display_trait_impl!(
+        "The 6th session handle references a session that is not loaded.",
+        TpmFormatZeroWarning::ReferenceS5
+    );
+    test_display_trait_impl!(
+        "The 7th authorization session handle references a session that is not loaded.",
+        TpmFormatZeroWarning::ReferenceS6
+    );
+    test_display_trait_impl!(
+        "The TPM is rate-limiting accesses to prevent wearout of NV.",
+        TpmFormatZeroWarning::NvRate
+    );
+    test_display_trait_impl!(
+        "Authorizations for objects subject to DA protection are not allowed at this time because the TPM is in DA lockout mode.",
+        TpmFormatZeroWarning::Lockout
+    );
+    test_display_trait_impl!(
+        "The TPM was not able to start the command.",
+        TpmFormatZeroWarning::Retry
+    );
+    test_display_trait_impl!(
+        "The command may require writing of NV and NV is not current accessible.",
+        TpmFormatZeroWarning::NvUnavailable
     );
 }
