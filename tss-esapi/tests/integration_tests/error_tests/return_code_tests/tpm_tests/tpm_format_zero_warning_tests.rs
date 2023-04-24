@@ -74,7 +74,7 @@ macro_rules! test_display_trait_impl {
                 TpmFormatZeroWarningResponseCode::from(TpmFormatZeroWarning::$zero_warning)
             ),
             $expected_error_message,
-            "BaseReturnCode with {} did not produce the expected error message",
+            "TpmFormatZeroWarningResponseCode with {} did not produce the expected error message",
             std::stringify!(TpmFormatZeroWarning::$zero_warning),
         );
     };

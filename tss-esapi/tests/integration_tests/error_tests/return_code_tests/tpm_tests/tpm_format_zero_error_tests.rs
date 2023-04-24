@@ -32,12 +32,14 @@ macro_rules! test_valid_conversion {
             expected_tpm_format_zero_error_rc,
             TpmFormatZeroErrorResponseCode::try_from(($tpm_rc - TPM2_RC_VER1) as u8).expect(
                 &format!(
-                    "{} did not convert into a TpmFormatZeroErrorResponseCode",
-                    std::stringify!($tpm_rc - TPM2_RC_VER1)
+                    "{} did not convert into a {}",
+                    std::stringify!($tpm_rc - TPM2_RC_VER1),
+                    std::any::type_name::<TpmFormatZeroErrorResponseCode>(),
                 )
             ),
-            "{} did not convert into the expected TpmFormatZeroErrorResponseCode",
+            "{} did not convert into the expected {}",
             std::stringify!($tpm_rc - TPM2_RC_VER1),
+            std::any::type_name::<TpmFormatZeroErrorResponseCode>()
         );
 
         let actual_rc = ReturnCode::try_from(expected_tss_rc)
@@ -50,8 +52,9 @@ macro_rules! test_valid_conversion {
             assert_eq!(
                 expected_tpm_format_zero_error_rc,
                 actual_tpm_format_zero_error_rc,
-                "{} in the TPM layer did not convert into the expected TpmFormatZeroResponseCode",
-                std::stringify!($tpm_rc)
+                "{} in the TPM layer did not convert into the expected {}",
+                std::stringify!($tpm_rc),
+                std::any::type_name::<TpmFormatZeroResponseCode>(),
             );
         } else {
             panic!("TPM TSS2_RC layer did no convert into ReturnCode::Tpm");
@@ -60,9 +63,25 @@ macro_rules! test_valid_conversion {
         assert_eq!(
             expected_tss_rc,
             actual_rc.into(),
-            "TpmFormatZeroResponseCode with {} did not convert into expected {} TSS2_RC in the TPM layer.",
+            "{} with {} did not convert into expected {} TSS2_RC in the TPM layer.",
+            std::any::type_name::<TpmFormatZeroResponseCode>(),
             std::stringify!(TpmFormatZeroError::$item),
             std::stringify!($tpm_rc),
+        );
+    };
+}
+
+macro_rules! test_display_trait_impl {
+    ($expected_error_message:tt, TpmFormatZeroError::$zero_error:ident) => {
+        assert_eq!(
+            format!(
+                "{}",
+                TpmFormatZeroErrorResponseCode::from(TpmFormatZeroError::$zero_error)
+            ),
+            $expected_error_message,
+            "{} with {} did not produce the expected error message",
+            std::any::type_name::<TpmFormatZeroErrorResponseCode>(),
+            std::stringify!(TpmFormatZeroError::$zero_error),
         );
     };
 }
@@ -123,5 +142,106 @@ fn test_invalid_conversions() {
         ReturnCode::try_from(tss_invalid_tpm_format_zero_error_rc),
         Err(Error::WrapperError(WrapperErrorKind::InvalidParam)),
         "Converting invalid TPM layer response code did not produce the expected error"
+    );
+}
+
+#[test]
+fn test_display_implementation() {
+    test_display_trait_impl!(
+        "TPM not initialized by TPM2_Startup or already initialized.",
+        TpmFormatZeroError::Initialize
+    );
+    test_display_trait_impl!(
+        "Commands not accepted because of a TPM failure.",
+        TpmFormatZeroError::Failure
+    );
+    test_display_trait_impl!(
+        "Improper use of a sequence handle.",
+        TpmFormatZeroError::Sequence
+    );
+    test_display_trait_impl!("Not currently used.", TpmFormatZeroError::Private);
+    test_display_trait_impl!("Not currently used.", TpmFormatZeroError::Hmac);
+    test_display_trait_impl!("The command is disabled.", TpmFormatZeroError::Disabled);
+    test_display_trait_impl!(
+        "Command failed because audit sequence required exclusivity.",
+        TpmFormatZeroError::Exclusive
+    );
+    test_display_trait_impl!(
+        "Authorization handle is not correct for command.",
+        TpmFormatZeroError::AuthType
+    );
+    test_display_trait_impl!(
+        "Command requires an authorization session for handle and it is not present.",
+        TpmFormatZeroError::AuthMissing
+    );
+    test_display_trait_impl!(
+        "Policy failure in math operation or an invalid `authPolicy` value.",
+        TpmFormatZeroError::Policy
+    );
+    test_display_trait_impl!("PCR check fail.", TpmFormatZeroError::Pcr);
+    test_display_trait_impl!(
+        "PCR have changed since checked.",
+        TpmFormatZeroError::PcrChanged
+    );
+    test_display_trait_impl!("For all commands other than TPM2_FieldUpgradeData(), this code indicates that the TPM is in field upgrade mode; for TPM2_FieldUpgradeData(), this code indicates that the TPM is not in field upgrade mode.", TpmFormatZeroError::Upgrade);
+    test_display_trait_impl!(
+        "Context ID counter is at maximum.",
+        TpmFormatZeroError::TooManyContexts
+    );
+    test_display_trait_impl!(
+        "`authValue` or `authPolicy` is not available for selected entity.",
+        TpmFormatZeroError::AuthUnavailable
+    );
+    test_display_trait_impl!(
+        "A _TPM_Init and Startup(CLEAR) is required before the TPM can resume operation.",
+        TpmFormatZeroError::Reboot
+    );
+    test_display_trait_impl!("The protection algorithms (hash and symmetric) are not reasonably balanced. The digest size of the hash must be larger than the key size of the symmetric algorithm.", TpmFormatZeroError::Unbalanced);
+    test_display_trait_impl!("Command `commandSize` value is inconsistent with contents of the command buffer; either the size is not the same as the octets loaded by the hardware interface layer or the value is not large enough to hold a command header.", TpmFormatZeroError::CommandSize);
+    test_display_trait_impl!(
+        "Command code not supported.",
+        TpmFormatZeroError::CommandCode
+    );
+    test_display_trait_impl!("The value of `authorizationSize` is out of range or the number of octets in the authorization area is greater than required.", TpmFormatZeroError::AuthSize);
+    test_display_trait_impl!("Use of an authorization session with a context command or another command that cannot have an authorization session.", TpmFormatZeroError::AuthContext);
+    test_display_trait_impl!(
+        "NV offset+size is out of range.",
+        TpmFormatZeroError::NvRange
+    );
+    test_display_trait_impl!(
+        "Requested allocation size is larger than allowed.",
+        TpmFormatZeroError::NvSize
+    );
+    test_display_trait_impl!("NV access locked.", TpmFormatZeroError::NvLocked);
+    test_display_trait_impl!(
+        "NV access authorization fails in command actions.",
+        TpmFormatZeroError::NvAuthorization
+    );
+    test_display_trait_impl!("An NV Index is used before being initialized or the state saved by TPM2_Shutdown(STATE) could not be restored.", TpmFormatZeroError::NvUninitialized);
+    test_display_trait_impl!(
+        "Insufficient space for NV allocation.",
+        TpmFormatZeroError::NvSpace
+    );
+    test_display_trait_impl!(
+        "NV Index or persistent object already defined.",
+        TpmFormatZeroError::NvDefined
+    );
+    test_display_trait_impl!(
+        "Context in TPM2_ContextLoad() is not valid.",
+        TpmFormatZeroError::BadContext
+    );
+    test_display_trait_impl!(
+        "`cpHash` value already set or not correct for use.",
+        TpmFormatZeroError::CpHash
+    );
+    test_display_trait_impl!(
+        "Handle for parent is not a valid parent.",
+        TpmFormatZeroError::Parent
+    );
+    test_display_trait_impl!("Function needs testing.", TpmFormatZeroError::NeedsTest);
+    test_display_trait_impl!("Function cannot process a request due to an unspecified problem. This code is usually related to invalid parameters that are not properly filtered by the input unmarshaling code.", TpmFormatZeroError::NoResult);
+    test_display_trait_impl!(
+        "The sensitive area did not unmarshal correctly after decryption.",
+        TpmFormatZeroError::Sensitive
     );
 }

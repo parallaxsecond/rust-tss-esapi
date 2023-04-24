@@ -33,7 +33,28 @@ impl Context {
 
     /// Get the TPM self test result
     ///
-    /// The returned buffer data is manufacturer-specific information.
+    /// # Details
+    /// The first parameter returned is a buffer with manufacturer-specific information.
+    ///
+    /// The second parameter returned by the method is an indicator of how the
+    /// test went in the form a [Result].
+    ///
+    /// If testing of all functions is complete without functional failures then Ok(())
+    /// or else a `TssError` (see [Error](crate::error::Error)) is returned.
+    ///
+    /// - A [TpmFormatZeroWarningResponseCode](crate::error::TpmFormatZeroWarningResponseCode) with a `Testing`
+    ///   [TpmFormatZeroWarning](crate::constants::return_code::TpmFormatZeroWarning) indicates that the test
+    ///   are not complete.
+    ///
+    /// - A [TpmFormatZeroErrorResponseCode](crate::error::TpmFormatZeroErrorResponseCode) with a `NeedsTest`
+    ///   [TpmFormatZeroError](crate::constants::return_code::TpmFormatZeroError) indicates that no self test
+    ///   has been performed and testable function has not been tested.
+    ///
+    /// - A [TpmFormatZeroErrorResponseCode](crate::error::TpmFormatZeroErrorResponseCode) with a `Failure`
+    ///   [TpmFormatZeroError](crate::constants::return_code::TpmFormatZeroError) indicates that there was
+    ///   a failure.
+    ///
+    /// See [Part 3, Commands](https://trustedcomputinggroup.org/wp-content/uploads/TCG_TPM2_r1p59_Part3_Commands_pub.pdf).
     pub fn get_test_result(&mut self) -> Result<(MaxBuffer, Result<()>)> {
         let mut out_data_ptr = null_mut();
         let mut test_result: u32 = 0;
