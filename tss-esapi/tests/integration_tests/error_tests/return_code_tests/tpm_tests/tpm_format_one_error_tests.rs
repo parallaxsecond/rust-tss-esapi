@@ -88,6 +88,28 @@ macro_rules! test_valid_conversion {
     };
 }
 
+macro_rules! test_display_trait_impl {
+    ($expected_error_message:tt, TpmFormatOneError::$zero_error:ident) => {
+        assert_eq!(
+            format!(
+                "{}",
+                TpmFormatOneResponseCode::new(
+                    TpmFormatOneError::$zero_error,
+                    ArgumentNumber::Parameter(1)
+                )
+            ),
+            format!(
+                "{} ({}).",
+                $expected_error_message,
+                ArgumentNumber::Parameter(1)
+            ),
+            "{} with {} did not produce the expected error message",
+            std::any::type_name::<TpmFormatOneResponseCode>(),
+            std::stringify!(TpmFormatOneError::$zero_error),
+        );
+    };
+}
+
 // The different tests needs to be split up because the compiler goes nuts
 // otherwise.
 
@@ -312,6 +334,97 @@ fn test_format_one_curve_error_valid_conversions() {
 fn test_format_one_ecc_point_error_valid_conversions() {
     test_valid_conversions_with_all_argument_combinations!(
         TPM2_RC_ECC_POINT,
+        TpmFormatOneError::EccPoint
+    );
+}
+
+#[test]
+fn test_display_implementation() {
+    test_display_trait_impl!(
+        "Asymmetric algorithm not supported or not correct",
+        TpmFormatOneError::Asymmetric
+    );
+    test_display_trait_impl!("Inconsistent attributes", TpmFormatOneError::Attributes);
+    test_display_trait_impl!(
+        "Hash algorithm not supported or not appropriate",
+        TpmFormatOneError::Hash
+    );
+    test_display_trait_impl!(
+        "Value is out of range or is not correct for the context",
+        TpmFormatOneError::Value
+    );
+    test_display_trait_impl!(
+        "Hierarchy is not enabled or is not correct for the use",
+        TpmFormatOneError::Hierarchy
+    );
+    test_display_trait_impl!("Key size is not supported", TpmFormatOneError::KeySize);
+    test_display_trait_impl!(
+        "Mask generation function not supported",
+        TpmFormatOneError::Mgf
+    );
+    test_display_trait_impl!("Mode of operation not supported", TpmFormatOneError::Mode);
+    test_display_trait_impl!(
+        "The type of the value is not appropriate for the use",
+        TpmFormatOneError::Type
+    );
+    test_display_trait_impl!(
+        "The handle is not correct for the use",
+        TpmFormatOneError::Handle
+    );
+    test_display_trait_impl!(
+        "Unsupported key derivation function or function not appropriate for use",
+        TpmFormatOneError::Kdf
+    );
+    test_display_trait_impl!("Value was out of allowed range", TpmFormatOneError::Range);
+    test_display_trait_impl!(
+        "The authorization HMAC check failed and DA counter incremented",
+        TpmFormatOneError::AuthFail
+    );
+    test_display_trait_impl!(
+        "Invalid nonce size or nonce value mismatch",
+        TpmFormatOneError::Nonce
+    );
+    test_display_trait_impl!(
+        "Authorization requires assertion of PP",
+        TpmFormatOneError::Pp
+    );
+    test_display_trait_impl!(
+        "Unsupported or incompatible scheme",
+        TpmFormatOneError::Scheme
+    );
+    test_display_trait_impl!("Structure is the wrong size", TpmFormatOneError::Size);
+    test_display_trait_impl!(
+        "Unsupported symmetric algorithm or key size, or not appropriate for instance",
+        TpmFormatOneError::Symmetric
+    );
+    test_display_trait_impl!("Incorrect structure tag", TpmFormatOneError::Tag);
+    test_display_trait_impl!("Union selector is incorrect", TpmFormatOneError::Selector);
+    test_display_trait_impl!("The TPM was unable to unmarshal a value because there were not enough octets in the input buffer", TpmFormatOneError::Insufficient);
+    test_display_trait_impl!("The signature is not valid", TpmFormatOneError::Signature);
+    test_display_trait_impl!(
+        "Key fields are not compatible with the selected use",
+        TpmFormatOneError::Key
+    );
+    test_display_trait_impl!("A policy check failed", TpmFormatOneError::PolicyFail);
+    test_display_trait_impl!("Integrity check failed", TpmFormatOneError::Integrity);
+    test_display_trait_impl!("Invalid ticket", TpmFormatOneError::Ticket);
+    test_display_trait_impl!(
+        "Reserved bits not set to zero as required",
+        TpmFormatOneError::ReservedBits
+    );
+    test_display_trait_impl!(
+        "Authorization failure without DA implications",
+        TpmFormatOneError::BadAuth
+    );
+    test_display_trait_impl!("The policy has expired", TpmFormatOneError::Expired);
+    test_display_trait_impl!("The `commandCode` in the policy is not the `commandCode` of the command or the command code in a policy command references a command that is not implemented", TpmFormatOneError::PolicyCc);
+    test_display_trait_impl!(
+        "Public and sensitive portions of an object are not cryptographically bound",
+        TpmFormatOneError::Binding
+    );
+    test_display_trait_impl!("Curve not supported", TpmFormatOneError::Curve);
+    test_display_trait_impl!(
+        "Point is not on the required curve",
         TpmFormatOneError::EccPoint
     );
 }
