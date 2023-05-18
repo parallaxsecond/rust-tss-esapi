@@ -1,5 +1,6 @@
 // Copyright 2022 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.
+use bitfield::bitfield;
 use std::convert::TryFrom;
 use tss_esapi::{
     constants::{
@@ -142,6 +143,48 @@ fn test_invalid_conversions() {
         ReturnCode::try_from(tss_invalid_tpm_format_zero_error_rc),
         Err(Error::WrapperError(WrapperErrorKind::InvalidParam)),
         "Converting invalid TPM layer response code did not produce the expected error"
+    );
+}
+
+bitfield! {
+    pub struct ReservedBitHelper(u32);
+    _, set_reserved: 9;
+}
+
+#[test]
+fn test_conversion_of_invalid_value_with_reserved_bits_set() {
+    // Bit 9 In the TPM format zero return code is the reserved bit.
+    // |11|10| 9|   8   | 7| 6| 5| 4| 3| 2| 1| 0|
+    // | W| V| R|TPM 2.0|  |    error number    |
+    let mut helper = ReservedBitHelper(TSS2_TPM_RC_LAYER | TPM2_RC_INITIALIZE);
+    helper.set_reserved(true);
+    let tss_rc_with_reserved_bit_set = helper.0;
+
+    assert_eq!(
+        ReturnCode::try_from(tss_rc_with_reserved_bit_set),
+        Err(Error::WrapperError(WrapperErrorKind::InvalidParam)),
+        "Converting invalid TPM format zero error with reserve bit set did not result in the expected error."
+    );
+}
+
+bitfield! {
+    pub struct Tpm2BitHelper(u32);
+    _, set_tpm_2_0: 8;
+}
+
+#[test]
+fn test_conversion_of_invalid_value_without_tpm2_bit_set() {
+    // Bit 9 In the TPM format zero return code is the reserved bit.
+    // |11|10| 9|   8   | 7| 6| 5| 4| 3| 2| 1| 0|
+    // | W| V| R|TPM 2.0|  |    error number    |
+    let mut helper = Tpm2BitHelper(TSS2_TPM_RC_LAYER | TPM2_RC_INITIALIZE);
+    helper.set_tpm_2_0(false);
+    let tss_rc_with_tpm2_bit_clear = helper.0;
+
+    assert_eq!(
+        ReturnCode::try_from(tss_rc_with_tpm2_bit_clear),
+        Err(Error::WrapperError(WrapperErrorKind::UnsupportedParam)),
+        "Converting invalid TPM format zero error with TPM 2.0 bit clear did not result in the expected error."
     );
 }
 
