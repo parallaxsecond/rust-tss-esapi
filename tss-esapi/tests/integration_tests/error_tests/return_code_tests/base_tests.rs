@@ -168,70 +168,108 @@ fn test_invalid_conversions() {
     assert_eq!(
         BaseReturnCode::try_from(tss_invalid_base_rc as u16),
         Err(Error::WrapperError(WrapperErrorKind::InvalidParam)),
-        "Converting invalid base resposne code did not produce the expected error",
+        "Converting invalid base response code did not produce the expected error",
     );
 }
 
 #[test]
 fn test_display() {
-    test_display_trait_impl!("General Error", BaseError::GeneralFailure);
-    test_display_trait_impl!("Not Implemented", BaseError::NotImplemented);
-    test_display_trait_impl!("Bad Context", BaseError::BadContext);
-    test_display_trait_impl!("ABI Mismatch", BaseError::AbiMismatch);
-    test_display_trait_impl!("Bad Reference", BaseError::BadReference);
-    test_display_trait_impl!("Insufficient Buffer", BaseError::InsufficientBuffer);
-    test_display_trait_impl!("Bad Sequence", BaseError::BadSequence);
-    test_display_trait_impl!("No Connection", BaseError::NoConnection);
-    test_display_trait_impl!("Try Again", BaseError::TryAgain);
-    test_display_trait_impl!("IO Error", BaseError::IoError);
-    test_display_trait_impl!("Bad Value", BaseError::BadValue);
-    test_display_trait_impl!("Not Permitted", BaseError::NotPermitted);
-    test_display_trait_impl!("Invalid Sessions", BaseError::InvalidSessions);
-    test_display_trait_impl!("No Decrypt Param", BaseError::NoDecryptParam);
-    test_display_trait_impl!("No Encrypt Param", BaseError::NoEncryptParam);
-    test_display_trait_impl!("Bad Size", BaseError::BadSize);
-    test_display_trait_impl!("Malformed Response", BaseError::MalformedResponse);
-    test_display_trait_impl!("Insufficient Context", BaseError::InsufficientContext);
-    test_display_trait_impl!("Insufficient Response", BaseError::InsufficientResponse);
-    test_display_trait_impl!("Incompatible TCTI", BaseError::IncompatibleTcti);
-    test_display_trait_impl!("Not Supported", BaseError::NotSupported);
-    test_display_trait_impl!("Bad TCTI Structure", BaseError::BadTctiStructure);
-    test_display_trait_impl!("Memory", BaseError::Memory);
-    test_display_trait_impl!("Bad TR", BaseError::BadTr);
+    test_display_trait_impl!("An unspecified error occurred.", BaseError::GeneralFailure);
     test_display_trait_impl!(
-        "Multiple Decrypt Sessions",
+        "Called functionality isn't implemented.",
+        BaseError::NotImplemented
+    );
+    test_display_trait_impl!("A context structure is bad.", BaseError::BadContext);
+    test_display_trait_impl!(
+        "Passed in ABI version doesn't match called module's ABI version.",
+        BaseError::AbiMismatch
+    );
+    test_display_trait_impl!(
+        "A pointer is NULL that isn't allowed to be NULL.",
+        BaseError::BadReference
+    );
+    test_display_trait_impl!(
+        "A buffer isn't large enough.",
+        BaseError::InsufficientBuffer
+    );
+    test_display_trait_impl!(
+        "Function called in the wrong order.",
+        BaseError::BadSequence
+    );
+    test_display_trait_impl!(
+        "Fails to connect to next lower layer.",
+        BaseError::NoConnection
+    );
+    test_display_trait_impl!(
+        "Operation timed out; function must be called again to be completed.",
+        BaseError::TryAgain
+    );
+    test_display_trait_impl!("IO failure.", BaseError::IoError);
+    test_display_trait_impl!("A parameter has a bad value.", BaseError::BadValue);
+    test_display_trait_impl!("Operation not permitted.", BaseError::NotPermitted);
+    test_display_trait_impl!(
+        "The TPM command doesn't use the number of sessions provided by the caller.",
+        BaseError::InvalidSessions
+    );
+    test_display_trait_impl!("A session with decrypt set in its SessionAttributes (TPMA_SESSION_DECRYPT bit set) was passed to a TPM command that doesn't support encryption of the first command parameter.", BaseError::NoDecryptParam);
+    test_display_trait_impl!("A session with encrypt set in its SessionAttributes (TPMA_SESSION_ENCRYPT bit set) was passed to a TPM command that doesn't support encryption of the first response parameter.", BaseError::NoEncryptParam);
+    test_display_trait_impl!("Size of a parameter is incorrect.", BaseError::BadSize);
+    test_display_trait_impl!("Response is malformed.", BaseError::MalformedResponse);
+    test_display_trait_impl!("Context not large enough.", BaseError::InsufficientContext);
+    test_display_trait_impl!(
+        "Response is not long enough.",
+        BaseError::InsufficientResponse
+    );
+    test_display_trait_impl!(
+        "Unknown or unusable TCTI version.",
+        BaseError::IncompatibleTcti
+    );
+    test_display_trait_impl!("Functionality not supported.", BaseError::NotSupported);
+    test_display_trait_impl!("TCTI context is bad.", BaseError::BadTctiStructure);
+    test_display_trait_impl!("Memory allocation failed.", BaseError::Memory);
+    test_display_trait_impl!("Invalid ObjectHandle(ESYS_TR handle).", BaseError::BadTr);
+    test_display_trait_impl!(
+        "More than one session with decrypt set in SessionAttributes (TPMA_SESSION_DECRYPT bit set).",
         BaseError::MultipleDecryptSessions
     );
     test_display_trait_impl!(
-        "Multiple Encrypt Sessions",
+        "More than one session with encrypt set in SessionAttributes (TPMA_SESSION_ENCRYPT bit set).",
         BaseError::MultipleEncryptSessions
     );
-    test_display_trait_impl!("RSP Auth Failed", BaseError::RspAuthFailed);
-    test_display_trait_impl!("No Config", BaseError::NoConfig);
-    test_display_trait_impl!("Bad Path", BaseError::BadPath);
-    test_display_trait_impl!("Not Deletable", BaseError::NotDeletable);
-    test_display_trait_impl!("Path Already Exists", BaseError::PathAlreadyExists);
-    test_display_trait_impl!("Key Not Found", BaseError::KeyNotFound);
     test_display_trait_impl!(
-        "Signature Verification Failed",
+        "Authorizing the TPM response failed.",
+        BaseError::RspAuthFailed
+    );
+    test_display_trait_impl!("No config is available.", BaseError::NoConfig);
+    test_display_trait_impl!("The provided path is bad.", BaseError::BadPath);
+    test_display_trait_impl!("The object is not deletable.", BaseError::NotDeletable);
+    test_display_trait_impl!(
+        "The provided path already exists.",
+        BaseError::PathAlreadyExists
+    );
+    test_display_trait_impl!("The key was not found.", BaseError::KeyNotFound);
+    test_display_trait_impl!(
+        "Signature verification failed.",
         BaseError::SignatureVerificationFailed
     );
-    test_display_trait_impl!("Hash Mismatch", BaseError::HashMismatch);
-    test_display_trait_impl!("Key Not Duplicable", BaseError::KeyNotDuplicable);
-    test_display_trait_impl!("Path Not Found", BaseError::PathNotFound);
-    test_display_trait_impl!("No Cert", BaseError::NoCert);
-    test_display_trait_impl!("No PCR", BaseError::NoPcr);
-    test_display_trait_impl!("PCR Not Resettable", BaseError::PcrNotResettable);
-    test_display_trait_impl!("Bad Template", BaseError::BadTemplate);
-    test_display_trait_impl!("Authorization Failed", BaseError::AuthorizationFailed);
-    test_display_trait_impl!("Authorization Unknown", BaseError::AuthorizationUnknown);
-    test_display_trait_impl!("NV Not Readable", BaseError::NvNotReadable);
-    test_display_trait_impl!("NV Too Small", BaseError::NvTooSmall);
-    test_display_trait_impl!("NV Not Writeable", BaseError::NvNotWriteable);
-    test_display_trait_impl!("Policy Unknown", BaseError::PolicyUnknown);
-    test_display_trait_impl!("NV Wrong Type", BaseError::NvWrongType);
-    test_display_trait_impl!("Name Already Exists", BaseError::NameAlreadyExists);
-    test_display_trait_impl!("No TPM", BaseError::NoTpm);
-    test_display_trait_impl!("Bad Key", BaseError::BadKey);
-    test_display_trait_impl!("No Handle", BaseError::NoHandle);
+    test_display_trait_impl!("Hash mismatch.", BaseError::HashMismatch);
+    test_display_trait_impl!("Key is not duplicatable.", BaseError::KeyNotDuplicable);
+    test_display_trait_impl!("The path was not found.", BaseError::PathNotFound);
+    test_display_trait_impl!("No certificate.", BaseError::NoCert);
+    test_display_trait_impl!("No PCR.", BaseError::NoPcr);
+    test_display_trait_impl!("PCR not resettable.", BaseError::PcrNotResettable);
+    test_display_trait_impl!("The template is bad.", BaseError::BadTemplate);
+    test_display_trait_impl!("Authorization failed.", BaseError::AuthorizationFailed);
+    test_display_trait_impl!("Authorization is unknown.", BaseError::AuthorizationUnknown);
+    test_display_trait_impl!("NV is not readable.", BaseError::NvNotReadable);
+    test_display_trait_impl!("NV is too small.", BaseError::NvTooSmall);
+    test_display_trait_impl!("NV is not writable.", BaseError::NvNotWriteable);
+    test_display_trait_impl!("The policy is unknown.", BaseError::PolicyUnknown);
+    test_display_trait_impl!("The NV type is wrong.", BaseError::NvWrongType);
+    test_display_trait_impl!("The name already exists.", BaseError::NameAlreadyExists);
+    test_display_trait_impl!("No TPM available.", BaseError::NoTpm);
+    test_display_trait_impl!("The key is bad.", BaseError::BadKey);
+    test_display_trait_impl!("No handle provided.", BaseError::NoHandle);
+    test_display_trait_impl!("Provisioning was not executed.", BaseError::NotProvisioned);
+    test_display_trait_impl!("Already provisioned.", BaseError::AlreadyProvisioned);
 }
