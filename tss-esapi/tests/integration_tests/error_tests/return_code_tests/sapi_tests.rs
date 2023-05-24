@@ -9,8 +9,9 @@ use tss_esapi::{
             TSS2_BASE_RC_BAD_TCTI_STRUCTURE, TSS2_BASE_RC_BAD_TEMPLATE, TSS2_BASE_RC_BAD_VALUE,
             TSS2_BASE_RC_GENERAL_FAILURE, TSS2_BASE_RC_INCOMPATIBLE_TCTI,
             TSS2_BASE_RC_INSUFFICIENT_BUFFER, TSS2_BASE_RC_INSUFFICIENT_CONTEXT,
-            TSS2_BASE_RC_INSUFFICIENT_RESPONSE, TSS2_BASE_RC_MALFORMED_RESPONSE,
-            TSS2_BASE_RC_NO_DECRYPT_PARAM, TSS2_BASE_RC_NO_ENCRYPT_PARAM, TSS2_SYS_RC_LAYER,
+            TSS2_BASE_RC_INSUFFICIENT_RESPONSE, TSS2_BASE_RC_INVALID_SESSIONS,
+            TSS2_BASE_RC_MALFORMED_RESPONSE, TSS2_BASE_RC_NO_DECRYPT_PARAM,
+            TSS2_BASE_RC_NO_ENCRYPT_PARAM, TSS2_SYS_RC_LAYER,
         },
         BaseError,
     },
@@ -86,6 +87,7 @@ fn test_valid_conversions() {
     );
     test_valid_conversion!(TSS2_BASE_RC_BAD_SEQUENCE, BaseError::BadSequence);
     test_valid_conversion!(TSS2_BASE_RC_BAD_VALUE, BaseError::BadValue);
+    test_valid_conversion!(TSS2_BASE_RC_INVALID_SESSIONS, BaseError::InvalidSessions);
     test_valid_conversion!(TSS2_BASE_RC_NO_DECRYPT_PARAM, BaseError::NoDecryptParam);
     test_valid_conversion!(TSS2_BASE_RC_NO_ENCRYPT_PARAM, BaseError::NoEncryptParam);
     test_valid_conversion!(
@@ -110,6 +112,39 @@ fn test_invalid_conversions() {
     assert_eq!(
         ReturnCode::try_from(tss_invalid_fapi_rc),
         Err(Error::WrapperError(WrapperErrorKind::InvalidParam)),
-        "Converting invalid SAPI layer resposne code did not produce the expected error"
+        "Converting invalid SAPI layer response code did not produce the expected error"
     );
+}
+
+macro_rules! test_base_error {
+    (BaseError::$base_error:ident) => {
+        let sapi_rc = SapiReturnCode::try_from(BaseError::$base_error).expect(&format!(
+            "Failed to convert {} into SapiReturnCode",
+            std::stringify!(BaseError::$base_error)
+        ));
+
+        assert_eq!(
+            BaseError::$base_error,
+            sapi_rc.base_error(),
+            "`base_error` method did not return the expected value."
+        );
+    };
+}
+
+#[test]
+fn test_base_error_method() {
+    test_base_error!(BaseError::GeneralFailure);
+    test_base_error!(BaseError::AbiMismatch);
+    test_base_error!(BaseError::BadReference);
+    test_base_error!(BaseError::InsufficientBuffer);
+    test_base_error!(BaseError::BadSequence);
+    test_base_error!(BaseError::BadValue);
+    test_base_error!(BaseError::InvalidSessions);
+    test_base_error!(BaseError::NoDecryptParam);
+    test_base_error!(BaseError::NoEncryptParam);
+    test_base_error!(BaseError::MalformedResponse);
+    test_base_error!(BaseError::InsufficientContext);
+    test_base_error!(BaseError::InsufficientResponse);
+    test_base_error!(BaseError::IncompatibleTcti);
+    test_base_error!(BaseError::BadTctiStructure);
 }

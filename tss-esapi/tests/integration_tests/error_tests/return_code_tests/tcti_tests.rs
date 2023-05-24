@@ -105,6 +105,39 @@ fn test_invalid_conversions() {
     assert_eq!(
         ReturnCode::try_from(tss_invalid_fapi_rc),
         Err(Error::WrapperError(WrapperErrorKind::InvalidParam)),
-        "Converting invalid TCTI layer resposne code did not produce the expected error"
+        "Converting invalid TCTI layer response code did not produce the expected error"
     );
+}
+
+macro_rules! test_base_error {
+    (BaseError::$base_error:ident) => {
+        let tcti_rc = TctiReturnCode::try_from(BaseError::$base_error).expect(&format!(
+            "Failed to convert {} into TctiReturnCode",
+            std::stringify!(BaseError::$base_error)
+        ));
+
+        assert_eq!(
+            BaseError::$base_error,
+            tcti_rc.base_error(),
+            "`base_error` method did not return the expected value."
+        );
+    };
+}
+
+#[test]
+fn test_base_error_method() {
+    test_base_error!(BaseError::GeneralFailure);
+    test_base_error!(BaseError::NotImplemented);
+    test_base_error!(BaseError::BadContext);
+    test_base_error!(BaseError::AbiMismatch);
+    test_base_error!(BaseError::BadReference);
+    test_base_error!(BaseError::InsufficientBuffer);
+    test_base_error!(BaseError::BadSequence);
+    test_base_error!(BaseError::NoConnection);
+    test_base_error!(BaseError::TryAgain);
+    test_base_error!(BaseError::IoError);
+    test_base_error!(BaseError::BadValue);
+    test_base_error!(BaseError::NotPermitted);
+    test_base_error!(BaseError::MalformedResponse);
+    test_base_error!(BaseError::NotSupported);
 }
