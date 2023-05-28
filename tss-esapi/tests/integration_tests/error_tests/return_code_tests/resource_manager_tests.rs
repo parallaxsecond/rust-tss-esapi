@@ -172,6 +172,6 @@ fn test_invalid_conversions() {
     assert_eq!(
         ReturnCode::try_from(tss_invalid_resmgr_rc),
         Err(Error::WrapperError(WrapperErrorKind::InvalidParam)),
-        "Converting invalid RESMGR layer resposne code did not produce the expected error"
+        "Converting invalid RESMGR layer response code did not produce the expected error"
     );
 }

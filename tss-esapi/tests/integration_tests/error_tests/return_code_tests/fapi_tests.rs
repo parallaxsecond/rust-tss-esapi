@@ -5,13 +5,14 @@ use std::convert::TryFrom;
 use tss_esapi::{
     constants::{
         tss::{
-            TSS2_BASE_RC_ABI_MISMATCH, TSS2_BASE_RC_AUTHORIZATION_FAILED,
-            TSS2_BASE_RC_AUTHORIZATION_UNKNOWN, TSS2_BASE_RC_BAD_CONTEXT, TSS2_BASE_RC_BAD_KEY,
-            TSS2_BASE_RC_BAD_PATH, TSS2_BASE_RC_BAD_REFERENCE, TSS2_BASE_RC_BAD_SEQUENCE,
-            TSS2_BASE_RC_BAD_TEMPLATE, TSS2_BASE_RC_BAD_VALUE, TSS2_BASE_RC_GENERAL_FAILURE,
-            TSS2_BASE_RC_HASH_MISMATCH, TSS2_BASE_RC_IO_ERROR, TSS2_BASE_RC_KEY_NOT_DUPLICABLE,
-            TSS2_BASE_RC_KEY_NOT_FOUND, TSS2_BASE_RC_MEMORY, TSS2_BASE_RC_NAME_ALREADY_EXISTS,
-            TSS2_BASE_RC_NOT_DELETABLE, TSS2_BASE_RC_NOT_IMPLEMENTED, TSS2_BASE_RC_NO_CERT,
+            TSS2_BASE_RC_ABI_MISMATCH, TSS2_BASE_RC_ALREADY_PROVISIONED,
+            TSS2_BASE_RC_AUTHORIZATION_FAILED, TSS2_BASE_RC_AUTHORIZATION_UNKNOWN,
+            TSS2_BASE_RC_BAD_CONTEXT, TSS2_BASE_RC_BAD_KEY, TSS2_BASE_RC_BAD_PATH,
+            TSS2_BASE_RC_BAD_REFERENCE, TSS2_BASE_RC_BAD_SEQUENCE, TSS2_BASE_RC_BAD_TEMPLATE,
+            TSS2_BASE_RC_BAD_VALUE, TSS2_BASE_RC_GENERAL_FAILURE, TSS2_BASE_RC_HASH_MISMATCH,
+            TSS2_BASE_RC_IO_ERROR, TSS2_BASE_RC_KEY_NOT_DUPLICABLE, TSS2_BASE_RC_KEY_NOT_FOUND,
+            TSS2_BASE_RC_MEMORY, TSS2_BASE_RC_NAME_ALREADY_EXISTS, TSS2_BASE_RC_NOT_DELETABLE,
+            TSS2_BASE_RC_NOT_IMPLEMENTED, TSS2_BASE_RC_NOT_PROVISIONED, TSS2_BASE_RC_NO_CERT,
             TSS2_BASE_RC_NO_CONFIG, TSS2_BASE_RC_NO_DECRYPT_PARAM, TSS2_BASE_RC_NO_ENCRYPT_PARAM,
             TSS2_BASE_RC_NO_HANDLE, TSS2_BASE_RC_NO_PCR, TSS2_BASE_RC_NO_TPM,
             TSS2_BASE_RC_NV_NOT_READABLE, TSS2_BASE_RC_NV_NOT_WRITEABLE, TSS2_BASE_RC_NV_TOO_SMALL,
@@ -135,6 +136,11 @@ fn test_valid_conversions() {
     test_valid_conversion!(TSS2_BASE_RC_TRY_AGAIN, BaseError::TryAgain);
     test_valid_conversion!(TSS2_BASE_RC_BAD_KEY, BaseError::BadKey);
     test_valid_conversion!(TSS2_BASE_RC_NO_HANDLE, BaseError::NoHandle);
+    test_valid_conversion!(TSS2_BASE_RC_NOT_PROVISIONED, BaseError::NotProvisioned);
+    test_valid_conversion!(
+        TSS2_BASE_RC_ALREADY_PROVISIONED,
+        BaseError::AlreadyProvisioned
+    );
 }
 
 #[test]
@@ -143,6 +149,62 @@ fn test_invalid_conversions() {
     assert_eq!(
         ReturnCode::try_from(tss_invalid_fapi_rc),
         Err(Error::WrapperError(WrapperErrorKind::InvalidParam)),
-        "Converting invalid FAPI layer resposne code did not produce the expected error"
+        "Converting invalid FAPI layer response code did not produce the expected error"
     );
+}
+
+macro_rules! test_base_error {
+    (BaseError::$base_error:ident) => {
+        let fapi_rc = FapiReturnCode::try_from(BaseError::$base_error).expect(&format!(
+            "Failed to convert {} into FapiReturnCode",
+            std::stringify!(BaseError::$base_error)
+        ));
+
+        assert_eq!(
+            BaseError::$base_error,
+            fapi_rc.base_error(),
+            "`base_error` method did not return the expected value."
+        );
+    };
+}
+
+#[test]
+fn test_base_error_method() {
+    test_base_error!(BaseError::GeneralFailure);
+    test_base_error!(BaseError::NotImplemented);
+    test_base_error!(BaseError::BadReference);
+    test_base_error!(BaseError::BadSequence);
+    test_base_error!(BaseError::IoError);
+    test_base_error!(BaseError::BadValue);
+    test_base_error!(BaseError::NoDecryptParam);
+    test_base_error!(BaseError::NoEncryptParam);
+    test_base_error!(BaseError::Memory);
+    test_base_error!(BaseError::BadContext);
+    test_base_error!(BaseError::NoConfig);
+    test_base_error!(BaseError::BadPath);
+    test_base_error!(BaseError::NotDeletable);
+    test_base_error!(BaseError::PathAlreadyExists);
+    test_base_error!(BaseError::KeyNotFound);
+    test_base_error!(BaseError::SignatureVerificationFailed);
+    test_base_error!(BaseError::HashMismatch);
+    test_base_error!(BaseError::KeyNotDuplicable);
+    test_base_error!(BaseError::PathNotFound);
+    test_base_error!(BaseError::NoCert);
+    test_base_error!(BaseError::NoPcr);
+    test_base_error!(BaseError::PcrNotResettable);
+    test_base_error!(BaseError::BadTemplate);
+    test_base_error!(BaseError::AuthorizationFailed);
+    test_base_error!(BaseError::AuthorizationUnknown);
+    test_base_error!(BaseError::NvNotReadable);
+    test_base_error!(BaseError::NvTooSmall);
+    test_base_error!(BaseError::NvNotWriteable);
+    test_base_error!(BaseError::PolicyUnknown);
+    test_base_error!(BaseError::NvWrongType);
+    test_base_error!(BaseError::NameAlreadyExists);
+    test_base_error!(BaseError::NoTpm);
+    test_base_error!(BaseError::TryAgain);
+    test_base_error!(BaseError::BadKey);
+    test_base_error!(BaseError::NoHandle);
+    test_base_error!(BaseError::NotProvisioned);
+    test_base_error!(BaseError::AlreadyProvisioned);
 }

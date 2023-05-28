@@ -90,6 +90,30 @@ fn test_invalid_conversions() {
     assert_eq!(
         ReturnCode::try_from(tss_invalid_fapi_rc),
         Err(Error::WrapperError(WrapperErrorKind::InvalidParam)),
-        "Converting invalid MUAPI layer resposne code did not produce the expected error"
+        "Converting invalid MUAPI layer response code did not produce the expected error"
     );
+}
+
+macro_rules! test_base_error {
+    (BaseError::$base_error:ident) => {
+        let muapi_rc = MuapiReturnCode::try_from(BaseError::$base_error).expect(&format!(
+            "Failed to convert {} into MuapiReturnCode",
+            std::stringify!(BaseError::$base_error)
+        ));
+
+        assert_eq!(
+            BaseError::$base_error,
+            muapi_rc.base_error(),
+            "`base_error` method did not return the expected value."
+        );
+    };
+}
+
+#[test]
+fn test_base_error_method() {
+    test_base_error!(BaseError::GeneralFailure);
+    test_base_error!(BaseError::BadReference);
+    test_base_error!(BaseError::InsufficientBuffer);
+    test_base_error!(BaseError::BadSize);
+    test_base_error!(BaseError::BadValue);
 }

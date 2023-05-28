@@ -13,8 +13,9 @@ use tss_esapi::{
             TSS2_BASE_RC_INCOMPATIBLE_TCTI, TSS2_BASE_RC_INSUFFICIENT_RESPONSE,
             TSS2_BASE_RC_MALFORMED_RESPONSE, TSS2_BASE_RC_MEMORY,
             TSS2_BASE_RC_MULTIPLE_DECRYPT_SESSIONS, TSS2_BASE_RC_MULTIPLE_ENCRYPT_SESSIONS,
-            TSS2_BASE_RC_NOT_IMPLEMENTED, TSS2_BASE_RC_NO_DECRYPT_PARAM,
-            TSS2_BASE_RC_NO_ENCRYPT_PARAM, TSS2_BASE_RC_TRY_AGAIN, TSS2_ESYS_RC_LAYER,
+            TSS2_BASE_RC_NOT_IMPLEMENTED, TSS2_BASE_RC_NOT_SUPPORTED,
+            TSS2_BASE_RC_NO_DECRYPT_PARAM, TSS2_BASE_RC_NO_ENCRYPT_PARAM, TSS2_BASE_RC_TRY_AGAIN,
+            TSS2_ESYS_RC_LAYER,
         },
         BaseError, SessionType,
     },
@@ -113,13 +114,14 @@ fn test_valid_conversions() {
         TSS2_BASE_RC_MULTIPLE_ENCRYPT_SESSIONS,
         BaseError::MultipleEncryptSessions
     );
+    test_valid_conversion!(TSS2_BASE_RC_NOT_SUPPORTED, BaseError::NotSupported);
 }
 
 #[test]
 fn test_invalid_conversions() {
-    let tss_invalid_fapi_rc = TSS2_ESYS_RC_LAYER | TSS2_BASE_RC_BAD_TEMPLATE;
+    let tss_invalid_esapi_rc = TSS2_ESYS_RC_LAYER | TSS2_BASE_RC_BAD_TEMPLATE;
     assert_eq!(
-        ReturnCode::try_from(tss_invalid_fapi_rc),
+        ReturnCode::try_from(tss_invalid_esapi_rc),
         Err(Error::WrapperError(WrapperErrorKind::InvalidParam)),
         "Converting invalid ESAPI layer response code did not produce the expected error"
     );
@@ -186,4 +188,42 @@ fn test_esapi_error_from_context_method() {
     } else {
         panic!("Calling 'create_primary' with two encrypt session did not result in an error");
     }
+}
+
+macro_rules! test_base_error {
+    (BaseError::$base_error:ident) => {
+        let esapi_rc = EsapiReturnCode::try_from(BaseError::$base_error).expect(&format!(
+            "Failed to convert {} into EsapiReturnCode",
+            std::stringify!(BaseError::$base_error)
+        ));
+
+        assert_eq!(
+            BaseError::$base_error,
+            esapi_rc.base_error(),
+            "`base_error` method did not return the expected value."
+        );
+    };
+}
+
+#[test]
+fn test_base_error_method() {
+    test_base_error!(BaseError::GeneralFailure);
+    test_base_error!(BaseError::NotImplemented);
+    test_base_error!(BaseError::BadContext);
+    test_base_error!(BaseError::AbiMismatch);
+    test_base_error!(BaseError::BadReference);
+    test_base_error!(BaseError::BadSequence);
+    test_base_error!(BaseError::TryAgain);
+    test_base_error!(BaseError::BadValue);
+    test_base_error!(BaseError::NoDecryptParam);
+    test_base_error!(BaseError::NoEncryptParam);
+    test_base_error!(BaseError::MalformedResponse);
+    test_base_error!(BaseError::InsufficientResponse);
+    test_base_error!(BaseError::IncompatibleTcti);
+    test_base_error!(BaseError::BadTctiStructure);
+    test_base_error!(BaseError::Memory);
+    test_base_error!(BaseError::BadTr);
+    test_base_error!(BaseError::MultipleDecryptSessions);
+    test_base_error!(BaseError::MultipleEncryptSessions);
+    test_base_error!(BaseError::NotSupported);
 }
