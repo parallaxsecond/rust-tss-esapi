@@ -94,6 +94,7 @@ mod context;
 
 pub mod error;
 pub use tss_esapi_sys as tss2_esys;
+#[cfg(feature = "abstraction")]
 pub mod abstraction;
 pub mod attributes;
 pub mod constants;
