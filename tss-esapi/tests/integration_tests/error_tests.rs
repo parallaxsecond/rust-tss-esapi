@@ -13,7 +13,7 @@ use tss_esapi::{
 #[test]
 fn test_error_trait_implementation() {
     // The Error type is only expected to forward everything to the
-    // underlaying error types.
+    // underlying error types.
     let expected_wrapper_error_kind = WrapperErrorKind::InconsistentParams;
     let wrapper_error = tss_esapi::Error::WrapperError(expected_wrapper_error_kind);
     let actual_wrapper_error_kind = wrapper_error
@@ -39,7 +39,7 @@ fn test_error_trait_implementation() {
 #[test]
 fn test_display_trait_implementation() {
     // The Error type is only expected to forward everything to the
-    // underlaying error types.
+    // underlying error types.
     let expected_wrapper_error_kind = WrapperErrorKind::InconsistentParams;
     let wrapper_error = tss_esapi::Error::WrapperError(expected_wrapper_error_kind);
     assert_eq!(
