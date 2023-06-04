@@ -15,4 +15,5 @@ mod handles_tests;
 mod interface_types_tests;
 mod structures_tests;
 mod tcti_ldr_tests;
+mod traits;
 mod utils_tests;
