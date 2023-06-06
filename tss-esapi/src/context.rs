@@ -457,7 +457,7 @@ impl Drop for Context {
             }
         }
 
-        // Check if all handles have been cleaned up proeprly.
+        // Check if all handles have been cleaned up properly.
         if self.handle_manager.has_open_handles() {
             error!("Not all handles have had their resources successfully released");
         }

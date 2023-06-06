@@ -28,7 +28,7 @@ case:
 $ export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig
 ```
 
-The FFI bindings presented by this crate can be either those commited in the
+The FFI bindings presented by this crate can be either those committed in the
 crate under `src/bindings` or generated on the fly from the library headers
 found on the system, at build time. For generating the bindings at build time
 please enable the `generate-bindings` feature, as it is not enabled by default.

@@ -57,7 +57,7 @@ fn test_conversions() {
             assert_eq!(
                 TPM2_CC::from(*expected),
                 *actual,
-                "Command code missmatch between command codes in CommandCodeList and converted CommandCodeList"
+                "Command code mismatch between command codes in CommandCodeList and converted CommandCodeList"
             )
         });
 

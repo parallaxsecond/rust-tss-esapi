@@ -221,7 +221,7 @@ mod test_evict_control {
         // Create persistent TPM handle with
         let persistent_tpm_handle =
             PersistentTpmHandle::new(u32::from_be_bytes([0x81, 0x00, 0x00, 0x01]))
-                .expect("Failed to create persitent tpm handle");
+                .expect("Failed to create persistent tpm handle");
         // Create interface type Persistent by using the handle.
         let persistent = Persistent::Persistent(persistent_tpm_handle);
 
@@ -272,7 +272,7 @@ mod test_evict_control {
                 .expect("Failed to load the persistent handle")
         });
 
-        // Evict the persitent handle from the tpm
+        // Evict the persistent handle from the tpm
         context
             .evict_control(Provision::Owner, retrieved_persistent_handle, persistent)
             .expect("Failed to evict persistent handle");

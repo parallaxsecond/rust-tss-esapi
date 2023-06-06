@@ -109,7 +109,7 @@
 
 **Fixed bugs:**
 
-- PcrSlot wont compile if TPM2\_PCR\_SELECT\_MAX != 4 [\#310](https://github.com/parallaxsecond/rust-tss-esapi/issues/310)
+- PcrSlot won't compile if TPM2\_PCR\_SELECT\_MAX != 4 [\#310](https://github.com/parallaxsecond/rust-tss-esapi/issues/310)
 - Build failure for tss-esapi 6.1.0 with zeroize\_derive 1.2.0 [\#260](https://github.com/parallaxsecond/rust-tss-esapi/issues/260)
 - Investigate if context methods are using incorrect types. [\#186](https://github.com/parallaxsecond/rust-tss-esapi/issues/186)
 - Change default RSA exponent to 0 [\#292](https://github.com/parallaxsecond/rust-tss-esapi/pull/292) ([ionut-arm](https://github.com/ionut-arm))
@@ -128,7 +128,7 @@
 **Merged pull requests:**
 
 - Prepare 7.0.0-beta.1 release [\#320](https://github.com/parallaxsecond/rust-tss-esapi/pull/320) ([ionut-arm](https://github.com/ionut-arm))
-- Updates depedencies [\#318](https://github.com/parallaxsecond/rust-tss-esapi/pull/318) ([Superhepper](https://github.com/Superhepper))
+- Updates dependencies [\#318](https://github.com/parallaxsecond/rust-tss-esapi/pull/318) ([Superhepper](https://github.com/Superhepper))
 - Fixes some pcr issues. [\#317](https://github.com/parallaxsecond/rust-tss-esapi/pull/317) ([Superhepper](https://github.com/Superhepper))
 - Creates native type for TPML\_CCA [\#315](https://github.com/parallaxsecond/rust-tss-esapi/pull/315) ([Superhepper](https://github.com/Superhepper))
 - Make the crate compatible with 1.53 toolchain [\#314](https://github.com/parallaxsecond/rust-tss-esapi/pull/314) ([ionut-arm](https://github.com/ionut-arm))
@@ -145,7 +145,7 @@
 - Added SignatureScheme type. [\#286](https://github.com/parallaxsecond/rust-tss-esapi/pull/286) ([Superhepper](https://github.com/Superhepper))
 - Make Name wrap the raw type directly [\#280](https://github.com/parallaxsecond/rust-tss-esapi/pull/280) ([wiktor-k](https://github.com/wiktor-k))
 - Add `policy_duplication_select` to Context [\#278](https://github.com/parallaxsecond/rust-tss-esapi/pull/278) ([wiktor-k](https://github.com/wiktor-k))
-- Added auth\_policy method to ther Public structure. [\#274](https://github.com/parallaxsecond/rust-tss-esapi/pull/274) ([Superhepper](https://github.com/Superhepper))
+- Added auth\_policy method to the Public structure. [\#274](https://github.com/parallaxsecond/rust-tss-esapi/pull/274) ([Superhepper](https://github.com/Superhepper))
 - Improved tests and naming for CapabilityType [\#273](https://github.com/parallaxsecond/rust-tss-esapi/pull/273) ([Superhepper](https://github.com/Superhepper))
 - Fix a typo in "bitfield" [\#272](https://github.com/parallaxsecond/rust-tss-esapi/pull/272) ([wiktor-k](https://github.com/wiktor-k))
 - Fix builders when using Null symmetric \(and a couple of small fixes\) [\#271](https://github.com/parallaxsecond/rust-tss-esapi/pull/271) ([wiktor-k](https://github.com/wiktor-k))

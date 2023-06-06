@@ -50,7 +50,7 @@ impl TryFrom<TPMA_CC> for CommandCodeAttributes {
         let command_code_attributes = CommandCodeAttributes(tpma_cc);
         if command_code_attributes.reserved() != 0 || command_code_attributes.res() != 0 {
             error!(
-                "Command code attributes from the TPM contained a non zero value in a resrved area"
+                "Command code attributes from the TPM contained a non zero value in a reserved area"
             );
             return Err(Error::local_error(WrapperErrorKind::InvalidParam));
         }

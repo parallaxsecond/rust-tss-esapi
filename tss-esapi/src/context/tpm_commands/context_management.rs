@@ -217,7 +217,7 @@ impl Context {
     /// #                               handle,
     /// #                               tss_esapi::interface_types::dynamic_handles::Persistent::Persistent(persistent_tpm_handle),
     /// #                           )
-    /// #                           .expect("Failed to evict persitent handle")
+    /// #                           .expect("Failed to evict persistent handle")
     /// #                 });
     /// #                 break;
     /// #             }
@@ -281,7 +281,7 @@ impl Context {
     /// #     ctx.tr_from_tpm_public(TpmHandle::Persistent(persistent_tpm_handle))
     /// #         .expect("Failed to load the persistent handle")
     /// # });
-    /// # // Evict the persitent handle from the tpm
+    /// # // Evict the persistent handle from the tpm
     /// # let _ = context.execute_with_session(Some(AuthSession::Password), |ctx| {
     /// #   ctx
     /// #       .evict_control(Provision::Owner, retireved_persistent_handle, persistent)
@@ -336,7 +336,7 @@ impl Context {
     /// #                               handle,
     /// #                               tss_esapi::interface_types::dynamic_handles::Persistent::Persistent(persistent_tpm_handle),
     /// #                           )
-    /// #                           .expect("Failed to evict persitent handle")
+    /// #                           .expect("Failed to evict persistent handle")
     /// #                 });
     /// #                 break;
     /// #             }
@@ -400,7 +400,7 @@ impl Context {
     /// #     ctx.tr_from_tpm_public(TpmHandle::Persistent(persistent_tpm_handle))
     /// #         .expect("Failed to load the persistent handle")
     /// # });
-    /// // Evict the persitent handle from the tpm
+    /// // Evict the persistent handle from the tpm
     /// // An authorization session is required!
     /// let _ = context.execute_with_session(Some(AuthSession::Password), |ctx| {
     ///     ctx

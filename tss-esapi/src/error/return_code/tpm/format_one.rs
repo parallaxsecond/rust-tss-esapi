@@ -98,7 +98,7 @@ impl std::fmt::Display for TpmFormatOneResponseCode {
 
 bitfield! {
     /// A struct representing the format one
-    /// TPM retrun code.
+    /// TPM return code.
     #[derive(PartialEq, Copy, Clone)]
     struct TpmFormatOneResponseCodeStructure(u16);
     impl Debug;

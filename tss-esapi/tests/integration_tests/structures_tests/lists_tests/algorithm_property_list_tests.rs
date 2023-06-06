@@ -43,7 +43,7 @@ fn test_conversions() {
         .for_each(|((expected_aid, expected_aa), ap)| {
             assert_eq!(
                 expected_aid, &ap.algorithm_identifier(),
-                "An AlgorithmProperty in the AlgorithmPropertyList converted from TPML_ALG_PROPERTY did not contain the expected algorithm identifer"
+                "An AlgorithmProperty in the AlgorithmPropertyList converted from TPML_ALG_PROPERTY did not contain the expected algorithm identifier"
             );
             assert_eq!(
                 expected_aa, &ap.algorithm_properties(),
@@ -94,7 +94,7 @@ fn test_valid_conversion_vector() {
         .for_each(|((expected_aid, expected_aa), ap)| {
             assert_eq!(
                 expected_aid, &ap.algorithm_identifier(),
-                "An AlgorithmProperty in the Vec<AlgorithmProperty> converted from AlgorithmPropertyList did not contain the expected algorithm identifer"
+                "An AlgorithmProperty in the Vec<AlgorithmProperty> converted from AlgorithmPropertyList did not contain the expected algorithm identifier"
             );
             assert_eq!(
                 expected_aa, &ap.algorithm_properties(),

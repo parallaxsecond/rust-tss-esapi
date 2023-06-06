@@ -4,17 +4,14 @@ on: [push, pull_request]
 
 jobs:
   # Use the following command to fix words locally:
-  # codespell --ignore-words-list "crate,daa,keypair" --skip "*/target,*-sys" --write-changes
+  # codespell --write-changes
   check-spelling:
     name: Check spelling
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v2
       - name: Check spelling
-        uses: codespell-project/actions-codespell@master
-        with:
-          ignore_words_list: "crate,daa,keypair"
-          path: tss-esapi
-          skip: "*/target,*-sys"
+        uses: codespell-project/actions-codespell@v1
 
   formatting:
     name: Check formatting

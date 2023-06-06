@@ -187,7 +187,7 @@ fn test_invalid_conversions_non_vendor_specific_invalid_command_index() {
     assert_eq!(
         Err(Error::WrapperError(WrapperErrorKind::InvalidParam)),
         CommandCodeAttributes::try_from(invalid_tpma_cc),
-        "Converting TPMA_CC witrh invalid command code index into CommandCodeAttributes did no produce the expected error"
+        "Converting TPMA_CC with invalid command code index into CommandCodeAttributes did no produce the expected error"
     );
 }
 
@@ -261,7 +261,7 @@ fn test_builder() {
         .with_c_handles(expected.c_handles())
         .with_r_handle(expected.r_handle())
         .build()
-        .expect("Failed to buiild command code attributes");
+        .expect("Failed to build command code attributes");
 
     assert_eq!(
         expected.command_index(),

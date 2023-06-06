@@ -652,7 +652,7 @@ pub use crate::tss2_esys::TSS2_BASE_RC_BAD_SIZE; /* If size of a parameter is in
 pub use crate::tss2_esys::TSS2_BASE_RC_BAD_TCTI_STRUCTURE; /* TCTI context is bad. */
 pub use crate::tss2_esys::TSS2_BASE_RC_BAD_TR; /* Invalid ESYS_TR handle */
 pub use crate::tss2_esys::TSS2_BASE_RC_BAD_VALUE; /* A parameter has a bad value */
-pub use crate::tss2_esys::TSS2_BASE_RC_GENERAL_FAILURE; /* Catch all for all errors not otherwise specifed */
+pub use crate::tss2_esys::TSS2_BASE_RC_GENERAL_FAILURE; /* Catch all for all errors not otherwise specified */
 pub use crate::tss2_esys::TSS2_BASE_RC_INCOMPATIBLE_TCTI; /* Unknown or unusable TCTI version */
 pub use crate::tss2_esys::TSS2_BASE_RC_INSUFFICIENT_BUFFER; /* A buffer isn't large enough */
 pub use crate::tss2_esys::TSS2_BASE_RC_INSUFFICIENT_CONTEXT; /* Context not large enough */

@@ -69,7 +69,7 @@ macro_rules! test_valid_conversion {
             assert_eq!(
                 expected_tpm_format_one_error_rc,
                 actual_tpm_format_one_error_rc,
-                "{} associted with {} nr {} did not convert into the expected TpmFormatOneResponseCode",
+                "{} associated with {} nr {} did not convert into the expected TpmFormatOneResponseCode",
                 std::stringify!($tpm_error_rc),
                 std::stringify!($argument_number_item),
                 std::stringify!($argument_number_value),
