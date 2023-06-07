@@ -5,6 +5,7 @@
 #[path = "common/mod.rs"]
 mod common;
 
+#[cfg(feature = "abstraction")]
 mod abstraction_tests;
 mod attributes_tests;
 mod constants_tests;
