@@ -11,7 +11,7 @@ use std::{convert::TryFrom, iter::IntoIterator, ops::Deref};
 /// A structure holding a list of command code attributes.
 ///
 /// # Details
-/// This corresponds to the TPML_CCA strucutre.
+/// This corresponds to the TPML_CCA structure.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct CommandCodeAttributesList {
     command_code_attributes: Vec<CommandCodeAttributes>,

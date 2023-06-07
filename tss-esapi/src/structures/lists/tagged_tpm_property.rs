@@ -13,7 +13,7 @@ use std::{convert::TryFrom, iter::IntoIterator, ops::Deref};
 /// A structure holding a list of tagged tpm properties.
 ///
 /// # Details
-/// This corresponds to the TPML_TAGGED_TPM_PROPERTY strucutre.
+/// This corresponds to the TPML_TAGGED_TPM_PROPERTY structure.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct TaggedTpmPropertyList {
     tagged_tpm_properties: Vec<TaggedProperty>,

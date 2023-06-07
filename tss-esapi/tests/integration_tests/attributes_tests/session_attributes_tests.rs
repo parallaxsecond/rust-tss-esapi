@@ -111,10 +111,10 @@ fn test_valid_session_attributes_conversions() {
 fn test_invalid_session_attributes_conversions() {
     test_conversion_with_reserved_bits_set!(1u8
         .checked_shl(3)
-        .expect("Failed to create value with resrved bit 3 set"));
+        .expect("Failed to create value with reserved bit 3 set"));
     test_conversion_with_reserved_bits_set!(1u8
         .checked_shl(4)
-        .expect("Failed to create value with resrved bit 4 set"));
+        .expect("Failed to create value with reserved bit 4 set"));
 }
 
 #[test]
@@ -155,10 +155,10 @@ fn test_valid_session_attributes_mask_conversions() {
 fn test_invalid_session_attributes_mask_conversions() {
     test_mask_conversion_with_reserved_bits_set!(1u8
         .checked_shl(3)
-        .expect("Failed to create value with resrved bit 3 set"));
+        .expect("Failed to create value with reserved bit 3 set"));
     test_mask_conversion_with_reserved_bits_set!(1u8
         .checked_shl(4)
-        .expect("Failed to create value with resrved bit 4 set"));
+        .expect("Failed to create value with reserved bit 4 set"));
 }
 
 #[test]

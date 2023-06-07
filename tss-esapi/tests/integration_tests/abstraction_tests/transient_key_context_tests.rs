@@ -301,7 +301,7 @@ fn two_signatures_different_digest() {
             panic!("Unexpected signature for signature 2");
         }
     } else {
-        panic!("Unexpected singature for signature 1");
+        panic!("Unexpected signature for signature 1");
     }
 }
 

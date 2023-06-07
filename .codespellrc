@@ -1,0 +1,3 @@
+[codespell]
+skip = .git,target,Cargo.lock
+ignore-words-list = crate,keypair,daa

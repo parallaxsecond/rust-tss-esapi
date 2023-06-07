@@ -7,7 +7,7 @@ use crate::{
 };
 use std::convert::{TryFrom, TryInto};
 
-/// Strucutre for holding information describing an
+/// Structure for holding information describing an
 /// algorithm.
 ///
 /// # Details

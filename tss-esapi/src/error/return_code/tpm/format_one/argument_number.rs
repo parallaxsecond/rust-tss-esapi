@@ -26,24 +26,24 @@ impl From<u8> for ArgumentNumber {
 
 impl From<ArgumentNumber> for u8 {
     fn from(argument_number: ArgumentNumber) -> u8 {
-        let mut strucuture = ArgumentNumberStructure(0);
+        let mut structure = ArgumentNumberStructure(0);
         match argument_number {
             ArgumentNumber::Parameter(number) => {
-                strucuture.set_is_parameter(true);
-                strucuture.set_parameter_number(number);
+                structure.set_is_parameter(true);
+                structure.set_parameter_number(number);
             }
             ArgumentNumber::Session(number) => {
-                strucuture.set_is_parameter(false);
-                strucuture.set_is_session(true);
-                strucuture.set_session_number(number);
+                structure.set_is_parameter(false);
+                structure.set_is_session(true);
+                structure.set_session_number(number);
             }
             ArgumentNumber::Handle(number) => {
-                strucuture.set_is_parameter(false);
-                strucuture.set_is_session(false);
-                strucuture.set_handle_number(number);
+                structure.set_is_parameter(false);
+                structure.set_is_session(false);
+                structure.set_handle_number(number);
             }
         }
-        strucuture.0
+        structure.0
     }
 }
 
@@ -65,7 +65,7 @@ impl std::fmt::Display for ArgumentNumber {
 
 bitfield! {
     /// A struct representing the the argument in format one
-    /// TPM retrun code.
+    /// TPM return code.
     #[derive(PartialEq, Copy, Clone)]
     struct ArgumentNumberStructure(u8);
     impl Debug;
