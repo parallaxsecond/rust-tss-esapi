@@ -2,11 +2,12 @@
 // SPDX-License-Identifier: Apache-2.0
 use super::{ObjectWrapper, TransientKeyContext};
 use crate::{
-    abstraction::ek,
+    abstraction::{ek, AsymmetricAlgorithmSelection},
     constants::SessionType,
     handles::{AuthHandle, KeyHandle, SessionHandle},
     interface_types::{
-        algorithm::{AsymmetricAlgorithm, HashingAlgorithm},
+        algorithm::HashingAlgorithm,
+        key_bits::RsaKeyBits,
         session_handles::{AuthSession, PolicySession},
     },
     structures::{EncryptedSecret, IdObject, SymmetricDefinition},
@@ -151,13 +152,16 @@ impl TransientKeyContext {
             None,
         );
         Ok((
-            ek::create_ek_object(&mut self.context, AsymmetricAlgorithm::Rsa, None).or_else(
-                |e| {
-                    self.context
-                        .flush_context(SessionHandle::from(session).into())?;
-                    Err(e)
-                },
-            )?,
+            ek::create_ek_object(
+                &mut self.context,
+                AsymmetricAlgorithmSelection::Rsa(RsaKeyBits::Rsa2048),
+                None,
+            )
+            .or_else(|e| {
+                self.context
+                    .flush_context(SessionHandle::from(session).into())?;
+                Err(e)
+            })?,
             session,
         ))
     }
@@ -188,7 +192,11 @@ impl TransientKeyContext {
 }
 
 fn get_ek_object_public(context: &mut crate::Context) -> Result<PublicKey> {
-    let key_handle = ek::create_ek_object(context, AsymmetricAlgorithm::Rsa, None)?;
+    let key_handle = ek::create_ek_object(
+        context,
+        AsymmetricAlgorithmSelection::Rsa(RsaKeyBits::Rsa2048),
+        None,
+    )?;
     let (attesting_key_pub, _, _) = context.read_public(key_handle).or_else(|e| {
         context.flush_context(key_handle.into())?;
         Err(e)

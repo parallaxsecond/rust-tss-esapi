@@ -92,3 +92,72 @@ fn test_signing_with_wrong_symmetric() {
         Err(Error::WrapperError(WrapperErrorKind::InconsistentParams))
     ));
 }
+
+#[test]
+fn test_signing_with_mismatched_scheme_nist() {
+    assert_eq!(
+        PublicEccParametersBuilder::new()
+            .with_restricted(false)
+            .with_is_decryption_key(false)
+            .with_is_signing_key(true)
+            .with_curve(EccCurve::NistP256)
+            .with_ecc_scheme(
+                EccScheme::create(
+                    EccSchemeAlgorithm::Sm2,
+                    Some(HashingAlgorithm::Sha256),
+                    None
+                )
+                .unwrap()
+            )
+            .with_key_derivation_function_scheme(KeyDerivationFunctionScheme::Null)
+            .with_symmetric(SymmetricDefinitionObject::Null)
+            .build(),
+        Err(Error::WrapperError(WrapperErrorKind::InconsistentParams))
+    );
+}
+
+#[test]
+fn test_signing_with_mismatched_scheme_sm2() {
+    assert_eq!(
+        PublicEccParametersBuilder::new()
+            .with_restricted(false)
+            .with_is_decryption_key(false)
+            .with_is_signing_key(true)
+            .with_curve(EccCurve::Sm2P256)
+            .with_ecc_scheme(
+                EccScheme::create(
+                    EccSchemeAlgorithm::EcDsa,
+                    Some(HashingAlgorithm::Sha256),
+                    None
+                )
+                .unwrap()
+            )
+            .with_key_derivation_function_scheme(KeyDerivationFunctionScheme::Null)
+            .with_symmetric(SymmetricDefinitionObject::Null)
+            .build(),
+        Err(Error::WrapperError(WrapperErrorKind::InconsistentParams))
+    );
+}
+
+#[test]
+fn test_signing_with_mismatched_scheme_bn() {
+    assert_eq!(
+        PublicEccParametersBuilder::new()
+            .with_restricted(false)
+            .with_is_decryption_key(false)
+            .with_is_signing_key(true)
+            .with_curve(EccCurve::BnP256)
+            .with_ecc_scheme(
+                EccScheme::create(
+                    EccSchemeAlgorithm::EcDsa,
+                    Some(HashingAlgorithm::Sha256),
+                    None
+                )
+                .unwrap()
+            )
+            .with_key_derivation_function_scheme(KeyDerivationFunctionScheme::Null)
+            .with_symmetric(SymmetricDefinitionObject::Null)
+            .build(),
+        Err(Error::WrapperError(WrapperErrorKind::InconsistentParams))
+    );
+}
