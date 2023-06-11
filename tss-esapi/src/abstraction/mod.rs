@@ -9,7 +9,14 @@ pub mod pcr;
 pub mod public;
 pub mod transient;
 
-use crate::{attributes::ObjectAttributesBuilder, structures::PublicBuilder};
+use std::convert::TryFrom;
+
+use crate::{
+    attributes::ObjectAttributesBuilder,
+    interface_types::{algorithm::AsymmetricAlgorithm, ecc::EccCurve, key_bits::RsaKeyBits},
+    structures::PublicBuilder,
+    Error, WrapperErrorKind,
+};
 
 /// KeyCustomizaion allows to adjust how a key is going to be created
 pub trait KeyCustomization {
@@ -58,5 +65,31 @@ impl IntoKeyCustomization for Option<DefaultKey> {
 
     fn into_key_customization(self) -> Option<Self::T> {
         None
+    }
+}
+
+/// Enum representing the asymmetric algorithm interface type with specific properties.
+///
+/// # Details
+/// Use this instead of [AsymmetricAlgorithm].
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+pub enum AsymmetricAlgorithmSelection {
+    Rsa(RsaKeyBits),
+    Ecc(EccCurve),
+}
+
+/// The conversion assumes for RSA 2048 bit size and for ECC the Nist P256 curve,
+/// which matches the defaults in tpm2-tools.
+impl TryFrom<AsymmetricAlgorithm> for AsymmetricAlgorithmSelection {
+    type Error = Error;
+
+    fn try_from(value: AsymmetricAlgorithm) -> Result<Self, Self::Error> {
+        match value {
+            AsymmetricAlgorithm::Rsa => Ok(AsymmetricAlgorithmSelection::Rsa(RsaKeyBits::Rsa2048)),
+            AsymmetricAlgorithm::Ecc => Ok(AsymmetricAlgorithmSelection::Ecc(EccCurve::NistP256)),
+            AsymmetricAlgorithm::Null => {
+                Err(Error::local_error(WrapperErrorKind::UnsupportedParam))
+            }
+        }
     }
 }

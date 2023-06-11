@@ -2,17 +2,17 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use crate::{
-    abstraction::{cipher::Cipher, IntoKeyCustomization, KeyCustomization},
+    abstraction::{
+        cipher::Cipher, AsymmetricAlgorithmSelection, IntoKeyCustomization, KeyCustomization,
+    },
     attributes::{ObjectAttributesBuilder, SessionAttributesBuilder},
     constants::{AlgorithmIdentifier, SessionType},
     handles::{AuthHandle, KeyHandle, SessionHandle},
     interface_types::{
         algorithm::{
-            AsymmetricAlgorithm, EccSchemeAlgorithm, HashingAlgorithm, PublicAlgorithm,
-            RsaSchemeAlgorithm, SignatureSchemeAlgorithm,
+            EccSchemeAlgorithm, HashingAlgorithm, PublicAlgorithm, RsaSchemeAlgorithm,
+            SignatureSchemeAlgorithm,
         },
-        ecc::EccCurve,
-        key_bits::RsaKeyBits,
         session_handles::PolicySession,
     },
     structures::{
@@ -22,11 +22,10 @@ use crate::{
     },
     Context, Error, Result, WrapperErrorKind,
 };
-use log::error;
 use std::convert::{TryFrom, TryInto};
 
 fn create_ak_public<IKC: IntoKeyCustomization>(
-    key_alg: AsymmetricAlgorithm,
+    key_alg: AsymmetricAlgorithmSelection,
     hash_alg: HashingAlgorithm,
     sign_alg: SignatureSchemeAlgorithm,
     key_customization: IKC,
@@ -50,7 +49,7 @@ fn create_ak_public<IKC: IntoKeyCustomization>(
     .build()?;
 
     let key_builder = match key_alg {
-        AsymmetricAlgorithm::Rsa => PublicBuilder::new()
+        AsymmetricAlgorithmSelection::Rsa(key_bits) => PublicBuilder::new()
             .with_public_algorithm(PublicAlgorithm::Rsa)
             .with_name_hashing_algorithm(hash_alg)
             .with_object_attributes(obj_attrs)
@@ -60,7 +59,7 @@ fn create_ak_public<IKC: IntoKeyCustomization>(
                         RsaSchemeAlgorithm::try_from(AlgorithmIdentifier::from(sign_alg))?,
                         Some(hash_alg),
                     )?)
-                    .with_key_bits(RsaKeyBits::Rsa2048)
+                    .with_key_bits(key_bits)
                     .with_exponent(RsaExponent::default())
                     .with_is_signing_key(obj_attrs.sign_encrypt())
                     .with_is_decryption_key(obj_attrs.decrypt())
@@ -68,7 +67,7 @@ fn create_ak_public<IKC: IntoKeyCustomization>(
                     .build()?,
             )
             .with_rsa_unique_identifier(PublicKeyRsa::default()),
-        AsymmetricAlgorithm::Ecc => PublicBuilder::new()
+        AsymmetricAlgorithmSelection::Ecc(ecc_curve) => PublicBuilder::new()
             .with_public_algorithm(PublicAlgorithm::Ecc)
             .with_name_hashing_algorithm(hash_alg)
             .with_object_attributes(obj_attrs)
@@ -80,14 +79,10 @@ fn create_ak_public<IKC: IntoKeyCustomization>(
                         Some(hash_alg),
                         Some(0),
                     )?)
-                    .with_curve(EccCurve::NistP192)
+                    .with_curve(ecc_curve)
                     .with_key_derivation_function_scheme(KeyDerivationFunctionScheme::Null)
                     .build()?,
             ),
-        AsymmetricAlgorithm::Null => {
-            // TODO: Figure out what to with Null.
-            return Err(Error::local_error(WrapperErrorKind::UnsupportedParam));
-        }
     };
 
     let key_builder = if let Some(ref k) = key_customization {
@@ -160,16 +155,11 @@ pub fn create_ak<IKC: IntoKeyCustomization>(
     context: &mut Context,
     parent: KeyHandle,
     hash_alg: HashingAlgorithm,
+    key_alg: AsymmetricAlgorithmSelection,
     sign_alg: SignatureSchemeAlgorithm,
     ak_auth_value: Option<Auth>,
     key_customization: IKC,
 ) -> Result<CreateKeyResult> {
-    let key_alg = AsymmetricAlgorithm::try_from(sign_alg).map_err(|e| {
-        // sign_alg is either HMAC or Null.
-        error!("Could not retrieve asymmetric algorithm for provided signature scheme");
-        e
-    })?;
-
     let ak_pub = create_ak_public(key_alg, hash_alg, sign_alg, key_customization)?;
 
     let policy_auth_session = context
