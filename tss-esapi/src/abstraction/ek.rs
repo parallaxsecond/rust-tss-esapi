@@ -2,11 +2,11 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use crate::{
-    abstraction::{nv, IntoKeyCustomization, KeyCustomization},
+    abstraction::{nv, AsymmetricAlgorithmSelection, IntoKeyCustomization, KeyCustomization},
     attributes::ObjectAttributesBuilder,
     handles::{KeyHandle, NvIndexTpmHandle, TpmHandle},
     interface_types::{
-        algorithm::{AsymmetricAlgorithm, HashingAlgorithm, PublicAlgorithm},
+        algorithm::{HashingAlgorithm, PublicAlgorithm},
         ecc::EccCurve,
         key_bits::RsaKeyBits,
         resource_handles::{Hierarchy, NvAuth},
@@ -24,12 +24,20 @@ use std::convert::TryFrom;
 const RSA_2048_EK_CERTIFICATE_NV_INDEX: u32 = 0x01c00002;
 const ECC_P256_EK_CERTIFICATE_NV_INDEX: u32 = 0x01c0000a;
 
+// Source: TCG EK Credential Profile for TPM Family 2.0; Level 0 Version 2.3 Revision 2
+// Section 2.2.1.5 (High Range)
+const ECC_P384_EK_CERTIFICATE_NV_INDEX: u32 = 0x01c00016;
+const ECC_P521_EK_CERTIFICATE_NV_INDEX: u32 = 0x01c00018;
+const ECC_P256_SM2_EK_CERTIFICATE_NV_INDEX: u32 = 0x01c0001a;
+const RSA_3072_EK_CERTIFICATE_NV_INDEX: u32 = 0x01c0001c;
+const RSA_4096_EK_CERTIFICATE_NV_INDEX: u32 = 0x01c0001e;
+
 /// Get the [`Public`] representing a default Endorsement Key
 ///
 /// Source: TCG EK Credential Profile for TPM Family 2.0; Level 0 Version 2.3 Revision 2
 /// Appendix B.3.3 and B.3.4
 pub fn create_ek_public_from_default_template<IKC: IntoKeyCustomization>(
-    alg: AsymmetricAlgorithm,
+    alg: AsymmetricAlgorithmSelection,
     key_customization: IKC,
 ) -> Result<Public> {
     let key_customization = key_customization.into_key_customization();
@@ -65,7 +73,7 @@ pub fn create_ek_public_from_default_template<IKC: IntoKeyCustomization>(
     ];
 
     let key_builder = match alg {
-        AsymmetricAlgorithm::Rsa => PublicBuilder::new()
+        AsymmetricAlgorithmSelection::Rsa(key_bits) => PublicBuilder::new()
             .with_public_algorithm(PublicAlgorithm::Rsa)
             .with_name_hashing_algorithm(HashingAlgorithm::Sha256)
             .with_object_attributes(obj_attrs)
@@ -74,7 +82,7 @@ pub fn create_ek_public_from_default_template<IKC: IntoKeyCustomization>(
                 PublicRsaParametersBuilder::new()
                     .with_symmetric(SymmetricDefinitionObject::AES_128_CFB)
                     .with_scheme(RsaScheme::Null)
-                    .with_key_bits(RsaKeyBits::Rsa2048)
+                    .with_key_bits(key_bits)
                     .with_exponent(RsaExponent::default())
                     .with_is_signing_key(obj_attrs.sign_encrypt())
                     .with_is_decryption_key(obj_attrs.decrypt())
@@ -82,7 +90,7 @@ pub fn create_ek_public_from_default_template<IKC: IntoKeyCustomization>(
                     .build()?,
             )
             .with_rsa_unique_identifier(PublicKeyRsa::new_empty_with_size(RsaKeyBits::Rsa2048)),
-        AsymmetricAlgorithm::Ecc => PublicBuilder::new()
+        AsymmetricAlgorithmSelection::Ecc(ecc_curve) => PublicBuilder::new()
             .with_public_algorithm(PublicAlgorithm::Ecc)
             .with_name_hashing_algorithm(HashingAlgorithm::Sha256)
             .with_object_attributes(obj_attrs)
@@ -91,7 +99,7 @@ pub fn create_ek_public_from_default_template<IKC: IntoKeyCustomization>(
                 PublicEccParametersBuilder::new()
                     .with_symmetric(SymmetricDefinitionObject::AES_128_CFB)
                     .with_ecc_scheme(EccScheme::Null)
-                    .with_curve(EccCurve::NistP256)
+                    .with_curve(ecc_curve)
                     .with_key_derivation_function_scheme(KeyDerivationFunctionScheme::Null)
                     .with_is_signing_key(obj_attrs.sign_encrypt())
                     .with_is_decryption_key(obj_attrs.decrypt())
@@ -102,10 +110,6 @@ pub fn create_ek_public_from_default_template<IKC: IntoKeyCustomization>(
                 EccParameter::try_from(vec![0u8; 32])?,
                 EccParameter::try_from(vec![0u8; 32])?,
             )),
-        AsymmetricAlgorithm::Null => {
-            // TDOD: Figure out what to with Null.
-            return Err(Error::local_error(WrapperErrorKind::UnsupportedParam));
-        }
     };
 
     let key_builder = if let Some(ref k) = key_customization {
@@ -119,7 +123,7 @@ pub fn create_ek_public_from_default_template<IKC: IntoKeyCustomization>(
 /// Create the Endorsement Key object from the specification templates
 pub fn create_ek_object<IKC: IntoKeyCustomization>(
     context: &mut Context,
-    alg: AsymmetricAlgorithm,
+    alg: AsymmetricAlgorithmSelection,
     key_customization: IKC,
 ) -> Result<KeyHandle> {
     let ek_public = create_ek_public_from_default_template(alg, key_customization)?;
@@ -132,14 +136,21 @@ pub fn create_ek_object<IKC: IntoKeyCustomization>(
 }
 
 /// Retrieve the Endorsement Key public certificate from the TPM
-pub fn retrieve_ek_pubcert(context: &mut Context, alg: AsymmetricAlgorithm) -> Result<Vec<u8>> {
+pub fn retrieve_ek_pubcert(
+    context: &mut Context,
+    alg: AsymmetricAlgorithmSelection,
+) -> Result<Vec<u8>> {
     let nv_idx = match alg {
-        AsymmetricAlgorithm::Rsa => RSA_2048_EK_CERTIFICATE_NV_INDEX,
-        AsymmetricAlgorithm::Ecc => ECC_P256_EK_CERTIFICATE_NV_INDEX,
-        AsymmetricAlgorithm::Null => {
-            // TDOD: Figure out what to with Null.
-            return Err(Error::local_error(WrapperErrorKind::UnsupportedParam));
+        AsymmetricAlgorithmSelection::Rsa(RsaKeyBits::Rsa2048) => RSA_2048_EK_CERTIFICATE_NV_INDEX,
+        AsymmetricAlgorithmSelection::Rsa(RsaKeyBits::Rsa3072) => RSA_3072_EK_CERTIFICATE_NV_INDEX,
+        AsymmetricAlgorithmSelection::Rsa(RsaKeyBits::Rsa4096) => RSA_4096_EK_CERTIFICATE_NV_INDEX,
+        AsymmetricAlgorithmSelection::Ecc(EccCurve::NistP256) => ECC_P256_EK_CERTIFICATE_NV_INDEX,
+        AsymmetricAlgorithmSelection::Ecc(EccCurve::NistP384) => ECC_P384_EK_CERTIFICATE_NV_INDEX,
+        AsymmetricAlgorithmSelection::Ecc(EccCurve::NistP521) => ECC_P521_EK_CERTIFICATE_NV_INDEX,
+        AsymmetricAlgorithmSelection::Ecc(EccCurve::Sm2P256) => {
+            ECC_P256_SM2_EK_CERTIFICATE_NV_INDEX
         }
+        _ => return Err(Error::local_error(WrapperErrorKind::UnsupportedParam)),
     };
 
     let nv_idx = NvIndexTpmHandle::new(nv_idx).unwrap();

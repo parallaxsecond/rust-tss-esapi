@@ -292,7 +292,8 @@ impl TryFrom<TPMI_ALG_SYM_MODE> for SymmetricMode {
 /// Enum representing the asymmetric algorithm interface type.
 ///
 /// # Details
-/// This corresponds to TPMI_ALG_ASYM
+/// Use [AsymmetricAlgorithmSelection] instead where possible.
+/// This corresponds to TPMI_ALG_ASYM.
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
 pub enum AsymmetricAlgorithm {
     Rsa,
