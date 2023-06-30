@@ -44,6 +44,12 @@ macro_rules! named_field_buffer_type {
             }
         }
 
+        impl AsRef<[u8]> for $native_type {
+            fn as_ref(&self) -> &[u8] {
+                self.as_bytes()
+            }
+        }
+
         impl Deref for $native_type {
             type Target = Vec<u8>;
             fn deref(&self) -> &Self::Target {
