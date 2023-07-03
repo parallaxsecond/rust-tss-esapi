@@ -47,4 +47,17 @@ mod test_auth {
             assert_eq!(expected, actual);
         }
     }
+
+    #[test]
+    fn test_as_ref() {
+        // The following function accepts the broadest selection of types as its argument
+        // including MaxBuffer. It also returns the MaxBuffer but in such a way that the
+        // client is not aware of the true underlying type.
+        fn accepts_returns_as_ref(data: impl AsRef<[u8]>) -> tss_esapi::Result<impl AsRef<[u8]>> {
+            let data = data.as_ref();
+            let max_buffer = MaxBuffer::from_bytes(data)?;
+            Ok(max_buffer)
+        }
+        accepts_returns_as_ref(MaxBuffer::from_bytes(&[1, 2, 3]).unwrap()).unwrap();
+    }
 }
