@@ -158,23 +158,6 @@ impl From<CommandCode> for TPM2_CC {
 impl Marshall for CommandCode {
     const BUFFER_SIZE: usize = std::mem::size_of::<TPM2_CC>();
 
-    /// Produce a marshalled [TPM2_CC]
-    fn marshall(&self) -> Result<Vec<u8>> {
-        let mut buffer = vec![0; Self::BUFFER_SIZE];
-        let mut offset = 0;
-
-        self.marshall_offset(&mut buffer, &mut offset)?;
-
-        let checked_offset = usize::try_from(offset).map_err(|e| {
-            error!("Failed to parse offset as usize: {}", e);
-            Error::local_error(WrapperErrorKind::InvalidParam)
-        })?;
-
-        buffer.truncate(checked_offset);
-
-        Ok(buffer)
-    }
-
     fn marshall_offset(
         &self,
         marshalled_data: &mut [u8],
@@ -201,11 +184,6 @@ impl Marshall for CommandCode {
 }
 
 impl UnMarshall for CommandCode {
-    /// Unmarshall the structure from [`TPM2_CC`]
-    fn unmarshall(marshalled_data: &[u8]) -> Result<Self> {
-        CommandCode::unmarshall_offset(marshalled_data, &mut 0)
-    }
-
     fn unmarshall_offset(
         marshalled_data: &[u8],
         offset: &mut std::os::raw::c_ulong,

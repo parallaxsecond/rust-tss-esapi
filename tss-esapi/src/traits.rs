@@ -12,7 +12,21 @@ use crate::{Error, Result, ReturnCode, WrapperErrorKind};
 pub trait Marshall: Sized {
     const BUFFER_SIZE: usize;
     /// Returns the type in the form of marshalled data
-    fn marshall(&self) -> Result<Vec<u8>>;
+    fn marshall(&self) -> Result<Vec<u8>> {
+        let mut buffer = vec![0; Self::BUFFER_SIZE];
+        let mut offset = 0;
+
+        self.marshall_offset(&mut buffer, &mut offset)?;
+
+        let checked_offset = usize::try_from(offset).map_err(|e| {
+            error!("Failed to parse offset as usize: {}", e);
+            Error::local_error(WrapperErrorKind::InvalidParam)
+        })?;
+
+        buffer.truncate(checked_offset);
+
+        Ok(buffer)
+    }
 
     /// Writes the type in the form of marshalled data to `marshalled_data`,
     /// and modifies the `offset` to point to the first byte in the buffer
@@ -30,7 +44,9 @@ pub trait Marshall: Sized {
 /// TPM marshalled data.
 pub trait UnMarshall: Sized {
     /// Creates the type from marshalled data.
-    fn unmarshall(marshalled_data: &[u8]) -> Result<Self>;
+    fn unmarshall(marshalled_data: &[u8]) -> Result<Self> {
+        Self::unmarshall_offset(marshalled_data, &mut 0)
+    }
 
     /// Creates the type from the marshalled data, and modifies
     /// the `offset` to point to the first byte in the `marshalled_data`
@@ -45,23 +61,6 @@ pub trait UnMarshall: Sized {
 
 impl Marshall for u32 {
     const BUFFER_SIZE: usize = std::mem::size_of::<UINT32>();
-
-    /// Produce a marshalled [UINT32]
-    fn marshall(&self) -> Result<Vec<u8>> {
-        let mut buffer = vec![0; Self::BUFFER_SIZE];
-        let mut offset = 0;
-
-        self.marshall_offset(&mut buffer, &mut offset)?;
-
-        let checked_offset = usize::try_from(offset).map_err(|e| {
-            error!("Failed to parse offset as usize: {}", e);
-            Error::local_error(WrapperErrorKind::InvalidParam)
-        })?;
-
-        buffer.truncate(checked_offset);
-
-        Ok(buffer)
-    }
 
     fn marshall_offset(
         &self,
@@ -90,10 +89,6 @@ impl Marshall for u32 {
 }
 
 impl UnMarshall for u32 {
-    fn unmarshall(marshalled_data: &[u8]) -> Result<Self> {
-        u32::unmarshall_offset(marshalled_data, &mut 0)
-    }
-
     fn unmarshall_offset(
         marshalled_data: &[u8],
         offset: &mut std::os::raw::c_ulong,

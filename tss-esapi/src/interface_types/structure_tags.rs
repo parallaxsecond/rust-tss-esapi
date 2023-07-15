@@ -78,23 +78,6 @@ impl TryFrom<TPMI_ST_ATTEST> for AttestationType {
 impl Marshall for AttestationType {
     const BUFFER_SIZE: usize = std::mem::size_of::<TPMI_ST_ATTEST>();
 
-    /// Produce a marshalled [`TPMI_ST_ATTEST`]
-    fn marshall(&self) -> Result<Vec<u8>> {
-        let mut buffer = vec![0; Self::BUFFER_SIZE];
-        let mut offset = 0;
-
-        self.marshall_offset(&mut buffer, &mut offset)?;
-
-        let checked_offset = usize::try_from(offset).map_err(|e| {
-            error!("Failed to parse offset as usize: {}", e);
-            Error::local_error(WrapperErrorKind::InvalidParam)
-        })?;
-
-        buffer.truncate(checked_offset);
-
-        Ok(buffer)
-    }
-
     fn marshall_offset(
         &self,
         marshalled_data: &mut [u8],
@@ -122,11 +105,6 @@ impl Marshall for AttestationType {
 }
 
 impl UnMarshall for AttestationType {
-    /// Unmarshall the structure from [`TPMI_ST_ATTEST`]
-    fn unmarshall(marshalled_data: &[u8]) -> Result<Self> {
-        AttestationType::unmarshall_offset(marshalled_data, &mut 0)
-    }
-
     fn unmarshall_offset(
         marshalled_data: &[u8],
         offset: &mut std::os::raw::c_ulong,
@@ -200,23 +178,6 @@ impl TryFrom<TPMI_ST_COMMAND_TAG> for CommandTag {
 impl Marshall for CommandTag {
     const BUFFER_SIZE: usize = std::mem::size_of::<TPMI_ST_COMMAND_TAG>();
 
-    /// Produce a marshalled [`TPMI_ST_COMMAND_TAG`]
-    fn marshall(&self) -> Result<Vec<u8>> {
-        let mut buffer = vec![0; Self::BUFFER_SIZE];
-        let mut offset = 0;
-
-        self.marshall_offset(&mut buffer, &mut offset)?;
-
-        let checked_offset = usize::try_from(offset).map_err(|e| {
-            error!("Failed to parse offset as usize: {}", e);
-            Error::local_error(WrapperErrorKind::InvalidParam)
-        })?;
-
-        buffer.truncate(checked_offset);
-
-        Ok(buffer)
-    }
-
     fn marshall_offset(
         &self,
         marshalled_data: &mut [u8],
@@ -244,11 +205,6 @@ impl Marshall for CommandTag {
 }
 
 impl UnMarshall for CommandTag {
-    /// Unmarshall the structure from [`TPMI_ST_COMMAND_TAG`]
-    fn unmarshall(marshalled_data: &[u8]) -> Result<Self> {
-        CommandTag::unmarshall_offset(marshalled_data, &mut 0)
-    }
-
     fn unmarshall_offset(
         marshalled_data: &[u8],
         offset: &mut std::os::raw::c_ulong,
