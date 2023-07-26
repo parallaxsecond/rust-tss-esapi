@@ -85,7 +85,7 @@ impl std::fmt::Display for TpmFormatZeroResponseCode {
         match self {
             TpmFormatZeroResponseCode::Error(e) => e.fmt(f),
             TpmFormatZeroResponseCode::Warning(e) => e.fmt(f),
-            TpmFormatZeroResponseCode::VendorSpecific(_) => write!(f, "Vendor specific error"),
+            TpmFormatZeroResponseCode::VendorSpecific(_) => write!(f, "Vendor specific error."),
         }
     }
 }
