@@ -70,8 +70,8 @@ impl TryFrom<u8> for TpmFormatZeroWarning {
 }
 
 impl From<TpmFormatZeroWarning> for u8 {
-    fn from(tpm_format_zeror_wraning: TpmFormatZeroWarning) -> u8 {
+    fn from(value: TpmFormatZeroWarning) -> u8 {
         // This is safe because the values are well defined.
-        tpm_format_zeror_wraning.to_u8().unwrap()
+        value.to_u8().unwrap()
     }
 }
