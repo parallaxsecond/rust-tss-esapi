@@ -24,4 +24,4 @@ cargo install cargo-valgrind
 #################
 # Run the tests #
 #################
-TEST_TCTI=mssim: RUST_BACKTRACE=1 RUST_LOG=info cargo valgrind test --  --test-threads=1 --nocapture
+TEST_TCTI=mssim: RUST_BACKTRACE=1 RUST_LOG=info cargo valgrind test --features integration-tests --  --test-threads=1 --nocapture

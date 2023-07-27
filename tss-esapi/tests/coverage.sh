@@ -16,4 +16,4 @@ tpm2_startup -c -T mssim
 # Install and run tarpaulin #
 #############################
 cargo install cargo-tarpaulin
-cargo tarpaulin --tests --out Xml --exclude-files="tests/*,../*" -- --test-threads=1 --nocapture
+cargo tarpaulin --features integration-tests --tests --out Xml --exclude-files="tests/*,../*" -- --test-threads=1 --nocapture

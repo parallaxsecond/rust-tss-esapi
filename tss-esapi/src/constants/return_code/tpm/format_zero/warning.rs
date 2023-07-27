@@ -23,6 +23,7 @@ use std::convert::TryFrom;
 /// These are the values from the specification without
 /// the indicator that indicates that it is a TPM format
 /// zero warning (i.e. [TPM2_RC_WARN]).
+#[cfg_attr(feature = "integration-tests", derive(strum_macros::EnumIter))]
 #[derive(FromPrimitive, ToPrimitive, Copy, Clone, Debug, PartialEq, Eq, Hash)]
 #[repr(u8)]
 pub enum TpmFormatZeroWarning {
