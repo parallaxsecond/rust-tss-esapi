@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 use semver::{Version, VersionReq};
 
-#[allow(clippy::uninlined_format_args)]
+#[rustversion::attr(since(1.66), allow(clippy::uninlined_format_args))]
 fn main() {
     let tss_version_string = std::env::var("DEP_TSS2_ESYS_VERSION")
         .expect("Failed to parse ENV variable DEP_TSS2_ESYS_VERSION as string");
