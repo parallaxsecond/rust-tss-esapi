@@ -52,6 +52,11 @@ impl HmacScheme {
     pub const fn new(hashing_algorithm: HashingAlgorithm) -> HmacScheme {
         HmacScheme { hashing_algorithm }
     }
+
+    /// Returns the hashing algorithm
+    pub const fn hashing_algorithm(&self) -> HashingAlgorithm {
+        self.hashing_algorithm
+    }
 }
 
 impl From<HashScheme> for HmacScheme {

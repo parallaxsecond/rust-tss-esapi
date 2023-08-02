@@ -58,5 +58,5 @@ pub fn ensure_tpm2b_sensitive_create_equality(
         expected.size, actual.size,
         "'size' value in TPM2B_SENSITIVE_CREATE, mismatch between actual and expected",
     );
-    crate::common::ensure_tpms_sensitive_create(&expected.sensitive, &actual.sensitive);
+    crate::common::ensure_tpms_sensitive_create_equality(&expected.sensitive, &actual.sensitive);
 }

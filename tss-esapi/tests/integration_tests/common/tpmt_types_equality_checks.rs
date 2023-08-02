@@ -10,7 +10,7 @@ use tss_esapi::{
     },
     tss2_esys::{
         TPMT_ECC_SCHEME, TPMT_KDF_SCHEME, TPMT_KEYEDHASH_SCHEME, TPMT_PUBLIC_PARMS,
-        TPMT_RSA_SCHEME, TPMT_SYM_DEF, TPMT_SYM_DEF_OBJECT,
+        TPMT_RSA_DECRYPT, TPMT_RSA_SCHEME, TPMT_SIG_SCHEME, TPMT_SYM_DEF, TPMT_SYM_DEF_OBJECT,
     },
 };
 
@@ -334,5 +334,74 @@ pub fn ensure_tpmt_kdf_scheme_equality(expected: &TPMT_KDF_SCHEME, actual: &TPMT
         }
         TPM2_ALG_NULL => {}
         _ => panic!("Invalid algorithm in TPMT_KDF_SCHEME"),
+    }
+}
+
+pub fn ensure_tpmt_rsa_decrypt_equality(expected: &TPMT_RSA_DECRYPT, actual: &TPMT_RSA_DECRYPT) {
+    assert_eq!(
+        expected.scheme, actual.scheme,
+        "'scheme' value in TPMT_RSA_DECRYPT, mismatch between actual and expected",
+    );
+
+    match expected.scheme {
+        TPM2_ALG_RSAES => {
+            let expected_scheme = unsafe { &expected.details.rsaes };
+            let actual_scheme = unsafe { &actual.details.rsaes };
+            crate::common::ensure_tpms_empty_equality(expected_scheme, actual_scheme);
+        }
+        TPM2_ALG_OAEP => {
+            let expected_scheme = unsafe { &expected.details.oaep };
+            let actual_scheme = unsafe { &actual.details.oaep };
+            crate::common::ensure_tpms_scheme_hash_equality(expected_scheme, actual_scheme);
+        }
+        TPM2_ALG_NULL => {}
+        _ => panic!("Invalid algorithm in TPMT_RSA_DECRYPT"),
+    }
+}
+
+pub fn ensure_tpmt_sig_scheme_equality(expected: &TPMT_SIG_SCHEME, actual: &TPMT_SIG_SCHEME) {
+    assert_eq!(
+        expected.scheme, actual.scheme,
+        "'scheme' value in TPMT_SIG_SCHEME, mismatch between actual and expected",
+    );
+
+    match expected.scheme {
+        TPM2_ALG_RSASSA => {
+            let expected_scheme = unsafe { &expected.details.rsassa };
+            let actual_scheme = unsafe { &actual.details.rsassa };
+            crate::common::ensure_tpms_scheme_hash_equality(expected_scheme, actual_scheme);
+        }
+        TPM2_ALG_RSAPSS => {
+            let expected_scheme = unsafe { &expected.details.rsapss };
+            let actual_scheme = unsafe { &actual.details.rsapss };
+            crate::common::ensure_tpms_scheme_hash_equality(expected_scheme, actual_scheme);
+        }
+        TPM2_ALG_ECDSA => {
+            let expected_scheme = unsafe { &expected.details.ecdsa };
+            let actual_scheme = unsafe { &actual.details.ecdsa };
+            crate::common::ensure_tpms_scheme_hash_equality(expected_scheme, actual_scheme);
+        }
+        TPM2_ALG_SM2 => {
+            let expected_scheme = unsafe { &expected.details.sm2 };
+            let actual_scheme = unsafe { &actual.details.sm2 };
+            crate::common::ensure_tpms_scheme_hash_equality(expected_scheme, actual_scheme);
+        }
+        TPM2_ALG_ECSCHNORR => {
+            let expected_scheme = unsafe { &expected.details.ecschnorr };
+            let actual_scheme = unsafe { &actual.details.ecschnorr };
+            crate::common::ensure_tpms_scheme_hash_equality(expected_scheme, actual_scheme);
+        }
+        TPM2_ALG_ECDAA => {
+            let expected_scheme = unsafe { &expected.details.ecdaa };
+            let actual_scheme = unsafe { &actual.details.ecdaa };
+            crate::common::ensure_tpms_scheme_ecdaa_equality(expected_scheme, actual_scheme);
+        }
+        TPM2_ALG_HMAC => {
+            let expected_scheme = unsafe { &expected.details.hmac };
+            let actual_scheme = unsafe { &actual.details.hmac };
+            crate::common::ensure_tpms_scheme_hmac_equality(expected_scheme, actual_scheme);
+        }
+        TPM2_ALG_NULL => {}
+        _ => panic!("Invalid algorithm in TPMT_SIG_SCHEME"),
     }
 }
