@@ -41,9 +41,9 @@ cargo clippy --all-targets --all-features -- -D clippy::all -D clippy::cargo
 ###################
 # Build the crate #
 ###################
-RUST_BACKTRACE=1 cargo build --features generate-bindings
+RUST_BACKTRACE=1 cargo build --features "generate-bindings integration-tests"
 
 #################
 # Run the tests #
 #################
-TEST_TCTI=tabrmd:bus_type=session RUST_BACKTRACE=1 RUST_LOG=info cargo test --features generate-bindings --  --test-threads=1 --nocapture
+TEST_TCTI=tabrmd:bus_type=session RUST_BACKTRACE=1 RUST_LOG=info cargo test --features "generate-bindings integration-tests" --  --test-threads=1 --nocapture

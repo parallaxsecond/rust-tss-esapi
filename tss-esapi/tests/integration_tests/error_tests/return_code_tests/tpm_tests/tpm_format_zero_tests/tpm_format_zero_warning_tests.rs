@@ -1,6 +1,7 @@
 // Copyright 2022 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.
 use std::convert::TryFrom;
+use strum::IntoEnumIterator;
 use tss_esapi::{
     constants::{
         return_code::TpmFormatZeroWarning,
@@ -231,43 +232,14 @@ fn test_display_implementation() {
     );
 }
 
-macro_rules! test_error_number_method {
-    (TpmFormatZeroWarning::$zero_warning:ident) => {
-        let zero_warning_rc = TpmFormatZeroWarningResponseCode::from(TpmFormatZeroWarning::$zero_warning);
+#[test]
+fn test_error_number() {
+    TpmFormatZeroWarning::iter().for_each(|item| {
+        let zero_warning_rc = TpmFormatZeroWarningResponseCode::from(item);
         assert_eq!(
-            TpmFormatZeroWarning::$zero_warning,
+            item,
             zero_warning_rc.error_number(),
             "The TpmFormatZeroWarningResponseCode `error_number()` method did not return the expected TpmFormatZeroWarning"
         );
-    };
-}
-
-#[test]
-fn test_error_number() {
-    test_error_number_method!(TpmFormatZeroWarning::ContextGap);
-    test_error_number_method!(TpmFormatZeroWarning::ObjectMemory);
-    test_error_number_method!(TpmFormatZeroWarning::SessionMemory);
-    test_error_number_method!(TpmFormatZeroWarning::ObjectHandles);
-    test_error_number_method!(TpmFormatZeroWarning::Locality);
-    test_error_number_method!(TpmFormatZeroWarning::Yielded);
-    test_error_number_method!(TpmFormatZeroWarning::Canceled);
-    test_error_number_method!(TpmFormatZeroWarning::Testing);
-    test_error_number_method!(TpmFormatZeroWarning::ReferenceH0);
-    test_error_number_method!(TpmFormatZeroWarning::ReferenceH1);
-    test_error_number_method!(TpmFormatZeroWarning::ReferenceH2);
-    test_error_number_method!(TpmFormatZeroWarning::ReferenceH3);
-    test_error_number_method!(TpmFormatZeroWarning::ReferenceH4);
-    test_error_number_method!(TpmFormatZeroWarning::ReferenceH5);
-    test_error_number_method!(TpmFormatZeroWarning::ReferenceH6);
-    test_error_number_method!(TpmFormatZeroWarning::ReferenceS0);
-    test_error_number_method!(TpmFormatZeroWarning::ReferenceS1);
-    test_error_number_method!(TpmFormatZeroWarning::ReferenceS2);
-    test_error_number_method!(TpmFormatZeroWarning::ReferenceS3);
-    test_error_number_method!(TpmFormatZeroWarning::ReferenceS4);
-    test_error_number_method!(TpmFormatZeroWarning::ReferenceS5);
-    test_error_number_method!(TpmFormatZeroWarning::ReferenceS6);
-    test_error_number_method!(TpmFormatZeroWarning::NvRate);
-    test_error_number_method!(TpmFormatZeroWarning::Lockout);
-    test_error_number_method!(TpmFormatZeroWarning::Retry);
-    test_error_number_method!(TpmFormatZeroWarning::NvUnavailable);
+    });
 }
