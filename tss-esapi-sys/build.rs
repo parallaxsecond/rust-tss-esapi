@@ -58,7 +58,7 @@ fn main() {
 }
 
 #[cfg(feature = "generate-bindings")]
-#[allow(clippy::uninlined_format_args)]
+#[rustversion::attr(since(1.66), allow(clippy::uninlined_format_args))]
 pub fn generate_from_system(esapi_out: PathBuf) {
     pkg_config::Config::new()
         .atleast_version(MINIMUM_VERSION)
