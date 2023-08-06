@@ -2,11 +2,15 @@
 // SPDX-License-Identifier: Apache-2.0
 mod structure;
 
-use crate::{tss2_esys::TPM2_CC, Error, Result, WrapperErrorKind};
+use crate::{
+    traits::{Marshall, UnMarshall},
+    tss2_esys::TPM2_CC,
+    Error, Result, ReturnCode, WrapperErrorKind,
+};
 use log::error;
 use num_derive::{FromPrimitive, ToPrimitive};
 use num_traits::{FromPrimitive, ToPrimitive};
-use std::convert::TryFrom;
+use std::convert::{TryFrom, TryInto};
 use structure::CommandCodeStructure;
 
 /// Enum representing the command code constants.
@@ -148,5 +152,59 @@ impl From<CommandCode> for TPM2_CC {
     fn from(command_code: CommandCode) -> Self {
         // The values are well defined so this cannot fail.
         command_code.to_u32().unwrap()
+    }
+}
+
+impl Marshall for CommandCode {
+    const BUFFER_SIZE: usize = std::mem::size_of::<TPM2_CC>();
+
+    fn marshall_offset(
+        &self,
+        marshalled_data: &mut [u8],
+        offset: &mut std::os::raw::c_ulong,
+    ) -> Result<()> {
+        ReturnCode::ensure_success(
+            unsafe {
+                crate::tss2_esys::Tss2_MU_TPM2_CC_Marshal(
+                    (*self).into(),
+                    marshalled_data.as_mut_ptr(),
+                    marshalled_data.len().try_into().map_err(|e| {
+                        error!("Failed to convert size of buffer to TSS size_t type: {}", e);
+                        Error::local_error(WrapperErrorKind::InvalidParam)
+                    })?,
+                    offset,
+                )
+            },
+            |ret| {
+                error!("Failed to marshal CommandCode: {}", ret);
+            },
+        )?;
+        Ok(())
+    }
+}
+
+impl UnMarshall for CommandCode {
+    fn unmarshall_offset(
+        marshalled_data: &[u8],
+        offset: &mut std::os::raw::c_ulong,
+    ) -> Result<Self> {
+        let mut dest = TPM2_CC::default();
+
+        ReturnCode::ensure_success(
+            unsafe {
+                crate::tss2_esys::Tss2_MU_TPM2_CC_Unmarshal(
+                    marshalled_data.as_ptr(),
+                    marshalled_data.len().try_into().map_err(|e| {
+                        error!("Failed to convert length of marshalled data: {}", e);
+                        Error::local_error(WrapperErrorKind::InvalidParam)
+                    })?,
+                    offset,
+                    &mut dest,
+                )
+            },
+            |ret| error!("Failed to unmarshal SensitiveCreate: {}", ret),
+        )?;
+
+        CommandCode::try_from(dest)
     }
 }

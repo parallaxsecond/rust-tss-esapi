@@ -22,6 +22,27 @@ macro_rules! test_valid_conversions {
             stringify!($strucutre_tag_item),
         );
     };
+
+    (CommandTag::$attestation_type_item:ident, StructureTag::$strucutre_tag_item:ident) => {
+        assert_eq!(
+            CommandTag::$attestation_type_item,
+            CommandTag::try_from(StructureTag::$strucutre_tag_item).expect(&format!(
+                "Could not convert StructureTag {}",
+                stringify!($attestation_type_item)
+            )),
+            "StructureTag {} did not convert to the correct CommandTag {}",
+            stringify!($strucutre_tag_item),
+            stringify!($attestation_type_item),
+        );
+
+        assert_eq!(
+            StructureTag::$strucutre_tag_item,
+            StructureTag::from(CommandTag::$attestation_type_item),
+            "CommandTag {} did not convert to the correct StructureTag {}",
+            stringify!($attestation_type_item),
+            stringify!($strucutre_tag_item),
+        );
+    };
 }
 
 mod attestation_type_tests {
@@ -56,5 +77,42 @@ mod attestation_type_tests {
             AttestationType::try_from(StructureTag::FuManifest),
             "Expected an error when converting StructureTag FuManifest into AttestationType",
         )
+    }
+
+    #[test]
+    fn test_marshall_unmarshall() {
+        let val = AttestationType::SessionAudit;
+        crate::common::check_marshall_unmarshall(&val);
+        crate::common::check_marshall_unmarshall_offset(&val);
+    }
+}
+
+mod command_tag_tests {
+    use std::convert::TryFrom;
+    use tss_esapi::{
+        constants::StructureTag, interface_types::structure_tags::CommandTag, Error,
+        WrapperErrorKind,
+    };
+
+    #[test]
+    fn test_conversions() {
+        test_valid_conversions!(CommandTag::Sessions, StructureTag::Sessions);
+        test_valid_conversions!(CommandTag::NoSessions, StructureTag::NoSessions);
+    }
+
+    #[test]
+    fn test_invalid_conversions() {
+        assert_eq!(
+            Err(Error::WrapperError(WrapperErrorKind::InvalidParam)),
+            CommandTag::try_from(StructureTag::FuManifest),
+            "Expected an error when converting StructureTag FuManifest into CommandTag",
+        )
+    }
+
+    #[test]
+    fn test_marshall_unmarshall() {
+        let val = CommandTag::Sessions;
+        crate::common::check_marshall_unmarshall(&val);
+        crate::common::check_marshall_unmarshall_offset(&val);
     }
 }

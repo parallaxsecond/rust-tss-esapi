@@ -218,3 +218,10 @@ fn test_invalid_conversions() {
         "A value representing a non existing command code did not produce the expected error"
     );
 }
+
+#[test]
+fn test_marshall_unmarshall() {
+    let cc = CommandCode::EvictControl;
+    crate::common::check_marshall_unmarshall(&cc);
+    crate::common::check_marshall_unmarshall_offset(&cc);
+}
