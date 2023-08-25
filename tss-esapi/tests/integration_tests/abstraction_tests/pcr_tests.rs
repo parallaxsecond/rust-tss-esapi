@@ -119,7 +119,7 @@ fn test_pcr_read_all() {
         )
         .expect("Call 3 to pcr_read failed");
 
-    vec![read_pcrs_1, read_pcrs_2, read_pcrs_3]
+    [read_pcrs_1, read_pcrs_2, read_pcrs_3]
         .iter()
         .enumerate()
         .for_each(|(idx, dl)| {

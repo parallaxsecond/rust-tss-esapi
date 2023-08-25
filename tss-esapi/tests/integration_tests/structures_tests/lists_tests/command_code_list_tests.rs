@@ -12,7 +12,7 @@ use std::convert::{TryFrom, TryInto};
 
 #[test]
 fn test_conversions() {
-    let expected_command_codes = vec![
+    let expected_command_codes = [
         CommandCode::ChangeEps,
         CommandCode::ChangePps,
         CommandCode::Clear,
@@ -83,7 +83,7 @@ fn test_conversions() {
 
 #[test]
 fn test_valid_conversion_vector() {
-    let expected_command_codes = vec![
+    let expected_command_codes = [
         CommandCode::ChangeEps,
         CommandCode::ChangePps,
         CommandCode::Clear,
