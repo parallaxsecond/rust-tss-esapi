@@ -13,7 +13,7 @@ use std::convert::{TryFrom, TryInto};
 
 #[test]
 fn test_conversions() {
-    let expected_algorithm_properties = vec![
+    let expected_algorithm_properties = [
         (AlgorithmIdentifier::Rsa, AlgorithmAttributes(1)),
         (AlgorithmIdentifier::Aes, AlgorithmAttributes(2)),
     ];
@@ -61,7 +61,7 @@ fn test_conversions() {
 
 #[test]
 fn test_valid_conversion_vector() {
-    let expected_algorithm_properties = vec![
+    let expected_algorithm_properties = [
         (AlgorithmIdentifier::Rsa, AlgorithmAttributes(1)),
         (AlgorithmIdentifier::Aes, AlgorithmAttributes(2)),
     ];
