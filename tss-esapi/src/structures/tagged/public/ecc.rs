@@ -155,12 +155,12 @@ impl PublicEccParametersBuilder {
                     return Err(Error::local_error(WrapperErrorKind::InconsistentParams));
                 }
             } else {
-                error!("Found symmetric parameter, expected it to be Null nor not set at all because 'restricted' and 'is_decrypt_key' are set to false");
+                error!("Symmetric parameter was not set but 'restricted' and 'is_decrypt_key' are set to true");
                 return Err(Error::local_error(WrapperErrorKind::ParamsMissing));
             }
         } else if let Some(symmetric) = self.symmetric {
             if !symmetric.is_null() {
-                error!("Found symmetric parameter, expected it to be Null nor not set at all because 'restricted' and 'is_decrypt_key' are set to false");
+                error!("Found symmetric parameter, expected it to be Null or not set at all because 'restricted' or 'is_decrypt_key' are set to false");
                 return Err(Error::local_error(WrapperErrorKind::InconsistentParams));
             }
         }
