@@ -134,17 +134,17 @@ impl PublicEccParametersBuilder {
     /// error is returned
     pub fn build(self) -> Result<PublicEccParameters> {
         let ecc_scheme = self.ecc_scheme.ok_or_else(|| {
-            error!("Scheme is required nad has not been set in the PublicEccParametersBuilder");
+            error!("Scheme is required and has not been set in the PublicEccParametersBuilder");
             Error::local_error(WrapperErrorKind::ParamsMissing)
         })?;
 
         let ecc_curve = self.ecc_curve.ok_or_else(|| {
-            error!("Curve is required nad has not been set in the PublicEccParametersBuilder");
+            error!("Curve is required and has not been set in the PublicEccParametersBuilder");
             Error::local_error(WrapperErrorKind::ParamsMissing)
         })?;
 
         let key_derivation_function_scheme = self.key_derivation_function_scheme.ok_or_else(|| {
-            error!("Key derivation function scheme is required nad has not been set in the PublicEccParametersBuilder");
+            error!("Key derivation function scheme is required and has not been set in the PublicEccParametersBuilder");
             Error::local_error(WrapperErrorKind::ParamsMissing)
         })?;
 
