@@ -161,6 +161,10 @@ impl Context {
     /// // used in calls to ESAPI no matter if it None
     /// // or not.
     /// context.set_sessions((auth_session, None, None));
+    /// # let (session_1, session_2, session_3) = context.sessions();
+    /// # assert_eq!(auth_session, session_1);
+    /// # assert_eq!(None, session_2);
+    /// # assert_eq!(None, session_3);
     /// ```
     pub fn set_sessions(
         &mut self,
@@ -192,6 +196,10 @@ impl Context {
     ///
     /// // Clear auth sessions
     /// context.clear_sessions();
+    /// # let (session_1, session_2, session_3) = context.sessions();
+    /// # assert_eq!(None, session_1);
+    /// # assert_eq!(None, session_2);
+    /// # assert_eq!(None, session_3);
     /// ```
     pub fn clear_sessions(&mut self) {
         self.sessions = (None, None, None)
