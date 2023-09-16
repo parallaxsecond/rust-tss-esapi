@@ -131,7 +131,7 @@ mod test_quote {
         let mut context = create_ctx_with_session();
         let qualifying_data = vec![0xff; 16];
         let sign_scheme = SignatureScheme::RsaPss {
-            hash_scheme: HashScheme::new(HashingAlgorithm::Sha256),
+            scheme: HashScheme::new(HashingAlgorithm::Sha256),
         };
 
         let obj_key_handle = context

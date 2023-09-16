@@ -88,10 +88,19 @@ pub enum RsaScheme {
 impl RsaScheme {
     /// Creates a new RsaScheme
     ///
+    /// # Arguments
+    /// `rsa_scheme_algorithm` - The [RsaSchemeAlgorithm] associated with variant.
+    /// `hashing_algorithm`    - A hashing algorithm that is required by some of the
+    ///                          variants.
+    ///
     /// # Errors
-    /// - `InconsistentParams` error will be returned if no hashing algorithm
-    ///   is provided when creating RSA scheme of type RSA SSA, RSA PSS and OAEP
-    ///   or if a hashing algorithm is provided when creating a RSA scheme
+    /// `ParamMissing`       - If optional parameter is not provided when it is required.
+    ///                        I.e. when creating RSA scheme of type RSA SSA, RSA PSS and
+    ///                        OAEP.
+    ///
+    /// `InconsistentParams` - If the optional parameter has been provided when it is
+    ///                        not required. I.e. if a hashing algorithm is provided
+    ///                        when creating a the RSA scheme of type Null.
     pub fn create(
         rsa_scheme_algorithm: RsaSchemeAlgorithm,
         hashing_algorithm: Option<HashingAlgorithm>,
@@ -102,38 +111,36 @@ impl RsaScheme {
                     error!(
                         "Hashing algorithm is required when creating RSA scheme of type RSA SSA"
                     );
-                    Error::local_error(WrapperErrorKind::InconsistentParams)
+                    Error::local_error(WrapperErrorKind::ParamsMissing)
                 })?,
             ))),
             RsaSchemeAlgorithm::RsaEs => {
-                if hashing_algorithm.is_none() {
-                    Ok(RsaScheme::RsaEs)
-                } else {
+                if hashing_algorithm.is_some() {
                     error!("A hashing algorithm shall not be provided when creating RSA scheme of type RSA ES");
-                    Err(Error::local_error(WrapperErrorKind::InconsistentParams))
+                    return Err(Error::local_error(WrapperErrorKind::InconsistentParams));
                 }
+                Ok(RsaScheme::RsaEs)
             }
             RsaSchemeAlgorithm::RsaPss => Ok(RsaScheme::RsaPss(HashScheme::new(
                 hashing_algorithm.ok_or_else(|| {
                     error!(
                         "Hashing algorithm is required when creating RSA scheme of type RSA PSS"
                     );
-                    Error::local_error(WrapperErrorKind::InconsistentParams)
+                    Error::local_error(WrapperErrorKind::ParamsMissing)
                 })?,
             ))),
             RsaSchemeAlgorithm::Oaep => Ok(RsaScheme::Oaep(HashScheme::new(
                 hashing_algorithm.ok_or_else(|| {
                     error!("Hashing algorithm is required when creating RSA scheme of type OAEP");
-                    Error::local_error(WrapperErrorKind::InconsistentParams)
+                    Error::local_error(WrapperErrorKind::ParamsMissing)
                 })?,
             ))),
             RsaSchemeAlgorithm::Null => {
-                if hashing_algorithm.is_none() {
-                    Ok(RsaScheme::Null)
-                } else {
+                if hashing_algorithm.is_some() {
                     error!("A hashing algorithm shall not be provided when creating RSA scheme of type Null");
-                    Err(Error::local_error(WrapperErrorKind::InconsistentParams))
+                    return Err(Error::local_error(WrapperErrorKind::InconsistentParams));
                 }
+                Ok(RsaScheme::Null)
             }
         }
     }
@@ -223,61 +230,130 @@ pub enum EccScheme {
 }
 
 impl EccScheme {
+    /// Creates a EccScheme.
+    ///
+    /// # Arguments
+    /// `ecc_scheme_algorithm` - The ECC scheme algorithm.
+    /// `hashing_algorithm` - The hashing algorithm associated with some variants.
+    /// `count` - The counter value that is used between TPM2_Commit() and the sign
+    ///           operation used in the EcDaa variant.
+    ///
+    /// # Errors
+    /// `ParamMissing`       - If the algorithm indicates a variant that requires
+    ///                        one or more of the optional parameters and they have
+    ///                        not been provided.
+    ///
+    /// `InconsistentParams` - If an optional parameter has been set but it is
+    ///                        not required.
     pub fn create(
         ecc_scheme_algorithm: EccSchemeAlgorithm,
         hashing_algorithm: Option<HashingAlgorithm>,
         count: Option<u16>,
     ) -> Result<Self> {
         match ecc_scheme_algorithm {
-            EccSchemeAlgorithm::EcDsa => Ok(EccScheme::EcDsa(HashScheme::new(
-                hashing_algorithm.ok_or_else(|| {
-                    error!("Hashing algorithm is required when creating ECC scheme of type EC DSA");
-                    Error::local_error(WrapperErrorKind::ParamsMissing)
-                })?,
-            ))),
-            EccSchemeAlgorithm::EcDh => Ok(EccScheme::EcDh(HashScheme::new(
-                hashing_algorithm.ok_or_else(|| {
-                    error!("Hashing algorithm is required when creating ECC scheme of type EC DH");
-                    Error::local_error(WrapperErrorKind::ParamsMissing)
-                })?,
-            ))),
+            EccSchemeAlgorithm::EcDsa => {
+                if count.is_some() {
+                    error!(
+                        "`count` should not be provided when creating ECC scheme of type EC DSA."
+                    );
+                    return Err(Error::local_error(WrapperErrorKind::InconsistentParams));
+                }
+
+                hashing_algorithm
+                    .ok_or_else(|| {
+                        error!(
+                            "Hashing algorithm is required when creating ECC scheme of type EC DSA."
+                        );
+                        Error::local_error(WrapperErrorKind::ParamsMissing)
+                    })
+                    .map(|v| EccScheme::EcDsa(HashScheme::new(v)))
+            }
+            EccSchemeAlgorithm::EcDh => {
+                if count.is_some() {
+                    error!(
+                        "`count` should not be provided when creating ECC scheme of type EC DH."
+                    );
+                    return Err(Error::local_error(WrapperErrorKind::InconsistentParams));
+                }
+
+                hashing_algorithm
+                    .ok_or_else(|| {
+                        error!(
+                            "Hashing algorithm is required when creating ECC scheme of type EC DH."
+                        );
+                        Error::local_error(WrapperErrorKind::ParamsMissing)
+                    })
+                    .map(|v| EccScheme::EcDh(HashScheme::new(v)))
+            }
             EccSchemeAlgorithm::EcDaa => Ok(EccScheme::EcDaa(EcDaaScheme::new(
                 hashing_algorithm.ok_or_else(|| {
-                    error!("Hashing algorithm is required when creating ECC scheme of type EC DAA");
-                    Error::local_error(WrapperErrorKind::ParamsMissing)
-                })?,
-                count.ok_or_else(|| {
-                    error!("Count is required when creating ECC scheme of type EC DAA");
-                    Error::local_error(WrapperErrorKind::ParamsMissing)
-                })?,
-            ))),
-            EccSchemeAlgorithm::Sm2 => Ok(EccScheme::Sm2(HashScheme::new(
-                hashing_algorithm.ok_or_else(|| {
-                    error!("Hashing algorithm is required when creating ECC scheme of type EC SM2");
-                    Error::local_error(WrapperErrorKind::ParamsMissing)
-                })?,
-            ))),
-            EccSchemeAlgorithm::EcSchnorr => Ok(EccScheme::EcSchnorr(HashScheme::new(
-                hashing_algorithm.ok_or_else(|| {
                     error!(
-                        "Hashing algorithm is required when creating ECC scheme of type EC SCHNORR"
+                        "Hashing algorithm is required when creating ECC scheme of type EC DAA."
                     );
                     Error::local_error(WrapperErrorKind::ParamsMissing)
                 })?,
-            ))),
-            EccSchemeAlgorithm::EcMqv => Ok(EccScheme::EcMqv(HashScheme::new(
-                hashing_algorithm.ok_or_else(|| {
-                    error!("Hashing algorithm is required when creating ECC scheme of type EC MQV");
+                count.ok_or_else(|| {
+                    error!("Count is required when creating ECC scheme of type EC DAA.");
                     Error::local_error(WrapperErrorKind::ParamsMissing)
                 })?,
             ))),
-            EccSchemeAlgorithm::Null => {
-                if hashing_algorithm.is_none() {
-                    Ok(EccScheme::Null)
-                } else {
-                    error!("A hashing algorithm shall not be provided when creating ECC scheme of type Null");
-                    Err(Error::local_error(WrapperErrorKind::InconsistentParams))
+            EccSchemeAlgorithm::Sm2 => {
+                if count.is_some() {
+                    error!("`count` should not be provided when creating ECC scheme of type SM2.");
+                    return Err(Error::local_error(WrapperErrorKind::InconsistentParams));
                 }
+
+                hashing_algorithm
+                    .ok_or_else(|| {
+                        error!(
+                            "Hashing algorithm is required when creating ECC scheme of type SM2."
+                        );
+                        Error::local_error(WrapperErrorKind::ParamsMissing)
+                    })
+                    .map(|v| EccScheme::Sm2(HashScheme::new(v)))
+            }
+            EccSchemeAlgorithm::EcSchnorr => {
+                if count.is_some() {
+                    error!("`count` should not be provided when creating ECC scheme of type EC SCHNORR.");
+                    return Err(Error::local_error(WrapperErrorKind::InconsistentParams));
+                }
+
+                hashing_algorithm
+                    .ok_or_else(|| {
+                        error!(
+                            "Hashing algorithm is required when creating ECC scheme of type EC SCHNORR."
+                        );
+                        Error::local_error(WrapperErrorKind::ParamsMissing)
+                    })
+                    .map(|v| EccScheme::EcSchnorr(HashScheme::new(v)))
+            }
+            EccSchemeAlgorithm::EcMqv => {
+                if count.is_some() {
+                    error!(
+                        "`count` should not be provided when creating ECC scheme of type EC MQV."
+                    );
+                    return Err(Error::local_error(WrapperErrorKind::InconsistentParams));
+                }
+
+                hashing_algorithm
+                    .ok_or_else(|| {
+                        error!(
+                            "Hashing algorithm is required when creating ECC scheme of type EC MQV."
+                        );
+                        Error::local_error(WrapperErrorKind::ParamsMissing)
+                    })
+                    .map(|v| EccScheme::EcMqv(HashScheme::new(v)))
+            }
+            EccSchemeAlgorithm::Null => {
+                if count.is_some() {
+                    error!("`count` should not be provided when creating ECC scheme of type Null.");
+                    return Err(Error::local_error(WrapperErrorKind::InconsistentParams));
+                }
+                if hashing_algorithm.is_some() {
+                    error!("A hashing algorithm shall not be provided when creating ECC scheme of type Null.");
+                    return Err(Error::local_error(WrapperErrorKind::InconsistentParams));
+                }
+                Ok(EccScheme::Null)
             }
         }
     }
@@ -445,7 +521,7 @@ impl TryFrom<TPMT_KDF_SCHEME> for KeyDerivationFunctionScheme {
 ///
 /// # Details
 /// This corresponds to TPMT_RSA_DECRYPT.
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum RsaDecryptionScheme {
     RsaEs,
     Oaep(HashScheme),
@@ -453,7 +529,15 @@ pub enum RsaDecryptionScheme {
 }
 
 impl RsaDecryptionScheme {
-    /// Creates a new rsa decrypt scheme
+    /// Creates a new rsa decrypt scheme.
+    ///
+    /// # Arguments
+    /// `rsa_decrypt_algorithm` - The RSA decryption algorithm.
+    /// `hashing_algorithm` - The hashing algorithm used in some variants of the scheme.
+    ///
+    /// # Errors
+    /// `InconsistentParams` - If a parameter has been provided when it is not required.
+    /// `ParamsMissing` - If a required parameter has not been provided.
     pub fn create(
         rsa_decrypt_algorithm: RsaDecryptAlgorithm,
         hashing_algorithm: Option<HashingAlgorithm>,
@@ -550,13 +634,13 @@ impl TryFrom<RsaScheme> for RsaDecryptionScheme {
 /// Corresponds to `TPMT_SIG_SCHEME`.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum SignatureScheme {
-    RsaSsa { hash_scheme: HashScheme },
-    RsaPss { hash_scheme: HashScheme },
-    EcDsa { hash_scheme: HashScheme },
-    Sm2 { hash_scheme: HashScheme },
-    EcSchnorr { hash_scheme: HashScheme },
-    EcDaa { ecdaa_scheme: EcDaaScheme },
-    Hmac { hmac_scheme: HmacScheme },
+    RsaSsa { scheme: HashScheme },
+    RsaPss { scheme: HashScheme },
+    EcDsa { scheme: HashScheme },
+    Sm2 { scheme: HashScheme },
+    EcSchnorr { scheme: HashScheme },
+    EcDaa { scheme: EcDaaScheme },
+    Hmac { scheme: HmacScheme },
     Null,
 }
 
@@ -565,19 +649,20 @@ impl SignatureScheme {
     ///
     /// # Details
     /// This is intended to provide the functionality of reading
-    /// from the ```anySig``` field in the TPMU_SIG_SCHEME union.
+    /// from the `any` field in the TPMU_SIG_SCHEME union.
     ///
     /// # Errors
     /// Returns an InvalidParam error if the trying to read from
     /// SignatureScheme that is not a signing scheme.
     pub fn signing_scheme(&self) -> Result<HashingAlgorithm> {
         match self {
-            SignatureScheme::RsaSsa { hash_scheme }
-            | SignatureScheme::RsaPss { hash_scheme }
-            | SignatureScheme::EcDsa { hash_scheme }
-            | SignatureScheme::Sm2 { hash_scheme }
-            | SignatureScheme::EcSchnorr { hash_scheme } => Ok(hash_scheme.hashing_algorithm()),
-            SignatureScheme::EcDaa { ecdaa_scheme } => Ok(ecdaa_scheme.hashing_algorithm()),
+            SignatureScheme::RsaSsa { scheme }
+            | SignatureScheme::RsaPss { scheme }
+            | SignatureScheme::EcDsa { scheme }
+            | SignatureScheme::Sm2 { scheme }
+            | SignatureScheme::EcSchnorr { scheme } => Ok(scheme.hashing_algorithm()),
+            SignatureScheme::EcDaa { scheme } => Ok(scheme.hashing_algorithm()),
+            SignatureScheme::Hmac { scheme } => Ok(scheme.hashing_algorithm()),
             _ => {
                 error!("Cannot access digest for a non signing scheme");
                 Err(Error::local_error(WrapperErrorKind::InvalidParam))
@@ -589,23 +674,27 @@ impl SignatureScheme {
     ///
     /// # Details
     /// This is intended to provide the functionality of writing
-    /// to the ```anySig``` field in the TPMU_SIG_SCHEME union.
+    /// to the `any` field in the TPMU_SIG_SCHEME union.
     ///
     /// # Errors
     /// Returns an InvalidParam error if the trying to read from
     /// SignatureScheme that is not a signing scheme.
     pub fn set_signing_scheme(&mut self, hashing_algorithm: HashingAlgorithm) -> Result<()> {
         match self {
-            SignatureScheme::RsaSsa { hash_scheme }
-            | SignatureScheme::RsaPss { hash_scheme }
-            | SignatureScheme::EcDsa { hash_scheme }
-            | SignatureScheme::Sm2 { hash_scheme }
-            | SignatureScheme::EcSchnorr { hash_scheme } => {
-                *hash_scheme = HashScheme::new(hashing_algorithm);
+            SignatureScheme::RsaSsa { scheme }
+            | SignatureScheme::RsaPss { scheme }
+            | SignatureScheme::EcDsa { scheme }
+            | SignatureScheme::Sm2 { scheme }
+            | SignatureScheme::EcSchnorr { scheme } => {
+                *scheme = HashScheme::new(hashing_algorithm);
                 Ok(())
             }
-            SignatureScheme::EcDaa { ecdaa_scheme } => {
-                *ecdaa_scheme = EcDaaScheme::new(hashing_algorithm, ecdaa_scheme.count());
+            SignatureScheme::EcDaa { scheme } => {
+                *scheme = EcDaaScheme::new(hashing_algorithm, scheme.count());
+                Ok(())
+            }
+            SignatureScheme::Hmac { scheme } => {
+                *scheme = HmacScheme::new(hashing_algorithm);
                 Ok(())
             }
             _ => {
@@ -619,51 +708,49 @@ impl SignatureScheme {
 impl From<SignatureScheme> for TPMT_SIG_SCHEME {
     fn from(native: SignatureScheme) -> TPMT_SIG_SCHEME {
         match native {
-            SignatureScheme::EcDaa { ecdaa_scheme } => TPMT_SIG_SCHEME {
+            SignatureScheme::EcDaa { scheme } => TPMT_SIG_SCHEME {
                 scheme: SignatureSchemeAlgorithm::EcDaa.into(),
                 details: TPMU_SIG_SCHEME {
-                    ecdaa: ecdaa_scheme.into(),
+                    ecdaa: scheme.into(),
                 },
             },
-            SignatureScheme::EcDsa { hash_scheme } => TPMT_SIG_SCHEME {
+            SignatureScheme::EcDsa { scheme } => TPMT_SIG_SCHEME {
                 scheme: SignatureSchemeAlgorithm::EcDsa.into(),
                 details: TPMU_SIG_SCHEME {
-                    ecdsa: hash_scheme.into(),
+                    ecdsa: scheme.into(),
                 },
             },
-            SignatureScheme::EcSchnorr { hash_scheme } => TPMT_SIG_SCHEME {
+            SignatureScheme::EcSchnorr { scheme } => TPMT_SIG_SCHEME {
                 scheme: SignatureSchemeAlgorithm::EcSchnorr.into(),
                 details: TPMU_SIG_SCHEME {
-                    ecschnorr: hash_scheme.into(),
+                    ecschnorr: scheme.into(),
                 },
             },
-            SignatureScheme::Hmac { hmac_scheme } => TPMT_SIG_SCHEME {
+            SignatureScheme::Hmac { scheme } => TPMT_SIG_SCHEME {
                 scheme: SignatureSchemeAlgorithm::Hmac.into(),
                 details: TPMU_SIG_SCHEME {
-                    hmac: hmac_scheme.into(),
+                    hmac: scheme.into(),
                 },
             },
             SignatureScheme::Null => TPMT_SIG_SCHEME {
                 scheme: SignatureSchemeAlgorithm::Null.into(),
                 details: Default::default(),
             },
-            SignatureScheme::RsaPss { hash_scheme } => TPMT_SIG_SCHEME {
+            SignatureScheme::RsaPss { scheme } => TPMT_SIG_SCHEME {
                 scheme: SignatureSchemeAlgorithm::RsaPss.into(),
                 details: TPMU_SIG_SCHEME {
-                    rsapss: hash_scheme.into(),
+                    rsapss: scheme.into(),
                 },
             },
-            SignatureScheme::RsaSsa { hash_scheme } => TPMT_SIG_SCHEME {
+            SignatureScheme::RsaSsa { scheme } => TPMT_SIG_SCHEME {
                 scheme: SignatureSchemeAlgorithm::RsaSsa.into(),
                 details: TPMU_SIG_SCHEME {
-                    rsassa: hash_scheme.into(),
+                    rsassa: scheme.into(),
                 },
             },
-            SignatureScheme::Sm2 { hash_scheme } => TPMT_SIG_SCHEME {
+            SignatureScheme::Sm2 { scheme } => TPMT_SIG_SCHEME {
                 scheme: SignatureSchemeAlgorithm::Sm2.into(),
-                details: TPMU_SIG_SCHEME {
-                    sm2: hash_scheme.into(),
-                },
+                details: TPMU_SIG_SCHEME { sm2: scheme.into() },
             },
         }
     }
@@ -675,26 +762,26 @@ impl TryFrom<TPMT_SIG_SCHEME> for SignatureScheme {
     fn try_from(tss: TPMT_SIG_SCHEME) -> Result<Self> {
         match SignatureSchemeAlgorithm::try_from(tss.scheme)? {
             SignatureSchemeAlgorithm::EcDaa => Ok(SignatureScheme::EcDaa {
-                ecdaa_scheme: unsafe { tss.details.ecdaa }.try_into()?,
+                scheme: unsafe { tss.details.ecdaa }.try_into()?,
             }),
             SignatureSchemeAlgorithm::EcDsa => Ok(SignatureScheme::EcDsa {
-                hash_scheme: unsafe { tss.details.ecdsa }.try_into()?,
+                scheme: unsafe { tss.details.ecdsa }.try_into()?,
             }),
             SignatureSchemeAlgorithm::EcSchnorr => Ok(SignatureScheme::EcSchnorr {
-                hash_scheme: unsafe { tss.details.ecschnorr }.try_into()?,
+                scheme: unsafe { tss.details.ecschnorr }.try_into()?,
             }),
             SignatureSchemeAlgorithm::Hmac => Ok(SignatureScheme::Hmac {
-                hmac_scheme: unsafe { tss.details.hmac }.try_into()?,
+                scheme: unsafe { tss.details.hmac }.try_into()?,
             }),
             SignatureSchemeAlgorithm::Null => Ok(SignatureScheme::Null),
             SignatureSchemeAlgorithm::RsaPss => Ok(SignatureScheme::RsaPss {
-                hash_scheme: unsafe { tss.details.rsapss }.try_into()?,
+                scheme: unsafe { tss.details.rsapss }.try_into()?,
             }),
             SignatureSchemeAlgorithm::RsaSsa => Ok(SignatureScheme::RsaSsa {
-                hash_scheme: unsafe { tss.details.rsassa }.try_into()?,
+                scheme: unsafe { tss.details.rsassa }.try_into()?,
             }),
             SignatureSchemeAlgorithm::Sm2 => Ok(SignatureScheme::Sm2 {
-                hash_scheme: unsafe { tss.details.sm2 }.try_into()?,
+                scheme: unsafe { tss.details.sm2 }.try_into()?,
             }),
         }
     }

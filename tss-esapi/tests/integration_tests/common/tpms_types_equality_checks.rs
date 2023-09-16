@@ -7,9 +7,9 @@ use tss_esapi::{
     },
     tss2_esys::{
         TPMS_ALG_PROPERTY, TPMS_ATTEST, TPMS_CERTIFY_INFO, TPMS_CLOCK_INFO,
-        TPMS_COMMAND_AUDIT_INFO, TPMS_CREATION_INFO, TPMS_ECC_PARMS, TPMS_KEYEDHASH_PARMS,
-        TPMS_NV_CERTIFY_INFO, TPMS_PCR_SELECTION, TPMS_QUOTE_INFO, TPMS_RSA_PARMS,
-        TPMS_SCHEME_ECDAA, TPMS_SCHEME_HASH, TPMS_SCHEME_HMAC, TPMS_SCHEME_XOR,
+        TPMS_COMMAND_AUDIT_INFO, TPMS_CREATION_INFO, TPMS_ECC_PARMS, TPMS_EMPTY,
+        TPMS_KEYEDHASH_PARMS, TPMS_NV_CERTIFY_INFO, TPMS_PCR_SELECTION, TPMS_QUOTE_INFO,
+        TPMS_RSA_PARMS, TPMS_SCHEME_ECDAA, TPMS_SCHEME_HASH, TPMS_SCHEME_HMAC, TPMS_SCHEME_XOR,
         TPMS_SENSITIVE_CREATE, TPMS_SESSION_AUDIT_INFO, TPMS_SYMCIPHER_PARMS,
         TPMS_TAGGED_PCR_SELECT, TPMS_TAGGED_PROPERTY, TPMS_TIME_ATTEST_INFO, TPMS_TIME_INFO,
     },
@@ -302,10 +302,17 @@ pub fn ensure_tpms_symcipher_parms_equality(
     crate::common::ensure_tpmt_sym_def_object_equality(&expected.sym, &actual.sym)
 }
 
-pub fn ensure_tpms_sensitive_create(
+pub fn ensure_tpms_sensitive_create_equality(
     expected: &TPMS_SENSITIVE_CREATE,
     actual: &TPMS_SENSITIVE_CREATE,
 ) {
     crate::common::ensure_tpm2b_auth_equality(&expected.userAuth, &actual.userAuth);
     crate::common::ensure_tpm2b_sensitive_data(&expected.data, &actual.data);
+}
+
+pub fn ensure_tpms_empty_equality(expected: &TPMS_EMPTY, actual: &TPMS_EMPTY) {
+    assert_eq!(
+        expected.empty, actual.empty,
+        "'empty' value TPMS_EMPTY, mismatch between actual and expected."
+    );
 }

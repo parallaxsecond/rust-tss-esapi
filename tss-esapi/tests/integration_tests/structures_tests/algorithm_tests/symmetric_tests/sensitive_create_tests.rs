@@ -51,7 +51,7 @@ fn test_tpms_sensitive_create_conversions() {
         "data() did not return expected value"
     );
     let actual_tpms_sensitive_create: TPMS_SENSITIVE_CREATE = sensitive_create.into();
-    crate::common::ensure_tpms_sensitive_create(
+    crate::common::ensure_tpms_sensitive_create_equality(
         &expected_tpms_sensitive_create,
         &actual_tpms_sensitive_create,
     );
