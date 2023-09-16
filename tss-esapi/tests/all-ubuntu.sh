@@ -15,6 +15,9 @@ set -euf -o pipefail
 #################################################
 if [[ ! -z ${RUST_TOOLCHAIN_VERSION:+x} ]]; then
 	rustup override set ${RUST_TOOLCHAIN_VERSION}
+	# Use the frozen Cargo lock to prevent any drift from MSRV being upgraded
+	# underneath our feet.
+	cp tests/Cargo.lock.frozen ../Cargo.lock
 fi
 
 #################################################
