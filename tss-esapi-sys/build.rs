@@ -57,7 +57,6 @@ fn main() {
     }
 }
 
-#[allow(clippy::uninlined_format_args)]
 #[cfg(feature = "generate-bindings")]
 pub fn generate_from_system(esapi_out: PathBuf) {
     pkg_config::Config::new()
