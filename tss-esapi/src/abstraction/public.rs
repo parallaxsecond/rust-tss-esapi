@@ -21,7 +21,7 @@ use serde::{Deserialize, Serialize};
 ///
 /// Holds either [`picky_asn1_x509::RsaPublicKey`] for [`crate::structures::Public::Rsa`] or
 /// [`picky_asn1_x509::EcPoint`] for [`crate::structures::Public::Ecc`].
-#[derive(Serialize, Deserialize, Debug, PartialEq, Clone)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
 pub enum DecodedKey {
     RsaPublicKey(RsaPublicKey),
     EcPoint(EcPoint),
