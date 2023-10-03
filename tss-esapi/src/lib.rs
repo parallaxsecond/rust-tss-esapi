@@ -58,7 +58,7 @@
 //! are at most one level away from root.
 //!
 //! Minimum supported Rust version (MSRV):
-//! We currently check with version 1.53.0 of the Rust compiler during CI builds.
+//! We currently check with version 1.66.0 of the Rust compiler during CI builds.
 //!
 //! # Notes on code safety:
 //! * thread safety is ensured by the required mutability of the `Context` structure within the
