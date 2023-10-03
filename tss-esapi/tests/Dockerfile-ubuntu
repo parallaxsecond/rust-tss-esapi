@@ -4,6 +4,9 @@ ARG TPM2_TSS_VERSION=2.4.6
 ENV TPM2_TSS_VERSION=$TPM2_TSS_VERSION
 ENV PKG_CONFIG_PATH /usr/local/lib/pkgconfig
 
+RUN apt-get update && apt-get -y upgrade
+RUN apt install -y libjson-c-dev
+
 # Download and install the TSS library
 RUN git clone https://github.com/tpm2-software/tpm2-tss.git --branch $TPM2_TSS_VERSION
 RUN cd tpm2-tss \
