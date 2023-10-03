@@ -626,17 +626,11 @@ impl FromStr for TabrmdConfig {
 }
 
 /// DBus type for usage with TABRMD
-#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+#[derive(Copy, Clone, Debug, Default, PartialEq, Eq)]
 pub enum BusType {
+    #[default]
     System,
     Session,
-}
-
-#[allow(clippy::derivable_impls)] // Remove this when MSRV is higher then 1.57
-impl Default for BusType {
-    fn default() -> Self {
-        BusType::System
-    }
 }
 
 impl FromStr for BusType {
