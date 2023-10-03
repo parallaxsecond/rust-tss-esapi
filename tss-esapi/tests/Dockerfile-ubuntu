@@ -1,6 +1,6 @@
 FROM ghcr.io/tpm2-software/ubuntu-18.04:latest
 
-ARG TPM2_TSS_VERSION=2.3.3
+ARG TPM2_TSS_VERSION=2.4.6
 ENV TPM2_TSS_VERSION=$TPM2_TSS_VERSION
 ENV PKG_CONFIG_PATH /usr/local/lib/pkgconfig
 
