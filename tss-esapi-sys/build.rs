@@ -4,7 +4,7 @@
 #[cfg(feature = "generate-bindings")]
 use std::path::PathBuf;
 
-const MINIMUM_VERSION: &str = "2.3.3";
+const MINIMUM_VERSION: &str = "2.4.6";
 
 fn main() {
     if std::env::var("DOCS_RS").is_ok() {
@@ -100,7 +100,6 @@ pub fn generate_from_system(esapi_out: PathBuf) {
         .clang_arg(format!("-I{}/tss2/", tss2_esys_include_path))
         .clang_arg(format!("-I{}/tss2/", tss2_tctildr_include_path))
         .clang_arg(format!("-I{}/tss2/", tss2_mu_include_path))
-        .rustfmt_bindings(true)
         .header(format!("{}/tss2/tss2_esys.h", tss2_esys_include_path))
         .header(format!("{}/tss2/tss2_tctildr.h", tss2_tctildr_include_path))
         .header(format!("{}/tss2/tss2_mu.h", tss2_mu_include_path))
