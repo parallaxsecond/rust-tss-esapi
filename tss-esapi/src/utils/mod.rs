@@ -28,7 +28,7 @@ use zeroize::{Zeroize, ZeroizeOnDrop};
 /// Rust native wrapper for `TPMS_CONTEXT` objects.
 ///
 /// This structure is intended to help with persisting object contexts. As the main reason for
-/// saving the context of an object is to be able to re-use it later, on demand, a serializable
+/// saving the context of an object is to be able to reuse it later, on demand, a serializable
 /// structure is most commonly needed. `TpmsContext` implements the `Serialize` and `Deserialize`
 /// defined by `serde`.
 #[derive(Debug, Serialize, Deserialize, Clone, Zeroize, ZeroizeOnDrop)]

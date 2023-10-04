@@ -127,7 +127,7 @@ mod test_duplicate {
         let mut context = create_ctx_with_session();
 
         // Fixed TPM and Fixed Parent should be "false" for an object
-        // to be elligible for duplication
+        // to be eligible for duplication
         let object_attributes = ObjectAttributesBuilder::new()
             .with_fixed_tpm(false)
             .with_fixed_parent(false)
