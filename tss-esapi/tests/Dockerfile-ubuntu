@@ -2,7 +2,7 @@ FROM ghcr.io/tpm2-software/ubuntu-18.04:latest
 
 ARG TPM2_TSS_VERSION=2.4.6
 ENV TPM2_TSS_VERSION=$TPM2_TSS_VERSION
-ENV PKG_CONFIG_PATH /usr/local/lib/pkgconfig
+ENV PKG_CONFIG_PATH=/usr/local/lib/pkgconfig
 
 RUN apt-get update && apt-get -y upgrade
 RUN apt install -y libjson-c-dev
