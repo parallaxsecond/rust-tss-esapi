@@ -76,7 +76,7 @@ impl PcrBank {
         self.bank.is_empty()
     }
 
-    /// Removees the [Digest] associated with the [PcrSlot] and
+    /// Removes the [Digest] associated with the [PcrSlot] and
     /// returns it.
     ///
     /// # Details
