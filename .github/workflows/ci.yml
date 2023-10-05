@@ -12,7 +12,7 @@ jobs:
       - name: Check spelling
         uses: codespell-project/actions-codespell@master
         with:
-          ignore_words_list: "crate,daa,keypair"
+          ignore_words_list: "crate,daa,keypair,AcSend"
           path: tss-esapi
           skip: "*/target,*-sys"
 
