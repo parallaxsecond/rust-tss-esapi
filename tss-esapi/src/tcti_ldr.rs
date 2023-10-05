@@ -165,7 +165,6 @@ impl TctiNameConf {
     }
 }
 
-#[rustversion::attr(since(1.66), allow(clippy::uninlined_format_args))]
 impl TryFrom<TctiNameConf> for CString {
     type Error = Error;
 
@@ -627,17 +626,11 @@ impl FromStr for TabrmdConfig {
 }
 
 /// DBus type for usage with TABRMD
-#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+#[derive(Copy, Clone, Debug, Default, PartialEq, Eq)]
 pub enum BusType {
+    #[default]
     System,
     Session,
-}
-
-#[allow(clippy::derivable_impls)] // Remove this when MSRV is higher then 1.57
-impl Default for BusType {
-    fn default() -> Self {
-        BusType::System
-    }
 }
 
 impl FromStr for BusType {
