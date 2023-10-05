@@ -23,7 +23,7 @@ fi
 #################################################
 # Generate bindings for non-"standard" versions #
 #################################################
-if [[ "$TPM2_TSS_VERSION" != "2.3.3" ]]; then
+if [[ "$TPM2_TSS_VERSION" != "2.4.6" ]]; then
 	FEATURES="generate-bindings integration-tests"
 else
 	FEATURES="integration-tests"
