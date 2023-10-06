@@ -1,5 +1,22 @@
 # Changelog
 
+## [tss-esapi-7.3.0](https://github.com/parallaxsecond/rust-tss-esapi/tree/tss-esapi-7.3.0) (2023-09-28)
+
+[Full Changelog](https://github.com/parallaxsecond/rust-tss-esapi/compare/tss-esapi-7.2.0...tss-esapi-7.3.0)
+
+**Closed issues:**
+
+- No 7.3.0 tag in git [\#435](https://github.com/parallaxsecond/rust-tss-esapi/issues/435)
+-  error  sign function  in Transientkeycontext [\#404](https://github.com/parallaxsecond/rust-tss-esapi/issues/404)
+- rust-tss-esapi is not buildable on Fedora-38 and Fedora-rawhide [\#400](https://github.com/parallaxsecond/rust-tss-esapi/issues/400)
+- error in key\_handle  in rsa\_encrypt using tss-esapi [\#399](https://github.com/parallaxsecond/rust-tss-esapi/issues/399)
+- Key sizes for RSA and curves for ECC are not configurable in ECC abstractions [\#397](https://github.com/parallaxsecond/rust-tss-esapi/issues/397)
+
+**Merged pull requests:**
+
+- Bump version to 7.3 [\#434](https://github.com/parallaxsecond/rust-tss-esapi/pull/434) ([ionut-arm](https://github.com/ionut-arm))
+- Bump picky-crates [\#427](https://github.com/parallaxsecond/rust-tss-esapi/pull/427) ([ionut-arm](https://github.com/ionut-arm))
+
 ## [tss-esapi-7.2.0](https://github.com/parallaxsecond/rust-tss-esapi/tree/tss-esapi-7.2.0) (2023-02-07)
 ## [tss-esapi-sys-0.4.0](https://github.com/parallaxsecond/rust-tss-esapi/tree/tss-esapi-sys-0.4.0) (2023-02-07)
 
