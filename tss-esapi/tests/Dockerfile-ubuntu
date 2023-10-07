@@ -7,7 +7,8 @@ ENV PATH="/root/.cargo/bin:${PATH}"
 
 FROM rust-toolchain AS tpm2-tss
 # Download and install the TSS library
-ARG TPM2_TSS_VERSION=3.2.2
+ENV TPM2_TSS_BINDINGS_VERSION=3.2.2
+ARG TPM2_TSS_VERSION=$TPM2_TSS_BINDINGS_VERSION
 ENV TPM2_TSS_VERSION=$TPM2_TSS_VERSION
 ENV PKG_CONFIG_PATH /usr/local/lib/pkgconfig
 RUN git clone https://github.com/tpm2-software/tpm2-tss.git --branch $TPM2_TSS_VERSION
@@ -25,3 +26,12 @@ RUN cd tpm2-tools \
 	&& ./bootstrap \
 	&& ./configure \
 	&& make install
+
+FROM tpm2-tools AS tpm2-tss-install-dir
+# TPM2_TSS_PATH is the env variable build.rs looks for
+# an installation.
+ENV TPM2_TSS_PATH=/tpm2-tss-install-dir
+RUN mkdir -p /tpm2-tss-install-dir/lib /tpm2-tss-install-dir/include
+COPY --from=tpm2-tss tpm2-tss/src/tss2-*/.libs/libtss2-*.so /tpm2-tss-install-dir/lib/
+COPY --from=tpm2-tss tpm2-tss/include/ /tpm2-tss-install-dir/include/
+COPY --from=tpm2-tss tpm2-tss/VERSION /tpm2-tss-install-dir/
