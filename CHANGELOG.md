@@ -1,5 +1,9 @@
 # Changelog
 
+## [tss-esapi-7.4.0](https://github.com/parallaxsecond/rust-tss-esapi/tree/tss-esapi-7.4.0) (2023-10-09)
+
+[Full Changelog](https://github.com/parallaxsecond/rust-tss-esapi/compare/tss-esapi-sys-0.5.0...tss-esapi-7.4.0)
+
 ## [tss-esapi-sys-0.5.0](https://github.com/parallaxsecond/rust-tss-esapi/tree/tss-esapi-sys-0.5.0) (2023-10-09)
 
 [Full Changelog](https://github.com/parallaxsecond/rust-tss-esapi/compare/tss-esapi-7.3.0...tss-esapi-sys-0.5.0)

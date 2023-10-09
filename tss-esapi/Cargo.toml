@@ -1,6 +1,6 @@
 [package]
 name = "tss-esapi"
-version = "7.3.0"
+version = "7.4.0"
 authors = ["Parsec Project Contributors"]
 edition = "2018"
 description = "Rust-native wrapper around TSS 2.0 Enhanced System API"
