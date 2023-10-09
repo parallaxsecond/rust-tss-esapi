@@ -1,5 +1,37 @@
 # Changelog
 
+## [tss-esapi-sys-0.5.0](https://github.com/parallaxsecond/rust-tss-esapi/tree/tss-esapi-sys-0.5.0) (2023-10-06)
+
+[Full Changelog](https://github.com/parallaxsecond/rust-tss-esapi/compare/tss-esapi-7.3.0...tss-esapi-sys-0.5.0)
+
+**Merged pull requests:**
+
+- Update darwin bindings [\#452](https://github.com/parallaxsecond/rust-tss-esapi/pull/452) ([gowthamsk-arm](https://github.com/gowthamsk-arm))
+- Bump bitfield and num-derive to 0.4.0 [\#449](https://github.com/parallaxsecond/rust-tss-esapi/pull/449) ([tgonzalezorlandoarm](https://github.com/tgonzalezorlandoarm))
+- Bump env_logger to 0.10.0 [\#443](https://github.com/parallaxsecond/rust-tss-esapi/pull/443) ([tgonzalezorlandoarm](https://github.com/tgonzalezorlandoarm))
+- Bump picky-asn1 and picky-asn1-x509 to 0.8.0 and 0.12.0 [\#441](https://github.com/parallaxsecond/rust-tss-esapi/pull/441) ([tgonzalezorlandoarm](https://github.com/tgonzalezorlandoarm))
+- Update MSRV to 1.66.0 [\#444](https://github.com/parallaxsecond/rust-tss-esapi/pull/444) ([tgonzalezorlandoarm](https://github.com/tgonzalezorlandoarm))
+- Bump bindgen and update bindings [\#439](https://github.com/parallaxsecond/rust-tss-esapi/pull/439) ([gowthamsk-arm](https://github.com/gowthamsk-arm))
+- Fix spelling mistakes and add spellcheck exceptions [\#447](https://github.com/parallaxsecond/rust-tss-esapi/pull/447) ([tgonzalezorlandoarm](https://github.com/tgonzalezorlandoarm))
+- Bump picky crates to match parsec [\#440](https://github.com/parallaxsecond/rust-tss-esapi/pull/440) ([tgonzalezorlandoarm](https://github.com/tgonzalezorlandoarm))
+
+## [tss-esapi-7.3.0](https://github.com/parallaxsecond/rust-tss-esapi/tree/tss-esapi-7.3.0) (2023-09-28)
+
+[Full Changelog](https://github.com/parallaxsecond/rust-tss-esapi/compare/tss-esapi-7.2.0...tss-esapi-7.3.0)
+
+**Closed issues:**
+
+- No 7.3.0 tag in git [\#435](https://github.com/parallaxsecond/rust-tss-esapi/issues/435)
+-  error  sign function  in Transientkeycontext [\#404](https://github.com/parallaxsecond/rust-tss-esapi/issues/404)
+- rust-tss-esapi is not buildable on Fedora-38 and Fedora-rawhide [\#400](https://github.com/parallaxsecond/rust-tss-esapi/issues/400)
+- error in key\_handle  in rsa\_encrypt using tss-esapi [\#399](https://github.com/parallaxsecond/rust-tss-esapi/issues/399)
+- Key sizes for RSA and curves for ECC are not configurable in ECC abstractions [\#397](https://github.com/parallaxsecond/rust-tss-esapi/issues/397)
+
+**Merged pull requests:**
+
+- Bump version to 7.3 [\#434](https://github.com/parallaxsecond/rust-tss-esapi/pull/434) ([ionut-arm](https://github.com/ionut-arm))
+- Bump picky-crates [\#427](https://github.com/parallaxsecond/rust-tss-esapi/pull/427) ([ionut-arm](https://github.com/ionut-arm))
+
 ## [tss-esapi-7.2.0](https://github.com/parallaxsecond/rust-tss-esapi/tree/tss-esapi-7.2.0) (2023-02-07)
 ## [tss-esapi-sys-0.4.0](https://github.com/parallaxsecond/rust-tss-esapi/tree/tss-esapi-sys-0.4.0) (2023-02-07)
 
