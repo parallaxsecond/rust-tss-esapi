@@ -97,6 +97,7 @@ macro_rules! buffer_type {
 }
 
 pub mod attest;
+pub mod private;
 pub mod public;
 pub mod sensitive;
 pub mod sensitive_create;
@@ -246,11 +247,6 @@ pub mod max_nv_buffer {
 
 pub mod nonce {
     buffer_type!(Nonce, 64, TPM2B_NONCE);
-}
-
-pub mod private {
-    use tss_esapi_sys::_PRIVATE;
-    buffer_type!(Private, ::std::mem::size_of::<_PRIVATE>(), TPM2B_PRIVATE);
 }
 
 pub mod private_key_rsa {
