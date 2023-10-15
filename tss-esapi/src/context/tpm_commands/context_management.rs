@@ -360,7 +360,7 @@ impl Context {
     /// #               SymmetricDefinitionObject::AES_256_CFB,
     /// #               RsaKeyBits::Rsa2048,
     /// #               RsaExponent::default(),
-    /// #            ).expect("Failed to Public structure for key"),
+    /// #            ).expect("Failed to create Public structure for key"),
     /// #            Some(auth_value_primary),
     /// #            None,
     /// #            None,
