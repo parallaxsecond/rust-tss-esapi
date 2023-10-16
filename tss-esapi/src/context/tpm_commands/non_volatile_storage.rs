@@ -7,7 +7,7 @@ use crate::{
     structures::{Auth, MaxNvBuffer, Name, NvPublic},
     tss2_esys::{
         Esys_NV_DefineSpace, Esys_NV_Increment, Esys_NV_Read, Esys_NV_ReadPublic,
-        Esys_NV_UndefineSpace, Esys_NV_Write,
+        Esys_NV_UndefineSpace, Esys_NV_UndefineSpaceSpecial, Esys_NV_Write,
     },
     Context, Result, ReturnCode,
 };
@@ -226,7 +226,149 @@ impl Context {
         self.handle_manager.set_as_closed(nv_index_handle.into())
     }
 
-    // Missing function: UndefineSpaceSpecial
+    /// Deletes an index in the non volatile storage.
+    ///
+    /// # Details
+    /// The method will instruct the TPM to remove a
+    /// nv index that was defined with TPMA_NV_POLICY_DELETE.
+    ///
+    /// Please beware that this method requires both a policy and
+    /// authorization session handle to be present.
+    ///
+    /// # Arguments
+    /// * `nv_auth` - The [Provision] used for authorization.
+    /// * `nv_index_handle`- The [NvIndexHandle] associated with
+    ///                      the nv area that is to be removed.
+    ///
+    /// # Example
+    /// ```rust
+    /// # use tss_esapi::{
+    /// #     Context, TctiNameConf, attributes::SessionAttributes, constants::SessionType,
+    /// #     structures::SymmetricDefinition, constants::CommandCode,
+    /// #     handles::NvIndexTpmHandle, attributes::NvIndexAttributes, structures::NvPublic,
+    /// #     interface_types::algorithm::HashingAlgorithm, structures::Digest,
+    /// #     interface_types::session_handles::PolicySession,
+    /// # };
+    /// # use std::convert::TryFrom;
+    /// use tss_esapi::interface_types::resource_handles::Provision;
+    /// use tss_esapi::interface_types::session_handles::AuthSession;
+    /// # // Create context
+    /// # let mut context =
+    /// #     Context::new(
+    /// #         TctiNameConf::from_environment_variable().expect("Failed to get TCTI"),
+    /// #     ).expect("Failed to create Context");
+    /// #
+    /// # // Create a trial session to generate policy digest
+    /// # let session = context
+    /// #     .start_auth_session(
+    /// #         None,
+    /// #         None,
+    /// #         None,
+    /// #         SessionType::Trial,
+    /// #         SymmetricDefinition::AES_256_CFB,
+    /// #         tss_esapi::interface_types::algorithm::HashingAlgorithm::Sha256,
+    /// #     )
+    /// #     .expect("Failed to create session")
+    /// #     .expect("Received invalid handle");
+    /// # let (session_attributes, session_attributes_mask) = SessionAttributes::builder()
+    /// #     .with_decrypt(true)
+    /// #     .with_encrypt(true)
+    /// #     .build();
+    /// # context.tr_sess_set_attributes(session, session_attributes, session_attributes_mask)
+    /// #     .expect("Failed to set attributes on session");
+    /// #
+    /// # // Create a trial policy session that allows undefine with NvUndefineSpaceSpecial
+    /// # let policy_session = PolicySession::try_from(session).expect("Failed to get policy session");
+    /// # context.policy_command_code(policy_session, CommandCode::NvUndefineSpaceSpecial).expect("Failed to create trial policy");
+    /// # let digest = context.policy_get_digest(policy_session).expect("Failed to get policy digest");
+    /// #
+    /// # let nv_index = NvIndexTpmHandle::new(0x01500023)
+    /// #     .expect("Failed to create NV index tpm handle");
+    /// #
+    /// # // Create NV index attributes
+    /// # let nv_index_attributes = NvIndexAttributes::builder()
+    /// #     .with_pp_read(true)
+    /// #     .with_platform_create(true)
+    /// #     .with_policy_delete(true)
+    /// #     .with_policy_write(true)
+    /// #     .build()
+    /// #     .expect("Failed to create nv index attributes");
+    /// #
+    /// # // Create nv public.
+    /// # let nv_public = NvPublic::builder()
+    /// #     .with_nv_index(nv_index)
+    /// #     .with_index_name_algorithm(HashingAlgorithm::Sha256)
+    /// #     .with_index_attributes(nv_index_attributes)
+    /// #     .with_index_auth_policy(digest)
+    /// #     .with_data_area_size(32)
+    /// #     .build()
+    /// #     .expect("Failed to build NvPublic");
+    /// #
+    /// // Define the NV space.
+    /// let index_handle = context.execute_with_session(Some(AuthSession::Password), |context| {
+    ///         context
+    ///             .nv_define_space(Provision::Platform, None, nv_public)
+    ///             .expect("Call to nv_define_space failed")
+    ///     });
+    ///
+    /// # // Setup auth policy session
+    /// # let session = context
+    /// #     .start_auth_session(
+    /// #         None,
+    /// #         None,
+    /// #         None,
+    /// #         SessionType::Policy,
+    /// #         SymmetricDefinition::AES_256_CFB,
+    /// #         tss_esapi::interface_types::algorithm::HashingAlgorithm::Sha256,
+    /// #     )
+    /// #     .expect("Failed to create policy session")
+    /// #     .expect("Received invalid handle");
+    /// # let (session_attributes, session_attributes_mask) = SessionAttributes::builder()
+    /// #     .with_decrypt(true)
+    /// #     .with_encrypt(true)
+    /// #     .build();
+    /// # context.tr_sess_set_attributes(session, session_attributes, session_attributes_mask)
+    /// #     .expect("Failed to set attributes on session");
+    /// #
+    /// # // Define a policy command code that allows undefine with NvUndefineSpaceSpecial
+    /// # let policy_session = PolicySession::try_from(session).expect("Failed to get policy session");
+    /// # context.policy_command_code(policy_session, CommandCode::NvUndefineSpaceSpecial).expect("Failed to create policy");
+    /// #
+    /// // Undefine the NV space with a policy session and default auth session
+    /// context.execute_with_sessions((
+    ///         Some(session),
+    ///         Some(AuthSession::Password),
+    ///         None,
+    ///     ), |context| {
+    ///         context
+    ///             .nv_undefine_space_special(Provision::Platform, index_handle)
+    ///             .expect("Call to nv_undefine_space_special failed");
+    ///         }
+    ///     );
+    /// ```
+    pub fn nv_undefine_space_special(
+        &mut self,
+        nv_auth: Provision,
+        nv_index_handle: NvIndexHandle,
+    ) -> Result<()> {
+        ReturnCode::ensure_success(
+            unsafe {
+                Esys_NV_UndefineSpaceSpecial(
+                    self.mut_context(),
+                    nv_index_handle.into(),
+                    AuthHandle::from(nv_auth).into(),
+                    self.required_session_1()?,
+                    self.optional_session_2(),
+                    self.optional_session_3(),
+                )
+            },
+            |ret| {
+                error!("Error when undefining NV space: {:#010X}", ret);
+            },
+        )?;
+
+        self.handle_manager.set_as_closed(nv_index_handle.into())
+    }
 
     /// Reads the public part of an nv index.
     ///
