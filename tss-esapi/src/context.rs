@@ -12,7 +12,7 @@ use crate::{
     Error, Result, ReturnCode, WrapperErrorKind as ErrorKind,
 };
 use handle_manager::HandleManager;
-use log::{error, info};
+use log::{debug, error};
 use mbox::MBox;
 use std::collections::HashMap;
 use std::ptr::null_mut;
@@ -447,11 +447,11 @@ impl Context {
 
 impl Drop for Context {
     fn drop(&mut self) {
-        info!("Closing context.");
+        debug!("Closing context.");
 
         // Flush handles
         for handle in self.handle_manager.handles_to_flush() {
-            info!("Flushing handle {}", ESYS_TR::from(handle));
+            debug!("Flushing handle {}", ESYS_TR::from(handle));
             if let Err(e) = self.flush_context(handle) {
                 error!("Error when dropping the context: {}", e);
             }
@@ -459,7 +459,7 @@ impl Drop for Context {
 
         // Close handles
         for handle in self.handle_manager.handles_to_close().iter_mut() {
-            info!("Closing handle {}", ESYS_TR::from(*handle));
+            debug!("Closing handle {}", ESYS_TR::from(*handle));
             if let Err(e) = self.tr_close(handle) {
                 error!("Error when dropping context: {}.", e);
             }
@@ -480,6 +480,6 @@ impl Drop for Context {
                     .unwrap(), // should not fail based on how the context is initialised/used
             )
         };
-        info!("Context closed.");
+        debug!("Context closed.");
     }
 }
