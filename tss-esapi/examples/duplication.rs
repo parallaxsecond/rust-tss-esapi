@@ -410,6 +410,7 @@ fn create_primary_key(context: &mut Context) -> CreatePrimaryKeyResult {
                 .with_name_hashing_algorithm(HashingAlgorithm::Sha256)
                 .with_object_attributes(object_attributes)
                 .with_ecc_parameters(
+                    /*
                     PublicEccParametersBuilder::new()
                         .with_ecc_scheme(EccScheme::Null)
                         .with_curve(EccCurve::NistP256)
@@ -420,6 +421,13 @@ fn create_primary_key(context: &mut Context) -> CreatePrimaryKeyResult {
                         .with_key_derivation_function_scheme(KeyDerivationFunctionScheme::Null)
                         .build()
                         .expect("Params to be valid"),
+                    */
+                    PublicEccParametersBuilder::new_restricted_decryption_key(
+                        SymmetricDefinitionObject::AES_128_CFB,
+                        EccCurve::NistP256,
+                    )
+                    .build()
+                    .expect("Params to be valid"),
                 )
                 .with_ecc_unique_identifier(EccPoint::default())
                 .build()
