@@ -177,15 +177,12 @@ fn main() {
         // Use policy digest computed using the trial session
         .with_auth_policy(policy_digest)
         .with_ecc_parameters(
-            PublicEccParametersBuilder::new()
-                .with_ecc_scheme(EccScheme::Null)
-                .with_curve(EccCurve::NistP256)
-                .with_is_signing_key(false)
-                .with_is_decryption_key(true)
-                .with_restricted(false)
-                .with_key_derivation_function_scheme(KeyDerivationFunctionScheme::Null)
-                .build()
-                .expect("Params to be valid"),
+            PublicEccParametersBuilder::new_restricted_decryption_key(
+                SymmetricDefinitionObject::AES_128_CFB,
+                EccCurve::NistP256,
+            )
+            .build()
+            .unwrap(),
         )
         .with_ecc_unique_identifier(EccPoint::default())
         .build()
@@ -201,6 +198,11 @@ fn main() {
                 None,
                 None,
             )
+        })
+        .map_err(|err| {
+            // ⚠️  TSS Layer: TPM, Code: 0x000002D6, Message: Unsupported symmetric algorithm or key size, or not appropriate for instance (associated with parameter number 2).
+            eprintln!("⚠️  {}", err);
+            err
         })
         .unwrap();
 
@@ -219,7 +221,6 @@ fn main() {
     //
     // ALWAYS FAILS!!!
     // 0x0000018a TpmFormatOneResponseCode { error_number: Type, argument_number: Handle(1) }
-    /*
     let object_attributes = ObjectAttributesBuilder::new()
         .with_fixed_tpm(false)
         .with_fixed_parent(true)
@@ -241,29 +242,32 @@ fn main() {
         .build()
         .unwrap();
 
-    let hmac_key = context_1.execute_with_nullauth_session(|ctx| {
-        ctx.create(loaded_storage_key, hmac_public, None, None, None, None)
-    }).unwrap();
+    let hmac_key = context_1
+        .execute_with_nullauth_session(|ctx| {
+            ctx.create(loaded_storage_key, hmac_public, None, None, None, None)
+        })
+        .map_err(|err| {
+            eprintln!("⚠️  {}", err);
+            err
+        })
+        .unwrap();
 
     // Do an hmac with it.
     let hmac1 = context_1
         .execute_with_nullauth_session(|ctx| {
-            let loaded_hmackey = ctx.load(
-                loaded_storage_key,
-                hmac_key.out_private.clone(),
-                hmac_key.out_public.clone(),
-            ).unwrap();
+            let loaded_hmackey = ctx
+                .load(
+                    loaded_storage_key,
+                    hmac_key.out_private.clone(),
+                    hmac_key.out_public.clone(),
+                )
+                .unwrap();
 
             ctx.execute_with_temporary_object(loaded_hmackey.into(), |ctx, handle| {
-                ctx.hmac(
-                    handle.into(),
-                    input_data.clone(),
-                    HashingAlgorithm::Sha256,
-                )
+                ctx.hmac(handle.into(), input_data.clone(), HashingAlgorithm::Sha256)
             })
         })
         .unwrap();
-    */
 
     // Great! Let's get to duplicating.
 
