@@ -53,7 +53,7 @@
 
 use tss_esapi::{
     attributes::{ObjectAttributesBuilder, SessionAttributesBuilder},
-    constants::SessionType,
+    constants::{CommandCode, SessionType},
     interface_types::{
         algorithm::{HashingAlgorithm, PublicAlgorithm},
         ecc::EccCurve,
@@ -137,6 +137,7 @@ fn main() {
                     .with_decrypt(true)
                     .with_encrypt(true)
                     .build();
+
             ctx.tr_sess_set_attributes(
                 trial_session,
                 policy_auth_session_attributes,
@@ -147,6 +148,13 @@ fn main() {
             let policy_session = PolicySession::try_from(trial_session)
                 .expect("Failed to convert auth session into policy session");
 
+            ctx.policy_auth_value(policy_session)
+                .expect("Policy auth value");
+
+            ctx.policy_command_code(policy_session, CommandCode::Duplicate)
+                .expect("Policy command code");
+
+            /*
             ctx.policy_duplication_select(
                 policy_session,
                 Vec::<u8>::new().try_into().unwrap(),
@@ -154,6 +162,7 @@ fn main() {
                 false,
             )
             .expect("Policy duplication select");
+            */
 
             ctx.policy_get_digest(policy_session)
         })
@@ -221,7 +230,6 @@ fn main() {
             )
         })
         .map_err(|err| {
-            // ⚠️  TSS Layer: TPM, Code: 0x000002D6, Message: Unsupported symmetric algorithm or key size, or not appropriate for instance (associated with parameter number 2).
             eprintln!("⚠️  {}", err);
             err
         })
@@ -315,6 +323,7 @@ fn main() {
                     .with_decrypt(true)
                     .with_encrypt(true)
                     .build();
+
             ctx.tr_sess_set_attributes(
                 policy_auth_session,
                 policy_auth_session_attributes,
@@ -325,6 +334,13 @@ fn main() {
             let policy_session = PolicySession::try_from(policy_auth_session)
                 .expect("Failed to convert auth session into policy session");
 
+            ctx.policy_auth_value(policy_session)
+                .expect("Policy auth value");
+
+            ctx.policy_command_code(policy_session, CommandCode::Duplicate)
+                .map(|_| policy_auth_session)
+
+            /*
             ctx.policy_duplication_select(
                 policy_session,
                 object_to_duplicate_name,
@@ -332,6 +348,7 @@ fn main() {
                 false,
             )
             .map(|_| policy_auth_session)
+            */
         })
         .unwrap();
 
