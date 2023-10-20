@@ -57,13 +57,15 @@ use tss_esapi::{
     interface_types::{
         algorithm::{HashingAlgorithm, PublicAlgorithm},
         ecc::EccCurve,
+        key_bits::RsaKeyBits,
         resource_handles::Hierarchy,
         session_handles::PolicySession,
     },
     structures::{
         CreatePrimaryKeyResult, Digest, EccPoint, EccScheme, KeyDerivationFunctionScheme,
-        KeyedHashScheme, MaxBuffer, PublicBuilder, PublicEccParametersBuilder,
-        PublicKeyedHashParameters, SymmetricDefinition, SymmetricDefinitionObject,
+        KeyedHashScheme, MaxBuffer, PublicBuilder, PublicEccParametersBuilder, PublicKeyRsa,
+        PublicKeyedHashParameters, PublicRsaParametersBuilder, RsaExponent, SymmetricDefinition,
+        SymmetricDefinitionObject,
     },
     // session_handles::PolicySession,
     Context,
@@ -165,10 +167,29 @@ fn main() {
         .with_sensitive_data_origin(true)
         .with_user_with_auth(true)
         .with_decrypt(true)
-        .with_sign_encrypt(true)
-        .with_restricted(false)
+        .with_sign_encrypt(false)
+        .with_restricted(true)
         .build()
         .expect("Attributes to be valid");
+
+    /*
+    let storage_public = PublicBuilder::new()
+        .with_public_algorithm(PublicAlgorithm::Rsa)
+        .with_name_hashing_algorithm(HashingAlgorithm::Sha256)
+        .with_object_attributes(object_attributes)
+        .with_rsa_parameters(
+            PublicRsaParametersBuilder::new_restricted_decryption_key(
+                SymmetricDefinitionObject::AES_128_CFB,
+                RsaKeyBits::Rsa2048,
+                RsaExponent::default(),
+            )
+            .build()
+            .expect("Params to be valid"),
+        )
+        .with_rsa_unique_identifier(PublicKeyRsa::default())
+        .build()
+        .expect("public to be valid");
+    */
 
     let storage_public = PublicBuilder::new()
         .with_public_algorithm(PublicAlgorithm::Ecc)
@@ -218,9 +239,6 @@ fn main() {
         .unwrap();
 
     // Now we can create a child key that we will be able to move along with the parent.
-    //
-    // ALWAYS FAILS!!!
-    // 0x0000018a TpmFormatOneResponseCode { error_number: Type, argument_number: Handle(1) }
     let object_attributes = ObjectAttributesBuilder::new()
         .with_fixed_tpm(false)
         .with_fixed_parent(true)
@@ -405,23 +423,30 @@ fn create_primary_key(context: &mut Context) -> CreatePrimaryKeyResult {
                 .build()
                 .expect("Attributes to be valid");
 
+            /*
+            let public = PublicBuilder::new()
+                .with_public_algorithm(PublicAlgorithm::Rsa)
+                .with_name_hashing_algorithm(HashingAlgorithm::Sha256)
+                .with_object_attributes(object_attributes)
+                .with_rsa_parameters(
+                    PublicRsaParametersBuilder::new_restricted_decryption_key(
+                        SymmetricDefinitionObject::AES_128_CFB,
+                        RsaKeyBits::Rsa2048,
+                        RsaExponent::default(),
+                    )
+                    .build()
+                    .expect("Params to be valid"),
+                )
+                .with_rsa_unique_identifier(PublicKeyRsa::default())
+                .build()
+                .expect("public to be valid");
+            */
+
             let public = PublicBuilder::new()
                 .with_public_algorithm(PublicAlgorithm::Ecc)
                 .with_name_hashing_algorithm(HashingAlgorithm::Sha256)
                 .with_object_attributes(object_attributes)
                 .with_ecc_parameters(
-                    /*
-                    PublicEccParametersBuilder::new()
-                        .with_ecc_scheme(EccScheme::Null)
-                        .with_curve(EccCurve::NistP256)
-                        .with_is_signing_key(false)
-                        .with_is_decryption_key(true)
-                        .with_restricted(true)
-                        .with_symmetric(SymmetricDefinitionObject::AES_128_CFB)
-                        .with_key_derivation_function_scheme(KeyDerivationFunctionScheme::Null)
-                        .build()
-                        .expect("Params to be valid"),
-                    */
                     PublicEccParametersBuilder::new_restricted_decryption_key(
                         SymmetricDefinitionObject::AES_128_CFB,
                         EccCurve::NistP256,
