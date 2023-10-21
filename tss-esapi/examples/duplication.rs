@@ -302,9 +302,10 @@ fn main() {
     let (_, object_to_duplicate_name, _) =
         context_1.read_public(loaded_storage_key.into()).unwrap();
 
-    // Now, we can compute the real policy for the duplication.
+    // Now, we can compute the real policy and perform the duplication.
+    let public = storage_key.out_public.clone();
 
-    let policy_auth_session = context_1
+    let (data, duplicate, secret) = context_1
         .execute_without_session(|ctx| {
             let policy_auth_session = ctx
                 .start_auth_session(
@@ -338,7 +339,8 @@ fn main() {
                 .expect("Policy auth value");
 
             ctx.policy_command_code(policy_session, CommandCode::Duplicate)
-                .map(|_| policy_auth_session)
+                .expect("Policy command code");
+                //.map(|_| policy_auth_session)
 
             /*
             ctx.policy_duplication_select(
@@ -349,28 +351,28 @@ fn main() {
             )
             .map(|_| policy_auth_session)
             */
-        })
-        .unwrap();
 
-    // ALWAYS FAILS!!!
-    // For some reason this has a policy error - I was copy pasting from the
-    // tests in duplication_commands_tests.rs
-    let public = storage_key.out_public.clone();
-    let (data, duplicate, secret) = context_1
-        .execute_with_session(Some(policy_auth_session), |ctx| {
+            ctx.set_sessions((Some(policy_auth_session), None, None));
+
             let new_parent_handle = ctx
                 .load_external_public(primary_key_2.out_public.clone(), Hierarchy::Null)
                 .unwrap();
 
-            // TODO: Is it possible to use a non-null symdef?
+            // ALWAYS FAILS!!!
+            // ⚠️  TSS Layer: TPM, Code: 0x0000099D, Message: A policy check failed (associated with session number 1).
             ctx.execute_with_temporary_object(new_parent_handle.into(), |ctx, new_parent_handle| {
                 ctx.duplicate(
                     loaded_storage_key.into(),
                     new_parent_handle,
                     None,
+                    // TODO: Is it possible to use a non-null symdef?
                     SymmetricDefinitionObject::Null,
                 )
             })
+        })
+        .map_err(|err| {
+            eprintln!("⚠️  {}", err);
+            err
         })
         .unwrap();
 
@@ -400,7 +402,6 @@ fn main() {
 
     // And now it's descendants can be loaded and used too.
 
-    /*
     let hmac2 = context_2
         .execute_with_nullauth_session(|ctx| {
             let loaded_hmackey = ctx.load(
@@ -420,7 +421,6 @@ fn main() {
         .unwrap();
 
     assert_eq!(hmac1, hmac2);
-    */
 }
 
 // TODO: Is there a way to add entropy or randomness here so that the created primary keys
