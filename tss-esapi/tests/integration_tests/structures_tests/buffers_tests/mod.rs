@@ -6,6 +6,7 @@ mod data_tests;
 mod digest_tests;
 mod max_buffer_tests;
 mod nonce_tests;
+mod private;
 mod public;
 mod sensitive;
 mod sensitive_create_buffer_tests;
