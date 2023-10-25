@@ -1,20 +1,23 @@
-mod test_tr_from_tpm_public {
-    use crate::common::create_ctx_without_session;
-    use tss_esapi::{
-        attributes::NvIndexAttributesBuilder,
-        constants::{tss::TPM2_NV_INDEX_FIRST, CapabilityType},
-        handles::{NvIndexHandle, NvIndexTpmHandle, ObjectHandle},
-        interface_types::{
-            algorithm::HashingAlgorithm,
-            resource_handles::{NvAuth, Provision},
-            session_handles::AuthSession,
-        },
-        structures::{Auth, CapabilityData, MaxNvBuffer, NvPublicBuilder},
-        tss2_esys::TPM2_HANDLE,
-        Context,
-    };
+use crate::common::{create_ctx_with_session, create_ctx_without_session, decryption_key_pub};
+use tss_esapi::{
+    attributes::NvIndexAttributesBuilder,
+    constants::{tss::TPM2_NV_INDEX_FIRST, CapabilityType},
+    handles::{NvIndexHandle, NvIndexTpmHandle, ObjectHandle, PersistentTpmHandle, TpmHandle},
+    interface_types::{
+        algorithm::HashingAlgorithm,
+        dynamic_handles::Persistent,
+        resource_handles::{Hierarchy, NvAuth, Provision},
+        session_handles::AuthSession,
+    },
+    structures::{Auth, CapabilityData, MaxNvBuffer, NvPublicBuilder},
+    tss2_esys::TPM2_HANDLE,
+    Context, Error,
+};
 
-    use std::convert::TryFrom;
+use std::convert::TryFrom;
+
+mod test_tr_from_tpm_public {
+    use super::*;
 
     fn remove_nv_index_handle_from_tpm(nv_index_tpm_handle: NvIndexTpmHandle, nv_auth: Provision) {
         let mut context = create_ctx_without_session();
@@ -443,5 +446,47 @@ mod test_tr_from_tpm_public {
         //
         let expected = TpmHandle::NvIndex(nv_index_tpm_handle);
         assert_eq!(expected, actual);
+    }
+}
+
+mod test_tr_serialize_tr_deserialize {
+    use super::*;
+
+    #[test]
+    fn test_tr_serialize_tr_deserialize() -> Result<(), Error> {
+        let persistent_addr =
+            PersistentTpmHandle::new(u32::from_be_bytes([0x81, 0x00, 0x00, 0x05]))?;
+        let persistent = Persistent::Persistent(persistent_addr);
+        let mut context = create_ctx_with_session();
+
+        // Make sure the handle is not already persistent
+        if let Ok(clear_handle) =
+            context.tr_from_tpm_public(TpmHandle::Persistent(persistent.into()))
+        {
+            context.evict_control(Provision::Owner, clear_handle, persistent)?;
+        }
+
+        let key_handle = context
+            .create_primary(
+                Hierarchy::Owner,
+                decryption_key_pub(),
+                None,
+                None,
+                None,
+                None,
+            )?
+            .key_handle;
+        let public = context.read_public(key_handle)?;
+        let persistent_handle =
+            context.evict_control(Provision::Owner, key_handle.into(), persistent)?;
+        let data = context.tr_serialize(persistent_handle)?;
+
+        drop(context);
+        // Load handle in a new context
+        let mut new_context = create_ctx_without_session();
+        let new_handle = new_context.tr_deserialize(&data)?.into();
+        // Check it is the same key via the public key included in Public
+        assert_eq!(public, new_context.read_public(new_handle)?);
+        Ok(())
     }
 }
