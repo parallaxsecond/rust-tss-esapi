@@ -404,15 +404,15 @@ impl Context {
             },
         )?;
         unsafe {
+            let owned_buffer = Context::ffi_data_to_owned(buffer);
             let data = std::slice::from_raw_parts(
-                buffer,
+                owned_buffer,
                 len.try_into().map_err(|e| {
                     error!("Failed to convert buffer len to usize: {}", e);
                     Error::local_error(WrapperErrorKind::InvalidParam)
                 })?,
             );
             result.extend_from_slice(data);
-            let _free = Context::ffi_data_to_owned(buffer);
         };
         Ok(result)
     }
