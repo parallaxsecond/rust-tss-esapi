@@ -1,12 +1,12 @@
 mod test_tr_from_tpm_public {
-    use crate::common::create_ctx_without_session;
+    use crate::common::{create_ctx_with_session, create_ctx_without_session, decryption_key_pub};
     use tss_esapi::{
         attributes::NvIndexAttributesBuilder,
         constants::{tss::TPM2_NV_INDEX_FIRST, CapabilityType},
         handles::{NvIndexHandle, NvIndexTpmHandle, ObjectHandle},
         interface_types::{
             algorithm::HashingAlgorithm,
-            resource_handles::{NvAuth, Provision},
+            resource_handles::{Hierarchy, NvAuth, Provision},
             session_handles::AuthSession,
         },
         structures::{Auth, CapabilityData, MaxNvBuffer, NvPublicBuilder},
@@ -443,5 +443,29 @@ mod test_tr_from_tpm_public {
         //
         let expected = TpmHandle::NvIndex(nv_index_tpm_handle);
         assert_eq!(expected, actual);
+    }
+
+    #[test]
+    fn test_tr_serialize_tr_deserialize() {
+        let mut context = create_ctx_with_session();
+        let random_digest = context.get_random(16).unwrap();
+        let key_auth = Auth::from_bytes(random_digest.as_bytes()).unwrap();
+        let key_handle = context
+            .create_primary(
+                Hierarchy::Owner,
+                decryption_key_pub(),
+                Some(key_auth),
+                None,
+                None,
+                None,
+            )
+            .unwrap()
+            .key_handle;
+        let data = context.tr_serialize(key_handle.into()).unwrap();
+        let new_handle = context.tr_deserialize(&data).unwrap().into();
+        assert_eq!(
+            context.read_public(key_handle).unwrap(),
+            context.read_public(new_handle).unwrap()
+        );
     }
 }

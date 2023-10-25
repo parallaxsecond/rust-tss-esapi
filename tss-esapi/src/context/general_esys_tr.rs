@@ -1,16 +1,20 @@
 // Copyright 2021 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
 use crate::{
+    constants::tss::TPM2_RH_UNASSIGNED,
     context::handle_manager::HandleDropAction,
     handles::ObjectHandle,
     handles::{handle_conversion::TryIntoNotNone, TpmHandle},
     structures::Auth,
     structures::Name,
-    tss2_esys::{Esys_TR_Close, Esys_TR_FromTPMPublic, Esys_TR_GetName, Esys_TR_SetAuth},
-    Context, Result, ReturnCode,
+    tss2_esys::{
+        Esys_TR_Close, Esys_TR_Deserialize, Esys_TR_FromTPMPublic, Esys_TR_GetName,
+        Esys_TR_Serialize, Esys_TR_SetAuth,
+    },
+    Context, Error, Result, ReturnCode, WrapperErrorKind,
 };
 use log::error;
-use std::convert::TryFrom;
+use std::convert::{TryFrom, TryInto};
 use std::ptr::null_mut;
 use zeroize::Zeroize;
 
@@ -372,7 +376,7 @@ impl Context {
     #[cfg(has_esys_tr_get_tpm_handle)]
     /// Retrieve the `TpmHandle` stored in the given object.
     pub fn tr_get_tpm_handle(&mut self, object_handle: ObjectHandle) -> Result<TpmHandle> {
-        use crate::{constants::tss::TPM2_RH_UNASSIGNED, tss2_esys::Esys_TR_GetTpmHandle};
+        use crate::tss2_esys::Esys_TR_GetTpmHandle;
         let mut tpm_handle = TPM2_RH_UNASSIGNED;
         ReturnCode::ensure_success(
             unsafe {
@@ -388,6 +392,43 @@ impl Context {
         TpmHandle::try_from(tpm_handle)
     }
 
-    // Missing function: Esys_TR_Serialize
-    // Missing function: Esys_TR_Deserialize
+    /// Store the `ObjectHandle` in a buffer
+    pub fn tr_serialize(&mut self, handle: ObjectHandle) -> Result<Vec<u8>> {
+        let mut len = 0;
+        let mut buffer: *mut u8 = null_mut();
+        let mut result = vec![];
+        ReturnCode::ensure_success(
+            unsafe { Esys_TR_Serialize(self.mut_context(), handle.into(), &mut buffer, &mut len) },
+            |ret| {
+                error!("Error while serializing handle: {}", ret);
+            },
+        )?;
+        unsafe {
+            let data = std::slice::from_raw_parts(buffer, len.try_into().unwrap());
+            result.extend_from_slice(data);
+        };
+        Ok(result)
+    }
+
+    /// Retrieve the `ObjectHandle` stored in a buffer
+    pub fn tr_deserialize(&mut self, buffer: &Vec<u8>) -> Result<ObjectHandle> {
+        let mut handle = TPM2_RH_UNASSIGNED;
+        ReturnCode::ensure_success(
+            unsafe {
+                Esys_TR_Deserialize(
+                    self.mut_context(),
+                    buffer.as_ptr(),
+                    buffer.len().try_into().map_err(|e| {
+                        error!("Failed to convert buffer len to usize: {}", e);
+                        Error::local_error(WrapperErrorKind::InvalidParam)
+                    })?,
+                    &mut handle,
+                )
+            },
+            |ret| {
+                error!("Error while deserializing buffer: {}", ret);
+            },
+        )?;
+        Ok(ObjectHandle::from(handle))
+    }
 }
