@@ -393,7 +393,7 @@ impl Context {
     }
 
     /// Store the `ObjectHandle` in a buffer
-    pub fn tr_serialize(&mut self, handle: ObjectHandle) -> Result<Vec<u8>> {
+    pub fn tr_serialize(&mut self, handle: ObjectHandle) -> Result<&[u8]> {
         let mut len = 0;
         let mut buffer: *mut u8 = null_mut();
         let mut result = vec![];
@@ -404,14 +404,12 @@ impl Context {
             },
         )?;
         unsafe {
-            let data = std::slice::from_raw_parts(buffer, len.try_into().unwrap());
-            result.extend_from_slice(data);
+            return Ok(std::slice::from_raw_parts(buffer, len.try_into().unwrap()));
         };
-        Ok(result)
     }
 
     /// Retrieve the `ObjectHandle` stored in a buffer
-    pub fn tr_deserialize(&mut self, buffer: &Vec<u8>) -> Result<ObjectHandle> {
+    pub fn tr_deserialize(&mut self, buffer: &[u8]) -> Result<ObjectHandle> {
         let mut handle = TPM2_RH_UNASSIGNED;
         ReturnCode::ensure_success(
             unsafe {
