@@ -68,6 +68,28 @@ fn test_create_ak_rsa_ecc() {
 }
 
 #[test]
+fn test_create_ak_ecc_ecc() {
+    let mut context = create_ctx_without_session();
+
+    let ek_ecc = ek::create_ek_object(
+        &mut context,
+        AsymmetricAlgorithmSelection::Ecc(EccCurve::NistP384),
+        None,
+    )
+    .unwrap();
+    ak::create_ak(
+        &mut context,
+        ek_ecc,
+        HashingAlgorithm::Sha256,
+        AsymmetricAlgorithmSelection::Ecc(EccCurve::NistP256),
+        SignatureSchemeAlgorithm::EcDsa,
+        None,
+        None,
+    )
+    .unwrap();
+}
+
+#[test]
 fn test_create_and_use_ak() {
     let mut context = create_ctx_without_session();
 
