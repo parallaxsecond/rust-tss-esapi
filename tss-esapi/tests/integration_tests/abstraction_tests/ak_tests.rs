@@ -15,6 +15,7 @@ use tss_esapi::{
         session_handles::PolicySession,
     },
     structures::{Auth, Digest, PublicBuilder, SymmetricDefinition},
+    Error, WrapperErrorKind,
 };
 
 use crate::common::create_ctx_without_session;
@@ -51,7 +52,7 @@ fn test_create_ak_rsa_ecc() {
         None,
     )
     .unwrap();
-    if ak::create_ak(
+    if let Err(Error::WrapperError(WrapperErrorKind::InconsistentParams)) = ak::create_ak(
         &mut context,
         ek_rsa,
         HashingAlgorithm::Sha256,
@@ -59,16 +60,16 @@ fn test_create_ak_rsa_ecc() {
         SignatureSchemeAlgorithm::Sm2,
         None,
         None,
-    )
-    .is_ok()
-    {
-        // We can't use unwrap_err because that requires Debug on the T
-        panic!("Should have errored");
+    ) {
+    } else {
+        panic!(
+            "Should've gotten an 'InconsistentParams' error when trying to create an a P256 AK with an SM2 signing scheme."
+        );
     }
 }
 
 #[test]
-fn test_create_ak_ecc_ecc() {
+fn test_create_ak_ecc() {
     let mut context = create_ctx_without_session();
 
     let ek_ecc = ek::create_ek_object(
@@ -83,6 +84,28 @@ fn test_create_ak_ecc_ecc() {
         HashingAlgorithm::Sha256,
         AsymmetricAlgorithmSelection::Ecc(EccCurve::NistP256),
         SignatureSchemeAlgorithm::EcDsa,
+        None,
+        None,
+    )
+    .unwrap();
+}
+
+#[test]
+fn test_create_ak_ecdaa() {
+    let mut context = create_ctx_without_session();
+
+    let ek_ecc = ek::create_ek_object(
+        &mut context,
+        AsymmetricAlgorithmSelection::Ecc(EccCurve::NistP384),
+        None,
+    )
+    .unwrap();
+    ak::create_ak(
+        &mut context,
+        ek_ecc,
+        HashingAlgorithm::Sha256,
+        AsymmetricAlgorithmSelection::Ecc(EccCurve::BnP256),
+        SignatureSchemeAlgorithm::EcDaa,
         None,
         None,
     )
