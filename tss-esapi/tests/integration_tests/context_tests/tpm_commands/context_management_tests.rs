@@ -236,7 +236,7 @@ mod test_evict_control {
 
         // Create primary key handle
         let auth_value_primary = Auth::try_from(vec![1, 2, 3, 4, 5])
-            .expect("Failed to crate auth value for primary key");
+            .expect("Failed to create auth value for primary key");
         let primary_key_handle = context
             .create_primary(
                 Hierarchy::Owner,
