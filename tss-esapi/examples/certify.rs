@@ -13,25 +13,27 @@ use tss_esapi::{
     },
     attributes::{ObjectAttributesBuilder, SessionAttributesBuilder},
     constants::SessionType,
-    handles::{AuthHandle, KeyHandle},
+    handles::KeyHandle,
     interface_types::{
         algorithm::{HashingAlgorithm, PublicAlgorithm, SignatureSchemeAlgorithm},
         ecc::EccCurve,
         key_bits::RsaKeyBits,
         resource_handles::Hierarchy,
-        session_handles::PolicySession,
+        session_handles::AuthSession,
     },
     structures::{
-        Data, Digest, EccPoint, EccScheme, HashScheme, KeyedHashScheme, MaxBuffer, PublicBuilder,
-        PublicEccParametersBuilder, PublicKeyedHashParameters, SignatureScheme,
-        SymmetricCipherParameters, SymmetricDefinition, SymmetricDefinitionObject,
+        Data, Digest, EccPoint, EccScheme, HashScheme, MaxBuffer, PublicBuilder,
+        PublicEccParametersBuilder, SignatureScheme, SymmetricCipherParameters,
+        SymmetricDefinition, SymmetricDefinitionObject,
     },
+    traits::Marshall,
     Context, TctiNameConf,
 };
 
-use std::convert::TryFrom;
+use std::convert::TryInto;
 
 fn main() {
+    env_logger::init();
     // Create a new TPM context. This reads from the environment variable `TPM2TOOLS_TCTI` or `TCTI`
     //
     // It's recommended you use `TCTI=device:/dev/tpmrm0` for the linux kernel
@@ -42,7 +44,8 @@ fn main() {
     )
     .expect("Failed to create Context");
 
-    // First create the key that we wish to certify.
+    // First create the key that we wish to certify. Note that we create this inside the
+    // owner hierachy.
     let key_handle = create_key(&mut context);
 
     // Now setup the endorsement key. Depending on your TPM, it may require
@@ -61,11 +64,17 @@ fn main() {
     // let ek_alg = AsymmetricAlgorithmSelection::Ecc(EccCurve::NistP384);
     // let hash_alg = HashingAlgorithm::Sha384;
     // let sign_alg = SignatureSchemeAlgorithm::EcDsa;
+    // let sig_scheme = SignatureScheme::EcDsa {
+    //     scheme: HashScheme::new(hash_alg),
+    // };
 
     // ⚠️  swtpm doesn't support by default
     // let ek_alg = AsymmetricAlgorithmSelection::Ecc(EccCurve::NistP256);
     // let hash_alg = HashingAlgorithm::Sha256;
     // let sign_alg = SignatureSchemeAlgorithm::EcDsa;
+    // let sig_scheme = SignatureScheme::EcDsa {
+    //    scheme: HashScheme::new(hash_alg),
+    // };
 
     // If you wish to see the EK cert, you can fetch it's DER here.
     let ek_pubcert = retrieve_ek_pubcert(&mut context, ek_alg).unwrap();
@@ -87,6 +96,9 @@ fn main() {
     )
     .unwrap();
 
+    // Keep the aik_public for later :)
+    let ak_public = ak_loadable.out_public.clone();
+
     // Load it for use.
     let ak_handle = load_ak(
         &mut context,
@@ -97,58 +109,8 @@ fn main() {
     )
     .unwrap();
 
-    // ⚠️  At this point things start to break down.
-    // * Session Confusion
-    //   It seems like there are some missing helpers in abstraction to help create the policy auth
-    //   session, or how to use it with the other nullauth session. As a result, we pretty much have
-    //   to manually craft everything to make this viable.
-    // * PolicyFail
-    //   Trying to use the session "exactly" as the abstraction code from ak demonstrates results
-    //   in policy fail.
-    // * Default Ak is restricted
-    //   But certify needs qualifying data that requires an unrestricted key.
-
-    // TODO: Show verification of the attestation/signature.
-
     // TODO: Show to to export the AIK as x509/DER so that it can be chained back to the EK
     // so that a remote party can consume the attestation.
-
-    let policy_auth_session = context
-        .start_auth_session(
-            None,
-            None,
-            None,
-            SessionType::Policy,
-            SymmetricDefinition::AES_128_CFB,
-            HashingAlgorithm::Sha256,
-        )
-        .expect("Invalid session attributes.")
-        .unwrap();
-
-    let (session_attributes, session_attributes_mask) = SessionAttributesBuilder::new()
-        .with_decrypt(true)
-        .with_encrypt(true)
-        .build();
-    context
-        .tr_sess_set_attributes(
-            policy_auth_session,
-            session_attributes,
-            session_attributes_mask,
-        )
-        .unwrap();
-
-    let _ = context
-        .execute_with_nullauth_session(|ctx| {
-            ctx.policy_secret(
-                PolicySession::try_from(policy_auth_session).unwrap(),
-                AuthHandle::Endorsement,
-                Default::default(),
-                Default::default(),
-                Default::default(),
-                None,
-            )
-        })
-        .unwrap();
 
     let nullauth_session = context
         .start_auth_session(
@@ -175,14 +137,68 @@ fn main() {
         )
         .unwrap();
 
-    let qualifying_data = Data::default();
+    // This is added to the "extra_data" field of the attestation object. Some uses of this
+    // include in Webauthn where this qualifying data contains the sha256 hash of other data
+    // that is being authenticated in the operation.
+    let qualifying_data: Data = vec![1, 2, 3, 4, 5, 6, 7, 8].try_into().unwrap();
 
     let (attest, signature) = context
         .execute_with_sessions(
-            (Some(policy_auth_session), Some(nullauth_session), None),
+            (
+                // The first session authenticates the "object to certify".
+                Some(AuthSession::Password),
+                // What does?
+                Some(nullauth_session),
+                None,
+            ),
             |ctx| ctx.certify(key_handle.into(), ak_handle, qualifying_data, sig_scheme),
         )
         .unwrap();
+
+    println!("attest: {:?}", attest);
+    println!("signature: {:?}", signature);
+
+    // Now we can verify this attestation.
+
+    // Lets clear our contexts and start fresh.
+    drop(context);
+
+    let mut context = Context::new(
+        TctiNameConf::from_environment_variable()
+            .expect("Failed to get TCTI / TPM2TOOLS_TCTI from environment. Try `export TCTI=device:/dev/tpmrm0`"),
+    )
+    .expect("Failed to create Context");
+
+    // First, load the public from the aik
+    let ak_handle = context
+        .execute_with_nullauth_session(|ctx| {
+            ctx.load_external_public(
+                ak_public,
+                // We put it into the null hierachy as this is ephemeral.
+                Hierarchy::Null,
+            )
+        })
+        .expect("Failed to load aik public");
+
+    let attest_data: MaxBuffer = attest
+        .marshall()
+        .expect("Unable to marshall")
+        .try_into()
+        .expect("Data too large");
+
+    let (attest_digest, _ticket) = context
+        .execute_with_nullauth_session(|ctx| {
+            ctx.hash(attest_data, HashingAlgorithm::Sha256, Hierarchy::Null)
+        })
+        .expect("Failed to digest attestation output");
+
+    let verified_ticket = context
+        .execute_with_nullauth_session(|ctx| {
+            ctx.verify_signature(ak_handle, attest_digest, signature)
+        })
+        .expect("Failed to verify attestation");
+
+    println!("verification: {:?}", verified_ticket);
 }
 
 fn create_key(context: &mut Context) -> KeyHandle {

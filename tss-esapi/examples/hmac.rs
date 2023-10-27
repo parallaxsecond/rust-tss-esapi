@@ -21,6 +21,7 @@ use tss_esapi::{
 use std::convert::TryFrom;
 
 fn main() {
+    env_logger::init();
     // Create a new TPM context. This reads from the environment variable `TPM2TOOLS_TCTI` or `TCTI`
     //
     // It's recommended you use `TCTI=device:/dev/tpmrm0` for the linux kernel
