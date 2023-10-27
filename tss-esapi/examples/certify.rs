@@ -7,19 +7,18 @@
 
 use tss_esapi::{
     abstraction::{
-        ak::{create_ak, load_ak},
-        ek::{create_ek_object, retrieve_ek_pubcert},
+        ek::{create_ek_public_from_default_template, retrieve_ek_pubcert},
         AsymmetricAlgorithmSelection,
     },
     attributes::{ObjectAttributesBuilder, SessionAttributesBuilder},
     constants::SessionType,
-    handles::KeyHandle,
+    handles::{AuthHandle, KeyHandle},
     interface_types::{
         algorithm::{HashingAlgorithm, PublicAlgorithm, SignatureSchemeAlgorithm},
         ecc::EccCurve,
         key_bits::RsaKeyBits,
         resource_handles::Hierarchy,
-        session_handles::AuthSession,
+        session_handles::{AuthSession, PolicySession},
     },
     structures::{
         Data, Digest, EccPoint, EccScheme, HashScheme, MaxBuffer, PublicBuilder,
@@ -30,7 +29,7 @@ use tss_esapi::{
     Context, TctiNameConf,
 };
 
-use std::convert::TryInto;
+use std::convert::{TryFrom, TryInto};
 
 fn main() {
     env_logger::init();
@@ -81,43 +80,30 @@ fn main() {
 
     eprintln!("ek_pubcert der: {:?}", ek_pubcert);
 
+    // Create the ek public
+    let ek_public = create_ek_public_from_default_template(ek_alg, None).unwrap();
+
     // Load the ek object
-    let ek_handle = create_ek_object(&mut context, ek_alg, None).unwrap();
+    let ek_handle = context
+        .execute_with_nullauth_session(|ctx| {
+            ctx.create_primary(
+                Hierarchy::Endorsement,
+                ek_public.clone(),
+                None,
+                None,
+                None,
+                None,
+            )
+        })
+        .expect("Failed to load ek_public")
+        .key_handle;
 
-    // Now that we have the ek, we can create an aik
-    let ak_loadable = create_ak(
-        &mut context,
-        ek_handle,
-        hash_alg,
-        ek_alg,
-        sign_alg,
-        None,
-        None,
-    )
-    .unwrap();
-
-    // Keep the aik_public for later :)
-    let ak_public = ak_loadable.out_public.clone();
-
-    // Load it for use.
-    let ak_handle = load_ak(
-        &mut context,
-        ek_handle,
-        None,
-        ak_loadable.out_private,
-        ak_loadable.out_public,
-    )
-    .unwrap();
-
-    // TODO: Show to to export the AIK as x509/DER so that it can be chained back to the EK
-    // so that a remote party can consume the attestation.
-
-    let nullauth_session = context
+    let policy_auth_session = context
         .start_auth_session(
             None,
             None,
             None,
-            SessionType::Hmac,
+            SessionType::Policy,
             SymmetricDefinition::AES_128_CFB,
             HashingAlgorithm::Sha256,
         )
@@ -125,16 +111,28 @@ fn main() {
         .unwrap();
 
     let (session_attributes, session_attributes_mask) = SessionAttributesBuilder::new()
-        // Can't set decrypt/encrypt at the same time as the policy session.
-        // .with_decrypt(true)
-        // .with_encrypt(true)
+        .with_decrypt(true)
+        .with_encrypt(true)
         .build();
     context
         .tr_sess_set_attributes(
-            nullauth_session,
+            policy_auth_session,
             session_attributes,
             session_attributes_mask,
         )
+        .unwrap();
+
+    let _ = context
+        .execute_with_nullauth_session(|ctx| {
+            ctx.policy_secret(
+                PolicySession::try_from(policy_auth_session).unwrap(),
+                AuthHandle::Endorsement,
+                Default::default(),
+                Default::default(),
+                Default::default(),
+                None,
+            )
+        })
         .unwrap();
 
     // This is added to the "extra_data" field of the attestation object. Some uses of this
@@ -148,10 +146,10 @@ fn main() {
                 // The first session authenticates the "object to certify".
                 Some(AuthSession::Password),
                 // What does?
-                Some(nullauth_session),
+                Some(policy_auth_session),
                 None,
             ),
-            |ctx| ctx.certify(key_handle.into(), ak_handle, qualifying_data, sig_scheme),
+            |ctx| ctx.certify(key_handle.into(), ek_handle, qualifying_data, sig_scheme),
         )
         .unwrap();
 
@@ -173,7 +171,7 @@ fn main() {
     let ak_handle = context
         .execute_with_nullauth_session(|ctx| {
             ctx.load_external_public(
-                ak_public,
+                ek_public,
                 // We put it into the null hierachy as this is ephemeral.
                 Hierarchy::Null,
             )
