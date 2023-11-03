@@ -12,6 +12,13 @@ fn marshall_unmarshall() {
 }
 
 #[test]
+fn serialise_deserialise() {
+    crate::common::check_serialise_deserialise(&Private::default());
+    let private = Private::try_from([0xff; 100].to_vec()).unwrap();
+    crate::common::check_serialise_deserialise(&private);
+}
+
+#[test]
 fn marshall_unmarshall_offset() {
     crate::common::check_marshall_unmarshall_offset(&Private::default());
     let private = Private::try_from([0xff; 100].to_vec()).unwrap();
