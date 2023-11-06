@@ -25,3 +25,8 @@ where
     ffi_data.ffi_data_zeroize();
     owned_ffi_data
 }
+
+pub(crate) fn to_owned_bytes(ffi_bytes_ptr: *mut u8, size: usize) -> Vec<u8> {
+    let ffi_bytes = unsafe { MBox::<[u8]>::from_raw_parts(ffi_bytes_ptr, size) };
+    return Vec::<u8>::from(ffi_bytes.as_ref());
+}

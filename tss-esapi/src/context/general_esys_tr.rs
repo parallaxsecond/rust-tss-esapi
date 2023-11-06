@@ -1,16 +1,21 @@
 // Copyright 2021 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
 use crate::{
+    constants::tss::TPM2_RH_UNASSIGNED,
     context::handle_manager::HandleDropAction,
+    ffi::to_owned_bytes,
     handles::ObjectHandle,
     handles::{handle_conversion::TryIntoNotNone, TpmHandle},
     structures::Auth,
     structures::Name,
-    tss2_esys::{Esys_TR_Close, Esys_TR_FromTPMPublic, Esys_TR_GetName, Esys_TR_SetAuth},
-    Context, Result, ReturnCode,
+    tss2_esys::{
+        Esys_TR_Close, Esys_TR_Deserialize, Esys_TR_FromTPMPublic, Esys_TR_GetName,
+        Esys_TR_Serialize, Esys_TR_SetAuth,
+    },
+    Context, Error, Result, ReturnCode, WrapperErrorKind,
 };
 use log::error;
-use std::convert::TryFrom;
+use std::convert::{TryFrom, TryInto};
 use std::ptr::null_mut;
 use zeroize::Zeroize;
 
@@ -372,7 +377,7 @@ impl Context {
     #[cfg(has_esys_tr_get_tpm_handle)]
     /// Retrieve the `TpmHandle` stored in the given object.
     pub fn tr_get_tpm_handle(&mut self, object_handle: ObjectHandle) -> Result<TpmHandle> {
-        use crate::{constants::tss::TPM2_RH_UNASSIGNED, tss2_esys::Esys_TR_GetTpmHandle};
+        use crate::tss2_esys::Esys_TR_GetTpmHandle;
         let mut tpm_handle = TPM2_RH_UNASSIGNED;
         ReturnCode::ensure_success(
             unsafe {
@@ -388,6 +393,147 @@ impl Context {
         TpmHandle::try_from(tpm_handle)
     }
 
-    // Missing function: Esys_TR_Serialize
-    // Missing function: Esys_TR_Deserialize
+    /// Serialize the metadata of the object identified by `handle` into a new buffer.
+    ///
+    /// This can subsequently be used to recreate the object in the future.
+    /// The object can only be recreated in a new context, if it was made persistent
+    /// with `evict_control`.
+    ///
+    /// # Arguments
+    /// * `handle` - A handle to the object which should be serialized.
+    ///
+    /// # Returns
+    /// A buffer that can be stored and later deserialized.
+    ///
+    /// # Errors
+    /// * if the TPM cannot serialize the handle, a TSS error is returned.
+    /// * if the buffer length cannot be converted to a `usize`, an `InvalidParam`
+    /// wrapper error is returned.
+    ///
+    /// ```rust
+    /// # use tss_esapi::{
+    /// #     Context, TctiNameConf,
+    /// #     interface_types::resource_handles::Hierarchy,
+    /// #     structures::HashScheme,
+    /// #     utils::create_unrestricted_signing_ecc_public,
+    /// #     interface_types::{
+    /// #         ecc::EccCurve,
+    /// #         algorithm::HashingAlgorithm,
+    /// #         session_handles::AuthSession,
+    /// #     },
+    /// #     structures::EccScheme,
+    /// # };
+    /// # let mut context =
+    /// #     Context::new(
+    /// #         TctiNameConf::from_environment_variable().expect("Failed to get TCTI"),
+    /// #     ).expect("Failed to create Context");
+    /// # context.set_sessions((Some(AuthSession::Password), None, None));
+    /// # let public = create_unrestricted_signing_ecc_public(
+    /// #     EccScheme::EcDsa(HashScheme::new(HashingAlgorithm::Sha256)),
+    /// #     EccCurve::NistP256)
+    /// #     .unwrap();
+    /// let key_handle = context
+    ///     .create_primary(
+    ///         Hierarchy::Owner,
+    ///         public,
+    ///         None,
+    ///         None,
+    ///         None,
+    ///         None,
+    ///     ).unwrap()
+    ///     .key_handle;
+    /// let data = context.tr_serialize(key_handle.into()).unwrap();
+    /// ```
+    pub fn tr_serialize(&mut self, handle: ObjectHandle) -> Result<Vec<u8>> {
+        let mut len = 0;
+        let mut buffer: *mut u8 = null_mut();
+        ReturnCode::ensure_success(
+            unsafe { Esys_TR_Serialize(self.mut_context(), handle.into(), &mut buffer, &mut len) },
+            |ret| {
+                error!("Error while serializing handle: {}", ret);
+            },
+        )?;
+        Ok(to_owned_bytes(
+            buffer,
+            len.try_into().map_err(|e| {
+                error!("Failed to convert buffer len to usize: {}", e);
+                Error::local_error(WrapperErrorKind::InvalidParam)
+            })?,
+        ))
+    }
+
+    /// Deserialize the metadata from `buffer` into a new object.
+    ///
+    /// This can be used to restore an object from a context in the past.
+    ///
+    /// # Arguments
+    /// * `buffer` - The buffer containing the data to restore the object.
+    ///              It can be created using [`tr_serialize`](Self::tr_serialize).
+    ///
+    /// # Returns
+    /// A handle to the object that was created from the buffer.
+    ///
+    /// # Errors
+    /// * if the TPM cannot deserialize the buffer, a TSS error is returned.
+    /// * if the buffer length cannot be converted to a `usize`, an `InvalidParam`
+    /// wrapper error is returned.
+    ///
+    /// ```rust
+    /// # use tss_esapi::{
+    /// #     Context, TctiNameConf,
+    /// #     interface_types::resource_handles::Hierarchy,
+    /// #     structures::HashScheme,
+    /// #     utils::create_unrestricted_signing_ecc_public,
+    /// #     interface_types::{
+    /// #         ecc::EccCurve,
+    /// #         algorithm::HashingAlgorithm,
+    /// #         session_handles::AuthSession,
+    /// #     },
+    /// #     structures::EccScheme,
+    /// # };
+    /// # let mut context =
+    /// #     Context::new(
+    /// #         TctiNameConf::from_environment_variable().expect("Failed to get TCTI"),
+    /// #     ).expect("Failed to create Context");
+    /// # context.set_sessions((Some(AuthSession::Password), None, None));
+    /// # let public = create_unrestricted_signing_ecc_public(
+    /// #     EccScheme::EcDsa(HashScheme::new(HashingAlgorithm::Sha256)),
+    /// #     EccCurve::NistP256)
+    /// #     .unwrap();
+    /// let key_handle = context
+    ///     .create_primary(
+    ///         Hierarchy::Owner,
+    ///         public,
+    ///         None,
+    ///         None,
+    ///         None,
+    ///         None,
+    ///     ).unwrap()
+    ///     .key_handle;
+    /// # context.set_sessions((None, None, None));
+    /// let public_key = context.read_public(key_handle).unwrap();
+    /// let data = context.tr_serialize(key_handle.into()).unwrap();
+    /// let new_handle = context.tr_deserialize(&data).unwrap();
+    /// assert_eq!(public_key, context.read_public(new_handle.into()).unwrap());
+    /// ```
+    pub fn tr_deserialize(&mut self, buffer: &Vec<u8>) -> Result<ObjectHandle> {
+        let mut handle = TPM2_RH_UNASSIGNED;
+        ReturnCode::ensure_success(
+            unsafe {
+                Esys_TR_Deserialize(
+                    self.mut_context(),
+                    buffer.as_ptr(),
+                    buffer.len().try_into().map_err(|e| {
+                        error!("Failed to convert buffer len to usize: {}", e);
+                        Error::local_error(WrapperErrorKind::InvalidParam)
+                    })?,
+                    &mut handle,
+                )
+            },
+            |ret| {
+                error!("Error while deserializing buffer: {}", ret);
+            },
+        )?;
+        Ok(ObjectHandle::from(handle))
+    }
 }
