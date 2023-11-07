@@ -10,6 +10,7 @@ categories = ["api-bindings", "external-ffi-bindings", "cryptography"]
 license = "Apache-2.0"
 repository = "https://github.com/parallaxsecond/rust-tss-esapi"
 documentation = "https://docs.rs/crate/tss-esapi"
+rust-version = "1.66.0"
 
 [dependencies]
 bitfield = "0.14.0"
