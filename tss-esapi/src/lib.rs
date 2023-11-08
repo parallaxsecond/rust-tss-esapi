@@ -9,7 +9,8 @@
     overflowing_literals,
     path_statements,
     patterns_in_fns_without_body,
-    private_in_public,
+    private_bounds,
+    private_interfaces,
     unconditional_recursion,
     unused,
     unused_allocation,
@@ -28,6 +29,7 @@
     missing_copy_implementations,
     rustdoc::broken_intra_doc_links,
 )]
+
 //! # TSS 2.0 Rust Wrapper over Enhanced System API
 //! This crate exposes the functionality of the TCG Software Stack Enhanced System API to
 //! Rust developers, both directly through FFI bindings and through more Rust-tailored interfaces

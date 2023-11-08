@@ -1,16 +1,13 @@
 // Copyright 2021 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
 
-use log::error;
 use tss_esapi_sys::TPMI_ST_COMMAND_TAG;
 
 use crate::{
-    constants::StructureTag,
-    traits::{Marshall, UnMarshall},
-    tss2_esys::TPMI_ST_ATTEST,
-    Error, Result, ReturnCode, WrapperErrorKind,
+    constants::StructureTag, traits::impl_mu_simple, tss2_esys::TPMI_ST_ATTEST, Error, Result,
+    WrapperErrorKind,
 };
-use std::convert::{TryFrom, TryInto};
+use std::convert::TryFrom;
 
 /// Type of attestation.
 ///
@@ -75,60 +72,7 @@ impl TryFrom<TPMI_ST_ATTEST> for AttestationType {
     }
 }
 
-impl Marshall for AttestationType {
-    const BUFFER_SIZE: usize = std::mem::size_of::<TPMI_ST_ATTEST>();
-
-    fn marshall_offset(
-        &self,
-        marshalled_data: &mut [u8],
-        offset: &mut std::os::raw::c_ulong,
-    ) -> Result<()> {
-        ReturnCode::ensure_success(
-            unsafe {
-                crate::tss2_esys::Tss2_MU_TPM2_ST_Marshal(
-                    (*self).into(),
-                    marshalled_data.as_mut_ptr(),
-                    marshalled_data.len().try_into().map_err(|e| {
-                        error!("Failed to convert size of buffer to TSS size_t type: {}", e);
-                        Error::local_error(WrapperErrorKind::InvalidParam)
-                    })?,
-                    offset,
-                )
-            },
-            |ret| {
-                error!("Failed to marshal AttestationType: {}", ret);
-            },
-        )?;
-
-        Ok(())
-    }
-}
-
-impl UnMarshall for AttestationType {
-    fn unmarshall_offset(
-        marshalled_data: &[u8],
-        offset: &mut std::os::raw::c_ulong,
-    ) -> Result<Self> {
-        let mut dest = TPMI_ST_ATTEST::default();
-
-        ReturnCode::ensure_success(
-            unsafe {
-                crate::tss2_esys::Tss2_MU_TPM2_ST_Unmarshal(
-                    marshalled_data.as_ptr(),
-                    marshalled_data.len().try_into().map_err(|e| {
-                        error!("Failed to convert length of marshalled data: {}", e);
-                        Error::local_error(WrapperErrorKind::InvalidParam)
-                    })?,
-                    offset,
-                    &mut dest,
-                )
-            },
-            |ret| error!("Failed to unmarshal AttestationType: {}", ret),
-        )?;
-
-        AttestationType::try_from(dest)
-    }
-}
+impl_mu_simple!(AttestationType, TPMI_ST_ATTEST, TPM2_ST);
 
 /// Type of command tag.
 ///
@@ -175,57 +119,4 @@ impl TryFrom<TPMI_ST_COMMAND_TAG> for CommandTag {
     }
 }
 
-impl Marshall for CommandTag {
-    const BUFFER_SIZE: usize = std::mem::size_of::<TPMI_ST_COMMAND_TAG>();
-
-    fn marshall_offset(
-        &self,
-        marshalled_data: &mut [u8],
-        offset: &mut std::os::raw::c_ulong,
-    ) -> Result<()> {
-        ReturnCode::ensure_success(
-            unsafe {
-                crate::tss2_esys::Tss2_MU_TPM2_ST_Marshal(
-                    (*self).into(),
-                    marshalled_data.as_mut_ptr(),
-                    marshalled_data.len().try_into().map_err(|e| {
-                        error!("Failed to convert size of buffer to TSS size_t type: {}", e);
-                        Error::local_error(WrapperErrorKind::InvalidParam)
-                    })?,
-                    offset,
-                )
-            },
-            |ret| {
-                error!("Failed to marshal CommandTag: {}", ret);
-            },
-        )?;
-
-        Ok(())
-    }
-}
-
-impl UnMarshall for CommandTag {
-    fn unmarshall_offset(
-        marshalled_data: &[u8],
-        offset: &mut std::os::raw::c_ulong,
-    ) -> Result<Self> {
-        let mut dest = TPMI_ST_COMMAND_TAG::default();
-
-        ReturnCode::ensure_success(
-            unsafe {
-                crate::tss2_esys::Tss2_MU_TPM2_ST_Unmarshal(
-                    marshalled_data.as_ptr(),
-                    marshalled_data.len().try_into().map_err(|e| {
-                        error!("Failed to convert length of marshalled data: {}", e);
-                        Error::local_error(WrapperErrorKind::InvalidParam)
-                    })?,
-                    offset,
-                    &mut dest,
-                )
-            },
-            |ret| error!("Failed to unmarshal CommandTag: {}", ret),
-        )?;
-
-        CommandTag::try_from(dest)
-    }
-}
+impl_mu_simple!(CommandTag, TPMI_ST_COMMAND_TAG, TPM2_ST);
