@@ -1,4 +1,4 @@
-FROM fedora:35
+FROM fedora:36
 
 RUN dnf install -y \
 	tpm2-tss-devel tpm2-abrmd tpm2-tools \
