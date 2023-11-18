@@ -50,7 +50,7 @@ impl Context {
     /// #     interface_types::{
     /// #         algorithm::{HashingAlgorithm, RsaSchemeAlgorithm, SignatureSchemeAlgorithm},
     /// #         key_bits::RsaKeyBits,
-    /// #         resource_handles::Hierarchy,
+    /// #         reserved_handles::Hierarchy,
     /// #     },
     /// #     structures::{
     /// #         RsaExponent, RsaScheme, SymmetricDefinition,

@@ -1,10 +1,10 @@
-// Copyright 2020 Contributors to the Parsec project.
-// SPDX-License-Identifier: Apache-2.0
-
+/// This module contains native representations of the TPMI_DH types.
 use crate::handles::{NvIndexTpmHandle, PcrTpmHandle, PersistentTpmHandle, TransientTpmHandle};
 
-/// Can be created with either a persistent
-/// or transient TPM handle.
+/// Enum representing the 'Object' data handles interface type.
+///
+/// # Details
+/// This corresponds to the TPMI_DH_OBJECT interface type.
 #[derive(Debug, Copy, Clone)]
 pub enum Object {
     Transient(TransientTpmHandle),
@@ -20,10 +20,10 @@ pub enum Parent {
     Endorsement,
 }
 
+/// Enum representing the 'Persistent' data handles interface type.
 ///
-/// Enum representing the Persistent DH interface type
-/// (TPMI_DH_PERSISTENT)
-///
+/// # Details
+/// This corresponds to the TPMI_DH_PERSISTENT interface type.
 #[derive(Debug, Copy, Clone)]
 pub enum Persistent {
     Persistent(PersistentTpmHandle),
@@ -43,6 +43,10 @@ impl From<PersistentTpmHandle> for Persistent {
     }
 }
 
+/// Enum representing the 'Entity' data handles interface type.
+///
+/// # Details
+/// This corresponds to the TPMI_DH_ENTITY interface type.
 #[derive(Debug, Copy, Clone)]
 pub enum Entity {
     Transient(TransientTpmHandle),
@@ -56,6 +60,10 @@ pub enum Entity {
     // TODO: Handle Auth
 }
 
+/// Enum representing the 'PCR' data handles interface type.
+///
+/// # Details
+/// This corresponds to the TPMI_DH_PCR interface type.
 #[derive(Debug, Copy, Clone)]
 pub enum Pcr {
     Pcr(PcrTpmHandle),

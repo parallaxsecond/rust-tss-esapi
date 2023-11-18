@@ -95,7 +95,7 @@ impl Context {
     /// #            HashingAlgorithm, PublicAlgorithm, RsaDecryptAlgorithm,
     /// #        },
     /// #        ecc::EccCurve,
-    /// #        resource_handles::Hierarchy,
+    /// #        reserved_handles::Hierarchy,
     /// #   },
     /// #   structures::{
     /// #       Auth, Data, EccScheme, PublicBuilder, PublicEccParametersBuilder, PublicKeyRsa, KeyDerivationFunctionScheme, EccPoint,
@@ -230,7 +230,7 @@ impl Context {
     /// #            HashingAlgorithm, PublicAlgorithm, RsaDecryptAlgorithm,
     /// #        },
     /// #        ecc::EccCurve,
-    /// #        resource_handles::Hierarchy,
+    /// #        reserved_handles::Hierarchy,
     /// #   },
     /// #   structures::{
     /// #       Auth, Data, EccScheme, PublicBuilder, PublicEccParametersBuilder, PublicKeyRsa, KeyDerivationFunctionScheme, EccPoint,

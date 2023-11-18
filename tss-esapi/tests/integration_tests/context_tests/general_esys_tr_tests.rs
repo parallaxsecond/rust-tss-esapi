@@ -5,8 +5,8 @@ use tss_esapi::{
     handles::{NvIndexHandle, NvIndexTpmHandle, ObjectHandle, PersistentTpmHandle, TpmHandle},
     interface_types::{
         algorithm::HashingAlgorithm,
-        dynamic_handles::Persistent,
-        resource_handles::{Hierarchy, NvAuth, Provision},
+        data_handles::Persistent,
+        reserved_handles::{Hierarchy, NvAuth, Provision},
         session_handles::AuthSession,
     },
     structures::{Auth, CapabilityData, MaxNvBuffer, NvPublicBuilder},

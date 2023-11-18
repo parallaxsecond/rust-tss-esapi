@@ -18,7 +18,7 @@ use tss_esapi::{
         algorithm::{HashingAlgorithm, PublicAlgorithm, RsaSchemeAlgorithm},
         key_bits::RsaKeyBits,
         key_bits::{AesKeyBits, Sm4KeyBits},
-        resource_handles::{Hierarchy, NvAuth, Provision},
+        reserved_handles::{Hierarchy, NvAuth, Provision},
         session_handles::PolicySession,
     },
     structures::{

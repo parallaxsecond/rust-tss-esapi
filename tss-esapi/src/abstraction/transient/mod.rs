@@ -15,7 +15,7 @@ use crate::{
         algorithm::{HashingAlgorithm, PublicAlgorithm},
         ecc::EccCurve,
         key_bits::RsaKeyBits,
-        resource_handles::Hierarchy,
+        reserved_handles::Hierarchy,
     },
     structures::{
         Auth, CreateKeyResult, Data, Digest, EccPoint, EccScheme, Public, PublicBuilder,

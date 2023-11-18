@@ -5,7 +5,7 @@ mod test_nv_define_space {
     use tss_esapi::{
         attributes::NvIndexAttributesBuilder,
         handles::NvIndexTpmHandle,
-        interface_types::{algorithm::HashingAlgorithm, resource_handles::Provision},
+        interface_types::{algorithm::HashingAlgorithm, reserved_handles::Provision},
         structures::NvPublicBuilder,
     };
 
@@ -119,7 +119,7 @@ mod test_nv_undefine_space {
     use tss_esapi::{
         attributes::NvIndexAttributesBuilder,
         handles::NvIndexTpmHandle,
-        interface_types::{algorithm::HashingAlgorithm, resource_handles::Provision},
+        interface_types::{algorithm::HashingAlgorithm, reserved_handles::Provision},
         structures::NvPublicBuilder,
     };
 
@@ -160,7 +160,7 @@ mod test_nv_read_public {
     use tss_esapi::{
         attributes::NvIndexAttributesBuilder,
         handles::NvIndexTpmHandle,
-        interface_types::{algorithm::HashingAlgorithm, resource_handles::Provision},
+        interface_types::{algorithm::HashingAlgorithm, reserved_handles::Provision},
         structures::NvPublicBuilder,
     };
 
@@ -210,7 +210,7 @@ mod test_nv_write {
         handles::NvIndexTpmHandle,
         interface_types::{
             algorithm::HashingAlgorithm,
-            resource_handles::{NvAuth, Provision},
+            reserved_handles::{NvAuth, Provision},
         },
         structures::{MaxNvBuffer, NvPublicBuilder},
     };
@@ -262,7 +262,7 @@ mod test_nv_read {
         handles::NvIndexTpmHandle,
         interface_types::{
             algorithm::HashingAlgorithm,
-            resource_handles::{NvAuth, Provision},
+            reserved_handles::{NvAuth, Provision},
         },
         structures::{MaxNvBuffer, NvPublicBuilder},
     };
@@ -328,7 +328,7 @@ mod test_nv_increment {
         handles::NvIndexTpmHandle,
         interface_types::{
             algorithm::HashingAlgorithm,
-            resource_handles::{NvAuth, Provision},
+            reserved_handles::{NvAuth, Provision},
         },
         structures::NvPublicBuilder,
     };

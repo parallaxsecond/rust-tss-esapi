@@ -10,7 +10,7 @@ use tss_esapi::{
         algorithm::{EccSchemeAlgorithm, HashingAlgorithm, RsaSchemeAlgorithm},
         ecc::EccCurve,
         key_bits::RsaKeyBits,
-        resource_handles::Hierarchy,
+        reserved_handles::Hierarchy,
     },
     structures::{
         Auth, CreateKeyResult, Digest, EccScheme, Public, PublicKeyRsa, RsaExponent, RsaScheme,

@@ -3,7 +3,7 @@
 mod test_create {
     use crate::common::{create_ctx_with_session, decryption_key_pub};
     use std::convert::TryFrom;
-    use tss_esapi::{interface_types::resource_handles::Hierarchy, structures::Auth};
+    use tss_esapi::{interface_types::reserved_handles::Hierarchy, structures::Auth};
 
     #[test]
     fn test_create() {
@@ -39,7 +39,7 @@ mod test_create {
 mod test_load {
     use crate::common::{create_ctx_with_session, decryption_key_pub, signing_key_pub};
     use std::convert::TryFrom;
-    use tss_esapi::{interface_types::resource_handles::Hierarchy, structures::Auth};
+    use tss_esapi::{interface_types::reserved_handles::Hierarchy, structures::Auth};
 
     #[test]
     fn test_load() {
@@ -83,7 +83,7 @@ mod test_load_external_public {
         interface_types::{
             algorithm::{HashingAlgorithm, PublicAlgorithm, RsaSchemeAlgorithm},
             key_bits::RsaKeyBits,
-            resource_handles::Hierarchy,
+            reserved_handles::Hierarchy,
         },
         structures::{Public, PublicBuilder, PublicKeyRsa, PublicRsaParametersBuilder, RsaScheme},
     };
@@ -138,7 +138,7 @@ mod test_load_external {
         interface_types::{
             algorithm::{HashingAlgorithm, PublicAlgorithm, RsaSchemeAlgorithm},
             key_bits::RsaKeyBits,
-            resource_handles::Hierarchy,
+            reserved_handles::Hierarchy,
         },
         structures::{
             Public, PublicBuilder, PublicKeyRsa, PublicRsaParametersBuilder, RsaScheme, Sensitive,
@@ -232,7 +232,7 @@ mod test_load_external {
 
 mod test_read_public {
     use crate::common::{create_ctx_with_session, signing_key_pub};
-    use tss_esapi::{interface_types::resource_handles::Hierarchy, structures::Auth};
+    use tss_esapi::{interface_types::reserved_handles::Hierarchy, structures::Auth};
 
     #[test]
     fn test_read_public() {
@@ -258,7 +258,7 @@ mod test_read_public {
 mod test_make_credential {
     use crate::common::{create_ctx_with_session, decryption_key_pub};
     use std::convert::TryInto;
-    use tss_esapi::interface_types::resource_handles::Hierarchy;
+    use tss_esapi::interface_types::reserved_handles::Hierarchy;
 
     #[test]
     fn test_make_credential() {
@@ -294,7 +294,7 @@ mod test_activate_credential {
     use tss_esapi::{
         attributes::SessionAttributesBuilder,
         constants::SessionType,
-        interface_types::{algorithm::HashingAlgorithm, resource_handles::Hierarchy},
+        interface_types::{algorithm::HashingAlgorithm, reserved_handles::Hierarchy},
         structures::{Digest, SymmetricDefinition},
     };
     #[test]
@@ -376,7 +376,7 @@ mod test_activate_credential {
 mod test_unseal {
     use crate::common::{create_ctx_with_session, create_public_sealed_object, decryption_key_pub};
     use std::convert::TryFrom;
-    use tss_esapi::{interface_types::resource_handles::Hierarchy, structures::SensitiveData};
+    use tss_esapi::{interface_types::reserved_handles::Hierarchy, structures::SensitiveData};
 
     #[test]
     fn unseal() {

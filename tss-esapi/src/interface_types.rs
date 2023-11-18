@@ -1,7 +1,18 @@
-// Copyright 2021 Contributors to the Parsec project.
+// Copyright 2023 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
+
+//! This module contains the native representations for the
+//! different interface types defined in the TPM 2.0 specification.
 use crate::{tss2_esys::TPMI_YES_NO, Error, Result, WrapperErrorKind};
 use std::convert::TryFrom;
+
+pub mod algorithm;
+pub mod data_handles;
+pub mod ecc;
+pub mod key_bits;
+pub mod reserved_handles;
+pub mod session_handles;
+pub mod structure_tags;
 
 /// Enum representing a yes or no.
 ///

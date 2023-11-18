@@ -6,7 +6,7 @@ mod test_start_auth_session {
     use tss_esapi::{
         attributes::SessionAttributesBuilder,
         constants::SessionType,
-        interface_types::{algorithm::HashingAlgorithm, resource_handles::Hierarchy},
+        interface_types::{algorithm::HashingAlgorithm, reserved_handles::Hierarchy},
         structures::{Nonce, SymmetricDefinition},
     };
 

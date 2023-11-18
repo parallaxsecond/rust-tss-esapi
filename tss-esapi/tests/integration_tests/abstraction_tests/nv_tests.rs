@@ -8,7 +8,7 @@ use tss_esapi::{
     handles::{NvIndexHandle, NvIndexTpmHandle},
     interface_types::{
         algorithm::HashingAlgorithm,
-        resource_handles::{NvAuth, Provision},
+        reserved_handles::{NvAuth, Provision},
     },
     structures::NvPublicBuilder,
 };

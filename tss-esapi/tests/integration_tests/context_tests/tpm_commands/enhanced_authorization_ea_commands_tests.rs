@@ -7,7 +7,7 @@ mod test_policy_signed {
         attributes::SessionAttributesBuilder,
         constants::SessionType,
         interface_types::{
-            algorithm::HashingAlgorithm, resource_handles::Hierarchy,
+            algorithm::HashingAlgorithm, reserved_handles::Hierarchy,
             session_handles::PolicySession,
         },
         structures::{Digest, Nonce, PublicKeyRsa, RsaSignature, Signature, SymmetricDefinition},
@@ -198,7 +198,7 @@ mod test_policy_pcr {
         attributes::SessionAttributesBuilder,
         constants::SessionType,
         interface_types::{
-            algorithm::HashingAlgorithm, resource_handles::Hierarchy,
+            algorithm::HashingAlgorithm, reserved_handles::Hierarchy,
             session_handles::PolicySession,
         },
         structures::{MaxBuffer, PcrSelectionListBuilder, PcrSlot, SymmetricDefinition},
@@ -529,7 +529,7 @@ mod test_policy_authorize {
     use crate::common::{create_ctx_with_session, get_pcr_policy_digest, signing_key_pub};
     use std::convert::TryFrom;
     use tss_esapi::{
-        interface_types::{algorithm::HashingAlgorithm, resource_handles::Hierarchy},
+        interface_types::{algorithm::HashingAlgorithm, reserved_handles::Hierarchy},
         structures::{Auth, MaxBuffer, Nonce, SignatureScheme},
         tss2_esys::TPM2B_NONCE,
     };
@@ -682,7 +682,7 @@ mod test_policy_get_digest {
         attributes::SessionAttributesBuilder,
         constants::SessionType,
         interface_types::{
-            algorithm::HashingAlgorithm, resource_handles::Hierarchy,
+            algorithm::HashingAlgorithm, reserved_handles::Hierarchy,
             session_handles::PolicySession,
         },
         structures::{MaxBuffer, PcrSelectionListBuilder, PcrSlot, SymmetricDefinition},
@@ -893,7 +893,7 @@ mod test_policy_authorize_nv {
         handles::{NvIndexHandle, NvIndexTpmHandle},
         interface_types::{
             algorithm::HashingAlgorithm,
-            resource_handles::{NvAuth, Provision},
+            reserved_handles::{NvAuth, Provision},
             session_handles::PolicySession,
         },
         structures::SymmetricDefinition,
