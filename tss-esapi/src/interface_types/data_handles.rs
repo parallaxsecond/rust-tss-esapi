@@ -1,10 +1,17 @@
-// Copyright 2020 Contributors to the Parsec project.
-// SPDX-License-Identifier: Apache-2.0
-
-use crate::handles::{NvIndexTpmHandle, PcrTpmHandle, PersistentTpmHandle, TransientTpmHandle};
-
-/// Can be created with either a persistent
-/// or transient TPM handle.
+/// This module contains native representations of the TPMI_DH types.
+use crate::{
+    handles::{
+        HmacSessionTpmHandle, NvIndexTpmHandle, PcrTpmHandle, PersistentTpmHandle,
+        PolicySessionTpmHandle, TpmHandle, TransientTpmHandle,
+    },
+    tss2_esys::TPMI_DH_CONTEXT,
+    Error, Result, WrapperErrorKind,
+};
+use std::convert::TryFrom;
+/// Enum representing the 'Object' data handles interface type.
+///
+/// # Details
+/// This corresponds to the TPMI_DH_OBJECT interface type.
 #[derive(Debug, Copy, Clone)]
 pub enum Object {
     Transient(TransientTpmHandle),
@@ -53,10 +60,52 @@ pub enum Entity {
     Platform,
     Endorsement,
     Lockout,
-    // TODO: Handle Auth
+    // TODO: Handle Auth, that is vendor specific.
 }
 
 #[derive(Debug, Copy, Clone)]
 pub enum Pcr {
     Pcr(PcrTpmHandle),
+}
+
+/// Enum representing the 'Context' data handles interface type.
+///
+/// # Details
+/// This corresponds to the TPMI_DH_CONTEXT interface type.
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+pub enum ContextDataHandle {
+    Hmac(HmacSessionTpmHandle),
+    Policy(PolicySessionTpmHandle),
+    Transient(TransientTpmHandle),
+}
+
+impl From<HmacSessionTpmHandle> for ContextDataHandle {
+    fn from(hmac_session_tpm_handle: HmacSessionTpmHandle) -> Self {
+        ContextDataHandle::Hmac(hmac_session_tpm_handle)
+    }
+}
+
+impl From<PolicySessionTpmHandle> for ContextDataHandle {
+    fn from(policy_session_tpm_handle: PolicySessionTpmHandle) -> Self {
+        ContextDataHandle::Policy(policy_session_tpm_handle)
+    }
+}
+
+impl From<TransientTpmHandle> for ContextDataHandle {
+    fn from(transient_tpm_handle: TransientTpmHandle) -> Self {
+        ContextDataHandle::Transient(transient_tpm_handle)
+    }
+}
+
+impl TryFrom<TPMI_DH_CONTEXT> for ContextDataHandle {
+    type Error = Error;
+
+    fn try_from(ffi: TPMI_DH_CONTEXT) -> Result<Self> {
+        TpmHandle::try_from(ffi).and_then(|tpm_handle| match tpm_handle {
+            TpmHandle::HmacSession(handle) => Ok(Self::Hmac(handle)),
+            TpmHandle::PolicySession(handle) => Ok(Self::Policy(handle)),
+            TpmHandle::Transient(handle) => Ok(Self::Transient(handle)),
+            _ => Err(Error::local_error(WrapperErrorKind::InvalidParam)),
+        })
+    }
 }
