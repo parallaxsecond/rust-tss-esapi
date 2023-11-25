@@ -151,7 +151,7 @@ mod test_pcr_read {
     use tss_esapi::{
         interface_types::algorithm::HashingAlgorithm,
         structures::{PcrSelectionListBuilder, PcrSlot},
-        tss2_esys::{TPM2_SHA256_DIGEST_SIZE, TPML_PCR_SELECTION},
+        tss2_esys::{TPM2_SHA256_DIGEST_SIZE, TPMI_ALG_HASH, TPML_PCR_SELECTION},
     };
 
     #[test]
@@ -167,7 +167,10 @@ mod test_pcr_read {
         assert_eq!(pcr_selection_list.len(), 1);
         assert_eq!(input.count as usize, pcr_selection_list.len());
         assert_eq!(input.pcrSelections[0].sizeofSelect, 3);
-        assert_eq!(input.pcrSelections[0].hash, HashingAlgorithm::Sha256.into());
+        assert_eq!(
+            input.pcrSelections[0].hash,
+            TPMI_ALG_HASH::from(HashingAlgorithm::Sha256)
+        );
         assert_eq!(input.pcrSelections[0].pcrSelect[0], 0b0000_0001);
         assert_eq!(input.pcrSelections[0].pcrSelect[1], 0b0000_0000);
         assert_eq!(input.pcrSelections[0].pcrSelect[2], 0b0000_0000);

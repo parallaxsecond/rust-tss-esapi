@@ -92,7 +92,7 @@ fn test_conversions_non_vendor_specific() {
 
     assert_eq!(
         expected.0,
-        command_code_attributes.into(),
+        TPMA_CC::from(command_code_attributes),
         "CommandCodeAttributes did not convert into the expected TPMA_CC value"
     );
 }
@@ -162,7 +162,7 @@ fn test_conversions_vendor_specific() {
 
     assert_eq!(
         expected.0,
-        command_code_attributes.into(),
+        TPMA_CC::from(command_code_attributes),
         "CommandCodeAttributes did not convert into the expected TPMA_CC value"
     );
 }
@@ -307,7 +307,7 @@ fn test_builder() {
 
     assert_eq!(
             expected.0,
-            actual.into(),
+            TPMA_CC::from(actual),
             "CommandCodeAttributes built using the builder did not convert into the expected TPMA_CC value"
     );
 }

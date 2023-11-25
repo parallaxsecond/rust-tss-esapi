@@ -4,6 +4,7 @@ use std::convert::TryFrom;
 use tss_esapi::{
     constants::tss::{TPM2_RC_ASYMMETRIC, TPM2_RC_SEQUENCE, TSS2_RESMGR_TPM_RC_LAYER},
     error::{ReturnCode, TpmResponseCode},
+    tss2_esys::TSS2_RC,
 };
 
 #[test]
@@ -23,7 +24,7 @@ fn test_valid_tpm_resmgr_format_zero_response_code() {
 
     assert_eq!(
         expected_tss_rc,
-        actual_rc.into(),
+        TSS2_RC::from(actual_rc),
         "ReturnCode::TpmResourceManager did not convert into the expected TSS2_RC value"
     );
 }
@@ -45,7 +46,7 @@ fn test_valid_tpm_resmgr_format_one_response_code() {
 
     assert_eq!(
         expected_tss_rc,
-        actual_rc.into(),
+        TSS2_RC::from(actual_rc),
         "ReturnCode::TpmResourceManager did not convert into the expected TSS2_RC value"
     );
 }

@@ -14,6 +14,7 @@ use tss_esapi::{
         ReturnCode, TpmFormatZeroErrorResponseCode, TpmFormatZeroResponseCode,
         TpmFormatZeroWarningResponseCode, TpmResponseCode,
     },
+    tss2_esys::TSS2_RC,
 };
 
 bitfield! {
@@ -39,7 +40,7 @@ fn test_vendor_specific_valid_conversions() {
     {
         assert_eq!(
             expected_tss_rc,
-            actual.into(),
+            TSS2_RC::from(actual),
             "Converting vendor specific return code did not return the original value."
         );
     } else {
@@ -48,7 +49,7 @@ fn test_vendor_specific_valid_conversions() {
 
     assert_eq!(
         expected_tss_rc,
-        actual_rc.into(),
+        TSS2_RC::from(actual_rc),
         "The vendor specific return code did not convert into the expected TSS2_RC in the TPM layer."
     )
 }

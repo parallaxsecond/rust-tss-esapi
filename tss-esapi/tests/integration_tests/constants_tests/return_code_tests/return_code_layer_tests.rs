@@ -27,7 +27,7 @@ macro_rules! test_valid_conversion {
 
         assert_eq!(
             tss_rc_layer_unshifted,
-            ReturnCodeLayer::$return_code_layer.into(),
+            u8::from(ReturnCodeLayer::$return_code_layer),
             "Conversion of {} into TSS_RC did not result in the expected {}",
             std::stringify!(ReturnCodeLayer::$return_code_layer),
             std::stringify!($tss_rc_layer)

@@ -1,6 +1,6 @@
 // Copyright 2022 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
-use std::convert::{TryFrom, TryInto};
+use std::convert::TryFrom;
 use tss_esapi::{
     attributes::{SessionAttributes, SessionAttributesBuilder, SessionAttributesMask},
     tss2_esys::TPMA_SESSION,
@@ -18,7 +18,7 @@ macro_rules! test_valid_conversion {
         );
         assert_eq!(
             tpma_session,
-            session_attributes.try_into().expect("Failed to convert SessionAttributes into TPMA_SESSION_ATTRIBUTE."),
+            TPMA_SESSION::try_from(session_attributes).expect("Failed to convert SessionAttributes into TPMA_SESSION_ATTRIBUTE."),
             "Converting session attributes with {} set did not convert into the expected TPMA_SESSION value", std::stringify!($method),
         );
     };
@@ -30,7 +30,7 @@ macro_rules! test_valid_mask_conversion {
         let session_attributes_mask = SessionAttributesMask::try_from(tpma_session).expect("Failed to convert TPMA_SESSION into SessionAttributesMask");
         assert_eq!(
             tpma_session,
-            session_attributes_mask.try_into().expect("Failed to convert SessionAttributesMask into TPMA_SESSION"),
+            TPMA_SESSION::try_from(session_attributes_mask).expect("Failed to convert SessionAttributesMask into TPMA_SESSION"),
             "Converting session attributes mask with {} set did not convert into the expected TPMA_SESSION value", $attribute,
         );
     };

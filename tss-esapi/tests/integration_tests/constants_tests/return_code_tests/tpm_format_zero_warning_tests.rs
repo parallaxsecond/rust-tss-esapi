@@ -30,7 +30,7 @@ macro_rules! test_valid_conversion {
         let tpm_rc = TpmFormatZeroWarningRc($tpm_warn_rc as u16);
         assert_eq!(
             tpm_rc.error_number(),
-            TpmFormatZeroWarning::$item.into(),
+            u8::from(TpmFormatZeroWarning::$item),
             "Conversion of {} into a u16 value without TPM2_RC_VER1 did not produce the expected value {}",
             std::stringify!(TpmFormatZeroWarning::$item),
             tpm_rc.error_number()

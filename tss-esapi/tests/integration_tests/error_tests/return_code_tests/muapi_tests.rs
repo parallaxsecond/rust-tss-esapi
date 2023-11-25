@@ -12,6 +12,7 @@ use tss_esapi::{
         BaseError,
     },
     error::{BaseReturnCode, MuapiReturnCode, ReturnCode},
+    tss2_esys::TSS2_RC,
     Error, WrapperErrorKind,
 };
 
@@ -64,7 +65,7 @@ macro_rules! test_valid_conversion {
 
         assert_eq!(
             expected_tss_rc,
-            actual_rc.into(),
+            TSS2_RC::from(actual_rc),
             "{} did not convert into expected {} in TSS2_RC MUAPI layer.",
             std::stringify!(ReturnCode::Mu(MuapiReturnCode::$muapi_rc_item)),
             std::stringify!($tss_rc_base_error),

@@ -35,7 +35,7 @@ macro_rules! test_valid_conversion {
     ($tss_rc_base:ident, $base_error_item:ident) => {
         assert_eq!(
             $tss_rc_base as u16,
-            BaseError::$base_error_item.into(),
+            u16::from(BaseError::$base_error_item),
             "Failed to convert {} into the expected TSS2_RC value {}",
             std::stringify!(BaseError::$base_error_item),
             std::stringify!($tss_rc_base),

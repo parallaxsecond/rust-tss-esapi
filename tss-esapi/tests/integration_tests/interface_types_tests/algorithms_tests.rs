@@ -6,26 +6,39 @@ macro_rules! test_conversion {
     ($tpm_alg_id:ident, $interface_type:ident::$interface_type_item:ident) => {
         assert_eq!(
             AlgorithmIdentifier::$interface_type_item,
-            $interface_type::$interface_type_item.into()
+            AlgorithmIdentifier::from($interface_type::$interface_type_item)
         );
         assert_eq!(
-            $interface_type::try_from(AlgorithmIdentifier::$interface_type_item).expect(&format!(
-                "Failed to parse from Algorithm for {}",
-                stringify!($interface_type_item)
-            )),
+            $interface_type::try_from(AlgorithmIdentifier::$interface_type_item).unwrap_or_else(
+                |_| {
+                    panic!(
+                        "Failed to convert from {} to {}.",
+                        std::stringify!(AlgorithmIdentifier::$interface_type_item),
+                        std::any::type_name::<$interface_type>()
+                    );
+                }
+            ),
             $interface_type::$interface_type_item
         );
         assert_eq!(
             $tpm_alg_id,
-            AlgorithmIdentifier::from($interface_type::$interface_type_item).into()
+            tss_esapi::tss2_esys::TPM2_ALG_ID::from(AlgorithmIdentifier::from(
+                $interface_type::$interface_type_item
+            ))
         );
-        assert_eq!($tpm_alg_id, $interface_type::$interface_type_item.into());
+        assert_eq!(
+            $tpm_alg_id,
+            tss_esapi::tss2_esys::TPM2_ALG_ID::from($interface_type::$interface_type_item)
+        );
         assert_eq!(
             $interface_type::$interface_type_item,
-            $interface_type::try_from($tpm_alg_id).expect(&format!(
-                "Failed to parse from alg if for {}",
-                stringify!($tpm_alg_id)
-            ))
+            $interface_type::try_from($tpm_alg_id).unwrap_or_else(|_| {
+                panic!(
+                    "Failed to convert from {} to {}.",
+                    std::stringify!($tpm_alg_id),
+                    std::any::type_name::<$interface_type>()
+                );
+            })
         );
     };
 }
