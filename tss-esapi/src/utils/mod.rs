@@ -57,13 +57,9 @@ impl TryFrom<TPMS_CONTEXT> for TpmsContext {
             hierarchy: tss2_context.hierarchy,
             context_blob: tss2_context.contextBlob.buffer.to_vec(),
         };
-        context.context_blob.truncate(
-            tss2_context
-                .contextBlob
-                .size
-                .try_into()
-                .map_err(|_| Error::local_error(WrapperErrorKind::WrongParamSize))?,
-        );
+        context
+            .context_blob
+            .truncate(tss2_context.contextBlob.size.into());
         Ok(context)
     }
 }

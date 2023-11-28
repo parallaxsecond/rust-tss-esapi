@@ -130,11 +130,11 @@ pub struct HashcheckTicket {
 impl Default for HashcheckTicket {
     /// The default for the Hashcheck ticket is the Null ticket.
     fn default() -> Self {
-        return Self {
+        Self {
             tag: StructureTag::Hashcheck,
             hierarchy: Hierarchy::Null,
             digest: Vec::<u8>::new(),
-        };
+        }
     }
 }
 

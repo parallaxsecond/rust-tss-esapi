@@ -40,15 +40,66 @@ impl Context {
     }
 
     /// Sign a digest with a key present in the TPM and return the signature.
+    ///
+    /// # Details
+    /// For signatures using a restricted key, a hashcheck must be provided. For unrestricted keys, this may be None.
+    ///
+    /// # Parameters
+    /// `key_handle` - Handle to the key be used for signing.
+    /// `digest`     - The digest that is going to be signed.
+    /// `scheme`     - The scheme to use if the scheme for the key referenced by the key handle is null.
+    /// `validation` - An optional [HashcheckTicket] that proof that the digest was created by the TPM.
+    ///                N.B. None will be treated as a "Null ticket".
+    /// # Example
+    ///
+    /// ```rust
+    /// # use tss_esapi::{Context, TctiNameConf,
+    /// #    interface_types::{
+    /// #        algorithm::{HashingAlgorithm, RsaSchemeAlgorithm},
+    /// #        key_bits::RsaKeyBits,
+    /// #        resource_handles::Hierarchy,
+    /// #    },
+    /// #    structures::{RsaScheme, RsaExponent},
+    /// #    utils::create_unrestricted_signing_rsa_public
+    /// # };
+    /// use tss_esapi::structures::SignatureScheme;
+    /// # let mut context =
+    /// #     Context::new(
+    /// #         TctiNameConf::from_environment_variable().expect("Failed to get TCTI"),
+    /// #     ).expect("Failed to create Context");
+    /// # let signing_key_pub = create_unrestricted_signing_rsa_public(
+    /// #         RsaScheme::create(RsaSchemeAlgorithm::RsaSsa, Some(HashingAlgorithm::Sha256))
+    /// #         .expect("Failed to create RSA scheme"),
+    /// #     RsaKeyBits::Rsa2048,
+    /// #     RsaExponent::default(),
+    /// # )
+    /// # .expect("Failed to create an unrestricted signing rsa public structure");
+    /// # let unrestricted_signing_key_handle = context
+    /// #     .execute_with_nullauth_session(|ctx| {
+    /// #         ctx.create_primary(Hierarchy::Owner, signing_key_pub, None, None, None, None)
+    /// #     })
+    /// #     .unwrap()
+    /// #     .key_handle;
+    /// # let digest = context.get_random(32).unwrap();
+    /// let signature = context.execute_with_nullauth_session(|ctx| {
+    ///     ctx.sign(
+    ///         unrestricted_signing_key_handle,
+    ///         digest,
+    ///         SignatureScheme::Null,
+    ///         None,
+    ///     )
+    /// })
+    /// .expect("Failed to sign digest");
+    /// ```
     pub fn sign(
         &mut self,
         key_handle: KeyHandle,
         digest: Digest,
         scheme: SignatureScheme,
-        validation: Option<HashcheckTicket>,
+        validation: impl Into<Option<HashcheckTicket>>,
     ) -> Result<Signature> {
         let mut signature_ptr = null_mut();
-        let validation_ticket = validation.unwrap_or_default().try_into()?;
+        let validation_ticket = validation.into().unwrap_or_default().try_into()?;
         ReturnCode::ensure_success(
             unsafe {
                 Esys_Sign(
