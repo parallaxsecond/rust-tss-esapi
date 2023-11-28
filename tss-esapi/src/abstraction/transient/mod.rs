@@ -8,7 +8,7 @@
 //! client.
 use crate::{
     attributes::{ObjectAttributesBuilder, SessionAttributesBuilder},
-    constants::{tss::*, SessionType, TpmFormatZeroError},
+    constants::{SessionType, TpmFormatZeroError},
     error::{TpmFormatZeroResponseCode, TpmResponseCode},
     handles::{KeyHandle, SessionHandle},
     interface_types::{
@@ -23,7 +23,6 @@ use crate::{
         RsaScheme, Signature, SignatureScheme, SymmetricDefinitionObject, VerifiedTicket,
     },
     tcti_ldr::TctiNameConf,
-    tss2_esys::*,
     utils::{create_restricted_decryption_rsa_public, PublicKey, TpmsContext},
     Context, Error, Result, ReturnCode, WrapperErrorKind as ErrorKind,
 };
@@ -287,20 +286,10 @@ impl TransientKeyContext {
     ) -> Result<Signature> {
         let key_handle = self.load_key(key_params, key_material, key_auth)?;
 
-        let validation = TPMT_TK_HASHCHECK {
-            tag: TPM2_ST_HASHCHECK,
-            hierarchy: TPM2_RH_NULL,
-            digest: Default::default(),
-        };
         self.set_session_attrs()?;
         let signature = self
             .context
-            .sign(
-                key_handle,
-                digest,
-                SignatureScheme::Null,
-                validation.try_into()?,
-            )
+            .sign(key_handle, digest, SignatureScheme::Null, None)
             .or_else(|e| {
                 self.context.flush_context(key_handle.into())?;
                 Err(e)

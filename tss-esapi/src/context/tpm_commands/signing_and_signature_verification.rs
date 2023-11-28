@@ -45,9 +45,10 @@ impl Context {
         key_handle: KeyHandle,
         digest: Digest,
         scheme: SignatureScheme,
-        validation: HashcheckTicket,
+        validation: Option<HashcheckTicket>,
     ) -> Result<Signature> {
         let mut signature_ptr = null_mut();
+        let validation_ticket = validation.unwrap_or_default().try_into()?;
         ReturnCode::ensure_success(
             unsafe {
                 Esys_Sign(
@@ -58,7 +59,7 @@ impl Context {
                     self.optional_session_3(),
                     &digest.into(),
                     &scheme.into(),
-                    &validation.try_into()?,
+                    &validation_ticket,
                     &mut signature_ptr,
                 )
             },
