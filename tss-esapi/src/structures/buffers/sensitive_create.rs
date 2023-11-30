@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0
 use crate::{
     structures::SensitiveCreate,
-    traits::{Marshall, UnMarshall},
+    traits::{impl_mu_complex, Marshall, UnMarshall},
     tss2_esys::{TPM2B_SENSITIVE_CREATE, TPMS_SENSITIVE_CREATE},
-    Error, Result, ReturnCode, WrapperErrorKind,
+    Error, Result, WrapperErrorKind,
 };
 use log::error;
 use std::{
@@ -112,61 +112,4 @@ impl TryFrom<SensitiveCreate> for SensitiveCreateBuffer {
     }
 }
 
-impl Marshall for SensitiveCreateBuffer {
-    const BUFFER_SIZE: usize = std::mem::size_of::<TPM2B_SENSITIVE_CREATE>();
-
-    /// Produce a marshalled [TPM2B_SENSITIVE_CREATE]
-    fn marshall(&self) -> Result<Vec<u8>> {
-        let mut buffer = vec![0; Self::BUFFER_SIZE];
-        let mut offset = 0;
-
-        ReturnCode::ensure_success(
-            unsafe {
-                crate::tss2_esys::Tss2_MU_TPM2B_SENSITIVE_CREATE_Marshal(
-                    &self.clone().try_into()?,
-                    buffer.as_mut_ptr(),
-                    Self::BUFFER_SIZE.try_into().map_err(|e| {
-                        error!("Failed to convert size of buffer to TSS size_t type: {}", e);
-                        Error::local_error(WrapperErrorKind::InvalidParam)
-                    })?,
-                    &mut offset,
-                )
-            },
-            |ret| {
-                error!("Failed to marshal SensitiveCreateBuffer: {}", ret);
-            },
-        )?;
-
-        let checked_offset = usize::try_from(offset).map_err(|e| {
-            error!("Failed to parse offset as usize: {}", e);
-            Error::local_error(WrapperErrorKind::InvalidParam)
-        })?;
-        buffer.truncate(checked_offset);
-        Ok(buffer)
-    }
-}
-
-impl UnMarshall for SensitiveCreateBuffer {
-    /// Unmarshall the structure from [TPM2B_SENSITIVE_CREATE]
-    fn unmarshall(marshalled_data: &[u8]) -> Result<Self> {
-        let mut dest = TPM2B_SENSITIVE_CREATE::default();
-        let mut offset = 0;
-
-        ReturnCode::ensure_success(
-            unsafe {
-                crate::tss2_esys::Tss2_MU_TPM2B_SENSITIVE_CREATE_Unmarshal(
-                    marshalled_data.as_ptr(),
-                    marshalled_data.len().try_into().map_err(|e| {
-                        error!("Failed to convert length of marshalled data: {}", e);
-                        Error::local_error(WrapperErrorKind::InvalidParam)
-                    })?,
-                    &mut offset,
-                    &mut dest,
-                )
-            },
-            |ret| error!("Failed to unmarshal SensitiveCreateBuffer: {}", ret),
-        )?;
-
-        SensitiveCreateBuffer::try_from(dest)
-    }
-}
+impl_mu_complex!(SensitiveCreateBuffer, TPM2B_SENSITIVE_CREATE);

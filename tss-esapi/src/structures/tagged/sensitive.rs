@@ -3,7 +3,7 @@
 use crate::{
     interface_types::algorithm::PublicAlgorithm,
     structures::{Auth, Digest, EccParameter, PrivateKeyRsa, SensitiveData, SymmetricKey},
-    traits::{Marshall, UnMarshall},
+    traits::{impl_mu_standard, Marshall},
     tss2_esys::{TPM2B_SENSITIVE, TPMT_SENSITIVE, TPMU_SENSITIVE_COMPOSITE},
     Error, Result, ReturnCode, WrapperErrorKind,
 };
@@ -163,66 +163,7 @@ impl TryFrom<TPMT_SENSITIVE> for Sensitive {
     }
 }
 
-impl Marshall for Sensitive {
-    const BUFFER_SIZE: usize = std::mem::size_of::<TPMT_SENSITIVE>();
-
-    /// Produce a marshalled [`TPMT_SENSITIVE`]
-    ///
-    /// Note: for [TPM2B_SENSITIVE] marshalling use [SensitiveBuffer][`crate::structures::SensitiveBuffer]
-    fn marshall(&self) -> Result<Vec<u8>> {
-        let mut buffer = vec![0; Self::BUFFER_SIZE];
-        let mut offset = 0;
-
-        ReturnCode::ensure_success(
-            unsafe {
-                crate::tss2_esys::Tss2_MU_TPMT_SENSITIVE_Marshal(
-                    &self.clone().into(),
-                    buffer.as_mut_ptr(),
-                    Self::BUFFER_SIZE.try_into().map_err(|e| {
-                        error!("Failed to convert size of buffer to TSS size_t type: {}", e);
-                        Error::local_error(WrapperErrorKind::InvalidParam)
-                    })?,
-                    &mut offset,
-                )
-            },
-            |ret| error!("Failed to marshal Sensitive: {}", ret),
-        )?;
-
-        let checked_offset = usize::try_from(offset).map_err(|e| {
-            error!("Failed to parse offset as usize: {}", e);
-            Error::local_error(WrapperErrorKind::InvalidParam)
-        })?;
-        buffer.truncate(checked_offset);
-        Ok(buffer)
-    }
-}
-
-impl UnMarshall for Sensitive {
-    /// Unmarshall the structure from [`TPMT_SENSITIVE`]
-    ///
-    /// Note: for [TPM2B_SENSITIVE] marshalling use [SensitiveBuffer][`crate::structures::SensitiveBuffer]
-    fn unmarshall(marshalled_data: &[u8]) -> Result<Self> {
-        let mut dest = TPMT_SENSITIVE::default();
-        let mut offset = 0;
-
-        ReturnCode::ensure_success(
-            unsafe {
-                crate::tss2_esys::Tss2_MU_TPMT_SENSITIVE_Unmarshal(
-                    marshalled_data.as_ptr(),
-                    marshalled_data.len().try_into().map_err(|e| {
-                        error!("Failed to convert length of marshalled data: {}", e);
-                        Error::local_error(WrapperErrorKind::InvalidParam)
-                    })?,
-                    &mut offset,
-                    &mut dest,
-                )
-            },
-            |ret| error!("Failed to unmarshal Sensitive: {}", ret),
-        )?;
-
-        Sensitive::try_from(dest)
-    }
-}
+impl_mu_standard!(Sensitive, TPMT_SENSITIVE);
 
 impl TryFrom<TPM2B_SENSITIVE> for Sensitive {
     type Error = Error;

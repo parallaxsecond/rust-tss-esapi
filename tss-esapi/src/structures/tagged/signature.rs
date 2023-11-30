@@ -3,13 +3,11 @@
 use crate::{
     interface_types::algorithm::SignatureSchemeAlgorithm,
     structures::{EccSignature, HashAgile, RsaSignature},
-    traits::{Marshall, UnMarshall},
+    traits::impl_mu_complex,
     tss2_esys::{TPMT_SIGNATURE, TPMU_SIGNATURE},
-    Error, Result, ReturnCode, WrapperErrorKind,
+    Error, Result,
 };
-use log::error;
 use std::convert::{TryFrom, TryInto};
-use tss_esapi_sys::{Tss2_MU_TPMT_SIGNATURE_Marshal, Tss2_MU_TPMT_SIGNATURE_Unmarshal};
 
 /// Enum representing a Signature
 ///
@@ -129,59 +127,4 @@ impl TryFrom<TPMT_SIGNATURE> for Signature {
     }
 }
 
-impl Marshall for Signature {
-    const BUFFER_SIZE: usize = std::mem::size_of::<TPMT_SIGNATURE>();
-
-    /// Produce a marshalled [`TPMT_SIGNATURE`]
-    fn marshall(&self) -> Result<Vec<u8>> {
-        let tpmt_sig = TPMT_SIGNATURE::try_from(self.clone())?;
-        let mut offset = 0;
-        let mut buffer = vec![0; Self::BUFFER_SIZE];
-
-        ReturnCode::ensure_success(
-            unsafe {
-                Tss2_MU_TPMT_SIGNATURE_Marshal(
-                    &tpmt_sig,
-                    buffer.as_mut_ptr(),
-                    buffer.capacity().try_into().map_err(|e| {
-                        error!("Failed to convert size of buffer to TSS size_t type: {}", e);
-                        Error::local_error(WrapperErrorKind::InvalidParam)
-                    })?,
-                    &mut offset,
-                )
-            },
-            |ret| error!("Failed to marshal Signature: {}", ret),
-        )?;
-
-        let checked_offset = usize::try_from(offset).map_err(|e| {
-            error!("Failed to parse offset as usize: {}", e);
-            Error::local_error(WrapperErrorKind::InvalidParam)
-        })?;
-        buffer.truncate(checked_offset);
-        Ok(buffer)
-    }
-}
-
-impl UnMarshall for Signature {
-    /// Unmarshall the structure from [`TPMT_SIGNATURE`]
-    fn unmarshall(public_buffer: &[u8]) -> Result<Self> {
-        let mut tpmt_sig = TPMT_SIGNATURE::default();
-        let mut offset = 0;
-
-        ReturnCode::ensure_success(
-            unsafe {
-                Tss2_MU_TPMT_SIGNATURE_Unmarshal(
-                    public_buffer.as_ptr(),
-                    public_buffer.len().try_into().map_err(|e| {
-                        error!("Failed to convert length of marshalled data: {}", e);
-                        Error::local_error(WrapperErrorKind::InvalidParam)
-                    })?,
-                    &mut offset,
-                    &mut tpmt_sig,
-                )
-            },
-            |ret| error!("Failed to unmarshal Sensitive: {}", ret),
-        )?;
-        tpmt_sig.try_into()
-    }
-}
+impl_mu_complex!(Signature, TPMT_SIGNATURE);

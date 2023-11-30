@@ -8,7 +8,7 @@ use crate::{
     attributes::ObjectAttributes,
     interface_types::algorithm::{HashingAlgorithm, PublicAlgorithm},
     structures::{Digest, EccPoint, PublicKeyRsa, SymmetricCipherParameters},
-    traits::{Marshall, UnMarshall},
+    traits::{impl_mu_standard, Marshall},
     tss2_esys::{TPM2B_PUBLIC, TPMT_PUBLIC},
     Error, Result, ReturnCode, WrapperErrorKind,
 };
@@ -491,66 +491,7 @@ impl TryFrom<TPMT_PUBLIC> for Public {
     }
 }
 
-impl Marshall for Public {
-    const BUFFER_SIZE: usize = std::mem::size_of::<TPMT_PUBLIC>();
-
-    /// Produce a marshalled [TPMT_PUBLIC]
-    ///
-    /// Note: for [TPM2B_PUBLIC] marshalling use [PublicBuffer][`crate::structures::PublicBuffer]
-    fn marshall(&self) -> Result<Vec<u8>> {
-        let mut buffer = vec![0; Self::BUFFER_SIZE];
-        let mut offset = 0;
-
-        ReturnCode::ensure_success(
-            unsafe {
-                crate::tss2_esys::Tss2_MU_TPMT_PUBLIC_Marshal(
-                    &self.clone().into(),
-                    buffer.as_mut_ptr(),
-                    Self::BUFFER_SIZE.try_into().map_err(|e| {
-                        error!("Failed to convert size of buffer to TSS size_t type: {}", e);
-                        Error::local_error(WrapperErrorKind::InvalidParam)
-                    })?,
-                    &mut offset,
-                )
-            },
-            |ret| error!("Failed to marshal Public: {}", ret),
-        )?;
-
-        let checked_offset = usize::try_from(offset).map_err(|e| {
-            error!("Failed to parse offset as usize: {}", e);
-            Error::local_error(WrapperErrorKind::InvalidParam)
-        })?;
-        buffer.truncate(checked_offset);
-        Ok(buffer)
-    }
-}
-
-impl UnMarshall for Public {
-    /// Unmarshall the structure from [`TPMT_PUBLIC`]
-    ///
-    /// Note: for [TPM2B_PUBLIC] unmarshalling use [PublicBuffer][`crate::structures::PublicBuffer]
-    fn unmarshall(marshalled_data: &[u8]) -> Result<Self> {
-        let mut dest = TPMT_PUBLIC::default();
-        let mut offset = 0;
-
-        ReturnCode::ensure_success(
-            unsafe {
-                crate::tss2_esys::Tss2_MU_TPMT_PUBLIC_Unmarshal(
-                    marshalled_data.as_ptr(),
-                    marshalled_data.len().try_into().map_err(|e| {
-                        error!("Failed to convert length of marshalled data: {}", e);
-                        Error::local_error(WrapperErrorKind::InvalidParam)
-                    })?,
-                    &mut offset,
-                    &mut dest,
-                )
-            },
-            |ret| error!("Failed to unmarshal Public: {}", ret),
-        )?;
-
-        Public::try_from(dest)
-    }
-}
+impl_mu_standard!(Public, TPMT_PUBLIC);
 
 impl TryFrom<TPM2B_PUBLIC> for Public {
     type Error = Error;
