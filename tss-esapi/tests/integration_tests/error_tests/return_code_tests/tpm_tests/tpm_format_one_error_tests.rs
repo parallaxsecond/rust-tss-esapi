@@ -18,6 +18,7 @@ use tss_esapi::{
         },
     },
     error::{ArgumentNumber, ReturnCode, TpmFormatOneResponseCode, TpmResponseCode},
+    tss2_esys::TSS2_RC,
 };
 
 macro_rules! test_valid_conversions_with_all_argument_combinations {
@@ -80,7 +81,7 @@ macro_rules! test_valid_conversion {
 
         assert_eq!(
             expected_tss_rc,
-            actual_rc.into(),
+            TSS2_RC::from(actual_rc),
             "TpmFormatOneResponseCode with {} and {} in the TPM layer did not convert into the expected TSS2_RC",
             std::stringify!(TpmFormatOneError::$tpm_format_one_error_item),
             std::stringify!(ArgumentNumber::$argument_number_item),

@@ -8,6 +8,7 @@ use std::{convert::TryFrom, error::Error};
 use tss_esapi::{
     constants::tss::{TPM2_RC_ASYMMETRIC, TPM2_RC_SEQUENCE, TSS2_TPM_RC_LAYER},
     error::{ReturnCode, TpmFormatOneResponseCode, TpmFormatZeroResponseCode, TpmResponseCode},
+    tss2_esys::TSS2_RC,
 };
 
 macro_rules! test_valid_conversions {
@@ -41,7 +42,7 @@ macro_rules! test_valid_conversions {
 
         assert_eq!(
             expected_tss_rc,
-            actual_rc.into(),
+            TSS2_RC::from(actual_rc),
             "ReturnCode::Tpm did not convert into the expected TSS2_RC value."
         );
     };

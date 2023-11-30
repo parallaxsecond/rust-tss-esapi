@@ -20,6 +20,7 @@ use tss_esapi::{
     error::{
         ReturnCode, TpmFormatZeroErrorResponseCode, TpmFormatZeroResponseCode, TpmResponseCode,
     },
+    tss2_esys::TSS2_RC,
     Error, WrapperErrorKind,
 };
 
@@ -63,7 +64,7 @@ macro_rules! test_valid_conversion {
 
         assert_eq!(
             expected_tss_rc,
-            actual_rc.into(),
+            TSS2_RC::from(actual_rc),
             "{} with {} did not convert into expected {} TSS2_RC in the TPM layer.",
             std::any::type_name::<TpmFormatZeroResponseCode>(),
             std::stringify!(TpmFormatZeroError::$item),

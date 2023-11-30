@@ -16,6 +16,7 @@ use tss_esapi::{
         BaseError,
     },
     error::{BaseReturnCode, ReturnCode, SapiReturnCode},
+    tss2_esys::TSS2_RC,
     Error, WrapperErrorKind,
 };
 
@@ -68,7 +69,7 @@ macro_rules! test_valid_conversion {
 
         assert_eq!(
             expected_tss_rc,
-            actual_rc.into(),
+            TSS2_RC::from(actual_rc),
             "SapiReturnCode with {} did not convert into expected {} TSS2_RC in the SAPI layer.",
             std::stringify!(BaseError::$base_error),
             std::stringify!($tss_rc_base_error),

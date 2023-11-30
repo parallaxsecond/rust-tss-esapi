@@ -3,34 +3,46 @@
 use std::convert::TryFrom;
 use tss_esapi::{structures::PcrSlot, tss2_esys::TPM2_PCR_SELECT_MAX, Error, WrapperErrorKind};
 
+macro_rules! convert_to_u32_test {
+    ($value:expr, $slot_number:path) => {
+        assert_eq!(
+            $value,
+            u32::from($slot_number),
+            "Failed to convert {} to {}",
+            std::stringify!($value),
+            std::stringify!($slot_number)
+        )
+    };
+}
+
 #[test]
 fn test_conversion_to_u32() {
-    assert_eq!(0x0000_0001u32, PcrSlot::Slot0.into());
-    assert_eq!(0x0000_0002u32, PcrSlot::Slot1.into());
-    assert_eq!(0x0000_0004u32, PcrSlot::Slot2.into());
-    assert_eq!(0x0000_0008u32, PcrSlot::Slot3.into());
-    assert_eq!(0x0000_0010u32, PcrSlot::Slot4.into());
-    assert_eq!(0x0000_0020u32, PcrSlot::Slot5.into());
-    assert_eq!(0x0000_0040u32, PcrSlot::Slot6.into());
-    assert_eq!(0x0000_0080u32, PcrSlot::Slot7.into());
+    convert_to_u32_test!(0x0000_0001u32, PcrSlot::Slot0);
+    convert_to_u32_test!(0x0000_0002u32, PcrSlot::Slot1);
+    convert_to_u32_test!(0x0000_0004u32, PcrSlot::Slot2);
+    convert_to_u32_test!(0x0000_0008u32, PcrSlot::Slot3);
+    convert_to_u32_test!(0x0000_0010u32, PcrSlot::Slot4);
+    convert_to_u32_test!(0x0000_0020u32, PcrSlot::Slot5);
+    convert_to_u32_test!(0x0000_0040u32, PcrSlot::Slot6);
+    convert_to_u32_test!(0x0000_0080u32, PcrSlot::Slot7);
 
-    assert_eq!(0x0000_0100u32, PcrSlot::Slot8.into());
-    assert_eq!(0x0000_0200u32, PcrSlot::Slot9.into());
-    assert_eq!(0x0000_0400u32, PcrSlot::Slot10.into());
-    assert_eq!(0x0000_0800u32, PcrSlot::Slot11.into());
-    assert_eq!(0x0000_1000u32, PcrSlot::Slot12.into());
-    assert_eq!(0x0000_2000u32, PcrSlot::Slot13.into());
-    assert_eq!(0x0000_4000u32, PcrSlot::Slot14.into());
-    assert_eq!(0x0000_8000u32, PcrSlot::Slot15.into());
+    convert_to_u32_test!(0x0000_0100u32, PcrSlot::Slot8);
+    convert_to_u32_test!(0x0000_0200u32, PcrSlot::Slot9);
+    convert_to_u32_test!(0x0000_0400u32, PcrSlot::Slot10);
+    convert_to_u32_test!(0x0000_0800u32, PcrSlot::Slot11);
+    convert_to_u32_test!(0x0000_1000u32, PcrSlot::Slot12);
+    convert_to_u32_test!(0x0000_2000u32, PcrSlot::Slot13);
+    convert_to_u32_test!(0x0000_4000u32, PcrSlot::Slot14);
+    convert_to_u32_test!(0x0000_8000u32, PcrSlot::Slot15);
 
-    assert_eq!(0x0001_0000u32, PcrSlot::Slot16.into());
-    assert_eq!(0x0002_0000u32, PcrSlot::Slot17.into());
-    assert_eq!(0x0004_0000u32, PcrSlot::Slot18.into());
-    assert_eq!(0x0008_0000u32, PcrSlot::Slot19.into());
-    assert_eq!(0x0010_0000u32, PcrSlot::Slot20.into());
-    assert_eq!(0x0020_0000u32, PcrSlot::Slot21.into());
-    assert_eq!(0x0040_0000u32, PcrSlot::Slot22.into());
-    assert_eq!(0x0080_0000u32, PcrSlot::Slot23.into());
+    convert_to_u32_test!(0x0001_0000u32, PcrSlot::Slot16);
+    convert_to_u32_test!(0x0002_0000u32, PcrSlot::Slot17);
+    convert_to_u32_test!(0x0004_0000u32, PcrSlot::Slot18);
+    convert_to_u32_test!(0x0008_0000u32, PcrSlot::Slot19);
+    convert_to_u32_test!(0x0010_0000u32, PcrSlot::Slot20);
+    convert_to_u32_test!(0x0020_0000u32, PcrSlot::Slot21);
+    convert_to_u32_test!(0x0040_0000u32, PcrSlot::Slot22);
+    convert_to_u32_test!(0x0080_0000u32, PcrSlot::Slot23);
 }
 macro_rules! convert_from_u32_test {
     ($value:expr, $slot_number:path) => {
