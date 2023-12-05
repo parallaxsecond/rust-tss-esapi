@@ -131,8 +131,9 @@ impl Context {
     /// # context.tr_sess_set_attributes(session, session_attributes, session_attributes_mask)
     /// #     .expect("Failed to set attributes on session");
     /// # context.set_sessions((Some(session), None, None));
-    /// # let random_digest = context.get_random(16).unwrap();
-    /// # let key_auth = Auth::try_from(random_digest.value().to_vec()).unwrap();
+    /// # let mut random_digest = vec![0u8; 16];
+    /// # getrandom::getrandom(&mut random_digest).unwrap();
+    /// # let key_auth = Auth::try_from(random_digest).unwrap();
     /// #
     /// // Create a key suitable for ECDH key generation
     /// let ecc_parms = PublicEccParametersBuilder::new()
@@ -268,8 +269,9 @@ impl Context {
     /// # context.tr_sess_set_attributes(session, session_attributes, session_attributes_mask)
     /// #     .expect("Failed to set attributes on session");
     /// # context.set_sessions((Some(session), None, None));
-    /// # let random_digest = context.get_random(16).unwrap();
-    /// # let key_auth = Auth::try_from(random_digest.value().to_vec()).unwrap();
+    /// # let mut random_digest = vec![0u8; 16];
+    /// # getrandom::getrandom(&mut random_digest).unwrap();
+    /// # let key_auth = Auth::try_from(random_digest).unwrap();
     /// #
     /// // Create a key suitable for ECDH key generation
     /// let ecc_parms = PublicEccParametersBuilder::new()
