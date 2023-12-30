@@ -631,6 +631,10 @@ pub const TPMA_CC_V: TPMA_CC = 0x20000000; /* SET 1 indicates that the command i
 pub const TPMA_CC_RES_MASK: TPMA_CC = 0xC0000000; /* allocated for software shall be zero */
 pub const TPMA_CC_RES_SHIFT: u32 = 30;
 
+pub const TPMI_DH_SAVED_TRANSIENT: TPMI_DH_SAVED = 0x80000000; /* an ordinary transient object */
+pub const TPMI_DH_SAVED_SEQUENCE: TPMI_DH_SAVED = 0x80000001; /* a sequence object */
+pub const TPMI_DH_SAVED_TRANSIENT_CLEAR: TPMI_DH_SAVED = 0x80000002; /* a transient object with the stClear attribute SET */
+
 pub const TSS2_RC_LAYER_MASK: u32 = 0x00FF0000;
 
 pub const TSS2_TPM_RC_LAYER: TSS2_RC = 0x00000000; /* base is a TPM2_RC_* */
