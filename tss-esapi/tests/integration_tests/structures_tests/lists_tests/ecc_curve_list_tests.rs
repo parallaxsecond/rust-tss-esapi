@@ -30,8 +30,7 @@ fn test_conversions() {
             );
         });
 
-    let tpml_ecc_curve =
-        TPML_ECC_CURVE::try_from(ecc_curve_list).expect("failed to convert to TPML_ECC_CURVE");
+    let tpml_ecc_curve = TPML_ECC_CURVE::from(ecc_curve_list);
     assert_eq!(
         expected_ecc_curves.len(),
         tpml_ecc_curve.count as usize,

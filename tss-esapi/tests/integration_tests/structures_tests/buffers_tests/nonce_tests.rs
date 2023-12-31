@@ -38,7 +38,7 @@ fn test_default() {
     {
         let nonce: Nonce = Default::default();
         let expected: TPM2B_NONCE = Default::default();
-        let actual = TPM2B_NONCE::try_from(nonce).unwrap();
+        let actual = TPM2B_NONCE::from(nonce);
         assert_eq!(expected.size, actual.size);
         assert_eq!(
             expected.buffer.len(),

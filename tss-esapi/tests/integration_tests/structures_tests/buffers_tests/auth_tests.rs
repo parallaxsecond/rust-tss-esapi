@@ -32,7 +32,7 @@ mod test_auth {
         {
             let auth: Auth = Default::default();
             let expected: TPM2B_AUTH = Default::default();
-            let actual = TPM2B_AUTH::try_from(auth).unwrap();
+            let actual = TPM2B_AUTH::from(auth);
             assert_eq!(expected.size, actual.size);
             assert_eq!(
                 expected.buffer.len(),

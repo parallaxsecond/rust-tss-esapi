@@ -35,7 +35,7 @@ fn test_conversions() {
             );
         });
 
-    let tpml_handle = TPML_HANDLE::try_from(handle_list).expect("failed to convert to TPML_HANDLE");
+    let tpml_handle = TPML_HANDLE::from(handle_list);
     assert_eq!(
         expected_handles.len(),
         tpml_handle.count as usize,

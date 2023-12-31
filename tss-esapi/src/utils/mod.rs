@@ -59,13 +59,9 @@ impl TryFrom<TPMS_CONTEXT> for TpmsContext {
             hierarchy: tss2_context.hierarchy,
             context_blob: tss2_context.contextBlob.buffer.to_vec(),
         };
-        context.context_blob.truncate(
-            tss2_context
-                .contextBlob
-                .size
-                .try_into()
-                .map_err(|_| Error::local_error(WrapperErrorKind::WrongParamSize))?,
-        );
+        context
+            .context_blob
+            .truncate(tss2_context.contextBlob.size.into());
         Ok(context)
     }
 }
@@ -323,7 +319,7 @@ pub fn get_tpm_vendor(context: &mut Context) -> Result<String> {
     ]
     .iter()
     // Retrieve property values
-    .map(|propid| context.get_tpm_property(*propid))
+    .map(|prop_id| context.get_tpm_property(*prop_id))
     // Collect and return an error if we got one
     .collect::<Result<Vec<Option<u32>>>>()?
     .iter()
