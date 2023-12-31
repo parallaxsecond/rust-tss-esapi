@@ -8,14 +8,14 @@ const ATTEST_BUFFER_MAX_SIZE: usize = 2304;
 
 #[test]
 fn test_max_sized_data() {
-    let _ = AttestBuffer::try_from(vec![0xffu8; ATTEST_BUFFER_MAX_SIZE])
+    let _ = AttestBuffer::try_from(vec![0xFFu8; ATTEST_BUFFER_MAX_SIZE])
         .expect("Failed to parse buffer if maximum size as AttestBuffer");
 }
 
 #[test]
 fn test_to_large_data() {
     assert_eq!(
-        AttestBuffer::try_from(vec![0xffu8; ATTEST_BUFFER_MAX_SIZE + 1])
+        AttestBuffer::try_from(vec![0xFFu8; ATTEST_BUFFER_MAX_SIZE + 1])
             .expect_err("Converting a buffer that is to large did not produce an error"),
         Error::WrapperError(WrapperErrorKind::WrongParamSize),
         "Wrong kind of error when converting a buffer with size {} to AttestBuffer",
@@ -28,7 +28,7 @@ fn test_default() {
     {
         let attest_buffer: AttestBuffer = Default::default();
         let expected: TPM2B_ATTEST = Default::default();
-        let actual = TPM2B_ATTEST::try_from(attest_buffer).unwrap();
+        let actual = TPM2B_ATTEST::from(attest_buffer);
         assert_eq!(expected.size, actual.size);
         assert_eq!(
             expected.attestationData.len(),

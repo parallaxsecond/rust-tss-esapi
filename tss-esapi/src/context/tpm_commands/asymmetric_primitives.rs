@@ -194,7 +194,7 @@ impl Context {
                 )
             },
             |ret| {
-                error!("Error when generating ECDH keypair: {:#010X}", ret);
+                error!("Error when generating ECDH key pair: {:#010X}", ret);
             },
         )?;
 

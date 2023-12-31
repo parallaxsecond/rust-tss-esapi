@@ -8,11 +8,10 @@ use tss_esapi::{
 
 #[test]
 fn test_conversion_to_tss_pcr_select() {
-    let actual = TPMS_PCR_SELECT::try_from(
+    let actual = TPMS_PCR_SELECT::from(
         PcrSelect::create(PcrSelectSize::TwoOctets, &[PcrSlot::Slot0, PcrSlot::Slot8])
             .expect("Failed to create PcrSelect"),
-    )
-    .expect("Failed to convert PcrSelect into TPMS_PCR_SELECT");
+    );
     let expected = TPMS_PCR_SELECT {
         sizeofSelect: 2,
         pcrSelect: [1, 1, 0, 0],

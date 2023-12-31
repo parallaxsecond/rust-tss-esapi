@@ -1,7 +1,7 @@
 // Copyright 2021 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
 
-use std::convert::{TryFrom, TryInto};
+use std::convert::TryFrom;
 use tss_esapi::{
     structures::{CertifyInfo, Name},
     tss2_esys::TPMS_CERTIFY_INFO,
@@ -9,18 +9,12 @@ use tss_esapi::{
 
 #[test]
 fn test_conversion() {
-    let expected_name = Name::try_from(vec![0xffu8; 64]).expect("Failed to create name");
+    let expected_name = Name::try_from(vec![0xFFu8; 64]).expect("Failed to create name");
     let expected_qualified_name =
         Name::try_from(vec![0x0fu8; 64]).expect("Failed to create qualified name");
     let expected_tpms_certify_info = TPMS_CERTIFY_INFO {
-        name: expected_name
-            .clone()
-            .try_into()
-            .expect("Failed to convert name to tss type"),
-        qualifiedName: expected_qualified_name
-            .clone()
-            .try_into()
-            .expect("failed to convert qualified name to tss type"),
+        name: expected_name.clone().into(),
+        qualifiedName: expected_qualified_name.clone().into(),
     };
 
     let certify_info = CertifyInfo::try_from(expected_tpms_certify_info)
