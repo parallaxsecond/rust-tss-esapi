@@ -354,11 +354,28 @@ pub mod public_key_rsa {
 }
 
 pub mod sensitive_data {
-    buffer_type!(
-        SensitiveData,
-        ::std::mem::size_of::<TPM2B_SENSITIVE_DATA>(),
-        TPM2B_SENSITIVE_DATA
-    );
+    // The specification says that the size of the buffer should be the size
+    // TPMU_SENSITIVE_CREATE structure. This does not exist in all the
+    // versions of tpm2-tss supported by the crate so the fall back is to
+    // calculate the max size by removing the size of the size parameter(UINT16)
+    // from the total size of the buffer type.
+    cfg_if::cfg_if! {
+        if #[cfg(has_tpmu_sensitive_create)] {
+            use crate::tss2_esys::TPMU_SENSITIVE_CREATE;
+            buffer_type!(
+                SensitiveData,
+                ::std::mem::size_of::<TPMU_SENSITIVE_CREATE>(),
+                TPM2B_SENSITIVE_DATA
+            );
+        } else {
+            use crate::tss2_esys::UINT16;
+            buffer_type!(
+                SensitiveData,
+                std::mem::size_of::<TPM2B_SENSITIVE_DATA>() - std::mem::size_of::<UINT16>(),
+                TPM2B_SENSITIVE_DATA
+            );
+        }
+    }
 }
 
 pub mod symmetric_key {
