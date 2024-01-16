@@ -40,9 +40,7 @@ fn test_conversions() {
             )
         });
 
-    let tpml_cc: TPML_CC = command_code_list
-        .try_into()
-        .expect("Failed to convert CommandCodeList into TPML_CC");
+    let tpml_cc: TPML_CC = command_code_list.into();
 
     assert_eq!(
         expected_command_codes.len(),
@@ -111,9 +109,7 @@ fn test_valid_conversion_vector() {
             )
         });
 
-    let actual_command_codes: Vec<CommandCode> = command_code_list
-        .try_into()
-        .expect("Failed to convert CommandCodeList to Vec<CommandCode>");
+    let actual_command_codes: Vec<CommandCode> = command_code_list.into();
 
     assert_eq!(
         expected_command_codes.len(),
@@ -157,7 +153,7 @@ fn test_invalid_conversion_from_tpml_cc() {
     assert_eq!(
         Error::WrapperError(WrapperErrorKind::InvalidParam),
         CommandCodeList::try_from(invalid_value).expect_err(
-            "Converting a TPML_CC with invalid values to ComandCodeList did not produce an error"
+            "Converting a TPML_CC with invalid values to CommandCodeList did not produce an error"
         ),
         "Converting invalid TPML_CC did not produce the expected error",
     );

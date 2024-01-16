@@ -18,12 +18,10 @@ fn test_certify_into_tpm_type_conversions() {
     let expected_tpms_certify_info = TPMS_CERTIFY_INFO {
         name: Name::try_from(vec![0xffu8; 64])
             .expect("Failed to create name")
-            .try_into()
-            .expect("Failed to convert name to tss type"),
+            .into(),
         qualifiedName: Name::try_from(vec![0x0fu8; 64])
             .expect("Failed to create qualified name")
-            .try_into()
-            .expect("failed to convert qualified name to tss type"),
+            .into(),
     };
 
     let tpmu_attest: TPMU_ATTEST = AttestInfo::Certify {
@@ -55,7 +53,7 @@ fn test_quote_into_tpm_type_conversions() {
                 ],
             )
             .build()
-            .expect("Failed to createm PcrSelectionList")
+            .expect("Failed to create PcrSelectionList")
             .into(),
         pcrDigest: Digest::try_from(vec![0xffu8; 32])
             .expect("Failed to create digest")

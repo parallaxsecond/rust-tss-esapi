@@ -3,7 +3,7 @@
 use std::convert::TryFrom;
 use tss_esapi::structures::Data;
 use tss_esapi::tss2_esys::TPM2B_DATA;
-// The TPM2B_DATA has  aisze of 64 bytes
+// The TPM2B_DATA has a size of 64 bytes
 mod test_data {
     use super::*;
 
@@ -27,7 +27,7 @@ mod test_data {
         {
             let data: Data = Default::default();
             let expected: TPM2B_DATA = Default::default();
-            let actual = TPM2B_DATA::try_from(data).unwrap();
+            let actual = TPM2B_DATA::from(data);
             assert_eq!(expected.size, actual.size);
             assert_eq!(
                 expected.buffer.len(),

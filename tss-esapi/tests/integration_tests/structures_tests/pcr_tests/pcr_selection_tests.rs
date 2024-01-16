@@ -11,15 +11,14 @@ use tss_esapi::{
 
 #[test]
 fn test_conversion_to_tss_pcr_selection() {
-    let actual = TPMS_PCR_SELECTION::try_from(
+    let actual = TPMS_PCR_SELECTION::from(
         PcrSelection::create(
             HashingAlgorithm::Sha512,
             PcrSelectSize::ThreeOctets,
             &[PcrSlot::Slot3, PcrSlot::Slot9, PcrSlot::Slot23],
         )
         .expect("Failed to create pcr selection"),
-    )
-    .expect("Failed to convert PcrSelection to TPMS_PCR_SELECTION");
+    );
     let expected = TPMS_PCR_SELECTION {
         hash: TPM2_ALG_SHA512,
         sizeofSelect: 3,
@@ -174,7 +173,7 @@ fn test_merge_exact() {
 }
 
 #[test]
-fn test_merge_exact_hasahing_algorithm_mismatch_errors() {
+fn test_merge_exact_hashing_algorithm_mismatch_errors() {
     let mut pcr_selection_1 = PcrSelection::create(
         HashingAlgorithm::Sha256,
         PcrSelectSize::TwoOctets,
@@ -243,7 +242,7 @@ fn test_merge_exact_non_unique_pcr_slot_errors() {
 }
 
 #[test]
-fn test_subtract_exact_hasahing_algorithm_mismatch_errors() {
+fn test_subtract_exact_hashing_algorithm_mismatch_errors() {
     let mut pcr_selection_1 = PcrSelection::create(
         HashingAlgorithm::Sha256,
         PcrSelectSize::TwoOctets,

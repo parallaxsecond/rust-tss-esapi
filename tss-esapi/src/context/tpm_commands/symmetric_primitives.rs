@@ -86,7 +86,7 @@ impl Context {
     /// # context
     /// #     .tr_set_auth(primary_key_handle.into(), primary_key_auth)
     /// #     .expect("Failed to set auth from primary key handle.");
-    /// # // Create symmetric key objhect attributes
+    /// # // Create symmetric key object attributes
     /// # let symmetric_key_object_attributes = ObjectAttributesBuilder::new()
     /// #     .with_user_with_auth(true)
     /// #     .with_sign_encrypt(true)
@@ -162,7 +162,7 @@ impl Context {
     ///             false,                // false, indicates that the data should be encrypted.
     ///             SymmetricMode::Cfb,   // The symmetric mode of the encryption.
     ///             data.clone(),                // The data that is to be encrypted.
-    ///             initial_value.clone(),       // Initial value needed by the algorithmen.
+    ///             initial_value.clone(),       // Initial value needed by the algorithm.
     ///         )
     ///         .expect("Call to encrypt_decrypt_2 failed when encrypting data")
     ///     });

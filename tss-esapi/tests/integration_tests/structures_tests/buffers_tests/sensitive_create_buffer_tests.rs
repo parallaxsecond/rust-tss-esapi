@@ -14,7 +14,7 @@ const SENSITIVE_CREATE_BUFFER_MAX_SIZE: usize = 324;
 
 #[test]
 fn test_byte_conversions() {
-    let expected_buffer = vec![0xffu8; SENSITIVE_CREATE_BUFFER_MAX_SIZE];
+    let expected_buffer = vec![0xFFu8; SENSITIVE_CREATE_BUFFER_MAX_SIZE];
     let sensitive_create_buffer_from_slice =
         SensitiveCreateBuffer::try_from(expected_buffer.as_slice())
             .expect("Failed to create SensitiveCreateBuffer from byte slice");
@@ -34,7 +34,7 @@ fn test_byte_conversions() {
 
 #[test]
 fn test_conversions_of_over_sized_byte_data() {
-    let over_sized_buffer = vec![0xffu8; SENSITIVE_CREATE_BUFFER_MAX_SIZE + 1];
+    let over_sized_buffer = vec![0xFFu8; SENSITIVE_CREATE_BUFFER_MAX_SIZE + 1];
 
     assert_eq!(
         SensitiveCreateBuffer::try_from(over_sized_buffer.as_slice())
@@ -94,14 +94,14 @@ fn test_tpm_types_conversions() {
         .expect("Failed to create SensitiveCreate from SensitiveCreateBuffer");
     assert_eq!(
         expected_sensitive_create, actual_sensitive_create,
-        "SensitiveCreate converted from SensiticeCreateBuffer did not contain expected values."
+        "SensitiveCreate converted from SensitiveCreateBuffer did not contain expected values."
     );
-    let actual_tpm2b_senstive_create_buffer =
+    let actual_tpm2b_sensitive_create_buffer =
         TPM2B_SENSITIVE_CREATE::try_from(actual_sensitive_create_buffer)
             .expect("Failed to create TPM2B_SENSITIVE_CREATE from SensitiveCreateBuffer");
     crate::common::ensure_tpm2b_sensitive_create_equality(
         &expected_tpm2b_sensitive_create,
-        &actual_tpm2b_senstive_create_buffer,
+        &actual_tpm2b_sensitive_create_buffer,
     );
 }
 
@@ -121,6 +121,6 @@ fn test_marshall_unmarshall() {
         expected_sensitive_create,
         SensitiveCreate::try_from(expected_sensitive_create_buffer)
             .expect("Failed to convert from SensitiveCreateBuffer to SensitiveCreate"),
-        "SensitiveCreate converted from SenstiveCreateBuffer did not contain the expected values"
+        "SensitiveCreate converted from SensitiveCreateBuffer did not contain the expected values"
     );
 }
