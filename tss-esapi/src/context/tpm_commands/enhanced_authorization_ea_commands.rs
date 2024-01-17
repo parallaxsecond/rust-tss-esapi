@@ -3,15 +3,15 @@
 use crate::{
     attributes::LocalityAttributes,
     constants::CommandCode,
-    handles::{AuthHandle, ObjectHandle, SessionHandle},
-    interface_types::{session_handles::PolicySession, YesNo},
+    handles::{AuthHandle, NvIndexHandle, ObjectHandle, SessionHandle},
+    interface_types::{resource_handles::NvAuth, session_handles::PolicySession, YesNo},
     structures::{
         AuthTicket, Digest, DigestList, Name, Nonce, PcrSelectionList, Signature, Timeout,
         VerifiedTicket,
     },
     tss2_esys::{
-        Esys_PolicyAuthValue, Esys_PolicyAuthorize, Esys_PolicyCommandCode, Esys_PolicyCpHash,
-        Esys_PolicyDuplicationSelect, Esys_PolicyGetDigest, Esys_PolicyLocality,
+        Esys_PolicyAuthValue, Esys_PolicyAuthorize, Esys_PolicyAuthorizeNV, Esys_PolicyCommandCode,
+        Esys_PolicyCpHash, Esys_PolicyDuplicationSelect, Esys_PolicyGetDigest, Esys_PolicyLocality,
         Esys_PolicyNameHash, Esys_PolicyNvWritten, Esys_PolicyOR, Esys_PolicyPCR,
         Esys_PolicyPassword, Esys_PolicyPhysicalPresence, Esys_PolicySecret, Esys_PolicySigned,
         Esys_PolicyTemplate,
@@ -593,5 +593,30 @@ impl Context {
             },
         )
     }
-    // Missing function: PolicyAuthorizeNV
+
+    /// Cause conditional gating of a policy based on an authorized policy
+    /// stored in non-volatile memory.
+    pub fn policy_authorize_nv(
+        &mut self,
+        policy_session: PolicySession,
+        auth_handle: NvAuth,
+        nv_index_handle: NvIndexHandle,
+    ) -> Result<()> {
+        ReturnCode::ensure_success(
+            unsafe {
+                Esys_PolicyAuthorizeNV(
+                    self.mut_context(),
+                    AuthHandle::from(auth_handle).into(),
+                    nv_index_handle.into(),
+                    SessionHandle::from(policy_session).into(),
+                    self.optional_session_1(),
+                    self.optional_session_2(),
+                    self.optional_session_3(),
+                )
+            },
+            |ret| {
+                error!("Error when computing policy authorize NV: {:#010X}", ret);
+            },
+        )
+    }
 }
