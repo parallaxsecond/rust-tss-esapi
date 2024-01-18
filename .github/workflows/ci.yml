@@ -63,7 +63,7 @@ jobs:
       - name: Build the container
         run: docker build -t fedoracontainer tss-esapi/tests/ --file tss-esapi/tests/Dockerfile-fedora
       - name: Run the tests
-        run: docker run -v $(pwd):/tmp/rust-tss-esapi -w /tmp/rust-tss-esapi/tss-esapi fedoracontainer dbus-run-session -- /tmp/rust-tss-esapi/tss-esapi/tests/all-fedora.sh
+        run: docker run -v $(pwd):/tmp/rust-tss-esapi -w /tmp/rust-tss-esapi/tss-esapi --env USE_FROZEN_LOCKFILE=1 fedoracontainer dbus-run-session -- /tmp/rust-tss-esapi/tss-esapi/tests/all-fedora.sh
 
   tests-fedora-rawhide:
     name: Fedora rawhide tests
@@ -96,3 +96,16 @@ jobs:
         run: docker build -t ubuntucontainer tss-esapi/tests/ --file tss-esapi/tests/Dockerfile-ubuntu
       - name: Check documentation
         run: docker run -v $(pwd):/tmp/rust-tss-esapi -w /tmp/rust-tss-esapi/tss-esapi -e RUSTDOCFLAGS="-Dwarnings" ubuntucontainer cargo doc --document-private-items --no-deps
+
+  # Check that there are no Clippy lint errors.
+  clippy:
+    name: Check Clippy lints
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build the container
+        run: docker build -t ubuntucontainer tss-esapi/tests/ --file tss-esapi/tests/Dockerfile-ubuntu  --target tpm2-tss
+      - name: Check Clippy lints MSRV
+        run: docker run -v $(pwd):/tmp/rust-tss-esapi -w /tmp/rust-tss-esapi/tss-esapi --env RUST_TOOLCHAIN_VERSION=1.66.0 ubuntucontainer /tmp/rust-tss-esapi/tss-esapi/tests/lint-checks.sh
+      - name: Check Clippy lints latest
+        run: docker run -v $(pwd):/tmp/rust-tss-esapi -w /tmp/rust-tss-esapi/tss-esapi ubuntucontainer /tmp/rust-tss-esapi/tss-esapi/tests/lint-checks.sh

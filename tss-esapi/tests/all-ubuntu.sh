@@ -3,7 +3,7 @@
 # Copyright 2019 Contributors to the Parsec project.
 # SPDX-License-Identifier: Apache-2.0
 
-# This script executes static checks and tests for the tss-esapi crate.
+# This script executes tests for the tss-esapi crate.
 # It can be run inside the container which Dockerfile is in the same folder.
 #
 # Usage: ./tests/all.sh
@@ -35,11 +35,6 @@ fi
 tpm_server &
 sleep 5
 tpm2_startup -c -T mssim
-
-##################
-# Execute clippy #
-##################
-cargo clippy --all-targets --all-features -- -D clippy::all -D clippy::cargo
 
 ###################
 # Build the crate #
