@@ -894,3 +894,68 @@ mod test_policy_template {
         assert_eq!(expected_policy_template, policy_digest);
     }
 }
+
+mod test_policy_authorize_nv {
+    use crate::common::{create_ctx_with_session, write_nv_index};
+    use std::convert::TryFrom;
+    use tss_esapi::{
+        attributes::SessionAttributesBuilder,
+        constants::SessionType,
+        handles::{NvIndexHandle, NvIndexTpmHandle},
+        interface_types::{
+            algorithm::HashingAlgorithm,
+            resource_handles::{NvAuth, Provision},
+            session_handles::PolicySession,
+        },
+        structures::SymmetricDefinition,
+    };
+
+    #[test]
+    fn test_policy_authorize_nv() {
+        let mut context = create_ctx_with_session();
+        let trial_policy_auth_session = context
+            .start_auth_session(
+                None,
+                None,
+                None,
+                SessionType::Trial,
+                SymmetricDefinition::AES_256_CFB,
+                HashingAlgorithm::Sha256,
+            )
+            .expect("Start auth session failed")
+            .expect("Start auth session returned a NONE handle");
+        let (trial_policy_auth_session_attributes, trial_policy_auth_session_attributes_mask) =
+            SessionAttributesBuilder::new()
+                .with_decrypt(true)
+                .with_encrypt(true)
+                .build();
+
+        let nv_index = NvIndexTpmHandle::new(0x01500015).unwrap();
+        let initial_owner_nv_index_handle = write_nv_index(&mut context, nv_index);
+
+        context
+            .tr_sess_set_attributes(
+                trial_policy_auth_session,
+                trial_policy_auth_session_attributes,
+                trial_policy_auth_session_attributes_mask,
+            )
+            .expect("tr_sess_set_attributes call failed");
+        let trial_policy_session = PolicySession::try_from(trial_policy_auth_session)
+            .expect("Failed to convert auth session into policy session");
+        // There should be no algorithm prefix error or actual NV content check for a TRIAL session
+        let policy_result = context.policy_authorize_nv(
+            trial_policy_session,
+            NvAuth::Owner,
+            initial_owner_nv_index_handle,
+        );
+
+        let owner_nv_index_handle = context
+            .tr_from_tpm_public(nv_index.into())
+            .map_or_else(|_| initial_owner_nv_index_handle, NvIndexHandle::from);
+        context
+            .nv_undefine_space(Provision::Owner, owner_nv_index_handle)
+            .expect("Call to nv_undefine_space failed");
+
+        policy_result.unwrap();
+    }
+}
