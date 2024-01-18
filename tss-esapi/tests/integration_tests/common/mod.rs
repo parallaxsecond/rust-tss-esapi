@@ -10,22 +10,24 @@ use std::{
 use tss_esapi::{
     abstraction::{cipher::Cipher, pcr::PcrData},
     attributes::ObjectAttributes,
-    attributes::{ObjectAttributesBuilder, SessionAttributesBuilder},
+    attributes::{NvIndexAttributesBuilder, ObjectAttributesBuilder, SessionAttributesBuilder},
     constants::SessionType,
+    handles::{NvIndexHandle, NvIndexTpmHandle},
     interface_types::{
         algorithm::SymmetricMode,
         algorithm::{HashingAlgorithm, PublicAlgorithm, RsaSchemeAlgorithm},
         key_bits::RsaKeyBits,
         key_bits::{AesKeyBits, Sm4KeyBits},
-        resource_handles::Hierarchy,
+        resource_handles::{Hierarchy, NvAuth, Provision},
         session_handles::PolicySession,
     },
     structures::{
         Digest, EccParameter, EccPoint, EccScheme, EccSignature, HashAgile, HashScheme, HmacScheme,
-        KeyDerivationFunctionScheme, KeyedHashScheme, MaxBuffer, PcrSelectionListBuilder, PcrSlot,
-        Public, PublicBuilder, PublicEccParameters, PublicKeyRsa, PublicKeyedHashParameters,
-        PublicRsaParameters, RsaExponent, RsaScheme, RsaSignature, Sensitive, Signature,
-        SymmetricCipherParameters, SymmetricDefinition, SymmetricDefinitionObject,
+        KeyDerivationFunctionScheme, KeyedHashScheme, MaxBuffer, MaxNvBuffer, NvPublicBuilder,
+        PcrSelectionListBuilder, PcrSlot, Public, PublicBuilder, PublicEccParameters, PublicKeyRsa,
+        PublicKeyedHashParameters, PublicRsaParameters, RsaExponent, RsaScheme, RsaSignature,
+        Sensitive, Signature, SymmetricCipherParameters, SymmetricDefinition,
+        SymmetricDefinitionObject,
     },
     tcti_ldr::TctiNameConf,
     utils, Context,
@@ -431,4 +433,46 @@ pub fn create_public_sealed_object() -> Public {
         .with_keyed_hash_unique_identifier(Default::default())
         .build()
         .expect("Failed to create public structure.")
+}
+
+#[allow(dead_code)]
+pub fn write_nv_index(context: &mut Context, nv_index: NvIndexTpmHandle) -> NvIndexHandle {
+    // Create owner nv public.
+    let owner_nv_index_attributes = NvIndexAttributesBuilder::new()
+        .with_owner_write(true)
+        .with_owner_read(true)
+        .with_pp_read(true)
+        .with_owner_read(true)
+        .build()
+        .expect("Failed to create owner nv index attributes");
+
+    let owner_nv_public = NvPublicBuilder::new()
+        .with_nv_index(nv_index)
+        .with_index_name_algorithm(HashingAlgorithm::Sha256)
+        .with_index_attributes(owner_nv_index_attributes)
+        .with_data_area_size(1540)
+        .build()
+        .unwrap();
+
+    let owner_nv_index_handle = context
+        .nv_define_space(Provision::Owner, None, owner_nv_public)
+        .unwrap();
+
+    let value = [1, 2, 3, 4, 5, 6, 7];
+    let expected_data = MaxNvBuffer::try_from(value.to_vec()).unwrap();
+
+    // Write the data using Owner authorization
+    context
+        .nv_write(
+            NvAuth::Owner,
+            owner_nv_index_handle,
+            expected_data.clone(),
+            0,
+        )
+        .unwrap();
+    context
+        .nv_write(NvAuth::Owner, owner_nv_index_handle, expected_data, 1024)
+        .unwrap();
+
+    owner_nv_index_handle
 }
