@@ -435,7 +435,6 @@ pub fn create_public_sealed_object() -> Public {
         .expect("Failed to create public structure.")
 }
 
-#[allow(dead_code)]
 pub fn write_nv_index(context: &mut Context, nv_index: NvIndexTpmHandle) -> NvIndexHandle {
     // Create owner nv public.
     let owner_nv_index_attributes = NvIndexAttributesBuilder::new()
