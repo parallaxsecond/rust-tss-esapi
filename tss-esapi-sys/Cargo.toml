@@ -13,9 +13,9 @@ documentation = "https://docs.rs/crate/tss-esapi-sys"
 links = "tss2-esys"
 
 [build-dependencies]
-bindgen = { version = "0.66.1", optional = true }
-pkg-config = "0.3.18"
-target-lexicon = "0.12.0"
+bindgen = { version = "0.69.1", optional = true }
+pkg-config = "0.3.28"
+target-lexicon = "0.12.13"
 
 [features]
 generate-bindings = ["bindgen"]
