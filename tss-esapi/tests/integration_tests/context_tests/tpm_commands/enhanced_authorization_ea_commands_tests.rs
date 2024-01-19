@@ -930,7 +930,7 @@ mod test_policy_authorize_nv {
                 .with_encrypt(true)
                 .build();
 
-        let nv_index = NvIndexTpmHandle::new(0x01500015).unwrap();
+        let nv_index = NvIndexTpmHandle::new(0x01500500).unwrap();
         let initial_owner_nv_index_handle = write_nv_index(&mut context, nv_index);
 
         context
