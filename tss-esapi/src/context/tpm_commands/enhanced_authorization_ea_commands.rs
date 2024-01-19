@@ -596,6 +596,113 @@ impl Context {
 
     /// Cause conditional gating of a policy based on an authorized policy
     /// stored in non-volatile memory.
+    ///
+    /// # Arguments
+    /// * `policy_session` - The [policy session][PolicySession] being extended.
+    /// * `auth_handle` - Handle indicating the source of authorization value.
+    /// * `nv_index_handle` - The [NvIndexHandle] associated with NV memory
+    ///                       where the policy is stored.
+    ///
+    /// # Example
+    /// ```rust
+    /// # use std::convert::TryFrom;
+    /// # use tss_esapi::attributes::{NvIndexAttributes, SessionAttributes};
+    /// # use tss_esapi::constants::SessionType;
+    /// # use tss_esapi::handles::NvIndexTpmHandle;
+    /// # use tss_esapi::interface_types::{
+    /// #     algorithm::HashingAlgorithm,
+    /// #     resource_handles::{NvAuth, Provision},
+    /// #     session_handles::PolicySession,
+    /// # };
+    /// # use tss_esapi::structures::{NvPublic, SymmetricDefinition};
+    /// # use tss_esapi::{Context, TctiNameConf};
+    /// #
+    /// # let mut context = // ...
+    /// #     Context::new(
+    /// #         TctiNameConf::from_environment_variable().expect("Failed to get TCTI"),
+    /// #     ).expect("Failed to create Context");
+    /// #
+    /// # // Set owner session for NV space definition
+    /// # let owner_auth_session = context
+    /// #     .start_auth_session(
+    /// #         None,
+    /// #         None,
+    /// #         None,
+    /// #         SessionType::Hmac,
+    /// #         SymmetricDefinition::AES_256_CFB,
+    /// #         tss_esapi::interface_types::algorithm::HashingAlgorithm::Sha256,
+    /// #     )
+    /// #     .expect("Failed to create session")
+    /// #     .expect("Received invalid handle");
+    /// # let (session_attributes, session_attributes_mask) = SessionAttributes::builder()
+    /// #     .with_decrypt(true)
+    /// #     .with_encrypt(true)
+    /// #     .build();
+    /// # context.tr_sess_set_attributes(owner_auth_session, session_attributes, session_attributes_mask)
+    /// #     .expect("Failed to set attributes on session");
+    /// # context.set_sessions((Some(owner_auth_session), None, None));
+    /// #
+    /// # let trial_session = context
+    /// #     .start_auth_session(
+    /// #         None,
+    /// #         None,
+    /// #         None,
+    /// #         SessionType::Trial,
+    /// #         SymmetricDefinition::AES_256_CFB,
+    /// #         HashingAlgorithm::Sha256,
+    /// #     )
+    /// #     .expect("Start auth session failed")
+    /// #     .expect("Start auth session returned a NONE handle");
+    /// #
+    /// # let (policy_auth_session_attributes, policy_auth_session_attributes_mask) =
+    /// #     SessionAttributes::builder()
+    /// #         .with_decrypt(true)
+    /// #         .with_encrypt(true)
+    /// #         .build();
+    /// # context
+    /// #     .tr_sess_set_attributes(
+    /// #         trial_session,
+    /// #         policy_auth_session_attributes,
+    /// #         policy_auth_session_attributes_mask,
+    /// #     )
+    /// #     .expect("tr_sess_set_attributes call failed");
+    /// #
+    /// # let policy_session = PolicySession::try_from(trial_session)
+    /// #     .expect("Failed to convert auth session into policy session");
+    /// #
+    /// # let nv_index = NvIndexTpmHandle::new(0x01500600)
+    /// #     .expect("Failed to create NV index tpm handle");
+    /// #
+    /// # // Create NV index attributes
+    /// # let owner_nv_index_attributes = NvIndexAttributes::builder()
+    /// #     .with_owner_write(true)
+    /// #     .with_owner_read(true)
+    /// #     .build()
+    /// #     .expect("Failed to create owner nv index attributes");
+    /// #
+    /// # // Create owner nv public.
+    /// # let owner_nv_public = NvPublic::builder()
+    /// #     .with_nv_index(nv_index)
+    /// #     .with_index_name_algorithm(HashingAlgorithm::Sha256)
+    /// #     .with_index_attributes(owner_nv_index_attributes)
+    /// #     .with_data_area_size(32)
+    /// #     .build()
+    /// #     .expect("Failed to build NvPublic for owner");
+    /// #
+    /// let nv_index_handle = context
+    ///    .nv_define_space(Provision::Owner, None, owner_nv_public)
+    ///    .expect("Call to nv_define_space failed");
+    ///
+    /// context.policy_authorize_nv(
+    ///     policy_session,
+    ///     NvAuth::Owner,
+    ///     nv_index_handle,
+    /// ).expect("failed to extend policy with policy_authorize_nv");;
+    ///
+    /// # context
+    /// #     .nv_undefine_space(Provision::Owner, nv_index_handle)
+    /// #     .expect("Call to nv_undefine_space failed");
+    /// ```
     pub fn policy_authorize_nv(
         &mut self,
         policy_session: PolicySession,
