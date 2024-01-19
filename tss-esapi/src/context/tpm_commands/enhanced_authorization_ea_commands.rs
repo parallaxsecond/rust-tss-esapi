@@ -698,7 +698,7 @@ impl Context {
     ///     NvAuth::Owner,
     ///     nv_index_handle,
     /// ).expect("failed to extend policy with policy_authorize_nv");;
-    ///
+    /// #
     /// # context
     /// #     .nv_undefine_space(Provision::Owner, nv_index_handle)
     /// #     .expect("Call to nv_undefine_space failed");
