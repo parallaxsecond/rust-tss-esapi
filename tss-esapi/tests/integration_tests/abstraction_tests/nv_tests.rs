@@ -1,10 +1,7 @@
 // Copyright 2020 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
 
-use std::{
-    convert::TryFrom,
-    io::{ErrorKind, Seek, SeekFrom, Write},
-};
+use std::io::{ErrorKind, Seek, SeekFrom, Write};
 use tss_esapi::{
     abstraction::nv,
     attributes::NvIndexAttributesBuilder,
@@ -13,52 +10,10 @@ use tss_esapi::{
         algorithm::HashingAlgorithm,
         resource_handles::{NvAuth, Provision},
     },
-    structures::{MaxNvBuffer, NvPublicBuilder},
-    Context,
+    structures::NvPublicBuilder,
 };
 
-use crate::common::create_ctx_with_session;
-
-fn write_nv_index(context: &mut Context, nv_index: NvIndexTpmHandle) -> NvIndexHandle {
-    // Create owner nv public.
-    let owner_nv_index_attributes = NvIndexAttributesBuilder::new()
-        .with_owner_write(true)
-        .with_owner_read(true)
-        .with_pp_read(true)
-        .with_owner_read(true)
-        .build()
-        .expect("Failed to create owner nv index attributes");
-
-    let owner_nv_public = NvPublicBuilder::new()
-        .with_nv_index(nv_index)
-        .with_index_name_algorithm(HashingAlgorithm::Sha256)
-        .with_index_attributes(owner_nv_index_attributes)
-        .with_data_area_size(1540)
-        .build()
-        .unwrap();
-
-    let owner_nv_index_handle = context
-        .nv_define_space(Provision::Owner, None, owner_nv_public)
-        .unwrap();
-
-    let value = [1, 2, 3, 4, 5, 6, 7];
-    let expected_data = MaxNvBuffer::try_from(value.to_vec()).unwrap();
-
-    // Write the data using Owner authorization
-    context
-        .nv_write(
-            NvAuth::Owner,
-            owner_nv_index_handle,
-            expected_data.clone(),
-            0,
-        )
-        .unwrap();
-    context
-        .nv_write(NvAuth::Owner, owner_nv_index_handle, expected_data, 1024)
-        .unwrap();
-
-    owner_nv_index_handle
-}
+use crate::common::{create_ctx_with_session, write_nv_index};
 
 #[test]
 fn list() {
