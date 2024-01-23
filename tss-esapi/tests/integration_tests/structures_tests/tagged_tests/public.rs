@@ -15,6 +15,13 @@ fn marshall_unmarshall() {
 }
 
 #[test]
+fn serialise_deserialise() {
+    crate::common::publics()
+        .iter()
+        .for_each(crate::common::check_serialise_deserialise);
+}
+
+#[test]
 fn tpm2b_conversion() {
     crate::common::publics().iter().for_each(|public| {
         let public = public.clone();
