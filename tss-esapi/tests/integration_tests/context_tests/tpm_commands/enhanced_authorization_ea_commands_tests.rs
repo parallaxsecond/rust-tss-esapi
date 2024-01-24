@@ -527,12 +527,11 @@ mod test_policy_name_hash {
 
 mod test_policy_authorize {
     use crate::common::{create_ctx_with_session, get_pcr_policy_digest, signing_key_pub};
-    use std::convert::{TryFrom, TryInto};
+    use std::convert::TryFrom;
     use tss_esapi::{
-        constants::tss::{TPM2_RH_NULL, TPM2_ST_HASHCHECK},
         interface_types::{algorithm::HashingAlgorithm, resource_handles::Hierarchy},
         structures::{Auth, MaxBuffer, Nonce, SignatureScheme},
-        tss2_esys::{TPM2B_NONCE, TPMT_TK_HASHCHECK},
+        tss2_esys::TPM2B_NONCE,
     };
     #[test]
     fn test_policy_authorize() {
@@ -566,19 +565,9 @@ mod test_policy_authorize {
             .unwrap()
             .0;
 
-        let validation = TPMT_TK_HASHCHECK {
-            tag: TPM2_ST_HASHCHECK,
-            hierarchy: TPM2_RH_NULL,
-            digest: Default::default(),
-        };
         // A signature over just the policy_digest, since the policy_ref is empty
         let signature = context
-            .sign(
-                key_handle,
-                ahash.clone(),
-                SignatureScheme::Null,
-                validation.try_into().unwrap(),
-            )
+            .sign(key_handle, ahash.clone(), SignatureScheme::Null, None)
             .unwrap();
         let tkt = context
             .verify_signature(key_handle, ahash, signature)

@@ -11,7 +11,10 @@ use crate::{
 };
 
 use log::error;
-use std::convert::{TryFrom, TryInto};
+use std::{
+    convert::{TryFrom, TryInto},
+    default::Default,
+};
 
 /// Macro used for implementing try_from
 /// TssTicketType -> TicketType
@@ -122,6 +125,17 @@ pub struct HashcheckTicket {
     tag: StructureTag,
     hierarchy: Hierarchy,
     digest: Vec<u8>,
+}
+
+impl Default for HashcheckTicket {
+    /// The default for the Hashcheck ticket is the Null ticket.
+    fn default() -> Self {
+        Self {
+            tag: StructureTag::Hashcheck,
+            hierarchy: Hierarchy::Null,
+            digest: Vec::<u8>::new(),
+        }
+    }
 }
 
 impl Ticket for HashcheckTicket {
