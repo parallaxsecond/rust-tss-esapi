@@ -6,6 +6,7 @@ use tss_esapi::{
     tss2_esys::TPM2B_SENSITIVE_CREATE,
     Error, WrapperErrorKind,
 };
+use tss_esapi_sys::TPM2B_SENSITIVE_DATA;
 
 // TPM2B_AUTH = TPM2B_DIGEST = u16 + [u8;64] = 2 + 64 = 66
 // TPM2B_SENSITIVE_DATA = u16 + [u8; 256] = 2 + 256 = 258
@@ -123,4 +124,12 @@ fn test_marshall_unmarshall() {
             .expect("Failed to convert from SensitiveCreateBuffer to SensitiveCreate"),
         "SensitiveCreate converted from SensitiveCreateBuffer did not contain the expected values"
     );
+}
+
+#[test]
+fn test_conversion_from_max_size_buffer() {
+    let data = vec![1u8; SensitiveData::MAX_SIZE];
+    let sensitive_data = SensitiveData::try_from(data)
+        .expect("It should be possible to convert maximum amount of data into SensitiveData.");
+    let _ = TPM2B_SENSITIVE_DATA::from(sensitive_data);
 }
