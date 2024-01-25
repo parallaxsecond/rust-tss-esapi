@@ -16,7 +16,7 @@ use crate::{
         session_handles::PolicySession,
     },
     structures::{
-        Auth, CreateKeyResult, EccScheme, KeyDerivationFunctionScheme, Private, Public,
+        Auth, CreateKeyResult, EccPoint, EccScheme, KeyDerivationFunctionScheme, Private, Public,
         PublicBuilder, PublicEccParametersBuilder, PublicKeyRsa, PublicRsaParametersBuilder,
         RsaExponent, RsaScheme, SymmetricDefinitionObject,
     },
@@ -77,12 +77,17 @@ fn create_ak_public<IKC: IntoKeyCustomization>(
                     .with_ecc_scheme(EccScheme::create(
                         EccSchemeAlgorithm::try_from(AlgorithmIdentifier::from(sign_alg))?,
                         Some(hash_alg),
-                        Some(0),
+                        if sign_alg == SignatureSchemeAlgorithm::EcDaa {
+                            Some(0)
+                        } else {
+                            None
+                        },
                     )?)
                     .with_curve(ecc_curve)
                     .with_key_derivation_function_scheme(KeyDerivationFunctionScheme::Null)
                     .build()?,
-            ),
+            )
+            .with_ecc_unique_identifier(EccPoint::default()),
     };
 
     let key_builder = if let Some(ref k) = key_customization {
