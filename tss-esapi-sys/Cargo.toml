@@ -1,6 +1,6 @@
 [package]
 name = "tss-esapi-sys"
-version = "0.4.0"
+version = "0.5.0"
 authors = ["Parsec Project Contributors"]
 edition = "2018"
 description = "FFI wrapper around TSS 2.0 Enhanced System API"
@@ -11,6 +11,7 @@ license = "Apache-2.0"
 repository = "https://github.com/parallaxsecond/rust-tss-esapi"
 documentation = "https://docs.rs/crate/tss-esapi-sys"
 links = "tss2-esys"
+rust-version = "1.66.0"
 
 [build-dependencies]
 bindgen = { version = "0.66.1", optional = true }
