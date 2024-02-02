@@ -13,7 +13,7 @@ use crate::{
 };
 use handle_manager::HandleManager;
 use log::{debug, error};
-use mbox::MBox;
+use malloced::Malloced;
 use std::collections::HashMap;
 use std::ptr::null_mut;
 
@@ -47,7 +47,7 @@ use std::ptr::null_mut;
 pub struct Context {
     /// Handle for the ESYS context object owned through an Mbox.
     /// Wrapping the handle in an optional Mbox is done to allow the `Context` to be closed properly when the `Context` structure is dropped.
-    esys_context: Option<MBox<ESYS_CONTEXT>>,
+    esys_context: Option<Malloced<ESYS_CONTEXT>>,
     sessions: (
         Option<AuthSession>,
         Option<AuthSession>,
@@ -105,7 +105,7 @@ impl Context {
             },
         )?;
 
-        let esys_context = unsafe { Some(MBox::from_raw(esys_context)) };
+        let esys_context = unsafe { Some(Malloced::from_raw(esys_context)) };
         Ok(Context {
             esys_context,
             sessions: (None, None, None),
@@ -390,7 +390,7 @@ impl Context {
     fn mut_context(&mut self) -> *mut ESYS_CONTEXT {
         self.esys_context
             .as_mut()
-            .map(MBox::<ESYS_CONTEXT>::as_mut_ptr)
+            .map(Malloced::<ESYS_CONTEXT>::as_mut_ptr)
             .unwrap() // will only fail if called from Drop after .take()
     }
 
@@ -440,8 +440,12 @@ impl Context {
 
     /// Private function for handling that has been allocated with
     /// C memory allocation functions in TSS.
-    fn ffi_data_to_owned<T>(data_ptr: *mut T) -> T {
-        MBox::into_inner(unsafe { MBox::from_raw(data_ptr) })
+    fn ffi_data_to_owned<T: Copy>(data_ptr: *mut T) -> T {
+        let out = unsafe { *data_ptr };
+
+        // Free the malloced data.
+        drop(unsafe { Malloced::from_raw(data_ptr) });
+        out
     }
 }
 
@@ -476,7 +480,7 @@ impl Drop for Context {
                 &mut self
                     .esys_context
                     .take()
-                    .map(MBox::<ESYS_CONTEXT>::into_raw)
+                    .map(Malloced::<ESYS_CONTEXT>::into_raw)
                     .unwrap(), // should not fail based on how the context is initialised/used
             )
         };

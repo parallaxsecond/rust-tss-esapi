@@ -5,7 +5,7 @@ pub mod data_zeroize;
 
 use crate::{ffi::data_zeroize::FfiDataZeroize, Error, Result, WrapperErrorKind};
 use log::error;
-use mbox::MBox;
+use malloced::Malloced;
 use std::{convert::TryFrom, ops::Deref};
 
 /// Function that takes ownership of data that has been
@@ -21,7 +21,7 @@ pub(crate) fn to_owned_with_zeroized_source<T>(ffi_data_ptr: *mut T) -> T
 where
     T: FfiDataZeroize + Copy,
 {
-    let mut ffi_data = unsafe { MBox::from_raw(ffi_data_ptr) };
+    let mut ffi_data = unsafe { Malloced::from_raw(ffi_data_ptr) };
     let owned_ffi_data: T = *ffi_data.deref();
     ffi_data.ffi_data_zeroize();
     owned_ffi_data
@@ -37,7 +37,7 @@ where
 /// # Returns
 /// The owned bytes in the form of a `Vec<u8>` object.
 pub fn to_owned_bytes(ffi_bytes_ptr: *mut u8, size: usize) -> Vec<u8> {
-    let ffi_bytes = unsafe { MBox::<[u8]>::from_raw_parts(ffi_bytes_ptr, size) };
+    let ffi_bytes = unsafe { Malloced::<[u8]>::slice_from_raw_parts(ffi_bytes_ptr, size) };
     return Vec::<u8>::from(ffi_bytes.as_ref());
 }
 
