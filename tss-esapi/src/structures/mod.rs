@@ -41,7 +41,7 @@ pub use self::buffers::{
     private_key_rsa::PrivateKeyRsa, private_vendor_specific::PrivateVendorSpecific,
     public::PublicBuffer, public_key_rsa::PublicKeyRsa, sensitive::SensitiveBuffer,
     sensitive_create::SensitiveCreateBuffer, sensitive_data::SensitiveData,
-    symmetric_key::SymmetricKey, timeout::Timeout,
+    symmetric_key::SymmetricKey, timeout::Timeout, tpm_context_data::TpmContextData,
 };
 /////////////////////////////////////////////////////////
 /// The creation section
@@ -212,3 +212,8 @@ pub use nv::storage::{NvPublic, NvPublicBuilder};
 /////////////////////////////////////////////////////////
 mod algorithm;
 pub use algorithm::symmetric::sensitive_create::SensitiveCreate;
+/////////////////////////////////////////////////////////
+/// TPM context structures
+/////////////////////////////////////////////////////////
+mod tpm_context;
+pub use tpm_context::SavedTpmContext;

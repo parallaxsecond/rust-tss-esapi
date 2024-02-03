@@ -4,12 +4,12 @@ use crate::{
     context::handle_manager::HandleDropAction,
     handles::{handle_conversion::TryIntoNotNone, AuthHandle, ObjectHandle, PersistentTpmHandle},
     interface_types::{data_handles::Persistent, reserved_handles::Provision},
+    structures::SavedTpmContext,
     tss2_esys::{Esys_ContextLoad, Esys_ContextSave, Esys_EvictControl, Esys_FlushContext},
-    utils::TpmsContext,
     Context, Result, ReturnCode,
 };
 use log::error;
-use std::convert::{TryFrom, TryInto};
+use std::convert::TryFrom;
 use std::ptr::null_mut;
 
 impl Context {
@@ -18,7 +18,7 @@ impl Context {
     /// # Errors
     /// * if conversion from `TPMS_CONTEXT` to `TpmsContext` fails, a `WrongParamSize` error will
     /// be returned
-    pub fn context_save(&mut self, handle: ObjectHandle) -> Result<TpmsContext> {
+    pub fn context_save(&mut self, handle: ObjectHandle) -> Result<SavedTpmContext> {
         let mut context_ptr = null_mut();
         ReturnCode::ensure_success(
             unsafe { Esys_ContextSave(self.mut_context(), handle.into(), &mut context_ptr) },
@@ -26,7 +26,7 @@ impl Context {
                 error!("Error in saving context: {:#010X}", ret);
             },
         )?;
-        TpmsContext::try_from(Context::ffi_data_to_owned(context_ptr))
+        SavedTpmContext::try_from(Context::ffi_data_to_owned(context_ptr))
     }
 
     /// Load a previously saved context into the TPM and return the object handle.
@@ -34,16 +34,11 @@ impl Context {
     /// # Errors
     /// * if conversion from `TpmsContext` to the native `TPMS_CONTEXT` fails, a `WrongParamSize`
     /// error will be returned
-    pub fn context_load(&mut self, context: TpmsContext) -> Result<ObjectHandle> {
+    pub fn context_load(&mut self, context: SavedTpmContext) -> Result<ObjectHandle> {
         let mut esys_loaded_handle = ObjectHandle::None.into();
+        let tpm_context = context.into();
         ReturnCode::ensure_success(
-            unsafe {
-                Esys_ContextLoad(
-                    self.mut_context(),
-                    &context.try_into()?,
-                    &mut esys_loaded_handle,
-                )
-            },
+            unsafe { Esys_ContextLoad(self.mut_context(), &tpm_context, &mut esys_loaded_handle) },
             |ret| {
                 error!("Error in loading context: {:#010X}", ret);
             },

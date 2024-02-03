@@ -1,3 +1,5 @@
+// Copyright 2020 Contributors to the Parsec project.
+// SPDX-License-Identifier: Apache-2.0
 /// This module contains native representations of the TPMI_DH types.
 use crate::{
     handles::{
@@ -8,6 +10,7 @@ use crate::{
     Error, Result, WrapperErrorKind,
 };
 use std::convert::TryFrom;
+
 /// Enum representing the 'Object' data handles interface type.
 ///
 /// # Details
@@ -70,8 +73,7 @@ pub enum Pcr {
 /// Enum representing the 'Context' data handles interface type.
 ///
 /// # Details
-/// This corresponds to the TPMI_DH_CONTEXT interface type.
-/// This corresponds to the TPMI_DH_CONTEXT interface type. This only
+/// This corresponds to the `TPMI_DH_CONTEXT` interface type. This only
 /// exist for compatibility purposes the specification is not entirely
 /// clear on whether this should still be used or be completely replaced by
 /// [Saved].
@@ -116,13 +118,18 @@ impl TryFrom<TPMI_DH_CONTEXT> for ContextDataHandle {
 /// Enum representing the 'Saved' data handles interface type.
 ///
 /// # Details
-/// This corresponds to the TPMI_DH_SAVED interface type.
+/// This corresponds to the `TPMI_DH_SAVED` interface type.
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub enum Saved {
+    /// A HMAC session context.
     Hmac(HmacSessionTpmHandle),
+    /// A policy session context.
     Policy(PolicySessionTpmHandle),
+    /// An ordinary transient object.
     Transient,
+    /// A sequence object.
     Sequence,
+    /// A transient object with stClear attribute SET.
     TransientClear,
 }
 
@@ -160,5 +167,17 @@ impl TryFrom<TPMI_DH_SAVED> for Saved {
             TpmHandle::Transient(handle) => Saved::try_from(handle),
             _ => Err(Error::local_error(WrapperErrorKind::InvalidParam)),
         })
+    }
+}
+
+impl From<Saved> for TPMI_DH_SAVED {
+    fn from(native: Saved) -> TPMI_DH_SAVED {
+        match native {
+            Saved::Hmac(handle) => handle.into(),
+            Saved::Policy(handle) => handle.into(),
+            Saved::Transient => TransientTpmHandle::SavedTransient.into(),
+            Saved::Sequence => TransientTpmHandle::SavedSequence.into(),
+            Saved::TransientClear => TransientTpmHandle::SavedTransientClear.into(),
+        }
     }
 }

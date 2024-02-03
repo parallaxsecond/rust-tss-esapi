@@ -390,3 +390,12 @@ pub mod symmetric_key {
 pub mod timeout {
     buffer_type!(Timeout, 8, TPM2B_TIMEOUT);
 }
+
+pub mod tpm_context_data {
+    use crate::tss2_esys::TPMS_CONTEXT_DATA;
+    buffer_type!(
+        TpmContextData,
+        std::mem::size_of::<TPMS_CONTEXT_DATA>(),
+        TPM2B_CONTEXT_DATA
+    );
+}

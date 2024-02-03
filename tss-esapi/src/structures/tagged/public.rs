@@ -495,7 +495,7 @@ impl TryFrom<TPMT_PUBLIC> for Public {
 impl_mu_standard!(Public, TPMT_PUBLIC);
 
 impl Serialize for Public {
-    /// Serialise the [Public] data into it's bytes representation of the TCG
+    /// Serialize the [Public] data into it's bytes representation of the TCG
     /// TPMT_PUBLIC structure.
     fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
     where

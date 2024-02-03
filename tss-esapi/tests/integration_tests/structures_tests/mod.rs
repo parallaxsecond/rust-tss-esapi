@@ -20,3 +20,4 @@ mod tagged_property_tests;
 mod tagged_tests;
 mod time_attest_info_tests;
 mod time_info_tests;
+mod tpm_context_tests;
