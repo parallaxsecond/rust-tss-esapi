@@ -6,7 +6,7 @@ RUN curl https://sh.rustup.rs -sSf | bash -s -- -y
 ENV PATH="/root/.cargo/bin:${PATH}"
 
 FROM rust-toolchain AS tpm2-tss
-# Download and install the TSS library
+# Download, build and install the TSS libraries
 ARG TPM2_TSS_VERSION=3.2.2
 ENV TPM2_TSS_VERSION=$TPM2_TSS_VERSION
 ENV PKG_CONFIG_PATH /usr/local/lib/pkgconfig
@@ -18,10 +18,20 @@ RUN cd tpm2-tss \
 	&& make install \
 	&& ldconfig
 
-FROM tpm2-tss AS tpm2-tools
+FROM tpm2-tss AS tpm2-abrmd
+# Download, build and install the TPM2 abrmd
+RUN git clone https://github.com/tpm2-software/tpm2-abrmd.git --branch 3.0.0
+RUN cd tpm2-abrmd \
+	&& ./bootstrap \
+	&& ./configure \
+	&& make -j$(nproc) \
+	&& make install
+
+FROM tpm2-abrmd AS tpm2-tools
 # Download and install TPM2 tools
 RUN git clone https://github.com/tpm2-software/tpm2-tools.git --branch 5.6
 RUN cd tpm2-tools \
 	&& ./bootstrap \
 	&& ./configure --enable-unit \
+	&& make -j$(nproc) \
 	&& make install

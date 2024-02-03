@@ -20,10 +20,11 @@ use crate::{
     structures::{
         Auth, CreateKeyResult, Data, Digest, EccPoint, EccScheme, Public, PublicBuilder,
         PublicEccParametersBuilder, PublicKeyRsa, PublicRsaParametersBuilder, RsaExponent,
-        RsaScheme, Signature, SignatureScheme, SymmetricDefinitionObject, VerifiedTicket,
+        RsaScheme, SavedTpmContext, Signature, SignatureScheme, SymmetricDefinitionObject,
+        VerifiedTicket,
     },
     tcti_ldr::TctiNameConf,
-    utils::{create_restricted_decryption_rsa_public, PublicKey, TpmsContext},
+    utils::{create_restricted_decryption_rsa_public, PublicKey},
     Context, Error, Result, ReturnCode, WrapperErrorKind as ErrorKind,
 };
 
@@ -336,7 +337,7 @@ impl TransientKeyContext {
     /// just a public key.
     pub fn migrate_key_from_ctx(
         &mut self,
-        context: TpmsContext,
+        context: SavedTpmContext,
         auth: Option<Auth>,
     ) -> Result<KeyMaterial> {
         self.set_session_attrs()?;

@@ -177,3 +177,15 @@ impl TryFrom<TPMI_DH_SAVED> for Saved {
         })
     }
 }
+
+impl From<Saved> for TPMI_DH_SAVED {
+    fn from(native: Saved) -> TPMI_DH_SAVED {
+        match native {
+            Saved::Hmac(handle) => handle.into(),
+            Saved::Policy(handle) => handle.into(),
+            Saved::Transient => TransientTpmHandle::SavedTransient.into(),
+            Saved::Sequence => TransientTpmHandle::SavedSequence.into(),
+            Saved::TransientClear => TransientTpmHandle::SavedTransientClear.into(),
+        }
+    }
+}

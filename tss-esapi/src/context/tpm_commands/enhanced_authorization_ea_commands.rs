@@ -611,7 +611,7 @@ impl Context {
     /// # use tss_esapi::handles::NvIndexTpmHandle;
     /// # use tss_esapi::interface_types::{
     /// #     algorithm::HashingAlgorithm,
-    /// #     resource_handles::{NvAuth, Provision},
+    /// #     reserved_handles::{NvAuth, Provision},
     /// #     session_handles::PolicySession,
     /// # };
     /// # use tss_esapi::structures::{NvPublic, SymmetricDefinition};
