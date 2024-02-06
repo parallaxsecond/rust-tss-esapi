@@ -166,4 +166,58 @@ mod test_quote {
 
         assert_eq!(signature.algorithm(), SignatureSchemeAlgorithm::Null);
     }
+
+    #[test]
+    fn certify_creation() {
+        let mut context = create_ctx_with_session();
+        let qualifying_data = vec![0xff; 16];
+
+        let sign_key_handle = context
+            .create_primary(Hierarchy::Owner, signing_key_pub(), None, None, None, None)
+            .unwrap()
+            .key_handle;
+
+        let create_result = context
+            .create_primary(
+                Hierarchy::Owner,
+                decryption_key_pub(),
+                None,
+                None,
+                None,
+                None,
+            )
+            .unwrap();
+
+        use std::convert::TryInto;
+
+        let (attest, signature) = context
+            .execute_with_sessions((Some(AuthSession::Password), None, None), |ctx| {
+                ctx.certify_creation(
+                    sign_key_handle,
+                    create_result.key_handle.into(),
+                    qualifying_data.try_into()?,
+                    create_result.creation_hash,
+                    SignatureScheme::Null,
+                    create_result.creation_ticket,
+                )
+            })
+            .expect("Failed to certify object handle creation");
+
+        let data = MaxBuffer::try_from(attest.marshall().unwrap())
+            .expect("Failed to get data buffer from attestation data");
+        let (digest, _) = context
+            .hash(data, HashingAlgorithm::Sha256, Hierarchy::Null)
+            .expect("Failed to hash data");
+
+        let ticket = context
+            .execute_with_nullauth_session(|ctx| {
+                ctx.verify_signature(sign_key_handle, digest, signature)
+            })
+            .expect("Failed to verify signature");
+        assert_eq!(ticket.tag(), StructureTag::Verified);
+
+        // Verify the attestation data is as expected
+        assert_eq!(attest.attestation_type(), AttestationType::Creation);
+        assert!(matches!(attest.attested(), AttestInfo::Creation { .. }));
+    }
 }
