@@ -92,7 +92,7 @@ pub enum AuthSession {
 }
 
 impl AuthSession {
-    /// Function that creates a Option<Session>.
+    /// Function that creates a `Option<Session>`.
     ///
     /// If a Session is created from the NoneHandle
     /// then the returned value from the function will be None.

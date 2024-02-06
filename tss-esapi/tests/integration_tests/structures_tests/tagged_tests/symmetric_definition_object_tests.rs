@@ -46,8 +46,7 @@ fn test_valid_aes_conversions() {
                 panic!("SymmetricDefinitionObject converted from TPMT_SYM_DEF_OBJECT did not contain the expected algorithm AES");
             }
 
-            let actual_tpmt_sym_def_object = TPMT_SYM_DEF_OBJECT::try_from(sym_def_object)
-                .expect("Failed to Convert SymmetricDefinitionObject into TPMT_SYM_DEF");
+            let actual_tpmt_sym_def_object = TPMT_SYM_DEF_OBJECT::from(sym_def_object);
 
             crate::common::ensure_tpmt_sym_def_object_equality(
                 &expected_tpmt_sym_def_object,
@@ -83,8 +82,7 @@ fn test_valid_sm4_conversions() {
             panic!("SymmetricDefinitionObject converted from TPMT_SYM_DEF_OBJECT did not contain the expected algorithm SM4");
         }
 
-        let actual_tpmt_sym_def_object = TPMT_SYM_DEF_OBJECT::try_from(sym_def_object)
-            .expect("Failed to Convert SymmetricDefinitionObject into TPMT_SYM_DEF_OBJECT");
+        let actual_tpmt_sym_def_object = TPMT_SYM_DEF_OBJECT::from(sym_def_object);
 
         crate::common::ensure_tpmt_sym_def_object_equality(
             &expected_tpmt_sym_def_object,
@@ -124,8 +122,7 @@ fn test_valid_camellia_conversions() {
                 panic!("SymmetricDefinitionObject converted from TPMT_SYM_DEF_OBJECT did not contain the expected algorithm CAMELLIA");
             }
 
-            let actual_tpmt_sym_def_object = TPMT_SYM_DEF_OBJECT::try_from(sym_def_object)
-                .expect("Failed to Convert SymmetricDefinition into TPMT_SYM_DEF_OBJECT");
+            let actual_tpmt_sym_def_object = TPMT_SYM_DEF_OBJECT::from(sym_def_object);
 
             crate::common::ensure_tpmt_sym_def_object_equality(
                 &expected_tpmt_sym_def_object,
@@ -150,8 +147,7 @@ fn test_valid_null_conversions() {
         panic!("SymmetricDefinitionObject converted from TPMT_SYM_DEF_OBJECT did not contain the expected algorithm NULL");
     }
 
-    let actual_tpmt_sym_def_object = TPMT_SYM_DEF_OBJECT::try_from(sym_def_object)
-        .expect("Failed to Convert SymmetricDefinition into TPMT_SYM_DEF_OBJECT");
+    let actual_tpmt_sym_def_object = TPMT_SYM_DEF_OBJECT::from(sym_def_object);
 
     crate::common::ensure_tpmt_sym_def_object_equality(
         &expected_tpmt_sym_def_object,

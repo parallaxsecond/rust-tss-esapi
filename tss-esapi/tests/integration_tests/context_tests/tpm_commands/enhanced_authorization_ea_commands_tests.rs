@@ -2,10 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 mod test_policy_signed {
     use crate::common::{create_ctx_with_session, signing_key_pub};
-    use std::{
-        convert::{TryFrom, TryInto},
-        time::Duration,
-    };
+    use std::{convert::TryFrom, time::Duration};
     use tss_esapi::{
         attributes::SessionAttributesBuilder,
         constants::SessionType,
@@ -70,7 +67,7 @@ mod test_policy_signed {
         context
             .policy_signed(
                 trial_policy_session,
-                key_handle.try_into().unwrap(),
+                key_handle.into(),
                 nonce_tpm,
                 cp_hash_a,
                 policy_ref,

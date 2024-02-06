@@ -24,7 +24,7 @@ mod test_auth {
         {
             let max_buffer: MaxBuffer = Default::default();
             let expected: TPM2B_MAX_BUFFER = Default::default();
-            let actual = TPM2B_MAX_BUFFER::try_from(max_buffer).unwrap();
+            let actual = TPM2B_MAX_BUFFER::from(max_buffer);
             assert_eq!(expected.size, actual.size);
             assert_eq!(
                 expected.buffer.len(),

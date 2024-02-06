@@ -25,14 +25,8 @@ fn test_attest_with_certify_info_into_tpm_type_conversions() {
         Name::try_from(vec![0x0fu8; 64]).expect("Failed to create qualified name");
     let expected_attest_info = AttestInfo::Certify {
         info: TPMS_CERTIFY_INFO {
-            name: expected_certify_info_name
-                .clone()
-                .try_into()
-                .expect("Failed to convert name to tss type"),
-            qualifiedName: expected_certify_info_qualified_name
-                .clone()
-                .try_into()
-                .expect("failed to convert qualified name to tss type"),
+            name: expected_certify_info_name.clone().into(),
+            qualifiedName: expected_certify_info_qualified_name.clone().into(),
         }
         .try_into()
         .expect("Failed to convert TPMS_CERTIFY_INFO to CertifyInfo"),
@@ -74,7 +68,7 @@ fn test_attest_with_quote_info_into_tpm_type_conversions() {
             ],
         )
         .build()
-        .expect("Failed to createm PcrSelectionList");
+        .expect("Failed to create PcrSelectionList");
     let expected_pcr_digest = Digest::try_from(vec![0xffu8; 32]).expect("Failed to create digest");
     let expected_attest_info = AttestInfo::Quote {
         info: TPMS_QUOTE_INFO {
