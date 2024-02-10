@@ -3,7 +3,7 @@
 use crate::{
     constants::tss::TPM2_RH_UNASSIGNED,
     context::handle_manager::HandleDropAction,
-    ffi::to_owned_bytes,
+    ffi::{to_owned_bytes, FfiSizeType},
     handles::ObjectHandle,
     handles::{handle_conversion::TryIntoNotNone, TpmHandle},
     structures::Auth,
@@ -516,17 +516,15 @@ impl Context {
     /// let new_handle = context.tr_deserialize(&data).unwrap();
     /// assert_eq!(public_key, context.read_public(new_handle.into()).unwrap());
     /// ```
-    pub fn tr_deserialize(&mut self, buffer: &Vec<u8>) -> Result<ObjectHandle> {
+    pub fn tr_deserialize(&mut self, buffer: &[u8]) -> Result<ObjectHandle> {
         let mut handle = TPM2_RH_UNASSIGNED;
+        let size = FfiSizeType::try_from(buffer.len())?;
         ReturnCode::ensure_success(
             unsafe {
                 Esys_TR_Deserialize(
                     self.mut_context(),
                     buffer.as_ptr(),
-                    buffer.len().try_into().map_err(|e| {
-                        error!("Failed to convert buffer len to usize: {}", e);
-                        Error::local_error(WrapperErrorKind::InvalidParam)
-                    })?,
+                    size.into(),
                     &mut handle,
                 )
             },
