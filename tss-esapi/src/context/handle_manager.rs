@@ -48,6 +48,7 @@ impl HandleManager {
             }
         }
 
+        log::trace!("add handle {:#010X}", handle.value());
         let _ = self.open_handles.insert(handle, handle_drop_action);
         Ok(())
     }
@@ -58,6 +59,7 @@ impl HandleManager {
     /// If the handle was not set to be flushed then this will cause an
     /// error but the handle will still be removed from the handler.
     pub fn set_as_flushed(&mut self, handle: ObjectHandle) -> Result<()> {
+        log::trace!("set as flushed handle {:#010X}", handle.value());
         self.open_handles
             .remove(&handle)
             .ok_or_else(|| {
@@ -83,6 +85,7 @@ impl HandleManager {
     /// If the handle was set to be flushed then this will cause an
     /// error but the handle will still be removed from the handler.
     pub fn set_as_closed(&mut self, handle: ObjectHandle) -> Result<()> {
+        log::trace!("set as closed handle {:#010X}", handle.value());
         self.open_handles
             .remove(&handle)
             .ok_or_else(|| {
