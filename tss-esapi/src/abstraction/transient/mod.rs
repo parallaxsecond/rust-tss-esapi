@@ -9,7 +9,7 @@
 use crate::{
     attributes::{ObjectAttributesBuilder, SessionAttributesBuilder},
     constants::{tss::*, SessionType, Tss2ResponseCodeKind},
-    handles::{KeyHandle, SessionHandle},
+    handles::{KeyHandle, ObjectHandle, SessionHandle},
     interface_types::{
         algorithm::{HashingAlgorithm, PublicAlgorithm},
         ecc::EccCurve,
@@ -17,7 +17,7 @@ use crate::{
         resource_handles::Hierarchy,
     },
     structures::{
-        Auth, CreateKeyResult, Data, Digest, EccPoint, EccScheme, Public, PublicBuilder,
+        Auth, CreateKeyResult, Data, Digest, EccPoint, EccScheme, Name, Public, PublicBuilder,
         PublicEccParametersBuilder, PublicKeyRsa, PublicRsaParametersBuilder, RsaExponent,
         RsaScheme, Signature, SignatureScheme, SymmetricDefinitionObject, VerifiedTicket,
     },
@@ -391,6 +391,12 @@ impl TransientKeyContext {
 
         self.context.flush_context(key_handle.into())?;
         Ok(key_material)
+    }
+
+    /// Gets the name of the root key of the TransientKeyContext
+    pub fn get_root_key_name(&mut self) -> Result<Name> {
+        let obj_handle: ObjectHandle = self.root_key_handle.into();
+        self.context.tr_get_name(obj_handle)
     }
 
     /// Sets the encrypt and decrypt flags on the main session used by the context.
