@@ -3,7 +3,7 @@
 use crate::{
     constants::StructureTag,
     handles::TpmHandle,
-    interface_types::resource_handles::Hierarchy,
+    interface_types::reserved_handles::Hierarchy,
     tss2_esys::{
         TPM2B_DIGEST, TPMT_TK_AUTH, TPMT_TK_CREATION, TPMT_TK_HASHCHECK, TPMT_TK_VERIFIED,
     },

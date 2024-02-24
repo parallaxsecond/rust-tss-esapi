@@ -3,7 +3,7 @@
 use crate::{
     context::handle_manager::HandleDropAction,
     handles::{AuthHandle, NvIndexHandle, ObjectHandle},
-    interface_types::resource_handles::{NvAuth, Provision},
+    interface_types::reserved_handles::{NvAuth, Provision},
     structures::{Auth, MaxNvBuffer, Name, NvPublic},
     tss2_esys::{
         Esys_NV_DefineSpace, Esys_NV_Increment, Esys_NV_Read, Esys_NV_ReadPublic,
@@ -42,7 +42,7 @@ impl Context {
     /// # };
     /// use tss_esapi::{
     ///      handles::NvIndexTpmHandle, attributes::NvIndexAttributes, structures::NvPublic,
-    ///      interface_types::{algorithm::HashingAlgorithm, resource_handles::Provision},
+    ///      interface_types::{algorithm::HashingAlgorithm, reserved_handles::Provision},
     /// };
     /// # // Create context
     /// # let mut context =
@@ -149,7 +149,7 @@ impl Context {
     /// #      handles::NvIndexTpmHandle, attributes::NvIndexAttributes, structures::NvPublic,
     /// #      interface_types::algorithm::HashingAlgorithm,
     /// # };
-    /// use tss_esapi::interface_types::resource_handles::Provision;
+    /// use tss_esapi::interface_types::reserved_handles::Provision;
     /// # // Create context
     /// # let mut context =
     /// #     Context::new(
@@ -250,7 +250,7 @@ impl Context {
     /// #     interface_types::session_handles::PolicySession,
     /// # };
     /// # use std::convert::TryFrom;
-    /// use tss_esapi::interface_types::resource_handles::Provision;
+    /// use tss_esapi::interface_types::reserved_handles::Provision;
     /// use tss_esapi::interface_types::session_handles::AuthSession;
     /// # // Create context
     /// # let mut context =
@@ -390,7 +390,7 @@ impl Context {
     /// #     structures::{SymmetricDefinition, NvPublic}, constants::SessionType,
     /// # };
     /// use tss_esapi::{
-    ///       interface_types::resource_handles::Provision,
+    ///       interface_types::reserved_handles::Provision,
     /// };
     ///
     /// # // Create context
@@ -505,7 +505,7 @@ impl Context {
     /// #     structures::{SymmetricDefinition, NvPublic}, constants::SessionType,
     /// # };
     /// use tss_esapi::{
-    ///       interface_types::resource_handles::{Provision, NvAuth}, structures::MaxNvBuffer,
+    ///       interface_types::reserved_handles::{Provision, NvAuth}, structures::MaxNvBuffer,
     /// };
     /// use std::convert::TryFrom;
     ///
@@ -617,7 +617,7 @@ impl Context {
     /// #     constants::nv_index_type::NvIndexType,
     /// # };
     /// use tss_esapi::{
-    ///       interface_types::resource_handles::{Provision, NvAuth}
+    ///       interface_types::reserved_handles::{Provision, NvAuth}
     /// };
     ///
     /// # // Create context
@@ -727,7 +727,7 @@ impl Context {
     /// #     structures::{SymmetricDefinition, NvPublic}, constants::SessionType,
     /// # };
     /// use tss_esapi::{
-    ///       interface_types::resource_handles::{Provision, NvAuth}, structures::MaxNvBuffer,
+    ///       interface_types::reserved_handles::{Provision, NvAuth}, structures::MaxNvBuffer,
     /// };
     /// use std::convert::TryFrom;
     ///

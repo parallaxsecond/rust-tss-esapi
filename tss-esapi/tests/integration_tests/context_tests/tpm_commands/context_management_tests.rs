@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 mod test_ctx_save {
     use crate::common::{create_ctx_with_session, decryption_key_pub, signing_key_pub};
-    use tss_esapi::{interface_types::resource_handles::Hierarchy, structures::Auth};
+    use tss_esapi::{interface_types::reserved_handles::Hierarchy, structures::Auth};
 
     #[test]
     fn test_ctx_save() {
@@ -64,7 +64,7 @@ mod test_ctx_save {
 mod test_ctx_load {
     use crate::common::{create_ctx_with_session, decryption_key_pub, signing_key_pub};
     use tss_esapi::{
-        handles::KeyHandle, interface_types::resource_handles::Hierarchy, structures::Auth,
+        handles::KeyHandle, interface_types::reserved_handles::Hierarchy, structures::Auth,
     };
 
     #[test]
@@ -107,7 +107,7 @@ mod test_ctx_load {
 
 mod test_flush_context {
     use crate::common::{create_ctx_with_session, decryption_key_pub, signing_key_pub};
-    use tss_esapi::{interface_types::resource_handles::Hierarchy, structures::Auth};
+    use tss_esapi::{interface_types::reserved_handles::Hierarchy, structures::Auth};
 
     #[test]
     fn test_flush_ctx() {
@@ -175,7 +175,7 @@ mod test_evict_control {
         handles::{ObjectHandle, PersistentTpmHandle, TpmHandle},
         interface_types::{
             dynamic_handles::Persistent,
-            resource_handles::{Hierarchy, Provision},
+            reserved_handles::{Hierarchy, Provision},
             session_handles::AuthSession,
         },
         structures::{Auth, CapabilityData},

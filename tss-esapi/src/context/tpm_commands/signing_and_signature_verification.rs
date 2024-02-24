@@ -57,7 +57,7 @@ impl Context {
     /// #    interface_types::{
     /// #        algorithm::{HashingAlgorithm, RsaSchemeAlgorithm},
     /// #        key_bits::RsaKeyBits,
-    /// #        resource_handles::Hierarchy,
+    /// #        reserved_handles::Hierarchy,
     /// #    },
     /// #    structures::{RsaScheme, RsaExponent},
     /// #    utils::create_unrestricted_signing_rsa_public

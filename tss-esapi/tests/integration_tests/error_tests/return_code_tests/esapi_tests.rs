@@ -20,7 +20,7 @@ use tss_esapi::{
         BaseError, SessionType,
     },
     error::{BaseReturnCode, EsapiReturnCode, ReturnCode},
-    interface_types::{algorithm::HashingAlgorithm, resource_handles::Hierarchy},
+    interface_types::{algorithm::HashingAlgorithm, reserved_handles::Hierarchy},
     structures::{Auth, SymmetricDefinition},
     tss2_esys::TSS2_RC,
     Error, WrapperErrorKind,

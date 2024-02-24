@@ -3,7 +3,7 @@
 use crate::{
     context::handle_manager::HandleDropAction,
     handles::{handle_conversion::TryIntoNotNone, AuthHandle, ObjectHandle, PersistentTpmHandle},
-    interface_types::{dynamic_handles::Persistent, resource_handles::Provision},
+    interface_types::{dynamic_handles::Persistent, reserved_handles::Provision},
     tss2_esys::{Esys_ContextLoad, Esys_ContextSave, Esys_EvictControl, Esys_FlushContext},
     utils::TpmsContext,
     Context, Result, ReturnCode,
@@ -66,7 +66,7 @@ impl Context {
     /// #         SessionType,
     /// #     },
     /// #     interface_types::{
-    /// #         resource_handles::Hierarchy,
+    /// #         reserved_handles::Hierarchy,
     /// #         algorithm::{HashingAlgorithm, RsaSchemeAlgorithm},
     /// #         key_bits::RsaKeyBits,
     /// #     },
@@ -182,7 +182,7 @@ impl Context {
     /// #     handles::PcrHandle,
     /// #     structures::{Digest, CapabilityData, Auth, RsaExponent, SymmetricDefinitionObject},
     /// #     interface_types::{
-    /// #       resource_handles::Hierarchy,
+    /// #       reserved_handles::Hierarchy,
     /// #       key_bits::RsaKeyBits,
     /// #     },
     /// #     handles::{ObjectHandle, TpmHandle, PersistentTpmHandle},
@@ -213,7 +213,7 @@ impl Context {
     /// #                 context.execute_with_session(Some(tss_esapi::interface_types::session_handles::AuthSession::Password), |ctx| {
     /// #                     ctx
     /// #                           .evict_control(
-    /// #                               tss_esapi::interface_types::resource_handles::Provision::Owner,
+    /// #                               tss_esapi::interface_types::reserved_handles::Provision::Owner,
     /// #                               handle,
     /// #                               tss_esapi::interface_types::dynamic_handles::Persistent::Persistent(persistent_tpm_handle),
     /// #                           )
@@ -252,7 +252,7 @@ impl Context {
     /// # });
     /// use tss_esapi::{
     ///     interface_types::{
-    ///         resource_handles::Provision,
+    ///         reserved_handles::Provision,
     ///         dynamic_handles::Persistent,
     ///         session_handles::AuthSession,
     ///     },
@@ -301,7 +301,7 @@ impl Context {
     /// #     handles::PcrHandle,
     /// #     structures::{Digest, CapabilityData, Auth, RsaExponent, SymmetricDefinitionObject},
     /// #     interface_types::{
-    /// #       resource_handles::Hierarchy,
+    /// #       reserved_handles::Hierarchy,
     /// #       key_bits::RsaKeyBits,
     /// #     },
     /// #     handles::{ObjectHandle, TpmHandle, PersistentTpmHandle},
@@ -332,7 +332,7 @@ impl Context {
     /// #                 context.execute_with_session(Some(tss_esapi::interface_types::session_handles::AuthSession::Password), |ctx| {
     /// #                     ctx
     /// #                           .evict_control(
-    /// #                               tss_esapi::interface_types::resource_handles::Provision::Owner,
+    /// #                               tss_esapi::interface_types::reserved_handles::Provision::Owner,
     /// #                               handle,
     /// #                               tss_esapi::interface_types::dynamic_handles::Persistent::Persistent(persistent_tpm_handle),
     /// #                           )
@@ -371,7 +371,7 @@ impl Context {
     /// # });
     /// use tss_esapi::{
     ///     interface_types::{
-    ///         resource_handles::Provision,
+    ///         reserved_handles::Provision,
     ///         dynamic_handles::Persistent,
     ///         session_handles::AuthSession,
     ///     },

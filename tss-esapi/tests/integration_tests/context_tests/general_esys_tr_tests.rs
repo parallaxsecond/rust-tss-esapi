@@ -6,7 +6,7 @@ use tss_esapi::{
     interface_types::{
         algorithm::HashingAlgorithm,
         dynamic_handles::Persistent,
-        resource_handles::{Hierarchy, NvAuth, Provision},
+        reserved_handles::{Hierarchy, NvAuth, Provision},
         session_handles::AuthSession,
     },
     structures::{Auth, CapabilityData, MaxNvBuffer, NvPublicBuilder},

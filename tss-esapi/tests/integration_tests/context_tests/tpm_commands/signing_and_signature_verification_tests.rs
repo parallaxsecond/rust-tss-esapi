@@ -4,7 +4,7 @@ mod test_verify_signature {
     use crate::common::{create_ctx_with_session, signing_key_pub, HASH};
     use std::convert::TryFrom;
     use tss_esapi::{
-        interface_types::{algorithm::HashingAlgorithm, resource_handles::Hierarchy},
+        interface_types::{algorithm::HashingAlgorithm, reserved_handles::Hierarchy},
         structures::{Auth, Digest, PublicKeyRsa, RsaSignature, Signature, SignatureScheme},
     };
 
@@ -166,7 +166,7 @@ mod test_sign {
     use crate::common::{create_ctx_with_session, signing_key_pub, HASH};
     use std::convert::TryFrom;
     use tss_esapi::{
-        interface_types::resource_handles::Hierarchy,
+        interface_types::reserved_handles::Hierarchy,
         structures::{Auth, Digest, SignatureScheme},
     };
 

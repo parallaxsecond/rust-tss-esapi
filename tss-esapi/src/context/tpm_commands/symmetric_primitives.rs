@@ -4,7 +4,7 @@ use crate::{
     handles::{KeyHandle, ObjectHandle, TpmHandle},
     interface_types::{
         algorithm::{HashingAlgorithm, SymmetricMode},
-        resource_handles::Hierarchy,
+        reserved_handles::Hierarchy,
     },
     structures::{Digest, HashcheckTicket, InitialValue, MaxBuffer},
     tss2_esys::{Esys_EncryptDecrypt2, Esys_HMAC, Esys_Hash},
@@ -53,7 +53,7 @@ impl Context {
     /// #     ).expect("Failed to create Context");
     /// # // Set auth for owner
     /// # context
-    /// #     .tr_set_auth(tss_esapi::interface_types::resource_handles::Hierarchy::Owner.into(), Auth::default())
+    /// #     .tr_set_auth(tss_esapi::interface_types::reserved_handles::Hierarchy::Owner.into(), Auth::default())
     /// #     .expect("Failed to set auth to empty for owner");
     /// # // Create primary key auth
     /// # let primary_key_auth = Auth::try_from(
@@ -67,7 +67,7 @@ impl Context {
     /// # // Create primary key
     /// # let primary_key_handle = context.execute_with_session(Some(AuthSession::Password), |ctx| {
     /// #     ctx.create_primary(
-    /// #         tss_esapi::interface_types::resource_handles::Hierarchy::Owner,
+    /// #         tss_esapi::interface_types::reserved_handles::Hierarchy::Owner,
     /// #         tss_esapi::utils::create_restricted_decryption_rsa_public(
     /// #             SymmetricDefinitionObject::AES_256_CFB,
     /// #             RsaKeyBits::Rsa2048,
@@ -234,7 +234,7 @@ impl Context {
     /// ```rust
     /// # use tss_esapi::{Context, tcti_ldr::TctiNameConf,
     /// #     structures::{MaxBuffer, Ticket},
-    /// #     interface_types::{algorithm::HashingAlgorithm, resource_handles::Hierarchy},
+    /// #     interface_types::{algorithm::HashingAlgorithm, reserved_handles::Hierarchy},
     /// # };
     /// # use std::convert::TryFrom;
     /// # // Create context
@@ -306,7 +306,7 @@ impl Context {
     /// #     attributes::ObjectAttributesBuilder,
     /// #     structures::{MaxBuffer, Ticket, PublicKeyedHashParameters, KeyedHashScheme, HmacScheme, PublicBuilder, Digest},
     /// #     interface_types::{
-    /// #           resource_handles::Hierarchy,
+    /// #           reserved_handles::Hierarchy,
     /// #           algorithm::{HashingAlgorithm, PublicAlgorithm},
     /// #     },
     /// #     Context, tcti_ldr::TctiNameConf,

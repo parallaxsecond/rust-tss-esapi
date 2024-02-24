@@ -10,7 +10,7 @@ use tss_esapi::{
     interface_types::{
         algorithm::{HashingAlgorithm, PublicAlgorithm},
         key_bits::RsaKeyBits,
-        resource_handles::Hierarchy,
+        reserved_handles::Hierarchy,
     },
     structures::{
         CreatePrimaryKeyResult, Data, Digest, HashScheme, PublicBuilder, PublicKeyRsa,

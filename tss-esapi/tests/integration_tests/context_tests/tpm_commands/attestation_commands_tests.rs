@@ -8,7 +8,7 @@ mod test_quote {
         handles::KeyHandle,
         interface_types::{
             algorithm::{HashingAlgorithm, SignatureSchemeAlgorithm},
-            resource_handles::Hierarchy,
+            reserved_handles::Hierarchy,
             session_handles::AuthSession,
             structure_tags::AttestationType,
         },

@@ -3,7 +3,7 @@
 mod test_create_primary {
     use crate::common::{create_ctx_with_session, decryption_key_pub};
     use tss_esapi::{
-        handles::ObjectHandle, interface_types::resource_handles::Hierarchy, structures::Auth,
+        handles::ObjectHandle, interface_types::reserved_handles::Hierarchy, structures::Auth,
     };
 
     #[test]
@@ -57,7 +57,7 @@ mod test_clear_control {
 mod test_change_auth {
     use crate::common::{create_ctx_with_session, decryption_key_pub};
     use tss_esapi::{
-        handles::AuthHandle, interface_types::resource_handles::Hierarchy, structures::Auth,
+        handles::AuthHandle, interface_types::reserved_handles::Hierarchy, structures::Auth,
     };
 
     #[test]

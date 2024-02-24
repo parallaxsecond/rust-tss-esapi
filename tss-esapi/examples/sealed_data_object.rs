@@ -12,7 +12,7 @@ use tss_esapi::{
     attributes::ObjectAttributesBuilder,
     interface_types::{
         algorithm::{HashingAlgorithm, PublicAlgorithm},
-        resource_handles::Hierarchy,
+        reserved_handles::Hierarchy,
     },
     structures::{
         CreatePrimaryKeyResult, Digest, KeyedHashScheme, PublicBuilder, PublicKeyedHashParameters,
