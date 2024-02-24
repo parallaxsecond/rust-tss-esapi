@@ -44,13 +44,13 @@ jobs:
       - name: Run the cross-compilation script
         run: docker run -v $(pwd):/tmp/rust-tss-esapi -w /tmp/rust-tss-esapi/tss-esapi ubuntucontainer /tmp/rust-tss-esapi/tss-esapi/tests/cross-compile.sh
 
-  tests-ubuntu-v3:
-    name: Ubuntu tests on v3.x.y of tpm2-tss
+  tests-ubuntu-v4:
+    name: Ubuntu tests on v4.x.y of tpm2-tss
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
       - name: Build the container
-        run: docker build -t ubuntucontainer tss-esapi/tests/ --build-arg TPM2_TSS_VERSION=3.0.4 --file tss-esapi/tests/Dockerfile-ubuntu
+        run: docker build -t ubuntucontainer tss-esapi/tests/ --build-arg TPM2_TSS_VERSION=4.0.1 --file tss-esapi/tests/Dockerfile-ubuntu
       - name: Run the container
         run: docker run -v $(pwd):/tmp/rust-tss-esapi -w /tmp/rust-tss-esapi/tss-esapi ubuntucontainer /tmp/rust-tss-esapi/tss-esapi/tests/all-ubuntu.sh
 
