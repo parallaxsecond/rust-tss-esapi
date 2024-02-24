@@ -3,7 +3,7 @@
 use crate::{
     context::handle_manager::HandleDropAction,
     handles::{handle_conversion::TryIntoNotNone, AuthHandle, ObjectHandle, PersistentTpmHandle},
-    interface_types::{dynamic_handles::Persistent, reserved_handles::Provision},
+    interface_types::{data_handles::Persistent, reserved_handles::Provision},
     tss2_esys::{Esys_ContextLoad, Esys_ContextSave, Esys_EvictControl, Esys_FlushContext},
     utils::TpmsContext,
     Context, Result, ReturnCode,
@@ -215,7 +215,7 @@ impl Context {
     /// #                           .evict_control(
     /// #                               tss_esapi::interface_types::reserved_handles::Provision::Owner,
     /// #                               handle,
-    /// #                               tss_esapi::interface_types::dynamic_handles::Persistent::Persistent(persistent_tpm_handle),
+    /// #                               tss_esapi::interface_types::data_handles::Persistent::Persistent(persistent_tpm_handle),
     /// #                           )
     /// #                           .expect("Failed to evict persistent handle")
     /// #                 });
@@ -253,7 +253,7 @@ impl Context {
     /// use tss_esapi::{
     ///     interface_types::{
     ///         reserved_handles::Provision,
-    ///         dynamic_handles::Persistent,
+    ///         data_handles::Persistent,
     ///         session_handles::AuthSession,
     ///     },
     /// };
@@ -334,7 +334,7 @@ impl Context {
     /// #                           .evict_control(
     /// #                               tss_esapi::interface_types::reserved_handles::Provision::Owner,
     /// #                               handle,
-    /// #                               tss_esapi::interface_types::dynamic_handles::Persistent::Persistent(persistent_tpm_handle),
+    /// #                               tss_esapi::interface_types::data_handles::Persistent::Persistent(persistent_tpm_handle),
     /// #                           )
     /// #                           .expect("Failed to evict persistent handle")
     /// #                 });
@@ -372,7 +372,7 @@ impl Context {
     /// use tss_esapi::{
     ///     interface_types::{
     ///         reserved_handles::Provision,
-    ///         dynamic_handles::Persistent,
+    ///         data_handles::Persistent,
     ///         session_handles::AuthSession,
     ///     },
     /// };

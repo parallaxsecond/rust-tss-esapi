@@ -174,7 +174,7 @@ mod test_evict_control {
         constants::{tss::TPM2_PERSISTENT_FIRST, CapabilityType},
         handles::{ObjectHandle, PersistentTpmHandle, TpmHandle},
         interface_types::{
-            dynamic_handles::Persistent,
+            data_handles::Persistent,
             reserved_handles::{Hierarchy, Provision},
             session_handles::AuthSession,
         },

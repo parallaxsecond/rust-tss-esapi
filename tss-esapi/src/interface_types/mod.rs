@@ -6,7 +6,7 @@
 mod yes_no;
 
 pub mod algorithm;
-pub mod dynamic_handles;
+pub mod data_handles;
 pub mod ecc;
 pub mod key_bits;
 pub mod reserved_handles;
