@@ -9,7 +9,7 @@ use crate::{
         algorithm::{HashingAlgorithm, PublicAlgorithm},
         ecc::EccCurve,
         key_bits::RsaKeyBits,
-        resource_handles::{Hierarchy, NvAuth},
+        reserved_handles::{Hierarchy, NvAuth},
     },
     structures::{
         Digest, EccParameter, EccPoint, EccScheme, KeyDerivationFunctionScheme, Public,

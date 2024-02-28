@@ -64,7 +64,7 @@ impl Context {
     /// # use tss_esapi::{
     /// #     Context, TctiNameConf, attributes::{SessionAttributes, NvIndexAttributes},
     /// #     constants::SessionType, handles::NvIndexTpmHandle,
-    /// #     interface_types::{algorithm::HashingAlgorithm, resource_handles::Provision},
+    /// #     interface_types::{algorithm::HashingAlgorithm, reserved_handles::Provision},
     /// #     structures::{SymmetricDefinition, NvPublic},
     /// # };
     /// # // Create context
@@ -156,7 +156,7 @@ impl Context {
     /// # use tss_esapi::{
     /// #     Context, TctiNameConf, attributes::{SessionAttributes, NvIndexAttributes},
     /// #     constants::SessionType,
-    /// #     interface_types::{algorithm::HashingAlgorithm, resource_handles::Provision},
+    /// #     interface_types::{algorithm::HashingAlgorithm, reserved_handles::Provision},
     /// #     structures::{SymmetricDefinition, NvPublic},
     /// # };
     /// use tss_esapi::{
@@ -284,7 +284,7 @@ impl Context {
     /// # use tss_esapi::{
     /// #     Context, TctiNameConf, attributes::{SessionAttributes, NvIndexAttributes},
     /// #     constants::SessionType, handles::NvIndexTpmHandle,
-    /// #     interface_types::{algorithm::HashingAlgorithm, resource_handles::Provision},
+    /// #     interface_types::{algorithm::HashingAlgorithm, reserved_handles::Provision},
     /// #     structures::{SymmetricDefinition, NvPublic},
     /// # };
     /// # // Create context
@@ -413,7 +413,7 @@ impl Context {
     /// ```rust
     /// # use tss_esapi::{
     /// #     Context, TctiNameConf,
-    /// #     interface_types::resource_handles::Hierarchy,
+    /// #     interface_types::reserved_handles::Hierarchy,
     /// #     structures::HashScheme,
     /// #     utils::create_unrestricted_signing_ecc_public,
     /// #     interface_types::{
@@ -481,7 +481,7 @@ impl Context {
     /// ```rust
     /// # use tss_esapi::{
     /// #     Context, TctiNameConf,
-    /// #     interface_types::resource_handles::Hierarchy,
+    /// #     interface_types::reserved_handles::Hierarchy,
     /// #     structures::HashScheme,
     /// #     utils::create_unrestricted_signing_ecc_public,
     /// #     interface_types::{

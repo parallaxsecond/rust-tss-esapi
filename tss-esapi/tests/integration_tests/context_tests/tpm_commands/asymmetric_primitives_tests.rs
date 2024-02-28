@@ -8,7 +8,7 @@ mod test_rsa_encrypt_decrypt {
         interface_types::{
             algorithm::{HashingAlgorithm, PublicAlgorithm, RsaDecryptAlgorithm},
             ecc::EccCurve,
-            resource_handles::Hierarchy,
+            reserved_handles::Hierarchy,
         },
         structures::{
             Auth, Data, EccPoint, EccScheme, HashScheme, KeyDerivationFunctionScheme,

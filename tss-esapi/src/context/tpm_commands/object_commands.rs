@@ -6,7 +6,7 @@ mod create_command_output;
 use crate::{
     context::handle_manager::HandleDropAction,
     handles::{KeyHandle, ObjectHandle, TpmHandle},
-    interface_types::resource_handles::Hierarchy,
+    interface_types::reserved_handles::Hierarchy,
     structures::{
         Auth, CreateKeyResult, Data, Digest, EncryptedSecret, IdObject, Name, PcrSelectionList,
         Private, Public, Sensitive, SensitiveData,

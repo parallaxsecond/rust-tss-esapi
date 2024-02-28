@@ -3,7 +3,7 @@
 use std::convert::TryFrom;
 use tss_esapi::{
     handles::{AuthHandle, NvIndexHandle, ObjectHandle, PermanentTpmHandle, TpmHandle},
-    interface_types::resource_handles::{
+    interface_types::reserved_handles::{
         Clear, Enables, Endorsement, Hierarchy, HierarchyAuth, Lockout, NvAuth, Owner, Platform,
         Provision,
     },

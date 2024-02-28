@@ -4,7 +4,7 @@ use crate::{
     attributes::LocalityAttributes,
     constants::CommandCode,
     handles::{AuthHandle, NvIndexHandle, ObjectHandle, SessionHandle},
-    interface_types::{resource_handles::NvAuth, session_handles::PolicySession, YesNo},
+    interface_types::{reserved_handles::NvAuth, session_handles::PolicySession, YesNo},
     structures::{
         AuthTicket, Digest, DigestList, Name, Nonce, PcrSelectionList, Signature, Timeout,
         VerifiedTicket,
@@ -347,7 +347,7 @@ impl Context {
     /// # use tss_esapi::interface_types::{
     /// #     algorithm::{HashingAlgorithm, PublicAlgorithm},
     /// #     key_bits::RsaKeyBits,
-    /// #     resource_handles::Hierarchy,
+    /// #     reserved_handles::Hierarchy,
     /// #     session_handles::PolicySession,
     /// # };
     /// # use tss_esapi::structures::SymmetricDefinition;
@@ -611,7 +611,7 @@ impl Context {
     /// # use tss_esapi::handles::NvIndexTpmHandle;
     /// # use tss_esapi::interface_types::{
     /// #     algorithm::HashingAlgorithm,
-    /// #     resource_handles::{NvAuth, Provision},
+    /// #     reserved_handles::{NvAuth, Provision},
     /// #     session_handles::PolicySession,
     /// # };
     /// # use tss_esapi::structures::{NvPublic, SymmetricDefinition};

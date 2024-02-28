@@ -9,7 +9,7 @@ mod test_encrypt_decrypt_2 {
         interface_types::{
             algorithm::{HashingAlgorithm, PublicAlgorithm, SymmetricMode},
             key_bits::RsaKeyBits,
-            resource_handles::Hierarchy,
+            reserved_handles::Hierarchy,
             session_handles::AuthSession,
         },
         structures::{
@@ -161,7 +161,7 @@ mod test_hash {
     use crate::common::create_ctx_without_session;
     use std::convert::TryFrom;
     use tss_esapi::{
-        interface_types::{algorithm::HashingAlgorithm, resource_handles::Hierarchy},
+        interface_types::{algorithm::HashingAlgorithm, reserved_handles::Hierarchy},
         structures::{MaxBuffer, Ticket},
     };
 
@@ -196,7 +196,7 @@ mod test_hmac {
         attributes::ObjectAttributesBuilder,
         interface_types::{
             algorithm::{HashingAlgorithm, PublicAlgorithm},
-            resource_handles::Hierarchy,
+            reserved_handles::Hierarchy,
         },
         structures::{KeyedHashScheme, MaxBuffer, PublicBuilder, PublicKeyedHashParameters},
     };

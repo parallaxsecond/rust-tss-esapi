@@ -3,7 +3,7 @@
 use crate::{
     context::handle_manager::HandleDropAction,
     handles::{AuthHandle, KeyHandle, ObjectHandle},
-    interface_types::{resource_handles::Hierarchy, YesNo},
+    interface_types::{reserved_handles::Hierarchy, YesNo},
     structures::{
         Auth, CreatePrimaryKeyResult, CreationData, CreationTicket, Data, Digest, PcrSelectionList,
         Public, SensitiveCreate, SensitiveData,
