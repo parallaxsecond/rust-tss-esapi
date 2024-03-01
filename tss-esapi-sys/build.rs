@@ -4,7 +4,7 @@
 #[cfg(feature = "generate-bindings")]
 use std::path::PathBuf;
 
-const MINIMUM_VERSION: &str = "2.4.6";
+const MINIMUM_VERSION: &str = "3.2.2";
 
 fn main() {
     if std::env::var("DOCS_RS").is_ok() {
