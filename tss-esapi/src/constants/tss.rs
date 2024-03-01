@@ -644,6 +644,10 @@ pub const TSS2_RESMGR_TPM_RC_LAYER: TSS2_RC = 0x000C0000; /* base is a TPM2_RC_*
 
 pub const TSS2_RC_SUCCESS: TSS2_RC = 0x00000000;
 
+pub const TPMI_DH_SAVED_TRANSIENT: TPMI_DH_SAVED = 0x80000000; /* an ordinary transient object */
+pub const TPMI_DH_SAVED_SEQUENCE: TPMI_DH_SAVED = 0x80000001; /* a sequence object */
+pub const TPMI_DH_SAVED_TRANSIENT_CLEAR: TPMI_DH_SAVED = 0x80000002; /* a transient object with the stClear attribute SET */
+
 pub use crate::tss2_esys::TSS2_BASE_RC_ABI_MISMATCH; /* Passed in ABI version doesn't match called module's ABI version */
 pub use crate::tss2_esys::TSS2_BASE_RC_BAD_CONTEXT; /* A context structure is bad */
 pub use crate::tss2_esys::TSS2_BASE_RC_BAD_REFERENCE; /* A pointer is NULL that isn't allowed to be NULL. */

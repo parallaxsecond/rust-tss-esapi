@@ -326,7 +326,10 @@ pub mod saved_session {
 pub mod transient {
     //! Module for transient TPM handles
     use super::*;
-    use crate::constants::tss::{TPM2_HT_TRANSIENT, TPM2_TRANSIENT_FIRST, TPM2_TRANSIENT_LAST};
+    use crate::constants::tss::{
+        TPM2_HT_TRANSIENT, TPM2_TRANSIENT_FIRST, TPM2_TRANSIENT_LAST, TPMI_DH_SAVED_SEQUENCE,
+        TPMI_DH_SAVED_TRANSIENT, TPMI_DH_SAVED_TRANSIENT_CLEAR,
+    };
 
     create_tpm_handle_type!(
         TransientTpmHandle,
@@ -334,6 +337,13 @@ pub mod transient {
         TPM2_HT_TRANSIENT,
         TPM2_TRANSIENT_FIRST,
         TPM2_TRANSIENT_LAST
+    );
+    add_constant_handle!(TransientTpmHandle, SavedTransient, TPMI_DH_SAVED_TRANSIENT);
+    add_constant_handle!(TransientTpmHandle, SavedSequence, TPMI_DH_SAVED_SEQUENCE);
+    add_constant_handle!(
+        TransientTpmHandle,
+        SavedTransientClear,
+        TPMI_DH_SAVED_TRANSIENT_CLEAR
     );
 }
 
