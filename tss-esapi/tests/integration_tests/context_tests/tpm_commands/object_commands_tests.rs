@@ -8,8 +8,9 @@ mod test_create {
     #[test]
     fn test_create() {
         let mut context = create_ctx_with_session();
-        let random_digest = context.get_random(16).unwrap();
-        let key_auth = Auth::try_from(random_digest.value().to_vec()).unwrap();
+        let mut random_digest = vec![0u8; 16];
+        getrandom::getrandom(&mut random_digest).unwrap();
+        let key_auth = Auth::try_from(random_digest).unwrap();
 
         let prim_key_handle = context
             .create_primary(
@@ -44,8 +45,9 @@ mod test_load {
     #[test]
     fn test_load() {
         let mut context = create_ctx_with_session();
-        let random_digest = context.get_random(16).unwrap();
-        let key_auth = Auth::try_from(random_digest.value().to_vec()).unwrap();
+        let mut random_digest = vec![0u8; 16];
+        getrandom::getrandom(&mut random_digest).unwrap();
+        let key_auth = Auth::try_from(random_digest).unwrap();
 
         let prim_key_handle = context
             .create_primary(
@@ -239,8 +241,9 @@ mod test_read_public {
     #[test]
     fn test_read_public() {
         let mut context = create_ctx_with_session();
-        let random_digest = context.get_random(16).unwrap();
-        let key_auth = Auth::try_from(random_digest.value().to_vec()).unwrap();
+        let mut random_digest = vec![0u8; 16];
+        getrandom::getrandom(&mut random_digest).unwrap();
+        let key_auth = Auth::try_from(random_digest).unwrap();
 
         let key_handle = context
             .create_primary(

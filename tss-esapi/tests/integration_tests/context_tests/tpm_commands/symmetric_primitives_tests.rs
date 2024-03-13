@@ -25,14 +25,10 @@ mod test_encrypt_decrypt_2 {
             .tr_set_auth(Hierarchy::Owner.into(), Auth::default())
             .expect("Failed to set auth to empty for owner");
 
-        let primary_key_auth = Auth::try_from(
-            context
-                .get_random(16)
-                .expect("get_rand call failed")
-                .value()
-                .to_vec(),
-        )
-        .expect("Failed to create primary key auth");
+        let mut random_digest = vec![0u8; 16];
+        getrandom::getrandom(&mut random_digest).expect("get_rand call failed");
+        let primary_key_auth =
+            Auth::try_from(random_digest).expect("Failed to create primary key auth");
 
         let primary_key_handle = context.execute_with_session(Some(AuthSession::Password), |ctx| {
             ctx.create_primary(
@@ -78,14 +74,10 @@ mod test_encrypt_decrypt_2 {
             .build()
             .expect("Failed to create public for symmetric key public");
 
-        let symmetric_key_auth = Auth::try_from(
-            context
-                .get_random(16)
-                .expect("get_rand call failed")
-                .value()
-                .to_vec(),
-        )
-        .expect("Failed to create symmetric key auth");
+        let mut random_digest = vec![0u8; 16];
+        getrandom::getrandom(&mut random_digest).expect("get_rand call failed");
+        let symmetric_key_auth =
+            Auth::try_from(random_digest).expect("Failed to create symmetric key auth");
 
         let symmetric_key_value =
             SensitiveData::try_from(vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16])
