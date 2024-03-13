@@ -21,7 +21,7 @@ Our end-goal is to achieve a fully Rust-native interface that offers strong safe
 
 The crate currently offers the following features:
 
-* `generate_bindings` - forces the underlying `tss-esapi-sys`
+* `generate-bindings` - forces the underlying `tss-esapi-sys`
   crate to regenerate the FFI bindings on each build, using the TSS
   libraries available on the build machine.
 * `abstraction` (enabled by default) - provides a set of abstracted primitives
