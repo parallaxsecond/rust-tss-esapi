@@ -7,8 +7,9 @@ mod test_ctx_save {
     #[test]
     fn test_ctx_save() {
         let mut context = create_ctx_with_session();
-        let random_digest = context.get_random(16).unwrap();
-        let key_auth = Auth::from_bytes(random_digest.as_bytes()).unwrap();
+        let mut random_digest = vec![0u8; 16];
+        getrandom::getrandom(&mut random_digest).unwrap();
+        let key_auth = Auth::from_bytes(random_digest.as_slice()).unwrap();
 
         let key_handle = context
             .create_primary(
@@ -27,8 +28,9 @@ mod test_ctx_save {
     #[test]
     fn test_ctx_save_leaf() {
         let mut context = create_ctx_with_session();
-        let random_digest = context.get_random(16).unwrap();
-        let key_auth = Auth::from_bytes(random_digest.as_bytes()).unwrap();
+        let mut random_digest = vec![0u8; 16];
+        getrandom::getrandom(&mut random_digest).unwrap();
+        let key_auth = Auth::from_bytes(random_digest.as_slice()).unwrap();
 
         let prim_key_handle = context
             .create_primary(
@@ -70,13 +72,14 @@ mod test_ctx_load {
     #[test]
     fn test_ctx_load() {
         let mut context = create_ctx_with_session();
-        let key_auth = context.get_random(16).unwrap();
+        let mut random_digest = vec![0u8; 16];
+        getrandom::getrandom(&mut random_digest).unwrap();
 
         let prim_key_handle = context
             .create_primary(
                 Hierarchy::Owner,
                 decryption_key_pub(),
-                Some(Auth::from_bytes(key_auth.as_bytes()).unwrap()),
+                Some(Auth::from_bytes(random_digest.as_slice()).unwrap()),
                 None,
                 None,
                 None,
@@ -88,7 +91,7 @@ mod test_ctx_load {
             .create(
                 prim_key_handle,
                 signing_key_pub(),
-                Some(Auth::from_bytes(key_auth.as_bytes()).unwrap()),
+                Some(Auth::from_bytes(random_digest.as_slice()).unwrap()),
                 None,
                 None,
                 None,
@@ -112,8 +115,9 @@ mod test_flush_context {
     #[test]
     fn test_flush_ctx() {
         let mut context = create_ctx_with_session();
-        let random_digest = context.get_random(16).unwrap();
-        let key_auth = Auth::from_bytes(random_digest.as_bytes()).unwrap();
+        let mut random_digest = vec![0u8; 16];
+        getrandom::getrandom(&mut random_digest).unwrap();
+        let key_auth = Auth::from_bytes(random_digest.as_slice()).unwrap();
 
         let key_handle = context
             .create_primary(
@@ -133,8 +137,9 @@ mod test_flush_context {
     #[test]
     fn test_flush_parent_ctx() {
         let mut context = create_ctx_with_session();
-        let random_digest = context.get_random(16).unwrap();
-        let key_auth = Auth::from_bytes(random_digest.as_bytes()).unwrap();
+        let mut random_digest = vec![0u8; 16];
+        getrandom::getrandom(&mut random_digest).unwrap();
+        let key_auth = Auth::from_bytes(random_digest.as_slice()).unwrap();
 
         let prim_key_handle = context
             .create_primary(

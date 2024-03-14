@@ -56,12 +56,11 @@ impl Context {
     /// #     .tr_set_auth(tss_esapi::interface_types::reserved_handles::Hierarchy::Owner.into(), Auth::default())
     /// #     .expect("Failed to set auth to empty for owner");
     /// # // Create primary key auth
-    /// # let primary_key_auth = Auth::try_from(
-    /// #     context
-    /// #         .get_random(16)
-    /// #         .expect("get_rand call failed")
-    /// #         .as_bytes()
-    /// #         .to_vec(),
+    /// # let mut random_digest = vec![0u8; 16];
+    /// # getrandom::getrandom(&mut random_digest).expect("get_rand call failed");
+    /// # let primary_key_auth = Auth::from_bytes(
+    /// #     random_digest
+    /// #         .as_slice()
     /// # )
     /// # .expect("Failed to create primary key auth");
     /// # // Create primary key
@@ -103,12 +102,11 @@ impl Context {
     /// #     .build()
     /// #     .expect("Failed to create public for symmetric key public");
     /// # // Create auth for the symmetric key
-    /// # let symmetric_key_auth = Auth::try_from(
-    /// #     context
-    /// #         .get_random(16)
-    /// #         .expect("get_rand call failed")
-    /// #         .as_bytes()
-    /// #         .to_vec(),
+    /// # let mut random_digest = vec![0u8; 16];
+    /// # getrandom::getrandom(&mut random_digest).expect("get_rand call failed");
+    /// # let symmetric_key_auth = Auth::from_bytes(
+    /// #     random_digest
+    /// #         .as_slice()
     /// # )
     /// # .expect("Failed to create symmetric key auth");
     /// # // Create symmetric key data

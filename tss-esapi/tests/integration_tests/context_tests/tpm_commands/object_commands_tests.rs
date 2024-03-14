@@ -2,14 +2,14 @@
 // SPDX-License-Identifier: Apache-2.0
 mod test_create {
     use crate::common::{create_ctx_with_session, decryption_key_pub};
-    use std::convert::TryFrom;
     use tss_esapi::{interface_types::reserved_handles::Hierarchy, structures::Auth};
 
     #[test]
     fn test_create() {
         let mut context = create_ctx_with_session();
-        let random_digest = context.get_random(16).unwrap();
-        let key_auth = Auth::try_from(random_digest.as_bytes().to_vec()).unwrap();
+        let mut random_digest = vec![0u8; 16];
+        getrandom::getrandom(&mut random_digest).unwrap();
+        let key_auth = Auth::from_bytes(random_digest.as_slice()).unwrap();
 
         let prim_key_handle = context
             .create_primary(
@@ -38,14 +38,14 @@ mod test_create {
 
 mod test_load {
     use crate::common::{create_ctx_with_session, decryption_key_pub, signing_key_pub};
-    use std::convert::TryFrom;
     use tss_esapi::{interface_types::reserved_handles::Hierarchy, structures::Auth};
 
     #[test]
     fn test_load() {
         let mut context = create_ctx_with_session();
-        let random_digest = context.get_random(16).unwrap();
-        let key_auth = Auth::try_from(random_digest.as_bytes().to_vec()).unwrap();
+        let mut random_digest = vec![0u8; 16];
+        getrandom::getrandom(&mut random_digest).unwrap();
+        let key_auth = Auth::from_bytes(random_digest.as_slice()).unwrap();
 
         let prim_key_handle = context
             .create_primary(
@@ -237,8 +237,9 @@ mod test_read_public {
     #[test]
     fn test_read_public() {
         let mut context = create_ctx_with_session();
-        let random_digest = context.get_random(16).unwrap();
-        let key_auth = Auth::from_bytes(random_digest.as_bytes()).unwrap();
+        let mut random_digest = vec![0u8; 16];
+        getrandom::getrandom(&mut random_digest).unwrap();
+        let key_auth = Auth::from_bytes(random_digest.as_slice()).unwrap();
 
         let key_handle = context
             .create_primary(

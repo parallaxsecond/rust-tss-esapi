@@ -502,8 +502,9 @@ fn ctx_migration_test() {
     // Create two key contexts using `Context`, one for an RSA keypair,
     // one for just the public part of the key
     let mut basic_ctx = crate::common::create_ctx_with_session();
-    let random_digest = basic_ctx.get_random(16).unwrap();
-    let key_auth = Auth::from_bytes(random_digest.as_bytes()).unwrap();
+    let mut random_digest = vec![0u8; 16];
+    getrandom::getrandom(&mut random_digest).unwrap();
+    let key_auth = Auth::from_bytes(random_digest.as_slice()).unwrap();
     let prim_key_handle = basic_ctx
         .create_primary(
             Hierarchy::Owner,

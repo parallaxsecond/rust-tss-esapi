@@ -112,10 +112,9 @@ impl Context {
     ///
     /// // Execute context methods using the session
     /// context.execute_with_session(Some(session), |ctx| {
-    ///     let random_digest = ctx.get_random(16)
-    ///         .expect("Call to get_random failed");
-    ///     let key_auth = Auth::from_bytes(random_digest.as_bytes())
-    ///         .expect("Failed to create Auth");
+    ///     let mut random_digest = vec![0u8; 16];
+    ///     getrandom::getrandom(&mut random_digest).expect("Call to getrandom failed");
+    ///     let key_auth = Auth::from_bytes(random_digest.as_slice()).expect("Failed to create Auth");
     ///     let key_handle = ctx
     ///         .create_primary(
     ///             Hierarchy::Owner,

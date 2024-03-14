@@ -9,8 +9,9 @@ mod test_create_primary {
     #[test]
     fn test_create_primary() {
         let mut context = create_ctx_with_session();
-        let random_digest = context.get_random(16).unwrap();
-        let key_auth = Auth::from_bytes(random_digest.as_bytes()).unwrap();
+        let mut random_digest = vec![0u8; 16];
+        getrandom::getrandom(&mut random_digest).unwrap();
+        let key_auth = Auth::from_bytes(random_digest.as_slice()).unwrap();
 
         let key_handle = context
             .create_primary(
@@ -93,8 +94,9 @@ mod test_change_auth {
             )
             .unwrap();
 
-        let random_digest = context.get_random(16).unwrap();
-        let new_key_auth = Auth::from_bytes(random_digest.as_bytes()).unwrap();
+        let mut random_digest = vec![0u8; 16];
+        getrandom::getrandom(&mut random_digest).unwrap();
+        let new_key_auth = Auth::from_bytes(random_digest.as_slice()).unwrap();
 
         let new_private = context
             .object_change_auth(loaded_key.into(), prim_key_handle.into(), new_key_auth)
@@ -108,8 +110,9 @@ mod test_change_auth {
     fn test_hierarchy_change_auth() {
         let mut context = create_ctx_with_session();
 
-        let random_digest = context.get_random(16).unwrap();
-        let new_auth = Auth::from_bytes(random_digest.as_bytes()).unwrap();
+        let mut random_digest = vec![0u8; 16];
+        getrandom::getrandom(&mut random_digest).unwrap();
+        let new_auth = Auth::from_bytes(random_digest.as_slice()).unwrap();
 
         // NOTE: If this test failed on your system, you are probably running it against a
         //  real (hardware) TPM or one that is provisioned. This hierarchy is supposed to be
