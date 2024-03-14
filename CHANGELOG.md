@@ -1,9 +1,8 @@
 # Changelog
 
+## [tss-esapi-7.5.0](https://github.com/parallaxsecond/rust-tss-esapi/tree/tss-esapi-7.5.0) (2024-03-14)
 
-## [tss-esapi-sys-0.6.0](https://github.com/parallaxsecond/rust-tss-esapi/tree/tss-esapi-sys-0.6.0) (2023-03-14)
-
-[Full Changelog](https://github.com/parallaxsecond/rust-tss-esapi/compare/tss-esapi-7.4.0...tss-esapi-sys-0.6.0)
+[Full Changelog](https://github.com/parallaxsecond/rust-tss-esapi/compare/tss-esapi-7.4.0...tss-esapi-7.5.0)
 
 **Security fixes:**
 
