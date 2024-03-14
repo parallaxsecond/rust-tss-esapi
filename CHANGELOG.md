@@ -1,5 +1,19 @@
 # Changelog
 
+## [tss-esapi-7.5.0](https://github.com/parallaxsecond/rust-tss-esapi/tree/tss-esapi-7.5.0) (2024-03-14)
+
+[Full Changelog](https://github.com/parallaxsecond/rust-tss-esapi/compare/tss-esapi-7.4.0...tss-esapi-7.5.0)
+
+**Security fixes:**
+
+- Get random authvalues locally instead of from the TPM [\#508](https://github.com/parallaxsecond/rust-tss-esapi/pull/508) ([tgonzalezorlandoarm](https://github.com/tgonzalezorlandoarm))
+
+**Merged pull requests:**
+
+- tss-esapi/transient: get_root_key_name [\#509](https://github.com/parallaxsecond/rust-tss-esapi/pull/509) ([tgonzalezorlandoarm](https://github.com/tgonzalezorlandoarm))
+- Backport lint error fixes for rust 1.75 [\#489](https://github.com/parallaxsecond/rust-tss-esapi/pull/489) ([tgonzalezorlandoarm](https://github.com/tgonzalezorlandoarm))
+- Cargo.toml: Specify rust-version=1.66.0 [\#470](https://github.com/parallaxsecond/rust-tss-esapi/pull/470) ([tgonzalezorlandoarm](https://github.com/tgonzalezorlandoarm))
+
 ## [tss-esapi-7.4.0](https://github.com/parallaxsecond/rust-tss-esapi/tree/tss-esapi-7.4.0) (2023-10-09)
 
 [Full Changelog](https://github.com/parallaxsecond/rust-tss-esapi/compare/tss-esapi-sys-0.5.0...tss-esapi-7.4.0)
