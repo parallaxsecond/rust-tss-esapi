@@ -7,7 +7,7 @@ use tss_esapi::{
     },
     tss2_esys::{
         TPMS_ALG_PROPERTY, TPMS_ATTEST, TPMS_CERTIFY_INFO, TPMS_CLOCK_INFO,
-        TPMS_COMMAND_AUDIT_INFO, TPMS_CREATION_INFO, TPMS_ECC_PARMS, TPMS_EMPTY,
+        TPMS_COMMAND_AUDIT_INFO, TPMS_CONTEXT, TPMS_CREATION_INFO, TPMS_ECC_PARMS, TPMS_EMPTY,
         TPMS_KEYEDHASH_PARMS, TPMS_NV_CERTIFY_INFO, TPMS_PCR_SELECTION, TPMS_QUOTE_INFO,
         TPMS_RSA_PARMS, TPMS_SCHEME_ECDAA, TPMS_SCHEME_HASH, TPMS_SCHEME_HMAC, TPMS_SCHEME_XOR,
         TPMS_SENSITIVE_CREATE, TPMS_SESSION_AUDIT_INFO, TPMS_SYMCIPHER_PARMS,
@@ -315,4 +315,20 @@ pub fn ensure_tpms_empty_equality(expected: &TPMS_EMPTY, actual: &TPMS_EMPTY) {
         expected.empty, actual.empty,
         "'empty' value TPMS_EMPTY, mismatch between actual and expected."
     );
+}
+
+pub fn ensure_tpms_context_equality(expected: &TPMS_CONTEXT, actual: &TPMS_CONTEXT) {
+    assert_eq!(
+        expected.sequence, actual.sequence,
+        "'sequence' value TPMS_CONTEXT, mismatch between actual and expected"
+    );
+    assert_eq!(
+        expected.savedHandle, actual.savedHandle,
+        "'savedHandle' value TPMS_CONTEXT, mismatch between actual and expected"
+    );
+    assert_eq!(
+        expected.hierarchy, actual.hierarchy,
+        "'hierarchy' value TPMS_CONTEXT, mismatch between actual and expected"
+    );
+    crate::common::ensure_tpm2b_context_data_equality(&expected.contextBlob, &actual.contextBlob);
 }

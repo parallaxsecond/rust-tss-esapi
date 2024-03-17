@@ -19,76 +19,10 @@ use crate::structures::{
     EccPoint, EccScheme, Public, PublicBuilder, PublicEccParametersBuilder, PublicKeyRsa,
     PublicRsaParametersBuilder, RsaExponent, RsaScheme, SymmetricDefinitionObject,
 };
-use crate::tss2_esys::*;
 use crate::{Context, Error, Result, WrapperErrorKind};
 use serde::{Deserialize, Serialize};
-use std::convert::{TryFrom, TryInto};
-use zeroize::{Zeroize, ZeroizeOnDrop};
-
-/// Rust native wrapper for `TPMS_CONTEXT` objects.
-///
-/// This structure is intended to help with persisting object contexts. As the main reason for
-/// saving the context of an object is to be able to reuse it later, on demand, a serializable
-/// structure is most commonly needed. `TpmsContext` implements the `Serialize` and `Deserialize`
-/// defined by `serde`.
-#[derive(Debug, Serialize, Deserialize, Clone, Zeroize, ZeroizeOnDrop)]
-pub struct TpmsContext {
-    sequence: u64,
-    saved_handle: TPMI_DH_CONTEXT,
-    hierarchy: TPMI_RH_HIERARCHY,
-    context_blob: Vec<u8>,
-}
-
-impl TpmsContext {
-    /// Get a reference to the `context_blob` field
-    pub fn context_blob(&self) -> &Vec<u8> {
-        &self.context_blob
-    }
-}
-
-// TODO: Replace with `From`
-impl TryFrom<TPMS_CONTEXT> for TpmsContext {
-    type Error = Error;
-
-    fn try_from(tss2_context: TPMS_CONTEXT) -> Result<Self> {
-        let mut context = TpmsContext {
-            sequence: tss2_context.sequence,
-            saved_handle: tss2_context.savedHandle,
-            hierarchy: tss2_context.hierarchy,
-            context_blob: tss2_context.contextBlob.buffer.to_vec(),
-        };
-        context
-            .context_blob
-            .truncate(tss2_context.contextBlob.size.into());
-        Ok(context)
-    }
-}
-
-#[allow(clippy::needless_update)]
-impl TryFrom<TpmsContext> for TPMS_CONTEXT {
-    type Error = Error;
-
-    fn try_from(context: TpmsContext) -> Result<Self> {
-        let buffer_size = context.context_blob.len();
-        if buffer_size > 5188 {
-            return Err(Error::local_error(WrapperErrorKind::WrongParamSize));
-        }
-        let mut buffer = [0_u8; 5188];
-        for (i, val) in context.context_blob.iter().enumerate() {
-            buffer[i] = *val;
-        }
-        Ok(TPMS_CONTEXT {
-            sequence: context.sequence,
-            savedHandle: context.saved_handle,
-            hierarchy: context.hierarchy,
-            contextBlob: TPM2B_CONTEXT_DATA {
-                size: buffer_size.try_into().unwrap(), // should not panic given the check above
-                buffer,
-            },
-            ..Default::default()
-        })
-    }
-}
+use std::convert::TryFrom;
+use zeroize::Zeroize;
 
 /// Create the [Public] structure for a restricted decryption key.
 ///
