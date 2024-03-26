@@ -27,7 +27,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Build the container
-        run: docker build -t ubuntucontainer tss-esapi/tests/ --file tss-esapi/tests/Dockerfile-ubuntu
+        run: docker build -t ubuntucontainer tss-esapi/tests/ --file tss-esapi/tests/Dockerfile-ubuntu --target tpm2-tools
       - name: Run the container
         run: docker run -v $(pwd):/tmp/rust-tss-esapi -w /tmp/rust-tss-esapi/tss-esapi --env RUST_TOOLCHAIN_VERSION=1.66.0 ubuntucontainer /tmp/rust-tss-esapi/tss-esapi/tests/all-ubuntu.sh
   # All in one job as I think it is a big overhead to build and run the Docker
@@ -38,19 +38,29 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Build the container
-        run: docker build -t ubuntucontainer tss-esapi/tests/ --file tss-esapi/tests/Dockerfile-ubuntu
+        run: docker build -t ubuntucontainer tss-esapi/tests/ --file tss-esapi/tests/Dockerfile-ubuntu --target tpm2-tools
       - name: Run the container
         run: docker run -v $(pwd):/tmp/rust-tss-esapi -w /tmp/rust-tss-esapi/tss-esapi ubuntucontainer /tmp/rust-tss-esapi/tss-esapi/tests/all-ubuntu.sh
       - name: Run the cross-compilation script
         run: docker run -v $(pwd):/tmp/rust-tss-esapi -w /tmp/rust-tss-esapi/tss-esapi ubuntucontainer /tmp/rust-tss-esapi/tss-esapi/tests/cross-compile.sh
 
-  tests-ubuntu-v4:
-    name: Ubuntu tests on v4.x.y of tpm2-tss
+  tests-ubuntu-v4-pkg:
+    name: Ubuntu tests on v4.x.y of tpm2-tss libraries found using pkg-config --target tpm2-tools
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
       - name: Build the container
-        run: docker build -t ubuntucontainer tss-esapi/tests/ --build-arg TPM2_TSS_VERSION=4.0.1 --file tss-esapi/tests/Dockerfile-ubuntu
+        run: docker build -t ubuntucontainer tss-esapi/tests/ --build-arg TPM2_TSS_VERSION=4.0.1 --file tss-esapi/tests/Dockerfile-ubuntu --target tpm2-tools
+      - name: Run the container
+        run: docker run -v $(pwd):/tmp/rust-tss-esapi -w /tmp/rust-tss-esapi/tss-esapi ubuntucontainer /tmp/rust-tss-esapi/tss-esapi/tests/all-ubuntu.sh
+
+  test-ubuntu-v4-path:
+    name: Ubuntu tests on v4.x.y of tpm2-tss libraries found using a path
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build the container
+        run: docker build -t ubuntucontainer tss-esapi/tests/ --build-arg TPM2_TSS_VERSION=4.0.1 --file tss-esapi/tests/Dockerfile-ubuntu --target tpm2-tss-install-dir
       - name: Run the container
         run: docker run -v $(pwd):/tmp/rust-tss-esapi -w /tmp/rust-tss-esapi/tss-esapi ubuntucontainer /tmp/rust-tss-esapi/tss-esapi/tests/all-ubuntu.sh
 
@@ -82,7 +92,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Build the container
-        run: docker build -t ubuntucontainer tss-esapi/tests/ --file tss-esapi/tests/Dockerfile-ubuntu
+        run: docker build -t ubuntucontainer tss-esapi/tests/ --file tss-esapi/tests/Dockerfile-ubuntu --target tpm2-tools
       - name: Run the tests
         run: docker run -v $(pwd):/tmp/rust-tss-esapi -w /tmp/rust-tss-esapi/tss-esapi ubuntucontainer /tmp/rust-tss-esapi/tss-esapi/tests/valgrind.sh
 
@@ -93,7 +103,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Build the container
-        run: docker build -t ubuntucontainer tss-esapi/tests/ --file tss-esapi/tests/Dockerfile-ubuntu
+        run: docker build -t ubuntucontainer tss-esapi/tests/ --file tss-esapi/tests/Dockerfile-ubuntu --target tpm2-tools
       - name: Check documentation
         run: docker run -v $(pwd):/tmp/rust-tss-esapi -w /tmp/rust-tss-esapi/tss-esapi -e RUSTDOCFLAGS="-Dwarnings" ubuntucontainer cargo doc --document-private-items --no-deps
 
