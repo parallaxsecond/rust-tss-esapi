@@ -46,6 +46,7 @@ semver = "1.0.7"
 
 [features]
 default = ["abstraction"]
+bundled = [ "tss-esapi-sys/bundled" ]
 generate-bindings = ["tss-esapi-sys/generate-bindings"]
 abstraction = ["oid", "picky-asn1", "picky-asn1-x509"]
 integration-tests = ["strum", "strum_macros"]

@@ -4,7 +4,87 @@
 #[cfg(feature = "generate-bindings")]
 use std::path::PathBuf;
 
+#[cfg(feature = "bundled")]
+use std::{
+    env,
+    path::{Path, PathBuf},
+    process::Command,
+};
+
 const MINIMUM_VERSION: &str = "3.2.2";
+
+#[cfg(feature = "bundled")]
+fn fetch_source(dest_path: impl AsRef<Path>, name: &str, repo: &str, branch: &str) -> PathBuf {
+    let parent_path = dest_path.as_ref();
+    let repo_path = parent_path.join(name);
+    let output = if !repo_path.join("Makefile.am").exists() {
+        Command::new("git")
+            .args(["clone", repo, "--depth", "1", "--branch", branch])
+            .current_dir(parent_path)
+            .output()
+            .expect(&format!("git clone for {} failed", name))
+    } else {
+        Command::new("git")
+            .args(["pull", "--ff-only", "origin", branch])
+            .current_dir(&repo_path)
+            .output()
+            .expect(&format!("git pull for {} failed", name))
+    };
+
+    let status = output.status;
+    assert!(
+        status.success(),
+        "git clone/pull for {name} returned failure status {status}:\n{output:?}"
+    );
+
+    repo_path
+}
+
+#[cfg(feature = "bundled")]
+fn compile_with_autotools(p: PathBuf) -> PathBuf {
+    let output1 = Command::new("./bootstrap")
+        .current_dir(&p)
+        .output()
+        .expect("bootstrapt script failed");
+    let status = output1.status;
+    assert!(
+        status.success(),
+        "bootstrapt script failed with {status}:\n{output1:?}"
+    );
+
+    let mut config = autotools::Config::new(p);
+    config.fast_build(true).reconf("-ivf").build()
+}
+
+#[cfg(feature = "bundled")]
+fn use_pkgconfig(
+    required_version: &str,
+    first_unsupported_version: &str,
+    name: &str,
+) -> pkg_config::Library {
+    // Run pkg-config
+    let lib = pkg_config::Config::new()
+        .range_version(required_version..first_unsupported_version)
+        .statik(true)
+        .probe(name)
+        .expect("Could not find a suitable version of {name}");
+
+    // As it turns-out, pkg-config does not correctly set up the RPATHs for the
+    // transitive dependencies of in static builds. Fix that.
+    if cfg!(target_family = "unix") {
+        for link_path in &lib.link_paths {
+            println!(
+                "cargo:rustc-link-arg=-Wl,-rpath,{}",
+                link_path
+                    .to_str()
+                    .expect("Link path is not an UTF-8 string")
+            );
+        }
+    }
+
+    // Forward pkg-config output for futher consumption
+    lib
+}
 
 fn main() {
     if std::env::var("DOCS_RS").is_ok() {
@@ -19,7 +99,25 @@ fn main() {
         generate_from_system(esys_path);
     }
 
-    #[cfg(not(feature = "generate-bindings"))]
+    #[cfg(feature = "bundled")]
+    {
+        let out_path = env::var("OUT_DIR").expect("No output directory given");
+        let source_path = fetch_source(
+            out_path,
+            "tpm2-tss",
+            "https://github.com/tpm2-software/tpm2-tss.git",
+            "3.2.2",
+        );
+
+        let install_path = compile_with_autotools(source_path);
+        env::set_var(
+            "PKG_CONFIG_PATH",
+            format!("{}", install_path.join("lib").join("pkgconfig").display()),
+        );
+        use_pkgconfig(MINIMUM_VERSION, "4.0.0", "tss2-esys");
+    }
+
+    #[cfg(all(not(feature = "generate-bindings"), not(features = "bundled")))]
     {
         use std::str::FromStr;
         use target_lexicon::{Architecture, OperatingSystem, Triple};
