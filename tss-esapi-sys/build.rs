@@ -127,13 +127,13 @@ fn main() {
             "3.2.2",
         );
 
-        let mut msbuild = msbuild::MsBuild::find_msbuild().unwrap();
+        let mut msbuild = msbuild::MsBuild::find_msbuild(Some("2017")).unwrap();
         msbuild.run(source_path, &[
             "-ds",
             "tpm2-tss.sln"]);
     }
 
-    #[cfg(all(not(feature = "generate-bindings"), not(features = "bundled")))]
+    #[cfg(all(not(feature = "generate-bindings"), not(feature = "bundled")))]
     {
         use std::str::FromStr;
         use target_lexicon::{Architecture, OperatingSystem, Triple};
