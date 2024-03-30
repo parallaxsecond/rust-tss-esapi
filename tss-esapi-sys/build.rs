@@ -99,7 +99,7 @@ fn main() {
         generate_from_system(esys_path);
     }
 
-    #[cfg(feature = "bundled")]
+    #[cfg(all(feature = "bundled", not(windows)))]
     {
         let out_path = env::var("OUT_DIR").expect("No output directory given");
         let source_path = fetch_source(
@@ -115,6 +115,22 @@ fn main() {
             format!("{}", install_path.join("lib").join("pkgconfig").display()),
         );
         use_pkgconfig(MINIMUM_VERSION, "4.0.0", "tss2-esys");
+    }
+
+    #[cfg(all(feature = "bundled", windows))]
+    {
+        let out_path = env::var("OUT_DIR").expect("No output directory given");
+        let source_path = fetch_source(
+            out_path,
+            "tpm2-tss",
+            "https://github.com/tpm2-software/tpm2-tss.git",
+            "3.2.2",
+        );
+
+        let mut msbuild = msbuild::MsBuild::find_msbuild().unwrap();
+        msbuild.run(source_path, &[
+            "-ds",
+            "tpm2-tss.sln"]);
     }
 
     #[cfg(all(not(feature = "generate-bindings"), not(features = "bundled")))]
