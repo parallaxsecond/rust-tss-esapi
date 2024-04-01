@@ -17,25 +17,18 @@ const MINIMUM_VERSION: &str = "3.2.2";
 fn fetch_source(dest_path: impl AsRef<Path>, name: &str, repo: &str, branch: &str) -> PathBuf {
     let parent_path = dest_path.as_ref();
     let repo_path = parent_path.join(name);
-    let output = if !repo_path.join("Makefile.am").exists() {
-        Command::new("git")
+    if !repo_path.join("Makefile.am").exists() {
+        let output = Command::new("git")
             .args(["clone", repo, "--depth", "1", "--branch", branch])
             .current_dir(parent_path)
             .output()
-            .expect(&format!("git clone for {} failed", name))
-    } else {
-        Command::new("git")
-            .args(["pull", "--ff-only", "origin", branch])
-            .current_dir(&repo_path)
-            .output()
-            .expect(&format!("git pull for {} failed", name))
-    };
-
-    let status = output.status;
-    assert!(
-        status.success(),
-        "git clone/pull for {name} returned failure status {status}:\n{output:?}"
-    );
+            .expect(&format!("git clone for {} failed", name));
+        let status = output.status;
+            assert!(
+                status.success(),
+                "git clone for {name} returned failure status {status}:\n{output:?}"
+            );
+    }
 
     repo_path
 }
