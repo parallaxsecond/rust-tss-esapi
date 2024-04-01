@@ -129,7 +129,6 @@ fn main() {
 
         let mut msbuild = msbuild::MsBuild::find_msbuild(Some("2017")).unwrap();
         msbuild.run(source_path, &[
-            "-ds",
             "tpm2-tss.sln"]);
     }
 
