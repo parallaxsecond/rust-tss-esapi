@@ -45,7 +45,7 @@ fn compile_with_autotools(p: PathBuf) -> PathBuf {
     let output1 = Command::new("./bootstrap")
         .current_dir(&p)
         .output()
-        .expect("bootstrapt script failed");
+        .expect("bootstrap script failed");
     let status = output1.status;
     assert!(
         status.success(),
