@@ -1,13 +1,13 @@
 // Copyright 2021 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
 
-#[cfg(feature = "generate-bindings")]
+#[cfg(any(feature = "generate-bindings", feature = "bundled"))]
 use std::path::PathBuf;
 
 #[cfg(feature = "bundled")]
 use std::{
     env,
-    path::{Path, PathBuf},
+    path::Path,
     process::Command,
 };
 
@@ -92,13 +92,6 @@ fn main() {
         return;
     }
 
-    #[cfg(feature = "generate-bindings")]
-    {
-        let out_path = std::path::PathBuf::from(std::env::var("OUT_DIR").unwrap());
-        let esys_path = out_path.join("tss_esapi_bindings.rs");
-        generate_from_system(esys_path);
-    }
-
     #[cfg(all(feature = "bundled", not(windows)))]
     {
         let out_path = env::var("OUT_DIR").expect("No output directory given");
@@ -130,6 +123,13 @@ fn main() {
         let mut msbuild = msbuild::MsBuild::find_msbuild(Some("2017")).unwrap();
         msbuild.run(source_path, &[
             "tpm2-tss.sln"]);
+    }
+
+    #[cfg(feature = "generate-bindings")]
+    {
+        let out_path = std::path::PathBuf::from(std::env::var("OUT_DIR").unwrap());
+        let esys_path = out_path.join("tss_esapi_bindings.rs");
+        generate_from_system(esys_path);
     }
 
     #[cfg(all(not(feature = "generate-bindings"), not(feature = "bundled")))]
@@ -170,7 +170,7 @@ fn main() {
     }
 }
 
-#[cfg(feature = "generate-bindings")]
+#[cfg(all(feature = "generate-bindings", not(feature = "bundled")))]
 pub fn generate_from_system(esapi_out: PathBuf) {
     pkg_config::Config::new()
         .atleast_version(MINIMUM_VERSION)
@@ -208,6 +208,31 @@ pub fn generate_from_system(esapi_out: PathBuf) {
         .into_string()
         .expect("Error converting OsString to String.");
 
+    bindgen::Builder::default()
+        .size_t_is_usize(false)
+        .clang_arg(format!("-I{}/tss2/", tss2_esys_include_path))
+        .clang_arg(format!("-I{}/tss2/", tss2_tctildr_include_path))
+        .clang_arg(format!("-I{}/tss2/", tss2_mu_include_path))
+        .header(format!("{}/tss2/tss2_esys.h", tss2_esys_include_path))
+        .header(format!("{}/tss2/tss2_tctildr.h", tss2_tctildr_include_path))
+        .header(format!("{}/tss2/tss2_mu.h", tss2_mu_include_path))
+        // See this issue: https://github.com/parallaxsecond/rust-cryptoki/issues/12
+        .blocklist_type("max_align_t")
+        .generate_comments(false)
+        .derive_default(true)
+        .generate()
+        .expect("Unable to generate bindings to TSS2 ESYS APIs.")
+        .write_to_file(esapi_out)
+        .expect("Couldn't write ESYS bindings!");
+}
+
+#[cfg(all(feature = "generate-bindings", feature = "bundled"))]
+pub fn generate_from_system(esapi_out: PathBuf) {
+    let out_path = std::path::PathBuf::from(std::env::var("OUT_DIR").unwrap());
+    let p = out_path.join("tpm2-tss");
+    let tss2_esys_include_path = p.join("include").into_os_string().into_string().unwrap();
+    let tss2_tctildr_include_path = p.join("include").into_os_string().into_string().unwrap();
+    let tss2_mu_include_path = p.join("include").into_os_string().into_string().unwrap();
     bindgen::Builder::default()
         .size_t_is_usize(false)
         .clang_arg(format!("-I{}/tss2/", tss2_esys_include_path))
