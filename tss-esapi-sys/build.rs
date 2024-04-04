@@ -246,7 +246,19 @@ pub fn generate_from_system(esapi_out: PathBuf) {
     }
     #[cfg(windows)]
     {
-        
+        builder = builder.blocklist_type("IMAGE_TLS_DIRECTORY")
+            .blocklist_type("PIMAGE_TLS_DIRECTORY")
+            .blocklist_type("IMAGE_TLS_DIRECTORY64")
+            .blocklist_type("PIMAGE_TLS_DIRECTORY64")
+            .blocklist_type("_IMAGE_TLS_DIRECTORY64")
+            .blocklist_type("MONITORINFOEX")
+            .blocklist_type("MONITORINFOEXA")
+            .blocklist_type("MONITORINFOEXW")
+            .blocklist_type("tagMONITORINFOEXA")
+            .blocklist_type("tagMONITORINFOEXW")
+            .blocklist_type("LPMONITORINFOEX")
+            .blocklist_type("LPMONITORINFOEXA")
+            .blocklist_type("LPMONITORINFOEXW");
     }
     builder.clang_arg(format!("-I{}/tss2/", tss2_esys_include_path))
         .clang_arg(format!("-I{}/tss2/", tss2_tctildr_include_path))
