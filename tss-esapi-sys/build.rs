@@ -221,14 +221,34 @@ pub fn generate_from_system(esapi_out: PathBuf) {
 
 #[cfg(all(feature = "generate-bindings", feature = "bundled"))]
 pub fn generate_from_system(esapi_out: PathBuf) {
+    let mut clang_args: Vec<String> = Vec::new();
+    #[cfg(windows)]
+    {
+        let hklm = winreg::RegKey::predef(winreg::enums::HKEY_LOCAL_MACHINE);
+        let ip = hklm.open_subkey("SOFTWARE\\WOW6432Node\\Microsoft\\Microsoft SDKs\\Windows\\v10.0").unwrap();
+        let ip: String = ip.get_value("InstallationFolder").unwrap();
+        let ip_pb = PathBuf::from(ip).join("Include");
+        let windows_sdk = ip_pb.join("10.0.17134.0");
+        clang_args.push(format!("-I{}", windows_sdk.join("ucrt").display()));
+        clang_args.push(format!("-I{}", windows_sdk.join("um").display()));
+        clang_args.push(format!("-I{}", windows_sdk.join("shared").display()));
+    }
+
     let out_path = std::path::PathBuf::from(std::env::var("OUT_DIR").unwrap());
     let p = out_path.join("tpm2-tss");
     let tss2_esys_include_path = p.join("include").into_os_string().into_string().unwrap();
     let tss2_tctildr_include_path = p.join("include").into_os_string().into_string().unwrap();
     let tss2_mu_include_path = p.join("include").into_os_string().into_string().unwrap();
-    bindgen::Builder::default()
-        .size_t_is_usize(false)
-        .clang_arg(format!("-I{}/tss2/", tss2_esys_include_path))
+    let mut builder = bindgen::Builder::default()
+        .size_t_is_usize(false);
+    for arg in clang_args {
+        builder = builder.clang_arg(arg);
+    }
+    #[cfg(windows)]
+    {
+        
+    }
+    builder.clang_arg(format!("-I{}/tss2/", tss2_esys_include_path))
         .clang_arg(format!("-I{}/tss2/", tss2_tctildr_include_path))
         .clang_arg(format!("-I{}/tss2/", tss2_mu_include_path))
         .header(format!("{}/tss2/tss2_esys.h", tss2_esys_include_path))

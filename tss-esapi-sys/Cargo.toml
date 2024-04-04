@@ -15,13 +15,14 @@ rust-version = "1.66.0"
 
 [build-dependencies]
 autotools = { version = "0.2.6", optional = true }
-bindgen = { version = "0.66.1", optional = true }
+bindgen = { version = "0.69.4", optional = true }
 pkg-config = "0.3.18"
 target-lexicon = "0.12.0"
 
 [target.'cfg(windows)'.build-dependencies]
 msbuild = { git = "https://github.com/uglyoldbob/msbuild.git", optional = true }
+winreg = {version = "0.52", optional = true }
 
 [features]
 generate-bindings = ["bindgen"]
-bundled = ["dep:autotools", "dep:msbuild"]
+bundled = ["dep:autotools", "dep:msbuild", "dep:winreg"]
