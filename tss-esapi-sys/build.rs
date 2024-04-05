@@ -274,4 +274,16 @@ pub fn generate_from_system(esapi_out: PathBuf) {
         .expect("Unable to generate bindings to TSS2 ESYS APIs.")
         .write_to_file(esapi_out)
         .expect("Couldn't write ESYS bindings!");
+    #[cfg(windows)]
+    {
+        println!("cargo:rustc-link-lib=dylib=tss2-esys");
+        println!("cargo:rustc-link-lib=dylib=tss2-mu");
+        println!("cargo:rustc-link-lib=dylib=tss2-sys");
+        println!("cargo:rustc-link-lib=dylib=tss2-tctildr");
+        println!("cargo:rustc-link-lib=dylib=tss2-tcti-tbs");
+        println!(
+            "cargo:rustc-link-search=dylib={}",
+            p.join("x64").join("Debug").display()
+        );
+    }
 }
