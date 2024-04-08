@@ -23,12 +23,15 @@ fi
 #################################################
 # Generate bindings for non-"standard" versions #
 #################################################
-if [[ "$TPM2_TSS_VERSION" != "3.2.2" ]]; then
+if [[ "${TPM2_TSS_VERSION}" != "${TPM2_TSS_BINDINGS_VERSION}" ]]; then
 	FEATURES="generate-bindings integration-tests"
 else
 	FEATURES="integration-tests"
 fi
 
+if [[ ! -z ${TPM2_TSS_PATH:+x} ]]; then
+	export LD_LIBRARY_PATH="${TPM2_TSS_PATH}"
+fi
 #################################
 # Run the TPM simulation server #
 #################################
@@ -44,4 +47,4 @@ RUST_BACKTRACE=1 cargo build --features "$FEATURES"
 #################
 # Run the tests #
 #################
-TEST_TCTI=mssim: RUST_BACKTRACE=1 RUST_LOG=info cargo test --features "$FEATURES" -- --test-threads=1 --nocapture
+TEST_TCTI=mssim: RUST_BACKTRACE=1 RUST_LOG=info cargo test --features "${FEATURES}" -- --test-threads=1 --nocapture
