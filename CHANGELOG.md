@@ -1,5 +1,12 @@
 # Changelog
 
+## [tss-esapi-7.5.1](https://github.com/parallaxsecond/rust-tss-esapi/tree/tss-esapi-7.5.1) (2024-04-11)
+
+[Full Changelog](https://github.com/parallaxsecond/rust-tss-esapi/compare/tss-esapi-7.5.0...tss-esapi-7.5.1)
+
+**Merged pull requests:**
+- Update mbox to v0.7.1 [\#520](https://github.com/parallaxsecond/rust-tss-esapi/pull/520) ([petreeftime](https://github.com/petreeftime))
+
 ## [tss-esapi-7.5.0](https://github.com/parallaxsecond/rust-tss-esapi/tree/tss-esapi-7.5.0) (2024-03-14)
 
 [Full Changelog](https://github.com/parallaxsecond/rust-tss-esapi/compare/tss-esapi-7.4.0...tss-esapi-7.5.0)

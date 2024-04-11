@@ -1,6 +1,6 @@
 [package]
 name = "tss-esapi"
-version = "7.5.0"
+version = "7.5.1"
 authors = ["Parsec Project Contributors"]
 edition = "2018"
 description = "Rust-native wrapper around TSS 2.0 Enhanced System API"
@@ -15,7 +15,7 @@ rust-version = "1.66.0"
 [dependencies]
 bitfield = "0.14.0"
 serde = { version = "1.0.115", features = ["derive"] }
-mbox = "0.6.0"
+mbox = "0.7"
 log = "0.4.11"
 enumflags2 = "0.7.1"
 num-derive = "0.4.0"
