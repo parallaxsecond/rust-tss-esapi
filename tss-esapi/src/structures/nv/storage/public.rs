@@ -172,8 +172,8 @@ impl NvPublicBuilder {
                     Error::local_error(WrapperErrorKind::ParamsMissing)
                 })
                 .and_then(|v| {
-                    if v > std::u16::MAX.into() {
-                        error!("data area size is too large (>{})", std::u16::MAX);
+                    if v > u16::MAX.into() {
+                        error!("data area size is too large (>{})", u16::MAX);
                         return Err(Error::local_error(WrapperErrorKind::InvalidParam));
                     }
                     Ok(v)
