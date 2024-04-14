@@ -114,7 +114,16 @@ fn main() {
         );
 
         let mut msbuild = msbuild::MsBuild::find_msbuild(Some("2017")).unwrap();
+
+        let profile = std::env::var("PROFILE").unwrap();
+        let build_string = match profile.as_str() {
+            "debug" => "",
+            "release" => "/p:Configuration=Release",
+            _ => panic!("Unknown cargo profile:"),
+        };
+
         msbuild.run(source_path, &[
+            build_string,
             "tpm2-tss.sln"]);
     }
 
@@ -266,6 +275,7 @@ pub fn generate_from_system(esapi_out: PathBuf) {
         .header(format!("{}/tss2/tss2_esys.h", tss2_esys_include_path))
         .header(format!("{}/tss2/tss2_tctildr.h", tss2_tctildr_include_path))
         .header(format!("{}/tss2/tss2_mu.h", tss2_mu_include_path))
+        .header(format!("{}/tss2/tss2_tcti_tbs.h", tss2_mu_include_path))
         // See this issue: https://github.com/parallaxsecond/rust-cryptoki/issues/12
         .blocklist_type("max_align_t")
         .generate_comments(false)
@@ -281,9 +291,17 @@ pub fn generate_from_system(esapi_out: PathBuf) {
         println!("cargo:rustc-link-lib=dylib=tss2-sys");
         println!("cargo:rustc-link-lib=dylib=tss2-tctildr");
         println!("cargo:rustc-link-lib=dylib=tss2-tcti-tbs");
+
+        let profile = std::env::var("PROFILE").unwrap();
+        let build_string = match profile.as_str() {
+            "debug" => "Debug",
+            "release" => "Release",
+            _ => panic!("Unknown cargo profile:"),
+        };
+
         println!(
             "cargo:rustc-link-search=dylib={}",
-            p.join("x64").join("Debug").display()
+            p.join("x64").join(build_string).display()
         );
     }
 }
