@@ -17,6 +17,8 @@ use std::path::PathBuf;
 use std::ptr::null_mut;
 use std::str::FromStr;
 
+#[cfg(target_os = "windows")]
+const TBS: &str = "tbs";
 const DEVICE: &str = "device";
 const MSSIM: &str = "mssim";
 const SWTPM: &str = "swtpm";
@@ -143,6 +145,9 @@ pub enum TctiNameConf {
     ///
     /// For more information about configuration, see [this page](https://www.mankier.com/3/Tss2_Tcti_Tabrmd_Init)
     Tabrmd(TabrmdConfig),
+    /// Connect to a TPM through the windows TBS
+    #[cfg(target_os = "windows")]
+    Tbs,
 }
 
 impl TctiNameConf {
@@ -174,6 +179,8 @@ impl TryFrom<TctiNameConf> for CString {
             TctiNameConf::Mssim(..) => MSSIM,
             TctiNameConf::Swtpm(..) => SWTPM,
             TctiNameConf::Tabrmd(..) => TABRMD,
+            #[cfg(target_os = "windows")]
+            TctiNameConf::Tbs => TBS,
         };
 
         let tcti_conf = match tcti {
@@ -204,6 +211,8 @@ impl TryFrom<TctiNameConf> for CString {
             TctiNameConf::Tabrmd(config) => {
                 format!("bus_name={},bus_type={}", config.bus_name, config.bus_type)
             }
+            #[cfg(target_os = "windows")]
+            TctiNameConf::Tbs => String::new(),
         };
 
         if tcti_conf.is_empty() {
