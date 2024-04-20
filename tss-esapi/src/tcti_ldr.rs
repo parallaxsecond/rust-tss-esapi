@@ -21,6 +21,7 @@ const DEVICE: &str = "device";
 const MSSIM: &str = "mssim";
 const SWTPM: &str = "swtpm";
 const TABRMD: &str = "tabrmd";
+const TBS: &str = "tbs";
 
 /// TCTI Context created via a TCTI Loader Library.
 /// Wrapper around the TSS2_TCTI_CONTEXT structure.
@@ -143,6 +144,8 @@ pub enum TctiNameConf {
     ///
     /// For more information about configuration, see [this page](https://www.mankier.com/3/Tss2_Tcti_Tabrmd_Init)
     Tabrmd(TabrmdConfig),
+    /// Connect to a TPM using windows services
+    Tbs,
 }
 
 impl TctiNameConf {
@@ -174,6 +177,7 @@ impl TryFrom<TctiNameConf> for CString {
             TctiNameConf::Mssim(..) => MSSIM,
             TctiNameConf::Swtpm(..) => SWTPM,
             TctiNameConf::Tabrmd(..) => TABRMD,
+            TctiNameConf::Tbs => TBS,
         };
 
         let tcti_conf = match tcti {
@@ -204,6 +208,7 @@ impl TryFrom<TctiNameConf> for CString {
             TctiNameConf::Tabrmd(config) => {
                 format!("bus_name={},bus_type={}", config.bus_name, config.bus_type)
             }
+            TctiNameConf::Tbs => String::new(),
         };
 
         if tcti_conf.is_empty() {
