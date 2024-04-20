@@ -9,11 +9,21 @@ fn main() {
 
     cfg_if::cfg_if! {
         if #[cfg(feature = "generate-bindings")] {
+            #[cfg(feature = "bundled")]
+            let installation = tpm2_tss::Installation::bundled();
+            #[cfg(not(feature = "bundled"))]
             let installation = tpm2_tss::Installation::probe(true);
             let out_dir = std::path::PathBuf::from(std::env::var("OUT_DIR").unwrap());
             installation.generate_bindings(&out_dir.join("tss_esapi_bindings.rs"));
+            installation.output_linker_arguments();
         } else {
             target::ensure_supported();
+            #[cfg(feature = "bundled")]
+            {
+                let installation = tpm2_tss::Installation::bundled();
+                installation.pkg_config();
+            }
+            #[cfg(not(feature = "bundled"))]
             let _ = tpm2_tss::Installation::probe(false);
         }
     }
@@ -59,7 +69,7 @@ pub mod tpm2_tss {
     /// The installed tpm2-tss libraries that are of
     /// interest.
     pub struct Installation {
-        _tss2_sys: Library,
+        tss2_sys: Library,
         tss2_esys: Library,
         tss2_tctildr: Library,
         tss2_mu: Library,
@@ -67,11 +77,150 @@ pub mod tpm2_tss {
     }
 
     impl Installation {
+        fn platform_args() -> Option<Vec<String>> {
+            cfg_if::cfg_if! {
+                if #[cfg(windows)] {
+                    let mut clang_args: Vec<String> = Vec::new();
+                    let hklm = winreg::RegKey::predef(winreg::enums::HKEY_LOCAL_MACHINE);
+                    let sdk_entry = hklm.open_subkey("SOFTWARE\\WOW6432Node\\Microsoft\\Microsoft SDKs\\Windows\\v10.0").unwrap();
+                    let installation_path: String = sdk_entry.get_value("InstallationFolder").unwrap();
+                    let ip_pb = PathBuf::from(installation_path).join("Include");
+                    let windows_sdk = ip_pb.join("10.0.17134.0");
+                    clang_args.push(format!("-I{}", windows_sdk.join("ucrt").display()));
+                    clang_args.push(format!("-I{}", windows_sdk.join("um").display()));
+                    clang_args.push(format!("-I{}", windows_sdk.join("shared").display()));
+                    Some(clang_args)
+                }
+                else {
+                    None
+                }
+            }
+        }
+
+        #[cfg(feature = "bundled")]
+        /// Fetch the given source repo using git
+        fn fetch_source(
+            dest_path: impl AsRef<std::path::Path>,
+            name: &str,
+            repo: &str,
+            branch: &str,
+        ) -> std::path::PathBuf {
+            let parent_path = dest_path.as_ref();
+            let repo_path = parent_path.join(name);
+            if !repo_path.join("Makefile.am").exists() {
+                let output = std::process::Command::new("git")
+                    .args(["clone", repo, "--depth", "1", "--branch", branch])
+                    .current_dir(parent_path)
+                    .output()
+                    .unwrap_or_else(|_| panic!("git clone for {} failed", name));
+                let status = output.status;
+                if !status.success() {
+                    panic!(
+                        "git clone for {} returned failure status {}:\n{:?}",
+                        name, status, output
+                    );
+                }
+            }
+
+            repo_path
+        }
+
+        #[cfg(feature = "bundled")]
+        fn compile_with_autotools(p: PathBuf) -> PathBuf {
+            let output1 = std::process::Command::new("./bootstrap")
+                .current_dir(&p)
+                .output()
+                .expect("bootstrap script failed");
+            let status = output1.status;
+            if !status.success() {
+                panic!("bootstrap script failed with {}:\n{:?}", status, output1);
+            }
+
+            let mut config = autotools::Config::new(p);
+            config.fast_build(true).reconf("-ivf").build()
+        }
+
+        #[cfg(feature = "bundled")]
+        /// Uses a bundled build for an installation
+        pub fn bundled() -> Self {
+            use std::io::Write;
+            let out_path = std::env::var("OUT_DIR").expect("No output directory given");
+            let source_path = Self::fetch_source(
+                out_path,
+                "tpm2-tss",
+                "https://github.com/tpm2-software/tpm2-tss.git",
+                MINIMUM_VERSION,
+            );
+            let version_file_name = source_path.join("VERSION");
+            let mut version_file = std::fs::File::create(version_file_name)
+                .expect("Unable to create version file for tpm2-tss");
+            write!(version_file, "{}", MINIMUM_VERSION)
+                .unwrap_or_else(|e| panic!("Failed to write version file: {}", e));
+
+            cfg_if::cfg_if! {
+                if #[cfg(windows)] {
+                    let mut msbuild = msbuild::MsBuild::find_msbuild(Some("2017")).unwrap();
+                    let profile = std::env::var("PROFILE").unwrap();
+                    let build_string = match profile.as_str() {
+                        "debug" => "",
+                        "release" => "/p:Configuration=Release",
+                        _ => panic!("Unknown cargo profile:"),
+                    };
+
+                    msbuild.run(source_path.clone(), &[
+                        build_string,
+                        "tpm2-tss.sln"]);
+                }
+                else {
+                    let install_path = Self::compile_with_autotools(source_path.clone());
+                    std::env::set_var(
+                        "PKG_CONFIG_PATH",
+                        format!("{}", install_path.join("lib").join("pkgconfig").display()),
+                    );
+                }
+            }
+            std::env::set_var(PATH_ENV_VAR_NAME, source_path.clone());
+
+            let include_path = source_path.join("include").join("tss2");
+
+            #[cfg(windows)]
+            let tbs = Some(Library {
+                header_file: Some(include_path.join("tss2_tcti_tbs.h")),
+                version: MINIMUM_VERSION.into(),
+                name: "tss2-tbs".into(),
+            });
+            #[cfg(not(windows))]
+            let tbs = None;
+            Self {
+                tss2_sys: Library {
+                    header_file: Some(include_path.join("tss2_sys.h")),
+                    version: MINIMUM_VERSION.into(),
+                    name: "tss2-sys".into(),
+                },
+                tss2_esys: Library {
+                    header_file: Some(include_path.join("tss2_esys.h")),
+                    version: MINIMUM_VERSION.into(),
+                    name: "tss2-esys".into(),
+                },
+                tss2_tctildr: Library {
+                    header_file: Some(include_path.join("tss2_tctildr.h")),
+                    version: MINIMUM_VERSION.into(),
+                    name: "tss2-tctildr".into(),
+                },
+                tss2_mu: Library {
+                    header_file: Some(include_path.join("tss2_mu.h")),
+                    version: MINIMUM_VERSION.into(),
+                    name: "tss2-mu".into(),
+                },
+                tss2_tcti_tbs: tbs,
+            }
+        }
+
         /// Probes the system for an installation.
         pub fn probe(with_header_files: bool) -> Self {
             let install_path = Installation::installation_path_from_env_var();
             Installation {
-                _tss2_sys: Library::probe_required(
+                tss2_sys: Library::probe_required(
                     "tss2-sys",
                     install_path.as_ref(),
                     with_header_files,
@@ -149,10 +298,58 @@ pub mod tpm2_tss {
                             .clang_arg(tss2_tcti_tbs.include_dir_arg())
                             .header(tss2_tcti_tbs.header_file_arg());
                     }
+                    if let Some(clang_args) = Self::platform_args() {
+                        for arg in clang_args {
+                            builder = builder.clang_arg(arg);
+                        }
+                    }
                     builder
                 }
             }
         }
+
+        /// Run pkgconfig for bundled installations
+        #[cfg(feature = "bundled")]
+        pub fn pkg_config(&self) {
+            self.tss2_sys.pkg_config();
+            self.tss2_esys.pkg_config();
+            self.tss2_tctildr.pkg_config();
+            self.tss2_mu.pkg_config();
+            if let Some(lib) = &self.tss2_tcti_tbs {
+                lib.pkg_config();
+            }
+        }
+
+        pub fn output_linker_arguments(&self) {
+            #[cfg(windows)]
+            {
+                println!("cargo:rustc-link-lib=dylib=tss2-esys");
+                println!("cargo:rustc-link-lib=dylib=tss2-mu");
+                println!("cargo:rustc-link-lib=dylib=tss2-sys");
+                println!("cargo:rustc-link-lib=dylib=tss2-tctildr");
+                println!("cargo:rustc-link-lib=dylib=tss2-tcti-tbs");
+                let profile = std::env::var("PROFILE").unwrap();
+                let build_string = match profile.as_str() {
+                    "debug" => "Debug",
+                    "release" => "Release",
+                    _ => panic!("Unknown cargo profile:"),
+                };
+                let mut source_path = self
+                    .tss2_esys
+                    .header_file
+                    .clone()
+                    .expect("Expected a header file path");
+                source_path.pop();
+                source_path.pop();
+                source_path.pop();
+                println!("Source path is {}", source_path.display());
+                println!(
+                    "cargo:rustc-link-search=dylib={}",
+                    source_path.join("x64").join(build_string).display()
+                );
+            }
+        }
+
         /// Retrieves the installation path from the environment variable and validates it.
         fn installation_path_from_env_var() -> Option<(PathBuf, String)> {
             std::env::var(PATH_ENV_VAR_NAME).map_or_else(
@@ -370,6 +567,16 @@ pub mod tpm2_tss {
                     })
                 },
             )
+        }
+
+        /// Use the pkg config file for a bundled installation
+        #[cfg(feature = "bundled")]
+        fn pkg_config(&self) {
+            pkg_config::Config::new()
+                .atleast_version(MINIMUM_VERSION)
+                .statik(true)
+                .probe(&self.name)
+                .unwrap_or_else(|_| panic!("Failed to run pkg-config on {}", self.name));
         }
 
         /// Probe the system for an optional library using pkg-config.
