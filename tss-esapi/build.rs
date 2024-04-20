@@ -9,6 +9,10 @@ fn main() {
     println!("cargo:rustc-check-cfg=cfg(has_tpmu_sensitive_create)");
     println!("cargo:rustc-check-cfg=cfg(has_esys_tr_get_tpm_handle)");
 
+    #[cfg(feature = "bundled")]
+    {
+        std::env::set_var("DEP_TSS2_ESYS_VERSION", "3.2.2");
+    }
     let tss_version_string = std::env::var("DEP_TSS2_ESYS_VERSION")
         .expect("Failed to parse ENV variable DEP_TSS2_ESYS_VERSION as string");
 
