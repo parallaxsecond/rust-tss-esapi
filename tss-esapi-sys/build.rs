@@ -148,7 +148,7 @@ pub mod tpm2_tss {
             let source_path = Self::fetch_source(
                 out_path,
                 "tpm2-tss",
-                "https://github.com/tpm2-software/tpm2-tss.git",
+                "https://github.com/wiktor-k/tpm2-tss.git",
                 MINIMUM_VERSION,
             );
             let version_file_name = source_path.join("VERSION");
