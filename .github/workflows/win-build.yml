@@ -18,4 +18,7 @@ jobs:
         uses: GuillaumeFalourd/setup-windows10-sdk-action@v2
         with:
           sdk-version: 17763
+      - uses: seanmiddleditch/gha-setup-vsdevenv@master
+        with:
+          toolset_version: v141_clang_c2
       - run: cargo build --features generate-bindings,bundled
