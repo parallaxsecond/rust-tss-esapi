@@ -159,7 +159,7 @@ pub mod tpm2_tss {
 
             cfg_if::cfg_if! {
                 if #[cfg(windows)] {
-                    let mut msbuild = msbuild::MsBuild::find_msbuild(Some("2017")).unwrap();
+                    let mut msbuild = msbuild::MsBuild::find_msbuild(None).unwrap();
                     let profile = std::env::var("PROFILE").unwrap();
                     let build_string = match profile.as_str() {
                         "debug" => "",
