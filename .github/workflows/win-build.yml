@@ -17,5 +17,5 @@ jobs:
       - name: Setup Windows 10 SDK
         uses: GuillaumeFalourd/setup-windows10-sdk-action@v2
         with:
-          sdk-version: 17134
+          sdk-version: 17763
       - run: cargo build --features generate-bindings,bundled

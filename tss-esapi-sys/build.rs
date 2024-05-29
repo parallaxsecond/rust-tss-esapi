@@ -85,7 +85,7 @@ pub mod tpm2_tss {
                     let sdk_entry = hklm.open_subkey("SOFTWARE\\WOW6432Node\\Microsoft\\Microsoft SDKs\\Windows\\v10.0").unwrap();
                     let installation_path: String = sdk_entry.get_value("InstallationFolder").unwrap();
                     let ip_pb = PathBuf::from(installation_path).join("Include");
-                    let windows_sdk = ip_pb.join("10.0.17134.0");
+                    let windows_sdk = ip_pb.join("10.0.17763.0");
                     clang_args.push(format!("-I{}", windows_sdk.join("ucrt").display()));
                     clang_args.push(format!("-I{}", windows_sdk.join("um").display()));
                     clang_args.push(format!("-I{}", windows_sdk.join("shared").display()));
