@@ -41,6 +41,17 @@ available, feel free to raise a Pull Request to add it or to use build-time
 generation of bindings. All the committed bindings **MUST** be generated from
 the library version found under the `vendor` submodule.
 
+## Bundled feature
+
+There is a feature called bundled which downloads tpm2-tss source from github and compiles it using visual studio. It will usually be paired with the generate-bindings feature.
+
+# Windows
+
+Compiling for windows requires a bit of setup to work with the bundled feature. 
+
+* Openssl must be installed to a non-standard location at C:\OpenSSL-v11-Win64
+* Visual studio 2017 must be installed with the Clang/C2 experimental component, and windows sdk 10.0.17134.0.
+
 ## Cross compiling
 
 Cross-compilation can be done as long as you have on your build system the TSS 

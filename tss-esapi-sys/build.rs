@@ -77,15 +77,20 @@ pub mod tpm2_tss {
     }
 
     impl Installation {
+        /// Return an optional list of clang arguments that are platform specific
+        #[cfg(feature = "bundled")]
         fn platform_args() -> Option<Vec<String>> {
             cfg_if::cfg_if! {
                 if #[cfg(windows)] {
                     let mut clang_args: Vec<String> = Vec::new();
                     let hklm = winreg::RegKey::predef(winreg::enums::HKEY_LOCAL_MACHINE);
+                    // Find the windows sdk path from the windows registry
                     let sdk_entry = hklm.open_subkey("SOFTWARE\\WOW6432Node\\Microsoft\\Microsoft SDKs\\Windows\\v10.0").unwrap();
+                    // add relevant paths to get to the windows 10.0.17134.0 sdk, which tpm2-tss uses on windows.
                     let installation_path: String = sdk_entry.get_value("InstallationFolder").unwrap();
                     let ip_pb = PathBuf::from(installation_path).join("Include");
                     let windows_sdk = ip_pb.join("10.0.17134.0");
+                    // Add paths required for bindgen to find all required headers
                     clang_args.push(format!("-I{}", windows_sdk.join("ucrt").display()));
                     clang_args.push(format!("-I{}", windows_sdk.join("um").display()));
                     clang_args.push(format!("-I{}", windows_sdk.join("shared").display()));
@@ -125,7 +130,7 @@ pub mod tpm2_tss {
             repo_path
         }
 
-        #[cfg(feature = "bundled")]
+        #[cfg(all(feature = "bundled",not(windows)))]
         fn compile_with_autotools(p: PathBuf) -> PathBuf {
             let output1 = std::process::Command::new("./bootstrap")
                 .current_dir(&p)
@@ -332,7 +337,7 @@ pub mod tpm2_tss {
                 let build_string = match profile.as_str() {
                     "debug" => "Debug",
                     "release" => "Release",
-                    _ => panic!("Unknown cargo profile:"),
+                    _ => panic!("Unknown cargo profile: {}", profile),
                 };
                 let mut source_path = self
                     .tss2_esys
@@ -342,7 +347,6 @@ pub mod tpm2_tss {
                 source_path.pop();
                 source_path.pop();
                 source_path.pop();
-                println!("Source path is {}", source_path.display());
                 println!(
                     "cargo:rustc-link-search=dylib={}",
                     source_path.join("x64").join(build_string).display()
