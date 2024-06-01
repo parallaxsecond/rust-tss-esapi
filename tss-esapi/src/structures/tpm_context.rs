@@ -5,14 +5,16 @@ use crate::{
     interface_types::{data_handles::Saved, reserved_handles::Hierarchy},
     structures::TpmContextData,
     traits::impl_mu_standard,
-    traits::{Marshall, UnMarshall},
     tss2_esys::TPMS_CONTEXT,
     Error, Result,
 };
-use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use std::convert::TryFrom;
 
 /// Structure holding the content of a TPM context.
+///
+/// # Details
+/// This object can be serialized and deserialized
+/// using serde if the `serde` feature is enabled.
 #[derive(Debug, Clone)]
 pub struct SavedTpmContext {
     sequence: u64,
@@ -79,26 +81,31 @@ impl From<SavedTpmContext> for TPMS_CONTEXT {
 
 impl_mu_standard!(SavedTpmContext, TPMS_CONTEXT);
 
-impl Serialize for SavedTpmContext {
-    /// Serialize the [SavedTpmContext] data into it's bytes representation of the TCG
-    /// TPMS_CONTEXT structure.
-    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        let bytes = self.marshall().map_err(serde::ser::Error::custom)?;
-        serializer.serialize_bytes(&bytes)
-    }
-}
+cfg_if::cfg_if! {
+    if #[cfg(feature = "serde")] {
+        use crate::traits::{Marshall, UnMarshall};
+        impl serde::Serialize for SavedTpmContext {
+            /// Serialize the [SavedTpmContext] data into it's bytes representation of the TCG
+            /// TPMS_CONTEXT structure.
+            fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+            where
+                S: serde::Serializer,
+            {
+                let bytes = self.marshall().map_err(serde::ser::Error::custom)?;
+                serializer.serialize_bytes(&bytes)
+            }
+        }
 
-impl<'de> Deserialize<'de> for SavedTpmContext {
-    /// Deserialize the [SavedTpmContext] data from it's bytes representation of the TCG
-    /// TPMS_CONTEXT structure.
-    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        let bytes = <Vec<u8>>::deserialize(deserializer)?;
-        Self::unmarshall(&bytes).map_err(serde::de::Error::custom)
+        impl<'de> serde::Deserialize<'de> for SavedTpmContext {
+            /// Deserialize the [SavedTpmContext] data from it's bytes representation of the TCG
+            /// TPMS_CONTEXT structure.
+            fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+            where
+                D: serde::Deserializer<'de>,
+            {
+                let bytes = <Vec<u8>>::deserialize(deserializer)?;
+                Self::unmarshall(&bytes).map_err(serde::de::Error::custom)
+            }
+        }
     }
 }

@@ -29,7 +29,6 @@ use crate::{
 };
 
 use log::error;
-use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::convert::{AsMut, AsRef, TryFrom, TryInto};
 use zeroize::Zeroize;
@@ -65,17 +64,22 @@ pub enum KeyParams {
 
 /// Structure representing a key created or stored in the TPM
 ///
+/// # Details
 /// The `public` field represents the public part of the key in plain text,
 /// while `private` is the encrypted version of the private key.
 ///
 /// For information on public key formats, see the documentation of [`PublicKey`].
 /// The private part of the key should be treated as an opaque binary blob.
 ///
+/// This object can be serialized and deserialized
+/// using serde if the `serde` feature is enabled.
+///
 /// # Warning
 ///
 /// If the Owner hierarchy is cleared, any key material generated
 /// prior to that event will become unusable.
-#[derive(Debug, Serialize, Deserialize, Clone, Zeroize)]
+#[derive(Debug, Clone, Zeroize)]
+#[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 pub struct KeyMaterial {
     public: PublicKey,
     private: Vec<u8>,

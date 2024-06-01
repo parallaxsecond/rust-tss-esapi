@@ -12,16 +12,18 @@ use picky_asn1::wrapper::{IntegerAsn1, OctetStringAsn1};
 use picky_asn1_x509::{
     AlgorithmIdentifier, EcParameters, EcPoint, PublicKey, RsaPublicKey, SubjectPublicKeyInfo,
 };
-use serde::{Deserialize, Serialize};
 
 /// Can be converted from [`crate::structures::Public`] when not a fully constructed
 /// [`picky_asn1_x509::SubjectPublicKeyInfo`] is required.
 ///
 /// # Details
-///
 /// Holds either [`picky_asn1_x509::RsaPublicKey`] for [`crate::structures::Public::Rsa`] or
 /// [`picky_asn1_x509::EcPoint`] for [`crate::structures::Public::Ecc`].
-#[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
+///
+/// This object can be serialized and deserialized
+/// using serde if the `serde` feature is enabled.
+#[derive(Debug, PartialEq, Eq, Clone)]
+#[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 pub enum DecodedKey {
     RsaPublicKey(RsaPublicKey),
     EcPoint(EcPoint),

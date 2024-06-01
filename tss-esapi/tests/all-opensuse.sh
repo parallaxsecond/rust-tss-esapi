@@ -30,10 +30,10 @@ swtpm socket --tpm2 \
 ###################
 # Build the crate #
 ###################
-RUST_BACKTRACE=1 cargo build --features "generate-bindings integration-tests"
+RUST_BACKTRACE=1 cargo build --features "generate-bindings integration-tests serde"
 
 #################
 # Run the tests #
 #################
-TEST_TCTI="swtpm:host=localhost,port=2321" RUST_BACKTRACE=1 RUST_LOG=info cargo test --features "generate-bindings integration-tests" --  --test-threads=1 --nocapture
+TEST_TCTI="swtpm:host=localhost,port=2321" RUST_BACKTRACE=1 RUST_LOG=info cargo test --features "generate-bindings integration-tests serde" --  --test-threads=1 --nocapture
 
