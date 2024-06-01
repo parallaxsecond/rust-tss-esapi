@@ -22,7 +22,7 @@ cfg-if = "1.0.0"
 semver = "1.0.7"
 
 [target.'cfg(windows)'.build-dependencies]
-msbuild = { git = "https://github.com/uglyoldbob/msbuild.git", optional = true }
+msbuild = { version = "0.1.0", optional = true }
 winreg = {version = "0.52", optional = true }
 
 [features]

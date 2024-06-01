@@ -43,6 +43,7 @@ pub mod target {
         match (target.architecture, target.operating_system) {
             (Architecture::Arm(_), OperatingSystem::Linux)
             | (Architecture::Aarch64(_), OperatingSystem::Linux)
+            | (Architecture::Aarch64(_), OperatingSystem::Darwin)
             | (Architecture::X86_64, OperatingSystem::Darwin)
             | (Architecture::X86_64, OperatingSystem::Linux) => {}
             (arch, os) => {
@@ -77,15 +78,20 @@ pub mod tpm2_tss {
     }
 
     impl Installation {
+        /// Return an optional list of clang arguments that are platform specific
+        #[cfg(feature = "bundled")]
         fn platform_args() -> Option<Vec<String>> {
             cfg_if::cfg_if! {
                 if #[cfg(windows)] {
                     let mut clang_args: Vec<String> = Vec::new();
                     let hklm = winreg::RegKey::predef(winreg::enums::HKEY_LOCAL_MACHINE);
+                    // Find the windows sdk path from the windows registry
                     let sdk_entry = hklm.open_subkey("SOFTWARE\\WOW6432Node\\Microsoft\\Microsoft SDKs\\Windows\\v10.0").unwrap();
+                    // add relevant paths to get to the windows 10.0.17134.0 sdk, which tpm2-tss uses on windows.
                     let installation_path: String = sdk_entry.get_value("InstallationFolder").unwrap();
                     let ip_pb = PathBuf::from(installation_path).join("Include");
                     let windows_sdk = ip_pb.join("10.0.17134.0");
+                    // Add paths required for bindgen to find all required headers
                     clang_args.push(format!("-I{}", windows_sdk.join("ucrt").display()));
                     clang_args.push(format!("-I{}", windows_sdk.join("um").display()));
                     clang_args.push(format!("-I{}", windows_sdk.join("shared").display()));
@@ -125,7 +131,7 @@ pub mod tpm2_tss {
             repo_path
         }
 
-        #[cfg(feature = "bundled")]
+        #[cfg(all(feature = "bundled", not(windows)))]
         fn compile_with_autotools(p: PathBuf) -> PathBuf {
             let output1 = std::process::Command::new("./bootstrap")
                 .current_dir(&p)
@@ -133,11 +139,27 @@ pub mod tpm2_tss {
                 .expect("bootstrap script failed");
             let status = output1.status;
             if !status.success() {
-                panic!("bootstrap script failed with {}:\n{:?}", status, output1);
+                panic!(
+                    "{:?}/bootstrap script failed with {}:\n{:?}",
+                    p, status, output1
+                );
             }
 
             let mut config = autotools::Config::new(p);
-            config.fast_build(true).reconf("-ivf").build()
+            config
+                // Force configuration of the autotools env
+                .reconf("-fiv")
+                // skip ./configure if no parameter changes are made
+                .fast_build(true)
+                .enable("esys", None)
+                // Disable fapi as we only use esys
+                .disable("fapi", None)
+                .disable("fapi-async-tests", None)
+                // Disable integration tests
+                .disable("integration", None)
+                // Don't allow weak crypto
+                .disable("weakcrypto", None)
+                .build()
         }
 
         #[cfg(feature = "bundled")]
@@ -145,12 +167,27 @@ pub mod tpm2_tss {
         pub fn bundled() -> Self {
             use std::io::Write;
             let out_path = std::env::var("OUT_DIR").expect("No output directory given");
-            let source_path = Self::fetch_source(
-                out_path,
-                "tpm2-tss",
-                "https://github.com/tpm2-software/tpm2-tss.git",
-                MINIMUM_VERSION,
-            );
+            let source_path = if let Ok(tpm_tss_source) = std::env::var("TPM_TSS_SOURCE_PATH") {
+                eprintln!("using local tpm2-tss from {}", tpm_tss_source);
+                let Ok(source_path) = PathBuf::from(tpm_tss_source).canonicalize() else {
+                    panic!(
+                        "Unable to canonicalize tpm2-tss source path. Does the source path exist?"
+                    );
+                };
+
+                source_path
+            } else {
+                eprintln!(
+                    "using remote tpm2-tss from https://github.com/tpm2-software/tpm2-tss.git"
+                );
+                Self::fetch_source(
+                    out_path,
+                    "tpm2-tss",
+                    "https://github.com/tpm2-software/tpm2-tss.git",
+                    MINIMUM_VERSION,
+                )
+            };
+
             let version_file_name = source_path.join("VERSION");
             let mut version_file = std::fs::File::create(version_file_name)
                 .expect("Unable to create version file for tpm2-tss");
@@ -298,11 +335,14 @@ pub mod tpm2_tss {
                             .clang_arg(tss2_tcti_tbs.include_dir_arg())
                             .header(tss2_tcti_tbs.header_file_arg());
                     }
+
+                    #[cfg(feature = "bundled")]
                     if let Some(clang_args) = Self::platform_args() {
                         for arg in clang_args {
                             builder = builder.clang_arg(arg);
                         }
                     }
+
                     builder
                 }
             }
@@ -332,7 +372,7 @@ pub mod tpm2_tss {
                 let build_string = match profile.as_str() {
                     "debug" => "Debug",
                     "release" => "Release",
-                    _ => panic!("Unknown cargo profile:"),
+                    _ => panic!("Unknown cargo profile: {}", profile),
                 };
                 let mut source_path = self
                     .tss2_esys
@@ -342,7 +382,6 @@ pub mod tpm2_tss {
                 source_path.pop();
                 source_path.pop();
                 source_path.pop();
-                println!("Source path is {}", source_path.display());
                 println!(
                     "cargo:rustc-link-search=dylib={}",
                     source_path.join("x64").join(build_string).display()
