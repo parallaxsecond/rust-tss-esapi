@@ -356,7 +356,7 @@
 **Implemented enhancements:**
 
 - Add evict\_control API to context [\#135](https://github.com/parallaxsecond/rust-tss-esapi/issues/135)
-- Depoly Session [\#126](https://github.com/parallaxsecond/rust-tss-esapi/issues/126)
+- Deploy Session [\#126](https://github.com/parallaxsecond/rust-tss-esapi/issues/126)
 - No private key analog to `load\_external\_rsa\_public\_key` [\#123](https://github.com/parallaxsecond/rust-tss-esapi/issues/123)
 - Have two builds with two different TSS lib versions in CI [\#110](https://github.com/parallaxsecond/rust-tss-esapi/issues/110)
 - Split between tss-esapi and tss-esapi-sys [\#75](https://github.com/parallaxsecond/rust-tss-esapi/issues/75)

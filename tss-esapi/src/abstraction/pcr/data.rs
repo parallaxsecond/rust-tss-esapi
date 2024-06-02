@@ -101,6 +101,12 @@ impl PcrData {
     }
 }
 
+impl Default for PcrData {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl IntoIterator for PcrData {
     type Item = (HashingAlgorithm, PcrBank);
     type IntoIter = ::std::vec::IntoIter<(HashingAlgorithm, PcrBank)>;
