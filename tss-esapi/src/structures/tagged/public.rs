@@ -289,6 +289,12 @@ impl PublicBuilder {
     }
 }
 
+impl Default for PublicBuilder {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 /// Enum representing the Public structure.
 ///
 /// # Details
