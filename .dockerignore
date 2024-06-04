@@ -1,0 +1,12 @@
+.git
+.github
+.gitignore
+.mypy_cache
+.vscode
+*.md
+**/__pycache__/**
+docs
+Makefile
+target
+test.db
+vendor
