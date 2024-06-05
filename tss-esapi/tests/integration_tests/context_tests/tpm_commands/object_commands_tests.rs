@@ -445,10 +445,5 @@ mod test_create_loaded_2 {
         let mut context = create_ctx_with_session();
 
         let (session_attributes, session_attributes_mask) = SessionAttributesBuilder::new().build();
-
-
-
-
     }
 }
-

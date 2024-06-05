@@ -6,18 +6,17 @@ mod create_command_output;
 mod create_loaded_command_input;
 mod create_loaded_command_output;
 
-
 use crate::{
     context::handle_manager::HandleDropAction,
     handles::{KeyHandle, ObjectHandle, TpmHandle},
     interface_types::reserved_handles::Hierarchy,
     structures::{
-        Auth, CreateKeyResult, CreateLoadedKeyResult, Data, Digest, EncryptedSecret, IdObject, Name, PcrSelectionList,
-        Private, Public, Sensitive, SensitiveData,
+        Auth, CreateKeyResult, CreateLoadedKeyResult, Data, Digest, EncryptedSecret, IdObject,
+        Name, PcrSelectionList, Private, Public, Sensitive, SensitiveData,
     },
     tss2_esys::{
-        Esys_ActivateCredential, Esys_Create, Esys_CreateLoaded, Esys_Load, Esys_LoadExternal, Esys_MakeCredential,
-        Esys_ObjectChangeAuth, Esys_ReadPublic, Esys_Unseal,
+        Esys_ActivateCredential, Esys_Create, Esys_CreateLoaded, Esys_Load, Esys_LoadExternal,
+        Esys_MakeCredential, Esys_ObjectChangeAuth, Esys_ReadPublic, Esys_Unseal,
     },
     Context, Result, ReturnCode,
 };
@@ -379,7 +378,6 @@ impl Context {
         sensitive_data: Option<SensitiveData>,
         public: Public,
     ) -> Result<CreateLoadedKeyResult> {
-
         let input_parameters = CreateLoadedCommandInputHandler::create(
             parent_handle,
             auth_value,
@@ -388,7 +386,6 @@ impl Context {
         )?;
 
         let mut output_parameters = CreateLoadedCommandOutputHandler::new();
-
 
         ReturnCode::ensure_success(
             unsafe {
@@ -401,20 +398,16 @@ impl Context {
                     self.optional_session_1(),
                     self.optional_session_2(),
                     self.optional_session_3(),
-
                     // inSensitive
                     input_parameters.ffi_in_sensitive(),
                     // inPublic
                     input_parameters.ffi_in_public(),
-
                     // objectHandle
                     output_parameters.ffi_out_object_handle(),
-
                     // outPrivate
                     output_parameters.ffi_out_private_ptr(),
                     // outPublic
                     output_parameters.ffi_out_public_ptr(),
-
                     // Per TPM Part3 12.9.2 Table 35, name is an output
                     // value, but appears not to be in our bindings that are generated.
                     // output_parameters.ffi_out_name_ptr(),

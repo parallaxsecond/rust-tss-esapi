@@ -60,8 +60,9 @@ impl CreateLoadedCommandOutputHandler {
 impl TryFrom<CreateLoadedCommandOutputHandler> for CreateLoadedKeyResult {
     type Error = Error;
 
-    fn try_from(ffi_data_handler: CreateLoadedCommandOutputHandler) -> Result<CreateLoadedKeyResult> {
-
+    fn try_from(
+        ffi_data_handler: CreateLoadedCommandOutputHandler,
+    ) -> Result<CreateLoadedKeyResult> {
         let object_handle = ObjectHandle::from(ffi_data_handler.ffi_out_object_handle);
 
         let out_private_owned =

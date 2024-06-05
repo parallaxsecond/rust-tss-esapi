@@ -5,7 +5,7 @@ use crate::{
     ffi::data_zeroize::FfiDataZeroize,
     handles::KeyHandle,
     structures::{Auth, Public, SensitiveCreate, SensitiveData},
-    tss2_esys::{ESYS_TR, TPM2B_TEMPLATE, TPM2B_SENSITIVE_CREATE},
+    tss2_esys::{ESYS_TR, TPM2B_SENSITIVE_CREATE, TPM2B_TEMPLATE},
     Result,
 };
 use std::convert::TryInto;

@@ -10,7 +10,7 @@ use crate::{
         TPM2B_ID_OBJECT, TPM2B_IV, TPM2B_MAX_BUFFER, TPM2B_MAX_NV_BUFFER, TPM2B_NAME,
         TPM2B_PRIVATE, TPM2B_PRIVATE_KEY_RSA, TPM2B_PRIVATE_VENDOR_SPECIFIC, TPM2B_PUBLIC,
         TPM2B_PUBLIC_KEY_RSA, TPM2B_SENSITIVE_CREATE, TPM2B_SENSITIVE_DATA, TPM2B_SYM_KEY,
-        TPML_PCR_SELECTION, TPMS_CREATION_DATA, TPMS_ECC_PARMS, TPMS_ECC_POINT,
+        TPM2B_TEMPLATE, TPML_PCR_SELECTION, TPMS_CREATION_DATA, TPMS_ECC_PARMS, TPMS_ECC_POINT,
         TPMS_KEYEDHASH_PARMS, TPMS_PCR_SELECTION, TPMS_RSA_PARMS, TPMS_SCHEME_ECDAA,
         TPMS_SCHEME_HASH, TPMS_SCHEME_XOR, TPMS_SENSITIVE_CREATE, TPMS_SYMCIPHER_PARMS,
         TPMT_ECC_SCHEME, TPMT_KDF_SCHEME, TPMT_KEYEDHASH_SCHEME, TPMT_PUBLIC, TPMT_RSA_SCHEME,
@@ -121,6 +121,7 @@ implement_ffi_data_zeroizer_trait_for_buffer_type!(TPM2B_PRIVATE_VENDOR_SPECIFIC
 implement_ffi_data_zeroizer_trait_for_buffer_type!(TPM2B_PUBLIC_KEY_RSA);
 implement_ffi_data_zeroizer_trait_for_buffer_type!(TPM2B_SENSITIVE_DATA);
 implement_ffi_data_zeroizer_trait_for_buffer_type!(TPM2B_SYM_KEY);
+implement_ffi_data_zeroizer_trait_for_buffer_type!(TPM2B_TEMPLATE);
 implement_ffi_data_zeroizer_trait_for_named_field_structured_buffer_type!(
     TPM2B_CREATION_DATA,
     creationData
