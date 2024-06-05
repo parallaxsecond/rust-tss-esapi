@@ -305,7 +305,11 @@ impl Context {
             .with_decrypt(true)
             .with_encrypt(true)
             .build();
-        self.tr_sess_set_attributes(auth_session, session_attributes, session_attributes_mask)?;
+        self.tr_sess_set_attributes(auth_session, session_attributes, session_attributes_mask)
+            .or_else(|e| {
+                ctx.flush_context(SessionHandle::from(auth_session).into())?;
+                Err(e)
+            })?;
 
         let res = self.execute_with_session(Some(auth_session), f);
 
