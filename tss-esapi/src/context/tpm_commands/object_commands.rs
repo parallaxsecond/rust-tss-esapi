@@ -3,6 +3,10 @@
 mod create_command_input;
 mod create_command_output;
 
+mod create_loaded_command_input;
+mod create_loaded_command_output;
+
+
 use crate::{
     context::handle_manager::HandleDropAction,
     handles::{KeyHandle, ObjectHandle, TpmHandle},
@@ -19,6 +23,10 @@ use crate::{
 };
 use create_command_input::CreateCommandInputHandler;
 use create_command_output::CreateCommandOutputHandler;
+
+use create_loaded_command_input::CreateLoadedCommandInputHandler;
+use create_loaded_command_output::CreateLoadedCommandOutputHandler;
+
 use log::error;
 use std::convert::{TryFrom, TryInto};
 use std::ptr::{null, null_mut};
@@ -338,5 +346,82 @@ impl Context {
         Private::try_from(Context::ffi_data_to_owned(out_private_ptr))
     }
 
-    // Missing function: CreateLoaded
+    /// Create a key and load it in the TPM.
+    ///
+    /// This function allows the creation of three distinct object types. This is determined
+    /// by the type of [KeyHandle] that is provided to the `parent_handle` argument. The key
+    /// types are:
+    ///
+    /// * Primary - Created when [KeyHandle] is a primary seed
+    /// * Ordinary - Created when [KeyHandle] is a storage parent
+    /// * Derived - Created when [KeyHandle] is a derivation parent
+    ///
+    /// _notes_
+    ///
+    /// When creating a derived key, the value for `sensitive_data_origin` in `public` must be
+    /// `false`.
+    ///
+    /// # Parameters
+    /// * `parent_handle` - The [KeyHandle] of the parent for the new object that is being created.
+    /// * `sensitive_data` - The data that is to be sealed, a key or derivation values.
+    /// * `public` -  The public part of the object that is being created.
+    ///
+    /// # Errors
+    /// * if either of the slices is larger than the maximum size of the native objects, a
+    /// `WrongParamSize` wrapper error is returned
+    // TODO: Fix when compacting the arguments into a struct
+    #[allow(clippy::too_many_arguments)]
+    pub fn create_loaded(
+        &mut self,
+        parent_handle: KeyHandle,
+        sensitive_data: Option<SensitiveData>,
+        public: Public,
+    ) -> Result<CreateKeyResult> {
+
+        let input_parameters = CreateCommandInputHandler::create(
+            parent_handle,
+            public,
+            auth_value,
+            sensitive_data,
+            outside_info,
+            creation_pcrs,
+        )?;
+
+        let mut output_parameters = CreateCommandOutputHandler::new();
+
+        let mut object_handle = ObjectHandle::None.into();
+
+        ReturnCode::ensure_success(
+            unsafe {
+                Esys_Create(
+                    // esysContext
+                    self.mut_context(),
+                    // parent_handle
+                    input_parameters.ffi_in_parent_handle(),
+                    // session handles
+                    self.optional_session_1(),
+                    self.optional_session_2(),
+                    self.optional_session_3(),
+
+                    // inSensitive
+                    input_parameters.ffi_in_sensitive(),
+                    // inPublic
+                    input_parameters.ffi_in_public(),
+
+                    // objectHandle
+                    &mut object_handle,
+
+                    // outPrivate
+                    output_parameters.ffi_out_private_ptr(),
+                    // outPublic
+                    output_parameters.ffi_out_public_ptr(),
+                )
+            },
+            |ret| {
+                error!("Error in creating derived key: {:#010X}", ret);
+            },
+        )?;
+
+        output_parameters.try_into()
+    }
 }

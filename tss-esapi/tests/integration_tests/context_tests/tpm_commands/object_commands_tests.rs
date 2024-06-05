@@ -427,3 +427,28 @@ mod test_unseal {
         assert!(unsealed == testbytes);
     }
 }
+
+mod test_create_loaded_2 {
+    /*
+    use crate::common::{create_ctx_with_session, decryption_key_pub};
+    use std::convert::{TryFrom, TryInto};
+    use tss_esapi::{
+        attributes::SessionAttributesBuilder,
+        constants::SessionType,
+        interface_types::{algorithm::HashingAlgorithm, reserved_handles::Hierarchy},
+        structures::{Digest, SymmetricDefinition},
+    };
+    */
+
+    #[test]
+    fn test_create_loaded_2_() {
+        let mut context = create_ctx_with_session();
+
+        let (session_attributes, session_attributes_mask) = SessionAttributesBuilder::new().build();
+
+
+
+
+    }
+}
+
