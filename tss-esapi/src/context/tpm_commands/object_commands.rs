@@ -12,11 +12,11 @@ use crate::{
     handles::{KeyHandle, ObjectHandle, TpmHandle},
     interface_types::reserved_handles::Hierarchy,
     structures::{
-        Auth, CreateKeyResult, Data, Digest, EncryptedSecret, IdObject, Name, PcrSelectionList,
+        Auth, CreateKeyResult, CreateLoadedKeyResult, Data, Digest, EncryptedSecret, IdObject, Name, PcrSelectionList,
         Private, Public, Sensitive, SensitiveData,
     },
     tss2_esys::{
-        Esys_ActivateCredential, Esys_Create, Esys_Load, Esys_LoadExternal, Esys_MakeCredential,
+        Esys_ActivateCredential, Esys_Create, Esys_CreateLoaded, Esys_Load, Esys_LoadExternal, Esys_MakeCredential,
         Esys_ObjectChangeAuth, Esys_ReadPublic, Esys_Unseal,
     },
     Context, Result, ReturnCode,
@@ -363,6 +363,7 @@ impl Context {
     ///
     /// # Parameters
     /// * `parent_handle` - The [KeyHandle] of the parent for the new object that is being created.
+    /// * `auth_value` - The value used to be used for authorize usage of the object.
     /// * `sensitive_data` - The data that is to be sealed, a key or derivation values.
     /// * `public` -  The public part of the object that is being created.
     ///
@@ -374,26 +375,24 @@ impl Context {
     pub fn create_loaded(
         &mut self,
         parent_handle: KeyHandle,
+        auth_value: Option<Auth>,
         sensitive_data: Option<SensitiveData>,
         public: Public,
-    ) -> Result<CreateKeyResult> {
+    ) -> Result<CreateLoadedKeyResult> {
 
-        let input_parameters = CreateCommandInputHandler::create(
+        let input_parameters = CreateLoadedCommandInputHandler::create(
             parent_handle,
-            public,
             auth_value,
             sensitive_data,
-            outside_info,
-            creation_pcrs,
+            public,
         )?;
 
-        let mut output_parameters = CreateCommandOutputHandler::new();
+        let mut output_parameters = CreateLoadedCommandOutputHandler::new();
 
-        let mut object_handle = ObjectHandle::None.into();
 
         ReturnCode::ensure_success(
             unsafe {
-                Esys_Create(
+                Esys_CreateLoaded(
                     // esysContext
                     self.mut_context(),
                     // parent_handle
@@ -409,12 +408,16 @@ impl Context {
                     input_parameters.ffi_in_public(),
 
                     // objectHandle
-                    &mut object_handle,
+                    output_parameters.ffi_out_object_handle(),
 
                     // outPrivate
                     output_parameters.ffi_out_private_ptr(),
                     // outPublic
                     output_parameters.ffi_out_public_ptr(),
+
+                    // Per TPM Part3 12.9.2 Table 35, name is an output
+                    // value, but appears not to be in our bindings that are generated.
+                    // output_parameters.ffi_out_name_ptr(),
                 )
             },
             |ret| {
