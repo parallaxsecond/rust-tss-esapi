@@ -428,8 +428,7 @@ mod test_unseal {
     }
 }
 
-mod test_create_loaded_2 {
-    /*
+mod test_create_loaded {
     use crate::common::{create_ctx_with_session, decryption_key_pub};
     use std::convert::{TryFrom, TryInto};
     use tss_esapi::{
@@ -438,12 +437,17 @@ mod test_create_loaded_2 {
         interface_types::{algorithm::HashingAlgorithm, reserved_handles::Hierarchy},
         structures::{Digest, SymmetricDefinition},
     };
-    */
 
     #[test]
-    fn test_create_loaded_2_() {
+    fn test_create_loaded_() {
         let mut context = create_ctx_with_session();
 
         let (session_attributes, session_attributes_mask) = SessionAttributesBuilder::new().build();
+
+        // 
+
+
+
     }
 }
+
