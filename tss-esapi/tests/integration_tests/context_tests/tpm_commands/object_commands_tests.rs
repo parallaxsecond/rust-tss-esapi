@@ -432,22 +432,149 @@ mod test_create_loaded {
     use crate::common::{create_ctx_with_session, decryption_key_pub};
     use std::convert::{TryFrom, TryInto};
     use tss_esapi::{
-        attributes::SessionAttributesBuilder,
+        attributes::{ObjectAttributesBuilder, SessionAttributesBuilder},
         constants::SessionType,
-        interface_types::{algorithm::HashingAlgorithm, reserved_handles::Hierarchy},
-        structures::{Digest, SymmetricDefinition},
+        interface_types::{
+            algorithm::{HashingAlgorithm, PublicAlgorithm, SymmetricMode},
+            key_bits::AesKeyBits,
+            reserved_handles::Hierarchy,
+        },
+        structures::{
+            CreateLoadedKeyResult, Digest, KeyedHashScheme, PublicBuilder,
+            PublicKeyedHashParameters, SymmetricCipherParameters, SymmetricDefinition,
+            SymmetricDefinitionObject,
+        },
     };
 
     #[test]
-    fn test_create_loaded_() {
+    fn test_create_loaded_tpm_alg_kdf1_sp800_108() {
         let mut context = create_ctx_with_session();
 
         let (session_attributes, session_attributes_mask) = SessionAttributesBuilder::new().build();
 
-        // 
+        let object_attributes = ObjectAttributesBuilder::new()
+            .with_fixed_tpm(true)
+            .with_fixed_parent(true)
+            .with_st_clear(false)
+            .with_sensitive_data_origin(true)
+            .with_user_with_auth(true)
+            .with_sign_encrypt(false)
+            .with_decrypt(true)
+            .with_restricted(true)
+            .build()
+            .expect("Failed to build object attributes");
 
+        let primary_pub = PublicBuilder::new()
+            // This key is a symmetric key.
+            .with_public_algorithm(PublicAlgorithm::SymCipher)
+            .with_name_hashing_algorithm(HashingAlgorithm::Sha256)
+            .with_object_attributes(object_attributes)
+            .with_symmetric_cipher_parameters(SymmetricCipherParameters::new(
+                SymmetricDefinitionObject::AES_128_CFB,
+            ))
+            .with_symmetric_cipher_unique_identifier(Digest::default())
+            .build()
+            .unwrap();
 
+        // Create primary.
+        let primary_key_handle = context
+            .create_primary(Hierarchy::Owner, primary_pub, None, None, None, None)
+            .unwrap()
+            .key_handle;
 
+        // Create Derivation Parent
+        // - How to mark an object as a derivation parent? From what I read
+        // in the spec, a derivation parent is just when != (primary || storage)
+        let derive_parent_object_attributes = ObjectAttributesBuilder::new()
+            .with_fixed_tpm(true)
+            .with_fixed_parent(true)
+            .with_st_clear(false)
+            .with_sensitive_data_origin(true)
+            .with_user_with_auth(true)
+            // Architecture 25.1.5 table 24.
+            .with_sign_encrypt(false)
+            .with_decrypt(true)
+            .with_restricted(true)
+            .build()
+            .expect("Failed to build object attributes");
+
+        // How can I set this to KeyDerivationFunctionScheme::Kdf1Sp800_108(HashScheme::Sha256)
+
+        let derive_parent_public = PublicBuilder::new()
+            .with_public_algorithm(PublicAlgorithm::KeyedHash)
+            .with_name_hashing_algorithm(HashingAlgorithm::Sha256)
+            .with_object_attributes(derive_parent_object_attributes)
+            .with_keyed_hash_parameters(PublicKeyedHashParameters::new(
+                KeyedHashScheme::HMAC_SHA_256,
+            ))
+            .with_keyed_hash_unique_identifier(Digest::default())
+            .build()
+            .expect("Failed to build derive parent public");
+
+        // We should be able to create and load this now. And look, like magic,
+        // it's created and loaded in one operation!
+        let create_loaded_result = context
+            .create_loaded(primary_key_handle, None, None, derive_parent_public)
+            .expect("Failed to create derivation parent.");
+
+        let CreateLoadedKeyResult {
+            object_handle: derive_parent_handle,
+            out_private: derive_parent_private,
+            out_public: derive_parent_public,
+        } = create_loaded_result;
+
+        context
+            .flush_context(primary_key_handle.into())
+            .expect("Unable to unload primary key");
+
+        // Create the derived key
+        let derived_object_attributes = ObjectAttributesBuilder::new()
+            .with_fixed_tpm(true)
+            .with_fixed_parent(true)
+            .with_st_clear(false)
+            // Must be false on a derived key.
+            .with_sensitive_data_origin(false)
+            .with_user_with_auth(true)
+            // The key is used only for signing.
+            .with_sign_encrypt(true)
+            .with_decrypt(true)
+            .with_restricted(false)
+            .build()
+            .expect("Failed to build object attributes");
+
+        let aes_params = SymmetricCipherParameters::new(SymmetricDefinitionObject::Aes {
+            key_bits: AesKeyBits::Aes128,
+            mode: SymmetricMode::Cbc,
+        });
+
+        let derivation_params = Digest::try_from(b"testinputs".to_vec()).unwrap();
+
+        let derived_public = PublicBuilder::new()
+            .with_public_algorithm(PublicAlgorithm::SymCipher)
+            .with_name_hashing_algorithm(HashingAlgorithm::Sha256)
+            .with_object_attributes(derived_object_attributes)
+            .with_symmetric_cipher_parameters(aes_params)
+            .with_symmetric_cipher_unique_identifier(derivation_params)
+            .build()
+            .expect("Failed to build derive parent public");
+
+        // We should be able to create and load this now. And look, like magic,
+        // it's created and loaded in one operation!
+        let create_loaded_result = context
+            .create_loaded(derive_parent_handle.into(), None, None, derived_public)
+            .expect("Failed to create derivation parent.");
+
+        let CreateLoadedKeyResult {
+            object_handle: derived_handle,
+            out_private: derived_private,
+            out_public: derived_public,
+        } = create_loaded_result;
+
+        // Derivation params are in the inPublic.unique Field, or inPrivate.data
+
+        // Sensitive dataOrigin must be clear for derivation.
+
+        //  TPM_ALG_KDF1_SP800_56A == ECDH
+        //  TPM_ALG_KDF1_SP800_108 == CMAC/HMAC/KMAC derivation
     }
 }
-
