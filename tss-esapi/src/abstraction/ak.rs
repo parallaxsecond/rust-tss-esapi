@@ -129,7 +129,7 @@ pub fn load_ak(
             session_attributes_mask,
         )
         .or_else(|e| {
-            ctx.flush_context(SessionHandle::from(policy_auth_session).into())?;
+            context.flush_context(SessionHandle::from(policy_auth_session).into())?;
             Err(e)
         })?;
 
@@ -194,7 +194,7 @@ pub fn create_ak<IKC: IntoKeyCustomization>(
             session_attributes_mask,
         )
         .or_else(|e| {
-            ctx.flush_context(SessionHandle::from(policy_auth_session).into())?;
+            context.flush_context(SessionHandle::from(policy_auth_session).into())?;
             Err(e)
         })?;
 
