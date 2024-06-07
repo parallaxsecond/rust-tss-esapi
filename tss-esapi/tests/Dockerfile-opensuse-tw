@@ -1,0 +1,23 @@
+# USAGE:
+# docker build -t tssdev -f ./tss-esapi/tests/Dockerfile-opensuse-tw .
+# docker run -v ./:/usr/src/rust-tss-esapi --rm -i -t tssdev
+#
+# It is a good idea to vendor to prevent repeat crate downloads.
+# mkdir .cargo
+# cargo vendor > .cargo/config.toml
+
+FROM opensuse/tumbleweed:latest
+
+RUN zypper install -y \
+    tpm2-0-tss-devel tpm2.0-tools tpm2.0-abrmd \
+    swtpm \
+    cargo \
+    clang \
+    dbus-1-daemon
+
+# Instead of bind mounting, we could do this instead.
+# COPY . /usr/src/rust-tss-esapi
+
+WORKDIR /usr/src/rust-tss-esapi
+
+CMD ["/usr/bin/bash", "tss-esapi/tests/all-opensuse.sh"]
