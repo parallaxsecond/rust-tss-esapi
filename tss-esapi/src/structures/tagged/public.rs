@@ -9,7 +9,7 @@ use crate::{
     interface_types::algorithm::{HashingAlgorithm, PublicAlgorithm},
     structures::{Digest, EccPoint, PublicKeyRsa, SymmetricCipherParameters},
     traits::{impl_mu_standard, Marshall, UnMarshall},
-    tss2_esys::{TPM2B_PUBLIC, TPMT_PUBLIC},
+    tss2_esys::{TPM2B_PUBLIC, TPM2B_TEMPLATE, TPMT_PUBLIC},
     Error, Result, ReturnCode, WrapperErrorKind,
 };
 
@@ -564,6 +564,43 @@ impl TryFrom<Public> for TPM2B_PUBLIC {
                 Error::local_error(WrapperErrorKind::InvalidParam)
             })?,
             publicArea: public_area,
+        })
+    }
+}
+
+impl TryFrom<Public> for TPM2B_TEMPLATE {
+    type Error = Error;
+
+    fn try_from(public: Public) -> Result<Self> {
+        // Now sure how to handle this better.
+        let mut size = 0;
+        let mut buffer: [u8; 612usize] = [0; 612];
+        let public_area = TPMT_PUBLIC::from(public);
+
+        ReturnCode::ensure_success(
+            unsafe {
+                crate::tss2_esys::Tss2_MU_TPMT_PUBLIC_Marshal(
+                    &public_area,
+                    buffer.as_mut_ptr(),
+                    Public::BUFFER_SIZE.try_into().map_err(|e| {
+                        error!("Failed to convert size of buffer to TSS size_t type: {}", e);
+                        Error::local_error(WrapperErrorKind::InvalidParam)
+                    })?,
+                    &mut size,
+                )
+            },
+            |ret| error!("Failed to marshal Public: {}", ret),
+        )?;
+
+        Ok(TPM2B_TEMPLATE {
+            size: size.try_into().map_err(|e| {
+                error!(
+                    "Failed to convert size of buffer from TSS size_t type: {}",
+                    e
+                );
+                Error::local_error(WrapperErrorKind::InvalidParam)
+            })?,
+            buffer,
         })
     }
 }

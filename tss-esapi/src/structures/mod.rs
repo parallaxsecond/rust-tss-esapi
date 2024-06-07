@@ -29,6 +29,7 @@ pub use names::name::Name;
 /////////////////////////////////////////////////////////
 mod result;
 pub use result::CreateKeyResult;
+pub use result::CreateLoadedKeyResult;
 pub use result::CreatePrimaryKeyResult;
 /////////////////////////////////////////////////////////
 /// The sized buffers section

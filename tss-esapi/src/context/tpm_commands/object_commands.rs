@@ -3,22 +3,29 @@
 mod create_command_input;
 mod create_command_output;
 
+mod create_loaded_command_input;
+mod create_loaded_command_output;
+
 use crate::{
     context::handle_manager::HandleDropAction,
     handles::{KeyHandle, ObjectHandle, TpmHandle},
     interface_types::reserved_handles::Hierarchy,
     structures::{
-        Auth, CreateKeyResult, Data, Digest, EncryptedSecret, IdObject, Name, PcrSelectionList,
-        Private, Public, Sensitive, SensitiveData,
+        Auth, CreateKeyResult, CreateLoadedKeyResult, Data, Digest, EncryptedSecret, IdObject,
+        Name, PcrSelectionList, Private, Public, Sensitive, SensitiveData,
     },
     tss2_esys::{
-        Esys_ActivateCredential, Esys_Create, Esys_Load, Esys_LoadExternal, Esys_MakeCredential,
-        Esys_ObjectChangeAuth, Esys_ReadPublic, Esys_Unseal,
+        Esys_ActivateCredential, Esys_Create, Esys_CreateLoaded, Esys_Load, Esys_LoadExternal,
+        Esys_MakeCredential, Esys_ObjectChangeAuth, Esys_ReadPublic, Esys_Unseal,
     },
     Context, Result, ReturnCode,
 };
 use create_command_input::CreateCommandInputHandler;
 use create_command_output::CreateCommandOutputHandler;
+
+use create_loaded_command_input::CreateLoadedCommandInputHandler;
+use create_loaded_command_output::CreateLoadedCommandOutputHandler;
+
 use log::error;
 use std::convert::{TryFrom, TryInto};
 use std::ptr::{null, null_mut};
@@ -338,5 +345,79 @@ impl Context {
         Private::try_from(Context::ffi_data_to_owned(out_private_ptr))
     }
 
-    // Missing function: CreateLoaded
+    /// Create a key and load it in the TPM.
+    ///
+    /// This function allows the creation of three distinct object types. This is determined
+    /// by the type of [KeyHandle] that is provided to the `parent_handle` argument. The key
+    /// types are:
+    ///
+    /// * Primary - Created when [KeyHandle] is a primary seed
+    /// * Ordinary - Created when [KeyHandle] is a storage parent
+    /// * Derived - Created when [KeyHandle] is a derivation parent
+    ///
+    /// _notes_
+    ///
+    /// When creating a derived key, the value for `sensitive_data_origin` in `public` must be
+    /// `false`.
+    ///
+    /// # Parameters
+    /// * `parent_handle` - The [KeyHandle] of the parent for the new object that is being created.
+    /// * `auth_value` - The value used to be used for authorize usage of the object.
+    /// * `sensitive_data` - The data that is to be sealed, a key or derivation values.
+    /// * `public` -  The public part of the object that is being created.
+    ///
+    /// # Errors
+    /// * if either of the slices is larger than the maximum size of the native objects, a
+    /// `WrongParamSize` wrapper error is returned
+    // TODO: Fix when compacting the arguments into a struct
+    #[allow(clippy::too_many_arguments)]
+    pub fn create_loaded(
+        &mut self,
+        parent_handle: KeyHandle,
+        auth_value: Option<Auth>,
+        sensitive_data: Option<SensitiveData>,
+        public: Public,
+    ) -> Result<CreateLoadedKeyResult> {
+        let input_parameters = CreateLoadedCommandInputHandler::create(
+            parent_handle,
+            auth_value,
+            sensitive_data,
+            public,
+        )?;
+
+        let mut output_parameters = CreateLoadedCommandOutputHandler::new();
+
+        ReturnCode::ensure_success(
+            unsafe {
+                Esys_CreateLoaded(
+                    // esysContext
+                    self.mut_context(),
+                    // parent_handle
+                    input_parameters.ffi_in_parent_handle(),
+                    // session handles
+                    self.optional_session_1(),
+                    self.optional_session_2(),
+                    self.optional_session_3(),
+                    // inSensitive
+                    input_parameters.ffi_in_sensitive(),
+                    // inPublic
+                    input_parameters.ffi_in_public(),
+                    // objectHandle
+                    output_parameters.ffi_out_object_handle(),
+                    // outPrivate
+                    output_parameters.ffi_out_private_ptr(),
+                    // outPublic
+                    output_parameters.ffi_out_public_ptr(),
+                    // Per TPM Part3 12.9.2 Table 35, name is an output
+                    // value, but appears not to be in our bindings that are generated.
+                    // output_parameters.ffi_out_name_ptr(),
+                )
+            },
+            |ret| {
+                error!("Error in creating derived key: {:#010X}", ret);
+            },
+        )?;
+
+        output_parameters.try_into()
+    }
 }
