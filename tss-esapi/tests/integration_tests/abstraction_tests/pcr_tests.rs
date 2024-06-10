@@ -1,11 +1,60 @@
 // Copyright 2021 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
 use crate::common::create_ctx_without_session;
+use sha2::{Digest, Sha256};
 
 use tss_esapi::{
+    handles::PcrHandle,
     interface_types::algorithm::HashingAlgorithm,
-    structures::{PcrSelectionListBuilder, PcrSlot},
+    interface_types::session_handles::AuthSession,
+    structures::{DigestValues, PcrSelectionListBuilder, PcrSlot},
 };
+
+#[test]
+fn test_pcr_extend() {
+    let mut context = create_ctx_without_session();
+
+    let selection = PcrSelectionListBuilder::new()
+        .with_selection(HashingAlgorithm::Sha256, &[PcrSlot::Slot11])
+        .build()
+        .expect("Failed to create PcrSelectionList for pcr_read call");
+
+    let (_, _, digest_list) = context
+        .pcr_read(selection.clone())
+        .expect("Call to pcr_read failed");
+    let original_digest = &digest_list.value()[0];
+
+    // create a value to extend the pcr with
+    let extension_value: [u8; 32] = [42; 32];
+
+    // precalculate the extended digest by concatenating the original
+    // digest with the extension value and hashing the result
+    let mut concatenated_value: [u8; 64] = [0; 64];
+    concatenated_value[..32].copy_from_slice(original_digest);
+    concatenated_value[32..].copy_from_slice(&extension_value);
+    let mut hasher = Sha256::new();
+    hasher.update(concatenated_value);
+    let result = hasher.finalize();
+    let reference_digest = result.as_slice();
+
+    let mut vals = DigestValues::new();
+    vals.set(HashingAlgorithm::Sha256, extension_value.into());
+
+    let auth_session = AuthSession::Password;
+    context.execute_with_session(Some(auth_session), |ctx| {
+        ctx.pcr_extend(PcrHandle::Pcr11, vals)
+            .expect("Call to pcr_extend failed");
+    });
+
+    let (_, _, digest_list) = context
+        .pcr_read(selection)
+        .expect("Call to pcr_read failed");
+    let extended_digest = digest_list.value()[0].as_slice();
+
+    // compare the digest retrieved from the PCR with the precalulated
+    // reference digest
+    assert_eq!(extended_digest, reference_digest);
+}
 
 #[test]
 fn test_pcr_read_all() {
