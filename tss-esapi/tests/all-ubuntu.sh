@@ -24,9 +24,9 @@ fi
 # Generate bindings for non-"standard" versions #
 #################################################
 if [[ "${TPM2_TSS_VERSION}" != "${TPM2_TSS_BINDINGS_VERSION}" ]]; then
-	FEATURES="generate-bindings integration-tests"
+	FEATURES="generate-bindings integration-tests serde"
 else
-	FEATURES="integration-tests"
+	FEATURES="integration-tests serde"
 fi
 
 if [[ ! -z ${TPM2_TSS_PATH:+x} ]]; then

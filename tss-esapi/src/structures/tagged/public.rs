@@ -8,7 +8,7 @@ use crate::{
     attributes::ObjectAttributes,
     interface_types::algorithm::{HashingAlgorithm, PublicAlgorithm},
     structures::{Digest, EccPoint, PublicKeyRsa, SymmetricCipherParameters},
-    traits::{impl_mu_standard, Marshall, UnMarshall},
+    traits::{impl_mu_standard, Marshall},
     tss2_esys::{TPM2B_PUBLIC, TPMT_PUBLIC},
     Error, Result, ReturnCode, WrapperErrorKind,
 };
@@ -18,7 +18,6 @@ use keyed_hash::PublicKeyedHashParameters;
 use rsa::PublicRsaParameters;
 
 use log::error;
-use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use std::convert::{TryFrom, TryInto};
 use tss_esapi_sys::{TPMU_PUBLIC_ID, TPMU_PUBLIC_PARMS};
 
@@ -299,6 +298,9 @@ impl Default for PublicBuilder {
 ///
 /// # Details
 /// This corresponds to TPMT_PUBLIC
+///
+/// This object can be serialized and deserialized
+/// using serde if the `serde` feature is enabled.
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub enum Public {
     Rsa {
@@ -500,30 +502,35 @@ impl TryFrom<TPMT_PUBLIC> for Public {
 
 impl_mu_standard!(Public, TPMT_PUBLIC);
 
-impl Serialize for Public {
-    /// Serialize the [Public] data into it's bytes representation of the TCG
-    /// TPMT_PUBLIC structure.
-    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        let bytes = self.marshall().map_err(serde::ser::Error::custom)?;
-        serializer.serialize_bytes(&bytes)
+cfg_if::cfg_if! {
+    if #[cfg(feature = "serde")] {
+        use crate::traits::UnMarshall;
+
+        impl serde::Serialize for Public {
+            /// Serialize the [Public] data into it's bytes representation of the TCG
+            /// TPMT_PUBLIC structure.
+            fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+            where
+                S: serde::Serializer,
+            {
+                let bytes = self.marshall().map_err(serde::ser::Error::custom)?;
+                serializer.serialize_bytes(&bytes)
+            }
+        }
+
+        impl<'de> serde::Deserialize<'de> for Public {
+            /// Deserialise the [Public] data from it's bytes representation of the TCG
+            /// TPMT_PUBLIC structure.
+            fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+            where
+                D: serde::Deserializer<'de>,
+            {
+                let bytes = <Vec<u8>>::deserialize(deserializer)?;
+                Self::unmarshall(&bytes).map_err(serde::de::Error::custom)
+            }
+        }
     }
 }
-
-impl<'de> Deserialize<'de> for Public {
-    /// Deserialise the [Public] data from it's bytes representation of the TCG
-    /// TPMT_PUBLIC structure.
-    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        let bytes = <Vec<u8>>::deserialize(deserializer)?;
-        Self::unmarshall(&bytes).map_err(serde::de::Error::custom)
-    }
-}
-
 impl TryFrom<TPM2B_PUBLIC> for Public {
     type Error = Error;
 

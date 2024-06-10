@@ -20,7 +20,6 @@ use crate::structures::{
     PublicRsaParametersBuilder, RsaExponent, RsaScheme, SymmetricDefinitionObject,
 };
 use crate::{Context, Error, Result, WrapperErrorKind};
-use serde::{Deserialize, Serialize};
 use std::convert::TryFrom;
 use zeroize::Zeroize;
 
@@ -201,7 +200,12 @@ pub fn create_unrestricted_signing_ecc_public(
 }
 
 /// Container for public key values
-#[derive(Debug, Clone, Serialize, Deserialize, Zeroize, PartialEq, Eq)]
+///
+/// # Details
+/// This object can be serialized and deserialized
+/// using serde if the `serde` feature is enabled.
+#[derive(Debug, Clone, Zeroize, PartialEq, Eq)]
+#[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 pub enum PublicKey {
     /// RSA public modulus (see 27.5.3.4 in the Architecture spec)
     ///
