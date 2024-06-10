@@ -122,11 +122,16 @@ pub fn load_ak(
         .with_decrypt(true)
         .with_encrypt(true)
         .build();
-    context.tr_sess_set_attributes(
-        policy_auth_session,
-        session_attributes,
-        session_attributes_mask,
-    )?;
+    context
+        .tr_sess_set_attributes(
+            policy_auth_session,
+            session_attributes,
+            session_attributes_mask,
+        )
+        .or_else(|e| {
+            context.flush_context(SessionHandle::from(policy_auth_session).into())?;
+            Err(e)
+        })?;
 
     let key_handle = context.execute_with_temporary_object(
         SessionHandle::from(policy_auth_session).into(),
@@ -182,11 +187,16 @@ pub fn create_ak<IKC: IntoKeyCustomization>(
         .with_decrypt(true)
         .with_encrypt(true)
         .build();
-    context.tr_sess_set_attributes(
-        policy_auth_session,
-        session_attributes,
-        session_attributes_mask,
-    )?;
+    context
+        .tr_sess_set_attributes(
+            policy_auth_session,
+            session_attributes,
+            session_attributes_mask,
+        )
+        .or_else(|e| {
+            context.flush_context(SessionHandle::from(policy_auth_session).into())?;
+            Err(e)
+        })?;
 
     context.execute_with_temporary_object(
         SessionHandle::from(policy_auth_session).into(),
