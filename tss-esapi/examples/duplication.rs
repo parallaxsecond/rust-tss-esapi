@@ -61,6 +61,7 @@
 use tss_esapi::{
     attributes::{ObjectAttributesBuilder, SessionAttributesBuilder},
     constants::SessionType,
+    handles::SessionHandle,
     interface_types::{
         algorithm::{HashingAlgorithm, PublicAlgorithm},
         ecc::EccCurve,
@@ -88,7 +89,8 @@ fn main() {
     //
     // This reads from the environment variable `TPM2TOOLS_TCTI` or `TCTI`
     // It's recommended you use `TCTI=device:/dev/tpmrm0` for the linux kernel
-    // tpm resource manager.
+    // tpm resource manager. You must use a resource managed TPM for this example
+    // as using the tpm directly (such as /dev/tpm0) can cause a deadlock.
     let mut context_1 = Context::new(
         TctiNameConf::from_environment_variable()
             .expect("Failed to get TCTI / TPM2TOOLS_TCTI from environment. Try `export TCTI=device:/dev/tpmrm0`"),
@@ -158,7 +160,13 @@ fn main() {
             )
             .expect("Policy duplication select");
 
-            ctx.policy_get_digest(policy_session)
+            let digest = ctx.policy_get_digest(policy_session);
+
+            // Flush the trial session
+            ctx.flush_context(SessionHandle::from(trial_session).into())
+                .expect("Failed to clear session");
+
+            digest
         })
         .unwrap();
 
@@ -340,16 +348,27 @@ fn main() {
             ctx.set_sessions((Some(policy_auth_session), None, None));
 
             // IMPORTANT! After you set the policy session, you can't do *anything* else except
-            // the duplication!
+            // the duplication! This is because after you set the policy session, any actions
+            // you take will affect the policy digest, causing the policy to fail.
 
-            ctx.execute_with_temporary_object(new_parent_handle.into(), |ctx, new_parent_handle| {
-                ctx.duplicate(
-                    loaded_storage_key.into(),
-                    new_parent_handle,
-                    None,
-                    SymmetricDefinitionObject::AES_128_CFB,
-                )
-            })
+            let result = ctx.execute_with_temporary_object(
+                new_parent_handle.into(),
+                |ctx, new_parent_handle| {
+                    ctx.duplicate(
+                        loaded_storage_key.into(),
+                        new_parent_handle,
+                        None,
+                        SymmetricDefinitionObject::AES_128_CFB,
+                    )
+                },
+            );
+
+            // Unload the policy_auth_session else you will leak TPM object memory.
+            ctx.flush_context(SessionHandle::from(policy_auth_session).into())
+                .expect("Failed to clear session");
+
+            // Return the duplicate result.
+            result
         })
         .map_err(|err| {
             eprintln!("⚠️  {}", err);
