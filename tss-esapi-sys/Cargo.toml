@@ -14,11 +14,17 @@ links = "tss2-esys"
 rust-version = "1.66.0"
 
 [build-dependencies]
-bindgen = { version = "0.66.1", optional = true }
+autotools = { version = "0.2.6", optional = true }
+bindgen = { version = "0.69.4", optional = true }
 pkg-config = "0.3.18"
 target-lexicon = "0.12.0"
 cfg-if = "1.0.0"
 semver = "1.0.7"
 
+[target.'cfg(windows)'.build-dependencies]
+msbuild = { git = "https://github.com/uglyoldbob/msbuild.git", optional = true }
+winreg = {version = "0.52", optional = true }
+
 [features]
 generate-bindings = ["bindgen"]
+bundled = ["dep:autotools", "dep:msbuild", "dep:winreg"]
