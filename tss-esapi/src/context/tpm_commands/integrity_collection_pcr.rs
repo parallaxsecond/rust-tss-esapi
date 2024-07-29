@@ -111,7 +111,7 @@ impl Context {
     ///
     /// # Arguments
     /// * `pcr_selection_list` - A [PcrSelectionList] that contains pcr slots in
-    /// different banks that is going to be read.
+    ///   different banks that is going to be read.
     ///
     /// # Details
     /// The provided [PcrSelectionList] contains the pcr slots in the different

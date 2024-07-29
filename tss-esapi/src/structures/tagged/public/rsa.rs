@@ -135,8 +135,8 @@ impl PublicRsaParametersBuilder {
     /// # Errors
     /// * if no asymmetric scheme is set, `ParamsMissing` wrapper error is returned.
     /// * if the `for_signing`, `for_decryption` and `restricted` parameters are
-    /// inconsistent with the rest of the parameters, `InconsistentParams` wrapper
-    /// error is returned
+    ///   inconsistent with the rest of the parameters, `InconsistentParams` wrapper
+    ///   error is returned
     pub fn build(self) -> Result<PublicRsaParameters> {
         let rsa_scheme = self.rsa_scheme.ok_or_else(|| {
             error!("Scheme parameter is required and has not been set in the PublicRsaParametersBuilder");

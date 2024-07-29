@@ -17,7 +17,7 @@ impl Context {
     ///
     /// # Errors
     /// * if conversion from `TPMS_CONTEXT` to `TpmsContext` fails, a `WrongParamSize` error will
-    /// be returned
+    ///   be returned
     pub fn context_save(&mut self, handle: ObjectHandle) -> Result<SavedTpmContext> {
         let mut context_ptr = null_mut();
         ReturnCode::ensure_success(
@@ -33,7 +33,7 @@ impl Context {
     ///
     /// # Errors
     /// * if conversion from `TpmsContext` to the native `TPMS_CONTEXT` fails, a `WrongParamSize`
-    /// error will be returned
+    ///   error will be returned
     pub fn context_load(&mut self, context: SavedTpmContext) -> Result<ObjectHandle> {
         let mut esys_loaded_handle = ObjectHandle::None.into();
         let tpm_context = context.into();

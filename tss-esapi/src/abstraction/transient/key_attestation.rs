@@ -32,7 +32,7 @@ use std::convert::TryFrom;
 ///
 /// * it includes all the public parameters of the attested key
 /// * can be hashed (in its marshaled form) with the name hash
-/// (found by unmarshaling it) to obtain `name`
+///   (found by unmarshaling it) to obtain `name`
 pub struct MakeCredParams {
     /// TPM name of the object being attested
     pub name: Vec<u8>,
@@ -48,10 +48,8 @@ impl TransientKeyContext {
     ///
     /// # Parameters
     ///
-    /// * `object` - the object whose TPM name will be included in
-    /// the credential
-    /// * `key` - the key to be used to encrypt the secret that wraps
-    /// the credential
+    /// * `object` - the object whose TPM name will be included in the credential
+    /// * `key` - the key to be used to encrypt the secret that wraps the credential
     ///
     /// **Note**: If no `key` is given, the default Endorsement Key
     /// will be used.
@@ -88,8 +86,7 @@ impl TransientKeyContext {
     ///
     /// * `object` - the object whose TPM name is included in the credential
     /// * `key` - the key used to encrypt the secret that wraps the credential
-    /// * `credential_blob` - encrypted credential that will be returned by the
-    /// TPM
+    /// * `credential_blob` - encrypted credential that will be returned by the TPM
     /// * `secret` - encrypted secret that was used to encrypt the credential
     ///
     /// **Note**: if no `key` is given, the default Endorsement Key

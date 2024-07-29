@@ -15,12 +15,12 @@ use std::stringify;
 /// Enum representing the different types of tpm handles
 /// of a TPM handle.
 ///
-/// * Details
+/// # Details
 /// The TPM handles are used
 /// to reference shielded locations of various
 /// types within the TPM.
 ///
-/// * OBS
+/// N.B:
 /// Do not confuse the TpmHandles with the
 /// ESYS [ObjectHandle](crate::handles::ObjectHandle).
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]

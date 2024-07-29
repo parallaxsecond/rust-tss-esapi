@@ -33,10 +33,11 @@ use std::ptr::null_mut;
 ///
 /// Code safety-wise, the methods should cover the two kinds of problems that might arise:
 /// * in terms of memory safety, all parameters passed down to the TSS are verified and the library
-/// stack is then trusted to provide back valid outputs
+///   stack is then trusted to provide back valid outputs
 /// * in terms of thread safety, all methods require a mutable reference to the context object,
-/// ensuring that no two threads can use the context at the same time for an operation (barring use
-/// of `unsafe` constructs on the client side)
+///   ensuring that no two threads can use the context at the same time for an operation (barring use
+///   of `unsafe` constructs on the client side)
+///
 /// More testing and verification will be added to ensure this.
 ///
 /// For most methods, if the wrapped TSS call fails and returns a non-zero `TPM2_RC`, a
@@ -86,7 +87,7 @@ impl Context {
     ///
     /// # Errors
     /// * if either `Tss2_TctiLdr_Initiialize` or `Esys_Initialize` fail, a corresponding
-    /// Tss2ResponseCode will be returned
+    ///   Tss2ResponseCode will be returned
     pub fn new(tcti_name_conf: TctiNameConf) -> Result<Self> {
         let mut esys_context = null_mut();
 
@@ -120,7 +121,7 @@ impl Context {
     ///
     /// # Errors
     /// * if either `Tss2_TctiLdr_Initiialize` or `Esys_Initialize` fail, a corresponding
-    /// Tss2ResponseCode will be returned
+    ///   Tss2ResponseCode will be returned
     pub fn new_with_tabrmd(tabrmd_conf: TabrmdConfig) -> Result<Self> {
         Context::new(TctiNameConf::Tabrmd(tabrmd_conf))
     }
