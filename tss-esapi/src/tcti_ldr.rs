@@ -21,6 +21,7 @@ const DEVICE: &str = "device";
 const MSSIM: &str = "mssim";
 const SWTPM: &str = "swtpm";
 const TABRMD: &str = "tabrmd";
+const LIBTPMS: &str = "libtpms";
 
 /// TCTI Context created via a TCTI Loader Library.
 /// Wrapper around the TSS2_TCTI_CONTEXT structure.
@@ -139,6 +140,10 @@ pub enum TctiNameConf {
     ///
     /// For more information about configuration, see [this page](https://www.mankier.com/3/Tss2_Tcti_Mssim_Init)
     Swtpm(TpmSimulatorConfig),
+    /// Connect to a TPM (simulator) available as a library
+    ///
+    /// This allows for an optional state file
+    LibTpms { state: Option<PathBuf> },
     /// Connect to a TPM through an Access Broker/Resource Manager daemon
     ///
     /// For more information about configuration, see [this page](https://www.mankier.com/3/Tss2_Tcti_Tabrmd_Init)
@@ -174,6 +179,7 @@ impl TryFrom<TctiNameConf> for CString {
             TctiNameConf::Mssim(..) => MSSIM,
             TctiNameConf::Swtpm(..) => SWTPM,
             TctiNameConf::Tabrmd(..) => TABRMD,
+            TctiNameConf::LibTpms { .. } => LIBTPMS,
         };
 
         let tcti_conf = match tcti {
@@ -203,6 +209,9 @@ impl TryFrom<TctiNameConf> for CString {
                 .to_owned(),
             TctiNameConf::Tabrmd(config) => {
                 format!("bus_name={},bus_type={}", config.bus_name, config.bus_type)
+            }
+            TctiNameConf::LibTpms { state } => {
+                state.map(|s| s.display().to_string()).unwrap_or_default()
             }
         };
 
@@ -245,6 +254,15 @@ impl FromStr for TctiNameConf {
             return Ok(TctiNameConf::Tabrmd(TabrmdConfig::from_str(
                 captures.get(2).map_or("", |m| m.as_str()),
             )?));
+        }
+
+        let libtpms_pattern = Regex::new(r"^libtpms(:(.*))?$").unwrap(); //should not fail
+        if let Some(captures) = libtpms_pattern.captures(config_str) {
+            return Ok(TctiNameConf::LibTpms {
+                state: captures
+                    .get(2)
+                    .and_then(|s| PathBuf::from_str(s.as_str()).ok()),
+            });
         }
 
         Err(Error::WrapperError(WrapperErrorKind::InvalidParam))
@@ -327,6 +345,17 @@ fn validate_from_str_tcti() {
 
     let tcti = TctiNameConf::from_str("tabrmd").unwrap();
     assert_eq!(tcti, TctiNameConf::Tabrmd(Default::default()));
+
+    let tcti = TctiNameConf::from_str("libtpms:/try/this/path").unwrap();
+    assert_eq!(
+        tcti,
+        TctiNameConf::LibTpms {
+            state: Some(PathBuf::from("/try/this/path"))
+        }
+    );
+
+    let tcti = TctiNameConf::from_str("libtpms").unwrap();
+    assert_eq!(tcti, TctiNameConf::LibTpms { state: None });
 }
 
 /// Configuration for a Device TCTI context
