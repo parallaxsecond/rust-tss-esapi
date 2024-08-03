@@ -9,6 +9,9 @@ pub mod pcr;
 pub mod public;
 pub mod transient;
 
+mod hashing;
+pub use hashing::AssociatedHashingAlgorithm;
+
 use std::convert::TryFrom;
 
 use crate::{
