@@ -124,6 +124,7 @@ pub mod data {
 pub mod digest {
     use crate::tss2_esys::TPMU_HA;
     use std::mem::size_of;
+
     const TPM2B_DIGEST_BUFFER_SIZE: usize = size_of::<TPMU_HA>();
 
     buffer_type!(Digest, TPM2B_DIGEST_BUFFER_SIZE, TPM2B_DIGEST);
@@ -219,6 +220,47 @@ pub mod digest {
             value.zeroize();
             Digest(value_as_vec.into())
         }
+    }
+
+    #[cfg(feature = "rustcrypto")]
+    mod rustcrypto {
+        use digest::{
+            consts::{U20, U32, U48, U64},
+            generic_array::GenericArray,
+            typenum::Unsigned,
+        };
+
+        use super::*;
+
+        macro_rules! impl_from_digest {
+            ($($size:ty),+) => {
+                $(impl From<GenericArray<u8, $size>> for Digest {
+                    fn from(mut value: GenericArray<u8, $size>) -> Self {
+                        let value_as_vec = value.as_slice().to_vec();
+                        value.zeroize();
+                        Digest(value_as_vec.into())
+                    }
+                }
+
+                impl TryFrom<Digest> for GenericArray<u8, $size> {
+                    type Error = Error;
+
+                    fn try_from(value: Digest) -> Result<Self> {
+                        if value.len() != <$size>::USIZE {
+                            return Err(Error::local_error(WrapperErrorKind::WrongParamSize));
+                        }
+
+                        let mut result = [0; <$size>::USIZE];
+
+                        result.copy_from_slice(value.as_bytes());
+
+                        Ok(result.into())
+                    }
+                })+
+            }
+        }
+
+        impl_from_digest!(U20, U32, U48, U64);
     }
 }
 
