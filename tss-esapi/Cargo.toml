@@ -34,8 +34,12 @@ p224 = { version = "0.13.2", optional = true }
 p256 = { version = "0.13.2", optional = true }
 p384 = { version = "0.13.0", optional = true }
 p521 = { version = "0.13.3", optional = true }
-sm2 = { version = "0.13.3", optional = true }
 rsa = { version = "0.9", optional = true }
+sha1 = { version = "0.10.6", optional = true }
+sha2 = { version = "0.10.8", optional = true }
+sha3 = { version = "0.10.8", optional = true }
+sm2 = { version = "0.13.3", optional = true }
+sm3 = { version = "0.4.2", optional = true }
 digest = "0.10.7"
 cfg-if = "1.0.0"
 strum = { version = "0.25.0", optional = true }
@@ -54,5 +58,5 @@ semver = "1.0.7"
 [features]
 default = ["abstraction"]
 generate-bindings = ["tss-esapi-sys/generate-bindings"]
-abstraction = ["elliptic-curve", "rsa", "x509-cert", "p192", "p224", "p256", "p384", "p521", "sm2"]
+abstraction = ["elliptic-curve", "rsa", "x509-cert", "p192", "p224", "p256", "p384", "p521", "sha1", "sha2", "sha3", "sm2", "sm3"]
 integration-tests = ["strum", "strum_macros"]
