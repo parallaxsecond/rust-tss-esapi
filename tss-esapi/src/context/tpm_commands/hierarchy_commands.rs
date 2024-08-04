@@ -23,7 +23,7 @@ impl Context {
     ///
     /// # Errors
     /// * if either of the slices is larger than the maximum size of the native objects, a
-    /// `WrongParamSize` wrapper error is returned
+    ///   `WrongParamSize` wrapper error is returned
     // TODO: Fix when compacting the arguments into a struct
     #[allow(clippy::too_many_arguments)]
     pub fn create_primary(

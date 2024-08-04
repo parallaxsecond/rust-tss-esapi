@@ -27,6 +27,7 @@ pub struct NvPublic {
 }
 
 impl NvPublic {
+    #[allow(unused_qualifications)]
     const MAX_SIZE: usize = std::mem::size_of::<TPMS_NV_PUBLIC>();
 
     pub fn nv_index(&self) -> NvIndexTpmHandle {
@@ -172,8 +173,8 @@ impl NvPublicBuilder {
                     Error::local_error(WrapperErrorKind::ParamsMissing)
                 })
                 .and_then(|v| {
-                    if v > std::u16::MAX.into() {
-                        error!("data area size is too large (>{})", std::u16::MAX);
+                    if v > u16::MAX.into() {
+                        error!("data area size is too large (>{})", u16::MAX);
                         return Err(Error::local_error(WrapperErrorKind::InvalidParam));
                     }
                     Ok(v)

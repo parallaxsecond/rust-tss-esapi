@@ -408,7 +408,7 @@ impl Context {
     /// # Errors
     /// * if the TPM cannot serialize the handle, a TSS error is returned.
     /// * if the buffer length cannot be converted to a `usize`, an `InvalidParam`
-    /// wrapper error is returned.
+    ///   wrapper error is returned.
     ///
     /// ```rust
     /// # use tss_esapi::{
@@ -476,7 +476,7 @@ impl Context {
     /// # Errors
     /// * if the TPM cannot deserialize the buffer, a TSS error is returned.
     /// * if the buffer length cannot be converted to a `usize`, an `InvalidParam`
-    /// wrapper error is returned.
+    ///   wrapper error is returned.
     ///
     /// ```rust
     /// # use tss_esapi::{

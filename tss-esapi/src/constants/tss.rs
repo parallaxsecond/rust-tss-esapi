@@ -677,7 +677,7 @@ pub use crate::tss2_esys::TSS2_BASE_RC_RSP_AUTH_FAILED; /* Authorizing the TPM r
 pub use crate::tss2_esys::TSS2_BASE_RC_TRY_AGAIN; /* Operation timed out; function must be called again to be completed */
 
 cfg_if::cfg_if! {
-    if #[cfg(has_tss_base_rc_values_28_to_51_req)] {
+    if #[cfg(has_tss_base_rc_values_28_to_51)] {
         pub use crate::tss2_esys::TSS2_BASE_RC_NO_CONFIG; /* No config is available */
         pub use crate::tss2_esys::TSS2_BASE_RC_BAD_PATH; /* The provided path is bad */
         pub use crate::tss2_esys::TSS2_BASE_RC_NOT_DELETABLE; /* The object is not deletable */
@@ -731,7 +731,7 @@ cfg_if::cfg_if! {
 }
 
 cfg_if::cfg_if! {
-    if #[cfg(has_tss_base_rc_values_52_to_53_req)] {
+    if #[cfg(has_tss_base_rc_values_52_to_53)] {
         pub use crate::tss2_esys::TSS2_BASE_RC_NOT_PROVISIONED; /* Provisioning was not executed */
         pub use crate::tss2_esys::TSS2_BASE_RC_ALREADY_PROVISIONED; /* Already provisioned */
     } else {

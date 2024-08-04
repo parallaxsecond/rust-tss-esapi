@@ -130,8 +130,8 @@ impl PublicEccParametersBuilder {
     /// # Errors
     /// * if no asymmetric scheme is set, `ParamsMissing` wrapper error is returned.
     /// * if the `for_signing`, `for_decryption` and `restricted` parameters are
-    /// inconsistent with the rest of the parameters, `InconsistentParams` wrapper
-    /// error is returned
+    ///   inconsistent with the rest of the parameters, `InconsistentParams` wrapper
+    ///   error is returned
     pub fn build(self) -> Result<PublicEccParameters> {
         let ecc_scheme = self.ecc_scheme.ok_or_else(|| {
             error!("Scheme is required and has not been set in the PublicEccParametersBuilder");

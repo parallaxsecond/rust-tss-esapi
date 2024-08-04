@@ -49,6 +49,7 @@ impl From<EccPoint> for TPMS_ECC_POINT {
 
 impl From<EccPoint> for TPM2B_ECC_POINT {
     fn from(ecc_point: EccPoint) -> Self {
+        #[allow(unused_qualifications)]
         let size = std::mem::size_of::<u16>()
             + ecc_point.x().len()
             + std::mem::size_of::<u16>()

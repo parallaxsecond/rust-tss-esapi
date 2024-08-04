@@ -23,6 +23,7 @@ use zeroize::{Zeroize, ZeroizeOnDrop};
 pub struct SensitiveCreateBuffer(Vec<u8>);
 
 impl SensitiveCreateBuffer {
+    #[allow(unused_qualifications)]
     pub const MAX_SIZE: usize = std::mem::size_of::<TPMS_SENSITIVE_CREATE>();
     pub const MIN_SIZE: usize = 4;
 

@@ -362,20 +362,19 @@ pub mod sensitive_data {
     cfg_if::cfg_if! {
         if #[cfg(has_tpmu_sensitive_create)] {
             use crate::tss2_esys::TPMU_SENSITIVE_CREATE;
-            buffer_type!(
-                SensitiveData,
-                ::std::mem::size_of::<TPMU_SENSITIVE_CREATE>(),
-                TPM2B_SENSITIVE_DATA
-            );
+            #[allow(unused_qualifications)]
+            const TPMU_SENSITIVE_CREATE_MEM_SIZE: usize = std::mem::size_of::<TPMU_SENSITIVE_CREATE>();
         } else {
             use crate::tss2_esys::UINT16;
-            buffer_type!(
-                SensitiveData,
-                std::mem::size_of::<TPM2B_SENSITIVE_DATA>() - std::mem::size_of::<UINT16>(),
-                TPM2B_SENSITIVE_DATA
-            );
+            #[allow(unused_qualifications)]
+            const TPMU_SENSITIVE_CREATE_MEM_SIZE: usize = std::mem::size_of::<TPM2B_SENSITIVE_DATA>() - std::mem::size_of::<UINT16>();
         }
     }
+    buffer_type!(
+        SensitiveData,
+        TPMU_SENSITIVE_CREATE_MEM_SIZE,
+        TPM2B_SENSITIVE_DATA
+    );
 }
 
 pub mod symmetric_key {
@@ -393,9 +392,12 @@ pub mod timeout {
 
 pub mod tpm_context_data {
     use crate::tss2_esys::TPMS_CONTEXT_DATA;
+
+    #[allow(unused_qualifications)]
+    const TPMS_CONTEXT_DATA_MEM_SIZE: usize = std::mem::size_of::<TPMS_CONTEXT_DATA>();
     buffer_type!(
         TpmContextData,
-        std::mem::size_of::<TPMS_CONTEXT_DATA>(),
+        TPMS_CONTEXT_DATA_MEM_SIZE,
         TPM2B_CONTEXT_DATA
     );
 }
