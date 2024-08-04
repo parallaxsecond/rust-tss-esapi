@@ -11,6 +11,9 @@ use elliptic_curve::{
     FieldBytes, FieldBytesSize, PrimeCurve,
 };
 
+#[cfg(feature = "rsa")]
+use crate::structures::Signature;
+
 impl<C> TryFrom<EccSignature> for ecdsa::Signature<C>
 where
     C: PrimeCurve,
@@ -38,5 +41,34 @@ where
     }
 }
 
-// TODO(baloo): impl TryFrom<RsaSignature> for rsa::pkcs1v15::Signature
-// TODO(baloo): impl TryFrom<RsaSignature> for rsa::pss::Signature
+// Note: this does not implement `TryFrom<RsaSignature>` because `RsaSignature` does not carry the
+// information whether the signatures was generated using PKCS#1v1.5 or PSS.
+#[cfg(feature = "rsa")]
+impl TryFrom<Signature> for rsa::pkcs1v15::Signature {
+    type Error = Error;
+
+    fn try_from(signature: Signature) -> Result<Self> {
+        let Signature::RsaSsa(signature) = signature else {
+            return Err(Error::local_error(WrapperErrorKind::InvalidParam));
+        };
+
+        Self::try_from(signature.signature().as_bytes())
+            .map_err(|_| Error::local_error(WrapperErrorKind::InvalidParam))
+    }
+}
+
+// Note: this does not implement `TryFrom<RsaSignature>` because `RsaSignature` does not carry the
+// information whether the signatures was generated using PKCS#1v1.5 or PSS.
+#[cfg(feature = "rsa")]
+impl TryFrom<Signature> for rsa::pss::Signature {
+    type Error = Error;
+
+    fn try_from(signature: Signature) -> Result<Self> {
+        let Signature::RsaPss(signature) = signature else {
+            return Err(Error::local_error(WrapperErrorKind::InvalidParam));
+        };
+
+        Self::try_from(signature.signature().as_bytes())
+            .map_err(|_| Error::local_error(WrapperErrorKind::InvalidParam))
+    }
+}
