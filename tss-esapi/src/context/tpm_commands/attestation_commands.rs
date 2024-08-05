@@ -6,13 +6,12 @@ use crate::{
         Attest, AttestBuffer, CreationTicket, Data, Digest, PcrSelectionList, Signature,
         SignatureScheme,
     },
-    tss2_esys::{Esys_Certify, Esys_Quote},
+    tss2_esys::{Esys_Certify, Esys_CertifyCreation, Esys_GetTime, Esys_Quote},
     Context, Result, ReturnCode,
 };
 use log::error;
 use std::convert::TryFrom;
 use std::ptr::null_mut;
-use tss_esapi_sys::Esys_CertifyCreation;
 
 impl Context {
     /// Prove that an object is loaded in the TPM
@@ -322,8 +321,120 @@ impl Context {
         ))
     }
 
+    /// Get the current time and clock from the TPM
+    ///
+    /// # Arguments
+    /// * `signing_key_handle` - Handle of the key used to sign the attestation buffer
+    /// * `qualifying_data` - Qualifying data
+    /// * `signing_scheme` - Signing scheme to use if the scheme for `signing_key_handle` is `Null`.
+    ///
+    /// The `signing_key_handle` must be usable for signing.
+    ///
+    /// If `signing_key_handle` has the Restricted attribute set to `true` then `signing_scheme` must be
+    /// [SignatureScheme::Null].
+    ///
+    /// # Returns
+    /// The command returns a tuple consisting of:
+    /// * `attest_data` - TPM-generated attestation data.
+    /// * `signature` - Signature for the attestation data.
+    ///
+    /// # Errors
+    /// * if the qualifying data provided is too long, a `WrongParamSize` wrapper error will be returned
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// # use tss_esapi::{Context, TctiNameConf};
+    /// # use std::convert::TryFrom;
+    /// # use tss_esapi::{
+    /// #     abstraction::cipher::Cipher,
+    /// #     interface_types::{
+    /// #         algorithm::{HashingAlgorithm, RsaSchemeAlgorithm},
+    /// #         key_bits::RsaKeyBits,
+    /// #         reserved_handles::Hierarchy,
+    /// #     },
+    /// #     structures::{
+    /// #         RsaExponent, RsaScheme,
+    /// #     },
+    /// #     utils::{create_unrestricted_signing_rsa_public, create_restricted_decryption_rsa_public},
+    /// # };
+    /// use std::convert::TryInto;
+    /// use tss_esapi::{
+    ///     structures::{Data, SignatureScheme},
+    ///     interface_types::session_handles::AuthSession,
+    /// };
+    /// # let mut context =
+    /// #     Context::new(
+    /// #         TctiNameConf::from_environment_variable().expect("Failed to get TCTI"),
+    /// #     ).expect("Failed to create Context");
+    /// let qualifying_data = vec![0xff; 16];
+    /// # let signing_key_pub = create_unrestricted_signing_rsa_public(
+    /// #         RsaScheme::create(RsaSchemeAlgorithm::RsaSsa, Some(HashingAlgorithm::Sha256))
+    /// #         .expect("Failed to create RSA scheme"),
+    /// #     RsaKeyBits::Rsa2048,
+    /// #     RsaExponent::default(),
+    /// # )
+    /// # .expect("Failed to create an unrestricted signing rsa public structure");
+    /// # let sign_key_handle = context
+    /// #     .execute_with_nullauth_session(|ctx| {
+    /// #         ctx.create_primary(Hierarchy::Owner, signing_key_pub, None, None, None, None)
+    /// #     })
+    /// #     .unwrap()
+    /// #     .key_handle;
+    /// let (attest, signature) = context
+    ///     .execute_with_sessions(
+    ///         (
+    ///             Some(AuthSession::Password),
+    ///             Some(AuthSession::Password),
+    ///             None,
+    ///         ),
+    ///         |ctx| {
+    ///             ctx.get_time(
+    ///                 sign_key_handle,
+    ///                 Data::try_from(qualifying_data).unwrap(),
+    ///                 SignatureScheme::Null,
+    ///             )
+    ///         },
+    ///     )
+    ///     .expect("Failed to get tpm time");
+    /// ```
+    pub fn get_time(
+        &mut self,
+        signing_key_handle: KeyHandle,
+        qualifying_data: Data,
+        signing_scheme: SignatureScheme,
+    ) -> Result<(Attest, Signature)> {
+        let mut timeinfo_ptr = null_mut();
+        let mut signature_ptr = null_mut();
+        ReturnCode::ensure_success(
+            unsafe {
+                Esys_GetTime(
+                    self.mut_context(),
+                    ObjectHandle::Endorsement.into(),
+                    signing_key_handle.into(),
+                    self.required_session_1()?,
+                    self.required_session_2()?,
+                    self.optional_session_3(),
+                    &qualifying_data.into(),
+                    &signing_scheme.into(),
+                    &mut timeinfo_ptr,
+                    &mut signature_ptr,
+                )
+            },
+            |ret| {
+                error!("Error in GetTime: {:#010X}", ret);
+            },
+        )?;
+
+        let timeinfo = Context::ffi_data_to_owned(timeinfo_ptr);
+        let signature = Context::ffi_data_to_owned(signature_ptr);
+        Ok((
+            Attest::try_from(AttestBuffer::try_from(timeinfo)?)?,
+            Signature::try_from(signature)?,
+        ))
+    }
+
     // Missing function: GetSessionAuditDigest
     // Missing function: GestCommandAuditDigest
-    // Missing function: GetTime
     // Missing function: CertifyX509
 }
