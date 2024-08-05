@@ -1,10 +1,11 @@
 use core::str;
-use std::fs;
 use std::convert::TryFrom;
+use std::fs;
 use tss_esapi::{
     attributes::ObjectAttributesBuilder,
     interface_types::{
-        algorithm::{HashingAlgorithm, PublicAlgorithm, SymmetricMode}, reserved_handles::Hierarchy,
+        algorithm::{HashingAlgorithm, PublicAlgorithm, SymmetricMode},
+        reserved_handles::Hierarchy,
     },
     structures::{
         CreatePrimaryKeyResult, Digest, InitialValue, MaxBuffer, PublicBuilder,
@@ -71,7 +72,8 @@ fn main() {
     // be reloaded for future use.
 
     // We load the data from a file system file, it can be somewhat large (like a certificate), larger than MaxBuffer::MAX_SIZE
-    let initial_data = fs::read("tss-esapi/examples/symmetric_file_encrypt_decrypt_example.txt").expect("could not open data file");
+    let initial_data = fs::read("tss-esapi/examples/symmetric_file_encrypt_decrypt_example.txt")
+        .expect("could not open data file");
 
     // We create an initialisation vector, since it is needed for decryption, it should be persisted in a real world use case
     let iv = context
