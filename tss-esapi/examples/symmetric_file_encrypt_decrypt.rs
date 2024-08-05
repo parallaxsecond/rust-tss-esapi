@@ -42,7 +42,7 @@ fn main() {
         .expect("Failed to build object attributes");
 
     let key_pub = PublicBuilder::new()
-        // This key is a AES key
+        // This key is an AES key
         .with_public_algorithm(PublicAlgorithm::SymCipher)
         .with_name_hashing_algorithm(HashingAlgorithm::Sha256)
         .with_symmetric_cipher_parameters(SymmetricCipherParameters::new(
