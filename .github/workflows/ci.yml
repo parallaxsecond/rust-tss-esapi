@@ -12,6 +12,8 @@ jobs:
       - uses: actions/checkout@v2
       - name: Check spelling
         uses: codespell-project/actions-codespell@v1
+        with:
+          exclude_file: tss-esapi/examples/symmetric_file_encrypt_decrypt_example.txt
 
   formatting:
     name: Check formatting

@@ -1,0 +1,18 @@
+{
+	"name": "Development environment",
+	"dockerComposeFile": "docker-compose.yml",
+	"service": "app",
+	"workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"1YiB.rust-bundle",
+				"fill-labs.dependi"
+			],
+			"settings": {
+				"remote.autoForwardPorts": false,
+				"editor.formatOnSave": true
+			}
+		}
+	}
+}

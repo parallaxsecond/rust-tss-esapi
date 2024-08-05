@@ -1,0 +1,26 @@
+services:
+  app:
+    hostname: app
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ../..:/workspaces:cached
+    command: sleep infinity
+    network_mode: host
+    environment:
+      TPM2TOOLS_TCTI: mssim:host=localhost,port=2321
+    deploy:
+      resources:
+        limits:
+          cpus: '4.0'
+          memory: 16G
+
+  tpm:
+    image: tpmdev/tpm2-runtime
+    network_mode: host
+    restart: unless-stopped
+    environment:
+      TPM2TOOLS_TCTI: mssim:host=localhost,port=2321
+    command: /bin/bash -c "tpm_server >/dev/null & sleep 1; tpm2_startup -c; sleep infinity"
+
