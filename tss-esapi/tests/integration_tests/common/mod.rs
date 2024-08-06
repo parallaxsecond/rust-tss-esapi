@@ -34,12 +34,14 @@ use tss_esapi::{
 };
 
 mod marshall;
+#[cfg(feature = "serde")]
 mod serde;
 mod tpm2b_types_equality_checks;
 mod tpma_types_equality_checks;
 mod tpml_types_equality_checks;
 mod tpms_types_equality_checks;
 mod tpmt_types_equality_checks;
+#[cfg(feature = "serde")]
 pub use self::serde::*;
 pub use marshall::*;
 pub use tpm2b_types_equality_checks::*;
