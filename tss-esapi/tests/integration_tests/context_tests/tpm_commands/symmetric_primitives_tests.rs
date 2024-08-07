@@ -1,5 +1,6 @@
 // Copyright 2021 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
+#[cfg(feature = "abstraction")]
 mod test_encrypt_decrypt_2 {
     use crate::common::create_ctx_without_session;
     use std::convert::{TryFrom, TryInto};

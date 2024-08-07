@@ -1,10 +1,11 @@
 // Copyright 2022 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.
 
+#[cfg(feature = "abstraction")]
 use crate::common::{create_ctx_with_session, decryption_key_pub};
+
 use std::convert::TryFrom;
 use tss_esapi::{
-    attributes::SessionAttributesBuilder,
     constants::{
         tss::{
             TSS2_BASE_RC_ABI_MISMATCH, TSS2_BASE_RC_BAD_CONTEXT, TSS2_BASE_RC_BAD_REFERENCE,
@@ -17,13 +18,19 @@ use tss_esapi::{
             TSS2_BASE_RC_NO_DECRYPT_PARAM, TSS2_BASE_RC_NO_ENCRYPT_PARAM, TSS2_BASE_RC_TRY_AGAIN,
             TSS2_ESYS_RC_LAYER,
         },
-        BaseError, SessionType,
+        BaseError,
     },
     error::{BaseReturnCode, EsapiReturnCode, ReturnCode},
-    interface_types::{algorithm::HashingAlgorithm, reserved_handles::Hierarchy},
-    structures::{Auth, SymmetricDefinition},
     tss2_esys::TSS2_RC,
     Error, WrapperErrorKind,
+};
+
+#[cfg(feature = "abstraction")]
+use tss_esapi::{
+    attributes::SessionAttributesBuilder,
+    constants::SessionType,
+    interface_types::{algorithm::HashingAlgorithm, reserved_handles::Hierarchy},
+    structures::{Auth, SymmetricDefinition},
 };
 
 macro_rules! test_valid_conversion {
@@ -128,6 +135,7 @@ fn test_invalid_conversions() {
     );
 }
 
+#[cfg(feature = "abstraction")]
 #[test]
 fn test_esapi_error_from_context_method() {
     let mut context = create_ctx_with_session();

@@ -8,7 +8,6 @@ use std::{
 };
 
 use tss_esapi::{
-    abstraction::{cipher::Cipher, pcr::PcrData},
     attributes::ObjectAttributes,
     attributes::{NvIndexAttributesBuilder, ObjectAttributesBuilder, SessionAttributesBuilder},
     constants::SessionType,
@@ -18,19 +17,23 @@ use tss_esapi::{
         algorithm::{HashingAlgorithm, PublicAlgorithm, RsaSchemeAlgorithm},
         key_bits::RsaKeyBits,
         key_bits::{AesKeyBits, Sm4KeyBits},
-        reserved_handles::{Hierarchy, NvAuth, Provision},
-        session_handles::PolicySession,
+        reserved_handles::{NvAuth, Provision},
     },
     structures::{
         Digest, EccParameter, EccPoint, EccScheme, EccSignature, HashAgile, HashScheme, HmacScheme,
-        KeyDerivationFunctionScheme, KeyedHashScheme, MaxBuffer, MaxNvBuffer, NvPublicBuilder,
-        PcrSelectionListBuilder, PcrSlot, Public, PublicBuilder, PublicEccParameters, PublicKeyRsa,
-        PublicKeyedHashParameters, PublicRsaParameters, RsaExponent, RsaScheme, RsaSignature,
-        Sensitive, Signature, SymmetricCipherParameters, SymmetricDefinition,
-        SymmetricDefinitionObject,
+        KeyDerivationFunctionScheme, KeyedHashScheme, MaxNvBuffer, NvPublicBuilder, Public,
+        PublicBuilder, PublicEccParameters, PublicKeyRsa, PublicKeyedHashParameters,
+        PublicRsaParameters, RsaExponent, RsaScheme, RsaSignature, Sensitive, Signature,
+        SymmetricCipherParameters, SymmetricDefinition, SymmetricDefinitionObject,
     },
     tcti_ldr::TctiNameConf,
     utils, Context,
+};
+
+#[cfg(feature = "abstraction")]
+use tss_esapi::{
+    abstraction::{cipher::Cipher, pcr::PcrData},
+    interface_types::{reserved_handles::Hierarchy, session_handles::PolicySession},
 };
 
 mod marshall;
@@ -231,6 +234,7 @@ pub fn create_ctx_with_session() -> Context {
     ctx
 }
 
+#[cfg(feature = "abstraction")]
 #[allow(dead_code)]
 pub fn decryption_key_pub() -> Public {
     utils::create_restricted_decryption_rsa_public(
@@ -263,6 +267,7 @@ pub fn signing_key_pub() -> Public {
     .expect("Failed to create an unrestricted signing rsa public structure")
 }
 
+#[cfg(feature = "abstraction")]
 #[allow(dead_code)]
 pub fn get_pcr_policy_digest(
     context: &mut Context,

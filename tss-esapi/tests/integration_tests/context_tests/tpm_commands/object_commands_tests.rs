@@ -1,5 +1,6 @@
 // Copyright 2021 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
+#[cfg(feature = "abstraction")]
 mod test_create {
     use crate::common::{create_ctx_with_session, decryption_key_pub};
     use tss_esapi::{interface_types::reserved_handles::Hierarchy, structures::Auth};
@@ -36,6 +37,7 @@ mod test_create {
     }
 }
 
+#[cfg(feature = "abstraction")]
 mod test_load {
     use crate::common::{create_ctx_with_session, decryption_key_pub, signing_key_pub};
     use tss_esapi::{interface_types::reserved_handles::Hierarchy, structures::Auth};
@@ -256,6 +258,7 @@ mod test_read_public {
     }
 }
 
+#[cfg(feature = "abstraction")]
 mod test_make_credential {
     use crate::common::{create_ctx_with_session, decryption_key_pub};
     use std::convert::TryInto;
@@ -289,6 +292,7 @@ mod test_make_credential {
     }
 }
 
+#[cfg(feature = "abstraction")]
 mod test_activate_credential {
     use crate::common::{create_ctx_with_session, decryption_key_pub};
     use std::convert::{TryFrom, TryInto};
@@ -374,6 +378,7 @@ mod test_activate_credential {
     }
 }
 
+#[cfg(feature = "abstraction")]
 mod test_unseal {
     use crate::common::{create_ctx_with_session, create_public_sealed_object, decryption_key_pub};
     use std::convert::TryFrom;

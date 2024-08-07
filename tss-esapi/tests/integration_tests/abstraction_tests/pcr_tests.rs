@@ -7,6 +7,7 @@ use tss_esapi::{
     structures::{PcrSelectionListBuilder, PcrSlot},
 };
 
+#[cfg(feature = "abstraction")]
 #[test]
 fn test_pcr_read_all() {
     let mut context = create_ctx_without_session();

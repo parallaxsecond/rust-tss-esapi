@@ -1,6 +1,7 @@
 // Copyright 2022 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
 
+#[cfg(feature = "abstraction")]
 mod public_rsa_test {
     use picky_asn1::wrapper::IntegerAsn1;
     use picky_asn1_x509::{AlgorithmIdentifier, PublicKey, SubjectPublicKeyInfo};
@@ -102,6 +103,7 @@ mod public_rsa_test {
     }
 }
 
+#[cfg(feature = "abstraction")]
 mod public_ecc_test {
     use picky_asn1::bit_string::BitString;
     use picky_asn1_x509::{AlgorithmIdentifier, EcParameters, PublicKey, SubjectPublicKeyInfo};

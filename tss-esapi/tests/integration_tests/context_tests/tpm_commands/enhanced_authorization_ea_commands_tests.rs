@@ -138,6 +138,7 @@ mod test_policy_secret {
     }
 }
 
+#[cfg(feature = "abstraction")]
 mod test_policy_or {
     use crate::common::{create_ctx_without_session, get_pcr_policy_digest};
     use std::convert::TryFrom;
@@ -190,6 +191,7 @@ mod test_policy_or {
     }
 }
 
+#[cfg(feature = "abstraction")]
 mod test_policy_pcr {
     use crate::common::create_ctx_without_session;
     use std::convert::TryFrom;
@@ -525,6 +527,7 @@ mod test_policy_name_hash {
     }
 }
 
+#[cfg(feature = "abstraction")]
 mod test_policy_authorize {
     use crate::common::{create_ctx_with_session, get_pcr_policy_digest, signing_key_pub};
     use std::convert::TryFrom;
@@ -675,6 +678,7 @@ mod test_policy_password {
     }
 }
 
+#[cfg(feature = "abstraction")]
 mod test_policy_get_digest {
     use crate::common::create_ctx_without_session;
     use std::convert::TryFrom;

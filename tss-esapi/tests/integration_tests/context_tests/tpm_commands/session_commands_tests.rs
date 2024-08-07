@@ -1,14 +1,21 @@
 // Copyright 2021 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
 mod test_start_auth_session {
-    use crate::common::{create_ctx_with_session, create_ctx_without_session, decryption_key_pub};
+    use crate::common::create_ctx_without_session;
+
+    #[cfg(feature = "abstraction")]
+    use crate::common::{create_ctx_with_session, decryption_key_pub};
+
     use std::convert::TryFrom;
     use tss_esapi::{
         attributes::SessionAttributesBuilder,
         constants::SessionType,
-        interface_types::{algorithm::HashingAlgorithm, reserved_handles::Hierarchy},
+        interface_types::algorithm::HashingAlgorithm,
         structures::{Nonce, SymmetricDefinition},
     };
+
+    #[cfg(feature = "abstraction")]
+    use tss_esapi::interface_types::reserved_handles::Hierarchy;
 
     #[test]
     fn test_simple_sess() {
@@ -48,6 +55,7 @@ mod test_start_auth_session {
             .unwrap();
     }
 
+    #[cfg(feature = "abstraction")]
     #[test]
     fn test_bound_sess() {
         let mut context = create_ctx_with_session();
@@ -140,6 +148,7 @@ mod test_start_auth_session {
     }
 }
 
+#[cfg(feature = "abstraction")]
 mod test_policy_restart {
     use crate::common::{create_ctx_without_session, get_pcr_policy_digest};
     use std::convert::TryFrom;

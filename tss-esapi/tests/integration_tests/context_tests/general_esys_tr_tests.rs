@@ -1,17 +1,29 @@
-use crate::common::{create_ctx_with_session, create_ctx_without_session, decryption_key_pub};
+use crate::common::create_ctx_without_session;
+
+#[cfg(feature = "abstraction")]
+use crate::common::{create_ctx_with_session, decryption_key_pub};
+
 use tss_esapi::{
     attributes::NvIndexAttributesBuilder,
     constants::{tss::TPM2_NV_INDEX_FIRST, CapabilityType},
-    handles::{NvIndexHandle, NvIndexTpmHandle, ObjectHandle, PersistentTpmHandle, TpmHandle},
+    handles::{NvIndexHandle, NvIndexTpmHandle, ObjectHandle},
     interface_types::{
         algorithm::HashingAlgorithm,
-        data_handles::Persistent,
-        reserved_handles::{Hierarchy, NvAuth, Provision},
+        reserved_handles::{NvAuth, Provision},
         session_handles::AuthSession,
     },
     structures::{Auth, CapabilityData, MaxNvBuffer, NvPublicBuilder},
     tss2_esys::TPM2_HANDLE,
-    Context, Error,
+    Context,
+};
+
+#[cfg(feature = "abstraction")]
+use tss_esapi::{
+    handles::{PersistentTpmHandle, TpmHandle},
+    interface_types::{data_handles::Persistent, reserved_handles::Hierarchy},
+    structures::{Auth, CapabilityData, MaxNvBuffer, NvPublicBuilder},
+    tss2_esys::TPM2_HANDLE,
+    Error,
 };
 
 use std::convert::TryFrom;
@@ -449,6 +461,7 @@ mod test_tr_from_tpm_public {
     }
 }
 
+#[cfg(feature = "abstraction")]
 mod test_tr_serialize_tr_deserialize {
     use super::*;
 
