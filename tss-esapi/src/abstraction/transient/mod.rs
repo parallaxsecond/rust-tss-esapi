@@ -118,7 +118,6 @@ pub struct ObjectWrapper {
 ///
 /// This abstraction makes public key cryptography more accessible, focusing on asymmetric
 /// encryption and signatures in particular, by allowing users to offload object and session management.
-#[allow(clippy::module_name_repetitions)]
 #[derive(Debug)]
 pub struct TransientKeyContext {
     context: Context,

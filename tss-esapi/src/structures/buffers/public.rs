@@ -24,8 +24,7 @@ use zeroize::{Zeroize, ZeroizeOnDrop};
 pub struct PublicBuffer(Vec<u8>);
 
 impl PublicBuffer {
-    #[allow(unused_qualifications)]
-    pub const MAX_SIZE: usize = std::mem::size_of::<TPMT_PUBLIC>();
+    pub const MAX_SIZE: usize = size_of::<TPMT_PUBLIC>();
 
     pub fn value(&self) -> &[u8] {
         &self.0

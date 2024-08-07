@@ -5,7 +5,6 @@ use std::env;
 use std::str::FromStr;
 use tss_esapi::tcti_ldr::TctiNameConf;
 
-#[allow(dead_code)]
 pub fn name_conf() -> TctiNameConf {
     match env::var("TEST_TCTI") {
         Err(_) => TctiNameConf::Mssim(Default::default()),
