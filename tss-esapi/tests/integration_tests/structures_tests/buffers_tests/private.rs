@@ -12,6 +12,7 @@ fn marshall_unmarshall() {
 }
 
 #[test]
+#[cfg(feature = "serde")]
 fn serialise_deserialise() {
     crate::common::check_serialise_deserialise(&Private::default());
     let private = Private::try_from([0xff; 100].to_vec()).unwrap();
