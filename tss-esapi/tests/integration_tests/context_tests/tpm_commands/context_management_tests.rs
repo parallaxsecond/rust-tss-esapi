@@ -1,7 +1,11 @@
 // Copyright 2021 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
 mod test_ctx_save {
-    use crate::common::{create_ctx_with_session, decryption_key_pub, signing_key_pub};
+    use crate::common::{create_ctx_with_session, signing_key_pub};
+
+    #[cfg(feature = "abstraction")]
+    use crate::common::decryption_key_pub;
+
     use tss_esapi::{interface_types::reserved_handles::Hierarchy, structures::Auth};
 
     #[test]
@@ -25,6 +29,7 @@ mod test_ctx_save {
         let _ = context.context_save(key_handle.into()).unwrap();
     }
 
+    #[cfg(feature = "abstraction")]
     #[test]
     fn test_ctx_save_leaf() {
         let mut context = create_ctx_with_session();
@@ -63,6 +68,7 @@ mod test_ctx_save {
     }
 }
 
+#[cfg(feature = "abstraction")]
 mod test_ctx_load {
     use crate::common::{create_ctx_with_session, decryption_key_pub, signing_key_pub};
     use tss_esapi::{
@@ -109,7 +115,11 @@ mod test_ctx_load {
 }
 
 mod test_flush_context {
-    use crate::common::{create_ctx_with_session, decryption_key_pub, signing_key_pub};
+    use crate::common::{create_ctx_with_session, signing_key_pub};
+
+    #[cfg(feature = "abstraction")]
+    use crate::common::decryption_key_pub;
+
     use tss_esapi::{interface_types::reserved_handles::Hierarchy, structures::Auth};
 
     #[test]
@@ -134,6 +144,7 @@ mod test_flush_context {
         assert!(context.read_public(key_handle).is_err());
     }
 
+    #[cfg(feature = "abstraction")]
     #[test]
     fn test_flush_parent_ctx() {
         let mut context = create_ctx_with_session();
@@ -172,6 +183,7 @@ mod test_flush_context {
     }
 }
 
+#[cfg(feature = "abstraction")]
 mod test_evict_control {
     use crate::common::{create_ctx_without_session, decryption_key_pub};
     use std::convert::TryFrom;

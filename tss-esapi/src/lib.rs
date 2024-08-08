@@ -110,6 +110,7 @@ pub mod tcti_ldr;
 pub mod traits;
 pub mod utils;
 
+#[cfg(feature = "abstraction")]
 pub use abstraction::transient::TransientKeyContext;
 pub use context::Context;
 pub use error::{Error, Result, ReturnCode, WrapperErrorKind};

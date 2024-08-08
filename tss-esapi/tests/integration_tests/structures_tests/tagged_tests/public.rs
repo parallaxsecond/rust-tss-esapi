@@ -15,6 +15,7 @@ fn marshall_unmarshall() {
 }
 
 #[test]
+#[cfg(feature = "serde")]
 fn serialise_deserialise() {
     crate::common::publics()
         .iter()

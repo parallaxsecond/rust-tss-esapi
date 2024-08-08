@@ -1,5 +1,6 @@
 // Copyright 2021 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
+#[cfg(feature = "abstraction")]
 mod test_create_primary {
     use crate::common::{create_ctx_with_session, decryption_key_pub};
     use tss_esapi::{
@@ -56,13 +57,16 @@ mod test_clear_control {
 }
 
 mod test_change_auth {
-    use crate::common::{create_ctx_with_session, decryption_key_pub};
-    use tss_esapi::{
-        handles::AuthHandle, interface_types::reserved_handles::Hierarchy, structures::Auth,
-    };
+    use crate::common::create_ctx_with_session;
 
+    use tss_esapi::{handles::AuthHandle, structures::Auth};
+
+    #[cfg(feature = "abstraction")]
     #[test]
     fn test_object_change_auth() {
+        use crate::common::decryption_key_pub;
+        use tss_esapi::interface_types::reserved_handles::Hierarchy;
+
         let mut context = create_ctx_with_session();
 
         let prim_key_handle = context

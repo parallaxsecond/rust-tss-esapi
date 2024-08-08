@@ -1,5 +1,6 @@
 // Copyright 2021 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
+#[cfg(feature = "abstraction")]
 mod test_pcr_extend_reset {
     use crate::common::create_ctx_with_session;
     use std::convert::TryFrom;

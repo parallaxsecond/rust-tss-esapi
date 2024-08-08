@@ -1,21 +1,26 @@
 // Copyright 2021 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
 mod test_quote {
-    use crate::common::{create_ctx_with_session, decryption_key_pub, signing_key_pub};
+    use crate::common::{create_ctx_with_session, signing_key_pub};
+
+    #[cfg(feature = "abstraction")]
+    use crate::common::decryption_key_pub;
+
     use std::convert::TryFrom;
+    use tss_esapi::{
+        interface_types::{
+            algorithm::HashingAlgorithm, reserved_handles::Hierarchy,
+            structure_tags::AttestationType,
+        },
+        structures::{AttestInfo, Data, PcrSelectionListBuilder, PcrSlot, SignatureScheme},
+    };
+
+    #[cfg(feature = "abstraction")]
     use tss_esapi::{
         constants::StructureTag,
         handles::KeyHandle,
-        interface_types::{
-            algorithm::{HashingAlgorithm, SignatureSchemeAlgorithm},
-            reserved_handles::Hierarchy,
-            session_handles::AuthSession,
-            structure_tags::AttestationType,
-        },
-        structures::{
-            AttestInfo, Data, HashScheme, MaxBuffer, PcrSelectionListBuilder, PcrSlot,
-            SignatureScheme, Ticket,
-        },
+        interface_types::{algorithm::SignatureSchemeAlgorithm, session_handles::AuthSession},
+        structures::{HashScheme, MaxBuffer, Ticket},
         traits::Marshall,
     };
 
@@ -65,6 +70,7 @@ mod test_quote {
         }
     }
 
+    #[cfg(feature = "abstraction")]
     #[test]
     fn certify() {
         let mut context = create_ctx_with_session();
@@ -126,6 +132,7 @@ mod test_quote {
         assert_eq!(attest.extra_data().as_bytes(), qualifying_data);
     }
 
+    #[cfg(feature = "abstraction")]
     #[test]
     fn certify_null() {
         let mut context = create_ctx_with_session();
@@ -167,6 +174,7 @@ mod test_quote {
         assert_eq!(signature.algorithm(), SignatureSchemeAlgorithm::Null);
     }
 
+    #[cfg(feature = "abstraction")]
     #[test]
     fn certify_creation() {
         let mut context = create_ctx_with_session();

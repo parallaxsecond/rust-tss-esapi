@@ -27,6 +27,7 @@ The crate currently offers the following features:
 * `abstraction` (enabled by default) - provides a set of abstracted primitives
   on top of the basic Rust-native ESAPI API provided by the crate. This feature
   can be turned off to reduce the number of dependencies built.
+* `serde` - enable serde `Serialize`/`Deserialize` traits for types
 
 ## Cross compiling
 
