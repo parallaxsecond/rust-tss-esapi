@@ -111,6 +111,11 @@ pub mod data {
 }
 
 pub mod digest {
+    use digest::{
+        consts::{U20, U32, U48, U64},
+        generic_array::GenericArray,
+        typenum::Unsigned,
+    };
     buffer_type!(Digest, 64, TPM2B_DIGEST);
 
     // Some implementations to get from Digest to [u8; N] for common values of N (sha* primarily)
@@ -205,6 +210,34 @@ pub mod digest {
             Digest(value_as_vec.into())
         }
     }
+
+    macro_rules! impl_from_digest {
+        ($($size:ty),+) => {
+            $(impl From<GenericArray<u8, $size>> for Digest {
+                fn from(value: GenericArray<u8, $size>) -> Self {
+                    Digest(value.as_slice().to_vec().into())
+                }
+            }
+
+            impl TryFrom<Digest> for GenericArray<u8, $size> {
+                type Error = Error;
+
+                fn try_from(value: Digest) -> Result<Self> {
+                    if value.len() != <$size>::USIZE {
+                        return Err(Error::local_error(WrapperErrorKind::WrongParamSize));
+                    }
+
+                    let mut result = [0; <$size>::USIZE];
+
+                    result.copy_from_slice(value.as_bytes());
+
+                    Ok(result.into())
+                }
+            })+
+        }
+    }
+
+    impl_from_digest!(U20, U32, U48, U64);
 }
 
 pub mod ecc_parameter {
