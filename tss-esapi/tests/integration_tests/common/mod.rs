@@ -48,7 +48,6 @@ pub use tpml_types_equality_checks::*;
 pub use tpms_types_equality_checks::*;
 pub use tpmt_types_equality_checks::*;
 
-#[allow(dead_code)]
 pub const HASH: [u8; 64] = [
     0x69, 0x3E, 0xDB, 0x1B, 0x22, 0x79, 0x03, 0xF4, 0xC0, 0xBF, 0xD6, 0x91, 0x76, 0x37, 0x84, 0x69,
     0x3E, 0xDB, 0x1B, 0x22, 0x79, 0x03, 0xF4, 0xC0, 0xBF, 0xD6, 0x91, 0x76, 0x37, 0x84, 0xA2, 0x94,
@@ -56,7 +55,6 @@ pub const HASH: [u8; 64] = [
     0x92, 0x50, 0x35, 0xC2, 0x8C, 0x5C, 0x3C, 0xCA, 0xFE, 0x18, 0xE8, 0x81, 0x37, 0x78, 0x37, 0x78,
 ];
 
-#[allow(dead_code)]
 pub const KEY: [u8; 256] = [
     231, 97, 201, 180, 0, 1, 185, 150, 85, 90, 174, 188, 105, 133, 188, 3, 206, 5, 222, 71, 185, 1,
     209, 243, 36, 130, 250, 116, 17, 0, 24, 4, 25, 225, 250, 198, 245, 210, 140, 23, 139, 169, 15,
@@ -178,14 +176,12 @@ pub fn sensitives() -> [Sensitive; 4] {
 }
 
 static LOG_INIT: Once = Once::new();
-#[allow(dead_code)]
 pub fn setup_logging() {
     LOG_INIT.call_once(|| {
         env_logger::init();
     });
 }
 
-#[allow(dead_code)]
 pub fn create_tcti() -> TctiNameConf {
     setup_logging();
 
@@ -195,13 +191,11 @@ pub fn create_tcti() -> TctiNameConf {
     }
 }
 
-#[allow(dead_code)]
 pub fn create_ctx_without_session() -> Context {
     let tcti = create_tcti();
     Context::new(tcti).unwrap()
 }
 
-#[allow(dead_code)]
 pub fn create_ctx_with_session() -> Context {
     let mut ctx = create_ctx_without_session();
     let session = ctx
@@ -229,7 +223,6 @@ pub fn create_ctx_with_session() -> Context {
     ctx
 }
 
-#[allow(dead_code)]
 pub fn decryption_key_pub() -> Public {
     utils::create_restricted_decryption_rsa_public(
         Cipher::aes_256_cfb()
@@ -241,7 +234,6 @@ pub fn decryption_key_pub() -> Public {
     .expect("Failed to create a restricted decryption rsa public structure")
 }
 
-#[allow(dead_code)]
 pub fn encryption_decryption_key_pub() -> Public {
     utils::create_unrestricted_encryption_decryption_rsa_public(
         RsaKeyBits::Rsa2048,
@@ -250,7 +242,6 @@ pub fn encryption_decryption_key_pub() -> Public {
     .expect("Failed to create an unrestricted encryption decryption rsa public structure")
 }
 
-#[allow(dead_code)]
 pub fn signing_key_pub() -> Public {
     utils::create_unrestricted_signing_rsa_public(
         RsaScheme::create(RsaSchemeAlgorithm::RsaSsa, Some(HashingAlgorithm::Sha256))
@@ -261,7 +252,6 @@ pub fn signing_key_pub() -> Public {
     .expect("Failed to create an unrestricted signing rsa public structure")
 }
 
-#[allow(dead_code)]
 pub fn get_pcr_policy_digest(
     context: &mut Context,
     mangle: bool,
@@ -415,7 +405,6 @@ pub fn get_pcr_policy_digest(
     }
 }
 
-#[allow(dead_code)]
 pub fn create_public_sealed_object() -> Public {
     let object_attributes = ObjectAttributesBuilder::new()
         .with_fixed_tpm(true)

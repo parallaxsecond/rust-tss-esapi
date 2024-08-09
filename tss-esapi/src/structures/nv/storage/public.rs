@@ -27,8 +27,7 @@ pub struct NvPublic {
 }
 
 impl NvPublic {
-    #[allow(unused_qualifications)]
-    const MAX_SIZE: usize = std::mem::size_of::<TPMS_NV_PUBLIC>();
+    const MAX_SIZE: usize = size_of::<TPMS_NV_PUBLIC>();
 
     pub fn nv_index(&self) -> NvIndexTpmHandle {
         self.nv_index

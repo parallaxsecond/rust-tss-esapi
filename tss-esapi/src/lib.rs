@@ -29,10 +29,6 @@
     missing_copy_implementations,
     rustdoc::broken_intra_doc_links,
 )]
-// This comes from Zeroize they changed version of Syn used
-// when zeroize_derive was updated to Rust Edition 2021.
-// TODO: Remove this when updating Rust Edition.
-#![allow(clippy::multiple_crate_versions)]
 //! # TSS 2.0 Rust Wrapper over Enhanced System API
 //! This crate exposes the functionality of the TCG Software Stack Enhanced System API to
 //! Rust developers, both directly through FFI bindings and through more Rust-tailored interfaces

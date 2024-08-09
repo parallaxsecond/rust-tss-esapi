@@ -2,7 +2,7 @@
 name = "tss-esapi"
 version = "8.0.0-alpha"
 authors = ["Parsec Project Contributors"]
-edition = "2018"                                                       # TODO Update edition to 2021 - Remove the disabled lints that are due to using old edition.
+edition = "2021"
 description = "Rust-native wrapper around TSS 2.0 Enhanced System API"
 readme = "README.md"
 keywords = ["tpm", "tss", "esys", "esapi"]
