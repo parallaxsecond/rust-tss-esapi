@@ -8,7 +8,6 @@ use std::{
 };
 
 use tss_esapi::{
-    abstraction::{cipher::Cipher, pcr::PcrData},
     attributes::ObjectAttributes,
     attributes::{NvIndexAttributesBuilder, ObjectAttributesBuilder, SessionAttributesBuilder},
     constants::SessionType,
@@ -234,9 +233,7 @@ pub fn create_ctx_with_session() -> Context {
 #[allow(dead_code)]
 pub fn decryption_key_pub() -> Public {
     utils::create_restricted_decryption_rsa_public(
-        Cipher::aes_256_cfb()
-            .try_into()
-            .expect("Failed to create symmetric object"),
+        SymmetricDefinitionObject::AES_256_CFB,
         RsaKeyBits::Rsa2048,
         RsaExponent::default(),
     )
@@ -278,16 +275,8 @@ pub fn get_pcr_policy_digest(
         .build()
         .expect("Failed to create PcrSelectionList");
 
-    let (_update_counter, pcr_selection_list_out, pcr_data) = context
+    let (_update_counter, pcr_selection_list_out, read_pcr_digests) = context
         .pcr_read(pcr_selection_list.clone())
-        .map(|(update_counter, read_pcr_selections, read_pcr_digests)| {
-            (
-                update_counter,
-                read_pcr_selections.clone(),
-                PcrData::create(&read_pcr_selections, &read_pcr_digests)
-                    .expect("Failed to create PcrData"),
-            )
-        })
         .expect("Failed to call pcr_read");
 
     assert_eq!(pcr_selection_list, pcr_selection_list_out);
@@ -298,22 +287,12 @@ pub fn get_pcr_policy_digest(
     // values from the command rather than the values from a digest of the TPM PCR."
     //
     // "TPM2_Quote() and TPM2_PolicyPCR() digest the concatenation of PCR."
-    let mut concatenated_pcr_values = [
-        pcr_data
-            .pcr_bank(HashingAlgorithm::Sha256)
-            .unwrap()
-            .get_digest(PcrSlot::Slot0)
-            .unwrap()
-            .as_bytes(),
-        pcr_data
-            .pcr_bank(HashingAlgorithm::Sha256)
-            .unwrap()
-            .get_digest(PcrSlot::Slot1)
-            .unwrap()
-            .as_bytes(),
-    ]
-    .concat();
-
+    let mut concatenated_pcr_values = read_pcr_digests
+        .value()
+        .iter()
+        .map(|v| v.as_bytes())
+        .collect::<Vec<&[u8]>>()
+        .concat();
     if mangle {
         concatenated_pcr_values[0] = 0x00;
     }
