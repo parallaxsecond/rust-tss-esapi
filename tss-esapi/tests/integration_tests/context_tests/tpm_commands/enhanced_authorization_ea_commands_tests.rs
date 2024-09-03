@@ -194,7 +194,6 @@ mod test_policy_pcr {
     use crate::common::create_ctx_without_session;
     use std::convert::TryFrom;
     use tss_esapi::{
-        abstraction::pcr::PcrData,
         attributes::SessionAttributesBuilder,
         constants::SessionType,
         interface_types::{
@@ -237,16 +236,8 @@ mod test_policy_pcr {
             .build()
             .expect("Failed to create PcrSelectionList");
 
-        let (_update_counter, pcr_selection_list_out, pcr_data) = context
+        let (_update_counter, pcr_selection_list_out, read_pcr_digests) = context
             .pcr_read(pcr_selection_list.clone())
-            .map(|(update_counter, read_pcr_selections, read_pcr_digests)| {
-                (
-                    update_counter,
-                    read_pcr_selections.clone(),
-                    PcrData::create(&read_pcr_selections, &read_pcr_digests)
-                        .expect("Failed to create PcrData"),
-                )
-            })
             .expect("Failed to call pcr_read");
 
         assert_eq!(pcr_selection_list, pcr_selection_list_out);
@@ -258,22 +249,12 @@ mod test_policy_pcr {
         //
         // "TPM2_Quote() and TPM2_PolicyPCR() digest the concatenation of PCR."
         let concatenated_pcr_values = MaxBuffer::try_from(
-            [
-                pcr_data
-                    .pcr_bank(HashingAlgorithm::Sha256)
-                    .unwrap()
-                    .get_digest(PcrSlot::Slot0)
-                    .unwrap()
-                    .as_bytes(),
-                pcr_data
-                    .pcr_bank(HashingAlgorithm::Sha256)
-                    .unwrap()
-                    .get_digest(PcrSlot::Slot1)
-                    .unwrap()
-                    .as_bytes(),
-            ]
-            .concat()
-            .to_vec(),
+            read_pcr_digests
+                .value()
+                .iter()
+                .map(|v| v.as_bytes())
+                .collect::<Vec<&[u8]>>()
+                .concat(),
         )
         .unwrap();
 
@@ -679,7 +660,6 @@ mod test_policy_get_digest {
     use crate::common::create_ctx_without_session;
     use std::convert::TryFrom;
     use tss_esapi::{
-        abstraction::pcr::PcrData,
         attributes::SessionAttributesBuilder,
         constants::SessionType,
         interface_types::{
@@ -723,16 +703,8 @@ mod test_policy_get_digest {
 
         let trial_policy_session = PolicySession::try_from(trial_policy_auth_session)
             .expect("Failed to convert auth session into policy session");
-        let (_update_counter, pcr_selection_list_out, pcr_data) = context
+        let (_update_counter, pcr_selection_list_out, read_pcr_digests) = context
             .pcr_read(pcr_selection_list.clone())
-            .map(|(update_counter, read_pcr_selections, read_pcr_digests)| {
-                (
-                    update_counter,
-                    read_pcr_selections.clone(),
-                    PcrData::create(&read_pcr_selections, &read_pcr_digests)
-                        .expect("Failed to create PcrData"),
-                )
-            })
             .expect("Failed to call pcr_read");
 
         assert_eq!(pcr_selection_list, pcr_selection_list_out);
@@ -744,22 +716,12 @@ mod test_policy_get_digest {
         //
         // "TPM2_Quote() and TPM2_PolicyPCR() digest the concatenation of PCR."
         let concatenated_pcr_values = MaxBuffer::try_from(
-            [
-                pcr_data
-                    .pcr_bank(HashingAlgorithm::Sha256)
-                    .unwrap()
-                    .get_digest(PcrSlot::Slot0)
-                    .unwrap()
-                    .as_bytes(),
-                pcr_data
-                    .pcr_bank(HashingAlgorithm::Sha256)
-                    .unwrap()
-                    .get_digest(PcrSlot::Slot1)
-                    .unwrap()
-                    .as_bytes(),
-            ]
-            .concat()
-            .to_vec(),
+            read_pcr_digests
+                .value()
+                .iter()
+                .map(|v| v.as_bytes())
+                .collect::<Vec<&[u8]>>()
+                .concat(),
         )
         .unwrap();
 

@@ -2,9 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 mod test_encrypt_decrypt_2 {
     use crate::common::create_ctx_without_session;
-    use std::convert::{TryFrom, TryInto};
+    use std::convert::TryFrom;
     use tss_esapi::{
-        abstraction::cipher::Cipher,
         attributes::ObjectAttributesBuilder,
         interface_types::{
             algorithm::{HashingAlgorithm, PublicAlgorithm, SymmetricMode},
@@ -14,7 +13,7 @@ mod test_encrypt_decrypt_2 {
         },
         structures::{
             Auth, InitialValue, MaxBuffer, PublicBuilder, RsaExponent, SensitiveData,
-            SymmetricCipherParameters,
+            SymmetricCipherParameters, SymmetricDefinitionObject,
         },
     };
     #[test]
@@ -34,9 +33,7 @@ mod test_encrypt_decrypt_2 {
             ctx.create_primary(
                 Hierarchy::Owner,
                 tss_esapi::utils::create_restricted_decryption_rsa_public(
-                    Cipher::aes_128_cfb()
-                        .try_into()
-                        .expect("Failed to convert from Cipher"),
+                    SymmetricDefinitionObject::AES_128_CFB,
                     RsaKeyBits::Rsa2048,
                     RsaExponent::default(),
                 )
@@ -66,9 +63,7 @@ mod test_encrypt_decrypt_2 {
             .with_name_hashing_algorithm(HashingAlgorithm::Sha256)
             .with_object_attributes(symmetric_key_object_attributes)
             .with_symmetric_cipher_parameters(SymmetricCipherParameters::new(
-                Cipher::aes_128_cfb()
-                    .try_into()
-                    .expect("Failed to create symmteric cipher parameters from cipher"),
+                SymmetricDefinitionObject::AES_128_CFB,
             ))
             .with_symmetric_cipher_unique_identifier(Default::default())
             .build()
