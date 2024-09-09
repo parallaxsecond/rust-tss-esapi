@@ -29,10 +29,7 @@
     missing_copy_implementations,
     rustdoc::broken_intra_doc_links,
 )]
-// This comes from Zeroize they changed version of Syn used
-// when zeroize_derive was updated to Rust Edition 2021.
-// TODO: Remove this when updating Rust Edition.
-#![allow(clippy::multiple_crate_versions)]
+
 //! # TSS 2.0 Rust Wrapper over Enhanced System API
 //! This crate exposes the functionality of the TCG Software Stack Enhanced System API to
 //! Rust developers, both directly through FFI bindings and through more Rust-tailored interfaces
@@ -63,7 +60,7 @@
 //! are at most one level away from root.
 //!
 //! Minimum supported Rust version (MSRV):
-//! We currently check with version 1.66.0 of the Rust compiler during CI builds.
+//! We currently check with version 1.74.0 of the Rust compiler during CI builds.
 //!
 //! # Notes on code safety:
 //! * thread safety is ensured by the required mutability of the `Context` structure within the
@@ -95,6 +92,7 @@
 //! controlled through environment variables as explained
 //! [here](https://github.com/tpm2-software/tpm2-tss/blob/main/doc/logging.md#runtime-log-level).
 //!
+
 mod context;
 
 pub mod error;

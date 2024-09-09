@@ -18,7 +18,7 @@ must therefore link to all of them at build time.
 
 The paths to the libraries are discovered using `pkg-config` - make sure they
 are discoverable in this way on your system. Our build script looks for 
-`tss2-esys`, `tss2-tctildr` and `tss2-mu`. A minimum version of `3.2.2` is 
+`tss2-esys`, `tss2-tctildr` and `tss2-mu`. A minimum version of `4.0.1` is 
 required for all of them.
 
 Having installed the open-source implementation libraries at `/usr/local/lib` (by default), it

@@ -9,8 +9,8 @@ At the moment we test (via CI) and support the following Rust compiler versions:
 
 * On Ubuntu we test with:
     - The latest stable compiler version, as accessible through `rustup`.
-    - The 1.66 compiler version.
-* On Fedora we test with the compiler version included with the Fedora 36 release.
+    - The 1.74.0 compiler version.
+* On Fedora we test with the compiler version included with the Fedora 38 release.
 * On Fedora rawhide we test with the compiler version included.
 
 If you need support for other versions of the compiler, get in touch with us to see what we can do!
