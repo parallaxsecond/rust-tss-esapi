@@ -62,4 +62,26 @@ wrapper script around `pkg-config` can be seen
 Be advised that in some cases the linker used might need to be set manually in
 `.cargo/config`.
 
+## Locally built tpm2-tss
+It is now possible to specify an installation path when building the crate. This will
+make the build process trying to find all the libraries and header files it needs from
+installation path instead of using `pkg-config`.
+
+The `TPM2_TSS_PATH` environment variable name is used to specify the path to the installation.
+The installation is required to have a specific layout.
+
+```md
+Installation folder
+├── bin (Optional)
+│   ├── tss2-*.dll (Windows)
+├── include (Required)
+│   ├── tss2
+│   │   ├── tss2_*.h
+├── lib (Required)
+│   ├── tss2-*.lib (Windows)
+│   ├── tss2-*.so  (Nix)
+│   ├── tss2-*.pdb (Windows)
+└── VERSION (Required)
+```
+
 *Copyright 2021 Contributors to the Parsec project.*
