@@ -3,7 +3,7 @@
 mod handle_manager;
 use crate::{
     attributes::SessionAttributesBuilder,
-    constants::{CapabilityType, PropertyTag, SessionType},
+    constants::{CapabilityType, PropertyTag, SessionType, StartupType},
     handles::{ObjectHandle, SessionHandle},
     interface_types::{algorithm::HashingAlgorithm, session_handles::AuthSession},
     structures::{CapabilityData, SymmetricDefinition},
@@ -91,6 +91,9 @@ impl Context {
     pub fn new(tcti_name_conf: TctiNameConf) -> Result<Self> {
         let mut esys_context = null_mut();
 
+        // Some TCTI backend will not automatically send a clear and we need to send a clear
+        // manually before being to operate.
+        let needs_clear_startup = matches!(tcti_name_conf, TctiNameConf::LibTpms { .. });
         let mut _tcti_context = TctiContext::initialize(tcti_name_conf)?;
 
         ReturnCode::ensure_success(
@@ -107,13 +110,19 @@ impl Context {
         )?;
 
         let esys_context = unsafe { Some(Malloced::from_raw(esys_context)) };
-        Ok(Context {
+        let mut context = Context {
             esys_context,
             sessions: (None, None, None),
             _tcti_context,
             handle_manager: HandleManager::new(),
             cached_tpm_properties: HashMap::new(),
-        })
+        };
+
+        if needs_clear_startup {
+            context.startup(StartupType::Clear)?;
+        }
+
+        Ok(context)
     }
 
     /// Create a new ESYS context based on the TAB Resource Manager Daemon.
