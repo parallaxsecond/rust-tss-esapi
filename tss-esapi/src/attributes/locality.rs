@@ -125,3 +125,9 @@ impl LocalityAttributesBuilder {
         Ok(locality_attributes)
     }
 }
+
+impl Default for LocalityAttributesBuilder {
+    fn default() -> Self {
+        Self::new()
+    }
+}

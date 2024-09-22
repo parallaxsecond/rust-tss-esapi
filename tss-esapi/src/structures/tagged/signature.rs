@@ -8,7 +8,10 @@ use crate::{
     Error, Result, WrapperErrorKind,
 };
 use log::error;
-use std::convert::{TryFrom, TryInto};
+use std::{
+    convert::{TryFrom, TryInto},
+    mem::size_of,
+};
 use tss_esapi_sys::{Tss2_MU_TPMT_SIGNATURE_Marshal, Tss2_MU_TPMT_SIGNATURE_Unmarshal};
 
 /// Enum representing a Signature
@@ -130,7 +133,8 @@ impl TryFrom<TPMT_SIGNATURE> for Signature {
 }
 
 impl Marshall for Signature {
-    const BUFFER_SIZE: usize = std::mem::size_of::<TPMT_SIGNATURE>();
+    #[allow(unused_qualifications)]
+    const BUFFER_SIZE: usize = size_of::<TPMT_SIGNATURE>();
 
     /// Produce a marshalled [`TPMT_SIGNATURE`]
     fn marshall(&self) -> Result<Vec<u8>> {

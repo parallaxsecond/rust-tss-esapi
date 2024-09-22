@@ -268,6 +268,7 @@ impl Context {
         let mut out_hash_ptr = null_mut();
         let mut validation_ptr = null_mut();
         let ret = unsafe {
+            #[allow(unexpected_cfgs)]
             Esys_Hash(
                 self.mut_context(),
                 self.optional_session_1(),
@@ -345,7 +346,7 @@ impl Context {
     ///
     /// # Errors
     /// * if any of the public parameters is not compatible with the TPM,
-    /// an `Err` containing the specific unmarshalling error will be returned.
+    ///   an `Err` containing the specific unmarshalling error will be returned.
     pub fn hmac(
         &mut self,
         handle: ObjectHandle,

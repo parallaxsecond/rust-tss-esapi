@@ -8,7 +8,10 @@ use crate::{
     Error, Result, WrapperErrorKind,
 };
 use log::error;
-use std::convert::{TryFrom, TryInto};
+use std::{
+    convert::{TryFrom, TryInto},
+    mem::size_of,
+};
 
 /// Enum describing the Sensitive part of an object.
 ///
@@ -164,7 +167,7 @@ impl TryFrom<TPMT_SENSITIVE> for Sensitive {
 }
 
 impl Marshall for Sensitive {
-    const BUFFER_SIZE: usize = std::mem::size_of::<TPMT_SENSITIVE>();
+    const BUFFER_SIZE: usize = size_of::<TPMT_SENSITIVE>();
 
     /// Produce a marshalled [`TPMT_SENSITIVE`]
     ///

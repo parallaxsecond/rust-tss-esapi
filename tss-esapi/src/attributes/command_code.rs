@@ -143,3 +143,9 @@ impl CommandCodeAttributesBuilder {
         self.command_code_attributes.0.try_into()
     }
 }
+
+impl Default for CommandCodeAttributesBuilder {
+    fn default() -> Self {
+        Self::new()
+    }
+}
