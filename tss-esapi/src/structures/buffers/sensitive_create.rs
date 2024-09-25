@@ -9,6 +9,7 @@ use crate::{
 use log::error;
 use std::{
     convert::{TryFrom, TryInto},
+    mem::size_of,
     ops::Deref,
 };
 use zeroize::{Zeroize, ZeroizeOnDrop};
@@ -23,8 +24,7 @@ use zeroize::{Zeroize, ZeroizeOnDrop};
 pub struct SensitiveCreateBuffer(Vec<u8>);
 
 impl SensitiveCreateBuffer {
-    #[allow(unused_qualifications)]
-    pub const MAX_SIZE: usize = std::mem::size_of::<TPMS_SENSITIVE_CREATE>();
+    pub const MAX_SIZE: usize = size_of::<TPMS_SENSITIVE_CREATE>();
     pub const MIN_SIZE: usize = 4;
 
     /// Returns the content of the buffer.

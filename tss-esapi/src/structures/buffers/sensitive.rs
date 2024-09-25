@@ -9,6 +9,7 @@ use crate::{
 use log::error;
 use std::{
     convert::{TryFrom, TryInto},
+    mem::size_of,
     ops::Deref,
 };
 use zeroize::{Zeroize, ZeroizeOnDrop};
@@ -23,8 +24,7 @@ use zeroize::{Zeroize, ZeroizeOnDrop};
 pub struct SensitiveBuffer(Vec<u8>);
 
 impl SensitiveBuffer {
-    #[allow(unused_qualifications)]
-    pub const MAX_SIZE: usize = std::mem::size_of::<TPMT_SENSITIVE>();
+    pub const MAX_SIZE: usize = size_of::<TPMT_SENSITIVE>();
 
     pub fn value(&self) -> &[u8] {
         &self.0

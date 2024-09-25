@@ -51,3 +51,15 @@ fn test_default() {
         assert_eq!(expected, actual);
     }
 }
+
+#[test]
+fn test_max_sized_attest_buffer_conversions() {
+    let expected_attestation_data = [0xffu8; AttestBuffer::MAX_SIZE];
+    let native = AttestBuffer::try_from(expected_attestation_data.as_slice().to_vec()).expect(
+        "It should be possible to convert an array of MAX size into a AttestBuffer object.",
+    );
+    let tss = TPM2B_ATTEST::from(native);
+    assert_eq!(AttestBuffer::MAX_SIZE, tss.size as usize);
+    // This will be a compiler error if the max size does not match the TSS buffer size.
+    assert_eq!(expected_attestation_data, tss.attestationData);
+}
