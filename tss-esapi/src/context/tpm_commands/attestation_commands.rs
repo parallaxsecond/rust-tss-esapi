@@ -249,8 +249,6 @@ impl Context {
         signing_scheme: SignatureScheme,
         creation_ticket: CreationTicket,
     ) -> Result<(Attest, Signature)> {
-        use std::convert::TryInto;
-
         let mut certify_info_ptr = null_mut();
         let mut signature_ptr = null_mut();
         ReturnCode::ensure_success(

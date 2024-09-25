@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+
+# Copyright 2024 Contributors to the Parsec project.
+# SPDX-License-Identifier: Apache-2.0
+
+export MSRV=1.74.0
+export EXEC_DIR="tss-esapi"
+
+if [[ "$(basename `pwd`)" != "$EXEC_DIR" ]]; then
+        echo "Script should be run from ./$EXEC_DIR ."
+        exit 1
+fi
+
+rustup toolchain install $MSRV
+cargo +$MSRV build
+cp ../Cargo.lock tests/Cargo.lock.frozen

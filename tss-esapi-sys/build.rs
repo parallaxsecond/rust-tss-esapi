@@ -53,16 +53,20 @@ pub mod tpm2_tss {
         fs::read_dir,
         path::{Path, PathBuf},
     };
-    const MINIMUM_VERSION: &str = "3.2.2";
+    const MINIMUM_VERSION: &str = "4.0.1";
     const PATH_ENV_VAR_NAME: &str = "TPM2_TSS_PATH";
 
     /// The installed tpm2-tss libraries that are of
     /// interest.
     pub struct Installation {
         _tss2_sys: Library,
+        #[allow(unused)]
         tss2_esys: Library,
+        #[allow(unused)]
         tss2_tctildr: Library,
+        #[allow(unused)]
         tss2_mu: Library,
+        #[allow(unused)]
         tss2_tcti_tbs: Option<Library>,
     }
 
@@ -119,6 +123,7 @@ pub mod tpm2_tss {
                 fn bindgen_builder(&self) -> bindgen::Builder {
                     let mut builder = bindgen::Builder::default()
                         .size_t_is_usize(false)
+                        .rust_target(bindgen::RustTarget::Stable_1_73) // lower or equal to MSRV.
                         .clang_arg(self.tss2_esys.include_dir_arg())
                         .clang_arg(self.tss2_tctildr.include_dir_arg())
                         .clang_arg(self.tss2_mu.include_dir_arg())
@@ -261,8 +266,10 @@ pub mod tpm2_tss {
 
     /// Struct holding the information for a library.
     struct Library {
+        #[allow(unused)]
         header_file: Option<PathBuf>,
         version: String,
+        #[allow(unused)]
         name: String,
     }
 
@@ -333,6 +340,7 @@ pub mod tpm2_tss {
         ///     - If the library was probe without requiring header files.
         ///     - If the library specifies a header file does not have a parent directory.
         ///     - If the library specifies a header file path that contain invalid utf-8 characters.
+        #[allow(unused)]
         pub fn include_dir_arg(&self) -> String {
             self.header_file
                 .as_ref()
@@ -356,6 +364,7 @@ pub mod tpm2_tss {
         ///
         /// # Panics
         ///     - If the library specifies a header file path that contain invalid utf-8 characters.
+        #[allow(unused)]
         pub fn header_file_arg(&self) -> &str {
             self.header_file.as_ref().map_or_else(
                 || {

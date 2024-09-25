@@ -2,7 +2,7 @@
 name = "tss-esapi-sys"
 version = "0.5.0"
 authors = ["Parsec Project Contributors"]
-edition = "2018"
+edition = "2021"
 description = "FFI wrapper around TSS 2.0 Enhanced System API"
 readme = "README.md"
 keywords = ["tpm", "tss", "esys", "esapi"]
@@ -11,10 +11,10 @@ license = "Apache-2.0"
 repository = "https://github.com/parallaxsecond/rust-tss-esapi"
 documentation = "https://docs.rs/crate/tss-esapi-sys"
 links = "tss2-esys"
-rust-version = "1.66.0"
+rust-version = "1.74.0"
 
 [build-dependencies]
-bindgen = { version = "0.66.1", optional = true }
+bindgen = { version = "0.70.1", optional = true }
 pkg-config = "0.3.18"
 target-lexicon = "0.12.0"
 cfg-if = "1.0.0"
