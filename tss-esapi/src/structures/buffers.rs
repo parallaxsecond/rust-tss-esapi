@@ -97,15 +97,30 @@ pub mod public;
 pub mod sensitive;
 
 pub mod auth {
-    buffer_type!(Auth, 64, TPM2B_AUTH);
+    // Same size as TPM2B_DIGEST according to the specification.
+    use crate::tss2_esys::TPMU_HA;
+    use std::mem::size_of;
+    const TPM2B_AUTH_BUFFER_SIZE: usize = size_of::<TPMU_HA>();
+    buffer_type!(Auth, TPM2B_AUTH_BUFFER_SIZE, TPM2B_AUTH);
 }
 
 pub mod data {
-    buffer_type!(Data, 64, TPM2B_DATA);
+    // This should, according to the specification, be
+    // size_of::<TPMT_HA>() but due to a bug in tpm2-tss
+    // (https://github.com/tpm2-software/tpm2-tss/issues/2888)
+    // it is the size of TPMU_HA
+    use crate::tss2_esys::TPMU_HA;
+    use std::mem::size_of;
+    const TPM2B_DATA_BUFFER_SIZE: usize = size_of::<TPMU_HA>();
+    buffer_type!(Data, TPM2B_DATA_BUFFER_SIZE, TPM2B_DATA);
 }
 
 pub mod digest {
-    buffer_type!(Digest, 64, TPM2B_DIGEST);
+    use crate::tss2_esys::TPMU_HA;
+    use std::mem::size_of;
+    const TPM2B_DIGEST_BUFFER_SIZE: usize = size_of::<TPMU_HA>();
+
+    buffer_type!(Digest, TPM2B_DIGEST_BUFFER_SIZE, TPM2B_DIGEST);
 
     // Some implementations to get from Digest to [u8; N] for common values of N (sha* primarily)
     // This is used to work around the fact that Rust does not allow custom functions for general values of N in [T; N],
@@ -170,50 +185,75 @@ pub mod digest {
 }
 
 pub mod ecc_parameter {
+    use crate::tss2_esys::TPM2_MAX_ECC_KEY_BYTES;
+    const TPM2B_ECC_PARAMETER_BUFFER_SIZE: usize = TPM2_MAX_ECC_KEY_BYTES as usize;
     buffer_type!(
         EccParameter,
-        crate::tss2_esys::TPM2_MAX_ECC_KEY_BYTES as usize,
+        TPM2B_ECC_PARAMETER_BUFFER_SIZE,
         TPM2B_ECC_PARAMETER
     );
 }
 
 pub mod encrypted_secret {
-    named_field_buffer_type!(EncryptedSecret, 256, TPM2B_ENCRYPTED_SECRET, secret);
+    use crate::tss2_esys::TPMU_ENCRYPTED_SECRET;
+    use std::mem::size_of;
+    const TPM2B_ENCRYPTED_SECRET_BUFFER_SIZE: usize = size_of::<TPMU_ENCRYPTED_SECRET>();
+    named_field_buffer_type!(
+        EncryptedSecret,
+        TPM2B_ENCRYPTED_SECRET_BUFFER_SIZE,
+        TPM2B_ENCRYPTED_SECRET,
+        secret
+    );
 }
 
 pub mod id_object {
-    named_field_buffer_type!(IdObject, 256, TPM2B_ID_OBJECT, credential);
+    use crate::tss2_esys::TPMS_ID_OBJECT;
+    use std::mem::size_of;
+    const TPM2B_ID_OBJECT_BUFFER_SIZE: usize = size_of::<TPMS_ID_OBJECT>();
+    named_field_buffer_type!(
+        IdObject,
+        TPM2B_ID_OBJECT_BUFFER_SIZE,
+        TPM2B_ID_OBJECT,
+        credential
+    );
 }
 
 pub mod initial_value {
-    buffer_type!(
-        InitialValue,
-        crate::tss2_esys::TPM2_MAX_SYM_BLOCK_SIZE as usize,
-        TPM2B_IV
-    );
+    use crate::tss2_esys::TPM2_MAX_SYM_BLOCK_SIZE;
+    const TPM2B_IV_BUFFER_SIZE: usize = TPM2_MAX_SYM_BLOCK_SIZE as usize;
+    buffer_type!(InitialValue, TPM2B_IV_BUFFER_SIZE, TPM2B_IV);
 }
 
 pub mod max_buffer {
     use crate::tss2_esys::TPM2_MAX_DIGEST_BUFFER;
-    buffer_type!(MaxBuffer, TPM2_MAX_DIGEST_BUFFER as usize, TPM2B_MAX_BUFFER);
+    const TPM2B_MAX_BUFFER_BUFFER_SIZE: usize = TPM2_MAX_DIGEST_BUFFER as usize;
+    buffer_type!(MaxBuffer, TPM2B_MAX_BUFFER_BUFFER_SIZE, TPM2B_MAX_BUFFER);
 }
 
 pub mod max_nv_buffer {
     use crate::tss2_esys::TPM2_MAX_NV_BUFFER_SIZE;
+    const TPM2B_MAX_NV_BUFFER_BUFFER_SIZE: usize = TPM2_MAX_NV_BUFFER_SIZE as usize;
     buffer_type!(
         MaxNvBuffer,
-        TPM2_MAX_NV_BUFFER_SIZE as usize,
+        TPM2B_MAX_NV_BUFFER_BUFFER_SIZE,
         TPM2B_MAX_NV_BUFFER
     );
 }
 
 pub mod nonce {
-    buffer_type!(Nonce, 64, TPM2B_NONCE);
+    // Same size as TPM2B_DIGEST according to the specification.
+    use crate::tss2_esys::TPMU_HA;
+    use std::mem::size_of;
+    const TPM2B_NONCE_BUFFER_SIZE: usize = size_of::<TPMU_HA>();
+
+    buffer_type!(Nonce, TPM2B_NONCE_BUFFER_SIZE, TPM2B_NONCE);
 }
 
 pub mod private {
+    use std::mem::size_of;
     use tss_esapi_sys::_PRIVATE;
-    buffer_type!(Private, ::std::mem::size_of::<_PRIVATE>(), TPM2B_PRIVATE);
+    const TPM2B_PRIVATE_BUFFER_SIZE: usize = size_of::<_PRIVATE>();
+    buffer_type!(Private, TPM2B_PRIVATE_BUFFER_SIZE, TPM2B_PRIVATE);
 }
 
 pub mod private_key_rsa {
@@ -224,31 +264,34 @@ pub mod private_key_rsa {
     // ((MAX_RSA_KEY_BYTES * 5) ./ 2. The larger size would only apply to keys that have fixedTPM parents.
     // The larger size was added in revision 01.53."
     // The TSS stack we use only accepts the smaller of the two sizes described above (for now).
+    const TPM2B_PRIVATE_KEY_RSA_BUFFER_SIZE: usize = (TPM2_MAX_RSA_KEY_BYTES as usize) / 2;
     buffer_type!(
         PrivateKeyRsa,
-        (TPM2_MAX_RSA_KEY_BYTES / 2) as usize,
+        TPM2B_PRIVATE_KEY_RSA_BUFFER_SIZE,
         TPM2B_PRIVATE_KEY_RSA
     );
 }
 
 pub mod private_vendor_specific {
     use crate::tss2_esys::TPM2_PRIVATE_VENDOR_SPECIFIC_BYTES;
-
+    const TPM2B_PRIVATE_VENDOR_SPECIFIC_BUFFER_SIZE: usize =
+        TPM2_PRIVATE_VENDOR_SPECIFIC_BYTES as usize;
     // The spec states the maximum size as:
     // "The value for PRIVATE_VENDOR_SPECIFIC_BYTES is determined by the vendor."
     // Not very helpful, but the TSS exposes a generic value that we can use.
     buffer_type!(
         PrivateVendorSpecific,
-        TPM2_PRIVATE_VENDOR_SPECIFIC_BYTES as usize,
+        TPM2B_PRIVATE_VENDOR_SPECIFIC_BUFFER_SIZE,
         TPM2B_PRIVATE_VENDOR_SPECIFIC
     );
 }
 
 pub mod public_key_rsa {
     use crate::{interface_types::key_bits::RsaKeyBits, tss2_esys::TPM2_MAX_RSA_KEY_BYTES};
+    const TPM2B_PUBLIC_KEY_RSA_BUFFER_SIZE: usize = TPM2_MAX_RSA_KEY_BYTES as usize;
     buffer_type!(
         PublicKeyRsa,
-        TPM2_MAX_RSA_KEY_BYTES as usize,
+        TPM2B_PUBLIC_KEY_RSA_BUFFER_SIZE,
         TPM2B_PUBLIC_KEY_RSA
     );
 
@@ -321,22 +364,31 @@ pub mod public_key_rsa {
 }
 
 pub mod sensitive_data {
+    // This should be size_of::<TPMU_SENSITIVE_CREATE>(), but this not available
+    // in old versions of tpm2-tss so the size calculated from sized buffer instead.
+    use crate::tss2_esys::UINT16;
+    use std::mem::size_of;
+    const TPM2B_SENSITIVE_DATA_BUFFER_SIZE: usize =
+        size_of::<TPM2B_SENSITIVE_DATA>() - size_of::<UINT16>();
     buffer_type!(
         SensitiveData,
-        ::std::mem::size_of::<TPM2B_SENSITIVE_DATA>(),
+        TPM2B_SENSITIVE_DATA_BUFFER_SIZE,
         TPM2B_SENSITIVE_DATA
     );
 }
 
 pub mod symmetric_key {
     use crate::tss2_esys::TPM2_MAX_SYM_KEY_BYTES;
-
+    const TPM2B_SYM_KEY_BUFFER_SIZE: usize = TPM2_MAX_SYM_KEY_BYTES as usize;
     // The spec states the maximum size as:
     // "MAX_SYM_KEY_BYTES will be the larger of the largest symmetric key supported by the TPM and the
     // largest digest produced by any hashing algorithm implemented on the TPM"
-    buffer_type!(SymmetricKey, TPM2_MAX_SYM_KEY_BYTES as usize, TPM2B_SYM_KEY);
+    buffer_type!(SymmetricKey, TPM2B_SYM_KEY_BUFFER_SIZE, TPM2B_SYM_KEY);
 }
 
 pub mod timeout {
-    buffer_type!(Timeout, 8, TPM2B_TIMEOUT);
+    use crate::tss2_esys::UINT64;
+    use std::mem::size_of;
+    const TPM2B_TIMEOUT_BUFFER_SIZE: usize = size_of::<UINT64>();
+    buffer_type!(Timeout, TPM2B_TIMEOUT_BUFFER_SIZE, TPM2B_TIMEOUT);
 }
