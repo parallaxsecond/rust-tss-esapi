@@ -15,8 +15,11 @@ use crate::{
     Context, Error, Result,
 };
 use log::error;
-use std::convert::{TryFrom, TryInto};
-use std::ptr::null_mut;
+use std::{
+    convert::{TryFrom, TryInto},
+    mem::size_of,
+    ptr::null_mut,
+};
 
 impl Context {
     /// Create a primary key and return the handle.
@@ -26,7 +29,7 @@ impl Context {
     ///
     /// # Errors
     /// * if either of the slices is larger than the maximum size of the native objects, a
-    /// `WrongParamSize` wrapper error is returned
+    ///   `WrongParamSize` wrapper error is returned
     // TODO: Fix when compacting the arguments into a struct
     #[allow(clippy::too_many_arguments)]
     pub fn create_primary(
@@ -39,9 +42,7 @@ impl Context {
         creation_pcrs: Option<PcrSelectionList>,
     ) -> Result<CreatePrimaryKeyResult> {
         let sensitive_create = TPM2B_SENSITIVE_CREATE {
-            size: std::mem::size_of::<TPMS_SENSITIVE_CREATE>()
-                .try_into()
-                .unwrap(),
+            size: size_of::<TPMS_SENSITIVE_CREATE>().try_into().unwrap(),
             sensitive: TPMS_SENSITIVE_CREATE {
                 userAuth: auth_value.unwrap_or_default().into(),
                 data: initial_data.unwrap_or_default().into(),

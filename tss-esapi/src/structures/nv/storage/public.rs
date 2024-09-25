@@ -10,7 +10,10 @@ use crate::{
     Error, Result, WrapperErrorKind,
 };
 use log::error;
-use std::convert::{TryFrom, TryInto};
+use std::{
+    convert::{TryFrom, TryInto},
+    mem::size_of,
+};
 
 /// Representation of the public parameters of a non-volatile
 /// space allocation.
@@ -27,7 +30,7 @@ pub struct NvPublic {
 }
 
 impl NvPublic {
-    const MAX_SIZE: usize = std::mem::size_of::<TPMS_NV_PUBLIC>();
+    const MAX_SIZE: usize = size_of::<TPMS_NV_PUBLIC>();
 
     pub fn nv_index(&self) -> NvIndexTpmHandle {
         self.nv_index
@@ -172,8 +175,8 @@ impl NvPublicBuilder {
                     Error::local_error(WrapperErrorKind::ParamsMissing)
                 })
                 .and_then(|v| {
-                    if v > std::u16::MAX.into() {
-                        error!("data area size is too large (>{})", std::u16::MAX);
+                    if v > u16::MAX.into() {
+                        error!("data area size is too large (>{})", u16::MAX);
                         return Err(Error::local_error(WrapperErrorKind::InvalidParam));
                     }
                     Ok(v)

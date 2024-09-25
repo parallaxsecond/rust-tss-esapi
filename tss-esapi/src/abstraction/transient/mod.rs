@@ -95,10 +95,8 @@ impl KeyMaterial {
 /// Structure containing all the defining elements of a TPM key
 ///
 /// - `material` identifies the numeric value of the key object
-/// - `params` identifies the algorithm to use on the key and other relevant
-/// parameters
-/// - `auth` identifies the optional authentication value to be used with the
-/// key
+/// - `params` identifies the algorithm to use on the key and other relevant parameters
+/// - `auth` identifies the optional authentication value to be used with the key
 #[derive(Debug, Clone)]
 pub struct ObjectWrapper {
     pub material: KeyMaterial,
@@ -662,10 +660,10 @@ impl TransientKeyContextBuilder {
     ///
     /// # Errors
     /// * errors are returned if any method calls return an error: `Context::start_auth_session`
-    /// `Context::create_primary`, `Context::flush_context`, `Context::set_handle_auth`
-    /// or if an internal error occurs when getting random numbers from the local machine
+    ///   `Context::create_primary`, `Context::flush_context`, `Context::set_handle_auth`
+    ///   or if an internal error occurs when getting random numbers from the local machine
     /// * if the root key authentication size is given greater than 32 or if the root key size is
-    /// not 1024, 2048, 3072 or 4096, a `InvalidParam` wrapper error is returned
+    ///   not 1024, 2048, 3072 or 4096, a `InvalidParam` wrapper error is returned
     pub fn build(mut self) -> Result<TransientKeyContext> {
         if self.root_key_auth_size > 32 {
             return Err(Error::local_error(ErrorKind::WrongParamSize));

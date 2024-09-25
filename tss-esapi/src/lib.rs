@@ -61,23 +61,23 @@
 //!
 //! # Notes on code safety:
 //! * thread safety is ensured by the required mutability of the `Context` structure within the
-//! methods implemented on it; thus, in an otherwise safe app commands cannot be dispatched in
-//! parallel for the same context; whether multithreading with multiple context objects is possible
-//! depends on the TCTI used and this is the responsibility of the crate client to establish.
+//!   methods implemented on it; thus, in an otherwise safe app commands cannot be dispatched in
+//!   parallel for the same context; whether multithreading with multiple context objects is possible
+//!   depends on the TCTI used and this is the responsibility of the crate client to establish.
 //! * the `unsafe` keyword is used to denote methods that could panic, crash or cause undefined
-//! behaviour. Whenever this is the case, the properties that need to be checked against
-//! parameters before passing them in will be stated in the documentation of the method.
+//!   behaviour. Whenever this is the case, the properties that need to be checked against
+//!   parameters before passing them in will be stated in the documentation of the method.
 //! * `unsafe` blocks within this crate need to be documented through code comments if they
-//! are not covered by the points of trust described here.
+//!   are not covered by the points of trust described here.
 //! * the TSS2.0 library that this crate links to is trusted to return consistent values and to
-//! not crash or lead to undefined behaviour when presented with valid arguments.
+//!   not crash or lead to undefined behaviour when presented with valid arguments.
 //! * the `Mbox` crate is trusted to perform operations safely on the pointers provided to it, if
-//! the pointers are trusted to be valid.
+//!   the pointers are trusted to be valid.
 //! * methods not marked `unsafe` are trusted to behave safely, potentially returning appropriate
-//! error messages when encountering any problems.
+//!   error messages when encountering any problems.
 //! * whenever `unwrap`, `expect`, `panic` or derivatives of these are used, they need to be
-//! thoroughly documented and justified - preferably `unwrap` and `expect` should *never* fail
-//! during normal operation.
+//!   thoroughly documented and justified - preferably `unwrap` and `expect` should *never* fail
+//!   during normal operation.
 //! * these rules can be broken in test-only code and in tests.
 //!
 //! # Logging

@@ -16,8 +16,11 @@ use crate::{
     Context, Error, Result,
 };
 use log::error;
-use std::convert::{TryFrom, TryInto};
-use std::ptr::{null, null_mut};
+use std::{
+    convert::{TryFrom, TryInto},
+    mem::size_of,
+    ptr::{null, null_mut},
+};
 
 impl Context {
     /// Create a key and return the handle.
@@ -37,7 +40,7 @@ impl Context {
     ///
     /// # Errors
     /// * if either of the slices is larger than the maximum size of the native objects, a
-    /// `WrongParamSize` wrapper error is returned
+    ///   `WrongParamSize` wrapper error is returned
     // TODO: Fix when compacting the arguments into a struct
     #[allow(clippy::too_many_arguments)]
     pub fn create(
@@ -50,9 +53,8 @@ impl Context {
         creation_pcrs: Option<PcrSelectionList>,
     ) -> Result<CreateKeyResult> {
         let sensitive_create = TPM2B_SENSITIVE_CREATE {
-            size: std::mem::size_of::<TPMS_SENSITIVE_CREATE>()
-                .try_into()
-                .unwrap(), // will not fail on targets of at least 16 bits
+            #[allow(unused_qualifications)]
+            size: size_of::<TPMS_SENSITIVE_CREATE>().try_into().unwrap(), // will not fail on targets of at least 16 bits
             sensitive: TPMS_SENSITIVE_CREATE {
                 userAuth: auth_value.unwrap_or_default().into(),
                 data: sensitive_data.unwrap_or_default().into(),
@@ -146,6 +148,7 @@ impl Context {
     ) -> Result<KeyHandle> {
         let mut object_handle = ObjectHandle::None.into();
         let ret = unsafe {
+            #[allow(unexpected_cfgs)]
             Esys_LoadExternal(
                 self.mut_context(),
                 self.optional_session_1(),
@@ -183,6 +186,7 @@ impl Context {
     ) -> Result<KeyHandle> {
         let mut object_handle = ObjectHandle::None.into();
         let ret = unsafe {
+            #[allow(unexpected_cfgs)]
             Esys_LoadExternal(
                 self.mut_context(),
                 self.optional_session_1(),

@@ -79,7 +79,7 @@ impl Context {
     ///
     /// # Errors
     /// * if any of the public parameters is not compatible with the TPM,
-    /// an `Err` containing the specific unmarshalling error will be returned.
+    ///   an `Err` containing the specific unmarshalling error will be returned.
     pub fn test_parms(&mut self, public_parmeters: PublicParameters) -> Result<()> {
         let ret = unsafe {
             Esys_TestParms(

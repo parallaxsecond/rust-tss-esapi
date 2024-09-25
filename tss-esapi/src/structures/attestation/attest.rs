@@ -10,7 +10,10 @@ use crate::{
     Error, Result, WrapperErrorKind,
 };
 use log::error;
-use std::convert::{TryFrom, TryInto};
+use std::{
+    convert::{TryFrom, TryInto},
+    mem::size_of,
+};
 
 /// Type for holding attestation data
 ///
@@ -119,7 +122,7 @@ impl TryFrom<TPMS_ATTEST> for Attest {
 }
 
 impl Marshall for Attest {
-    const BUFFER_SIZE: usize = std::mem::size_of::<TPMS_ATTEST>();
+    const BUFFER_SIZE: usize = size_of::<TPMS_ATTEST>();
 
     /// Produce a marshalled [`TPMS_ATTEST`]
     fn marshall(&self) -> Result<Vec<u8>> {
