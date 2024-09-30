@@ -61,3 +61,14 @@ fn test_default() {
         assert_eq!(expected, actual);
     }
 }
+
+#[test]
+fn test_max_sized_nonce_conversions() {
+    let expected_buffer = [0xffu8; Nonce::MAX_SIZE];
+    let native = Nonce::try_from(expected_buffer.as_slice().to_vec())
+        .expect("It should be possible to convert an array of MAX size into a Nonce object.");
+    let tss = TPM2B_NONCE::from(native);
+    assert_eq!(Nonce::MAX_SIZE, tss.size as usize);
+    // This will be a compiler error if the max size does not match the TSS buffer size.
+    assert_eq!(expected_buffer, tss.buffer);
+}

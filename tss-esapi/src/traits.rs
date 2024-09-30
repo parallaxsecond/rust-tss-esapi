@@ -49,7 +49,7 @@ macro_rules! impl_marshall_trait {
     ($native_type:ident, $tss_type:ident, $tss_mu_type:ident, $convert_expression:stmt, $( $ref_sign:tt )?) => {
         paste::item! {
             impl $crate::traits::Marshall for $native_type {
-                const BUFFER_SIZE: usize = std::mem::size_of::<$tss_type>();
+                const BUFFER_SIZE: usize = ::std::mem::size_of::<$tss_type>();
 
                 fn marshall_offset(
                     &self,

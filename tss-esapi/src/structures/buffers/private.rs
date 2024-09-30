@@ -2,9 +2,12 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use crate::traits::impl_mu_standard;
+use std::mem::size_of;
 use tss_esapi_sys::_PRIVATE;
 
-buffer_type!(Private, ::std::mem::size_of::<_PRIVATE>(), TPM2B_PRIVATE);
+const TPM2B_PRIVATE_BUFFER_SIZE: usize = size_of::<_PRIVATE>();
+
+buffer_type!(Private, TPM2B_PRIVATE_BUFFER_SIZE, TPM2B_PRIVATE);
 
 impl_mu_standard!(Private, TPM2B_PRIVATE);
 
