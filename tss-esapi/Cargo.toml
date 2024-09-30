@@ -53,6 +53,9 @@ tss-esapi = { path = ".", features = [
 ] }
 
 
+cipher = { version = "0.4", features = ["block-padding", "alloc"] }
+
+
 [build-dependencies]
 semver = "1.0.7"
 
