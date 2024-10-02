@@ -22,6 +22,7 @@ const MSSIM: &str = "mssim";
 const SWTPM: &str = "swtpm";
 const TABRMD: &str = "tabrmd";
 const LIBTPMS: &str = "libtpms";
+const TBS: &str = "tbs";
 
 /// TCTI Context created via a TCTI Loader Library.
 /// Wrapper around the TSS2_TCTI_CONTEXT structure.
@@ -148,6 +149,10 @@ pub enum TctiNameConf {
     ///
     /// For more information about configuration, see [this page](https://www.mankier.com/3/Tss2_Tcti_Tabrmd_Init)
     Tabrmd(TabrmdConfig),
+    /// Connect to the tpm using the Trusted Platform Module (TPM) Base Services (TBS) on Windows.
+    ///
+    /// For more information about TBS, see [this page](https://learn.microsoft.com/en-us/windows/win32/tbs/about-tbs)
+    Tbs,
 }
 
 impl TctiNameConf {
@@ -180,6 +185,7 @@ impl TryFrom<TctiNameConf> for CString {
             TctiNameConf::Swtpm(..) => SWTPM,
             TctiNameConf::Tabrmd(..) => TABRMD,
             TctiNameConf::LibTpms { .. } => LIBTPMS,
+            TctiNameConf::Tbs => TBS,
         };
 
         let tcti_conf = match tcti {
@@ -213,6 +219,7 @@ impl TryFrom<TctiNameConf> for CString {
             TctiNameConf::LibTpms { state } => {
                 state.map(|s| s.display().to_string()).unwrap_or_default()
             }
+            TctiNameConf::Tbs => String::new(),
         };
 
         if tcti_conf.is_empty() {
@@ -263,6 +270,10 @@ impl FromStr for TctiNameConf {
                     .get(2)
                     .and_then(|s| PathBuf::from_str(s.as_str()).ok()),
             });
+        }
+
+        if config_str.trim() == TBS {
+            return Ok(TctiNameConf::Tbs);
         }
 
         Err(Error::WrapperError(WrapperErrorKind::InvalidParam))
@@ -356,6 +367,10 @@ fn validate_from_str_tcti() {
 
     let tcti = TctiNameConf::from_str("libtpms").unwrap();
     assert_eq!(tcti, TctiNameConf::LibTpms { state: None });
+
+    let tcti_tbs = TctiNameConf::from_str("tbs")
+        .expect("It should be possible to convert the string 'tbs' into a TctiNameConf object.");
+    assert_eq!(tcti_tbs, TctiNameConf::Tbs);
 }
 
 /// Configuration for a Device TCTI context
