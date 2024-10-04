@@ -4,15 +4,18 @@
 use std::convert::{TryFrom, TryInto};
 
 use tss_esapi::{
-    abstraction::{ak, ek, KeyCustomization},
+    abstraction::{ak, ek, AsymmetricAlgorithmSelection, KeyCustomization},
     attributes::{ObjectAttributesBuilder, SessionAttributesBuilder},
     constants::SessionType,
     handles::AuthHandle,
     interface_types::{
-        algorithm::{AsymmetricAlgorithm, HashingAlgorithm, SignatureSchemeAlgorithm},
+        algorithm::{HashingAlgorithm, SignatureSchemeAlgorithm},
+        ecc::EccCurve,
+        key_bits::RsaKeyBits,
         session_handles::PolicySession,
     },
     structures::{Auth, Digest, PublicBuilder, SymmetricDefinition},
+    Error, WrapperErrorKind,
 };
 
 use crate::common::create_ctx_without_session;
@@ -21,11 +24,17 @@ use crate::common::create_ctx_without_session;
 fn test_create_ak_rsa_rsa() {
     let mut context = create_ctx_without_session();
 
-    let ek_rsa = ek::create_ek_object(&mut context, AsymmetricAlgorithm::Rsa, None).unwrap();
+    let ek_rsa = ek::create_ek_object(
+        &mut context,
+        AsymmetricAlgorithmSelection::Rsa(RsaKeyBits::Rsa2048),
+        None,
+    )
+    .unwrap();
     ak::create_ak(
         &mut context,
         ek_rsa,
         HashingAlgorithm::Sha256,
+        AsymmetricAlgorithmSelection::Rsa(RsaKeyBits::Rsa2048),
         SignatureSchemeAlgorithm::RsaPss,
         None,
         None,
@@ -37,32 +46,90 @@ fn test_create_ak_rsa_rsa() {
 fn test_create_ak_rsa_ecc() {
     let mut context = create_ctx_without_session();
 
-    let ek_rsa = ek::create_ek_object(&mut context, AsymmetricAlgorithm::Rsa, None).unwrap();
-    if ak::create_ak(
+    let ek_rsa = ek::create_ek_object(
+        &mut context,
+        AsymmetricAlgorithmSelection::Rsa(RsaKeyBits::Rsa2048),
+        None,
+    )
+    .unwrap();
+
+    if let Err(actual_error) = ak::create_ak(
         &mut context,
         ek_rsa,
         HashingAlgorithm::Sha256,
+        AsymmetricAlgorithmSelection::Ecc(EccCurve::NistP256),
         SignatureSchemeAlgorithm::Sm2,
         None,
         None,
-    )
-    .is_ok()
-    {
-        // We can't use unwrap_err because that requires Debug on the T
-        panic!("Should have errored");
+    ) {
+        let expected_error = Error::WrapperError(WrapperErrorKind::InconsistentParams);
+        assert_eq!(expected_error, actual_error);
+    } else {
+        // We can't use unwrap_err because that requires Debug on the T(=CreateKeyResult).
+        panic!("Should not be possible to create an AK with a parent that have an unsupported or incompatible scheme.");
     }
+}
+
+#[test]
+fn test_create_ak_ecc_ecc() {
+    let mut context = create_ctx_without_session();
+
+    let ek_ecc = ek::create_ek_object(
+        &mut context,
+        AsymmetricAlgorithmSelection::Ecc(EccCurve::NistP384),
+        None,
+    )
+    .unwrap();
+    ak::create_ak(
+        &mut context,
+        ek_ecc,
+        HashingAlgorithm::Sha256,
+        AsymmetricAlgorithmSelection::Ecc(EccCurve::NistP256),
+        SignatureSchemeAlgorithm::EcDsa,
+        None,
+        None,
+    )
+    .unwrap();
+}
+
+#[test]
+fn test_create_ak_ecdaa() {
+    let mut context = create_ctx_without_session();
+
+    let ek_ecc = ek::create_ek_object(
+        &mut context,
+        AsymmetricAlgorithmSelection::Ecc(EccCurve::NistP384),
+        None,
+    )
+    .unwrap();
+    ak::create_ak(
+        &mut context,
+        ek_ecc,
+        HashingAlgorithm::Sha256,
+        AsymmetricAlgorithmSelection::Ecc(EccCurve::BnP256),
+        SignatureSchemeAlgorithm::EcDaa,
+        None,
+        None,
+    )
+    .unwrap();
 }
 
 #[test]
 fn test_create_and_use_ak() {
     let mut context = create_ctx_without_session();
 
-    let ek_rsa = ek::create_ek_object(&mut context, AsymmetricAlgorithm::Rsa, None).unwrap();
+    let ek_rsa = ek::create_ek_object(
+        &mut context,
+        AsymmetricAlgorithmSelection::Rsa(RsaKeyBits::Rsa2048),
+        None,
+    )
+    .unwrap();
     let ak_auth = Auth::try_from(vec![0x1, 0x2, 0x42]).unwrap();
     let att_key = ak::create_ak(
         &mut context,
         ek_rsa,
         HashingAlgorithm::Sha256,
+        AsymmetricAlgorithmSelection::Rsa(RsaKeyBits::Rsa2048),
         SignatureSchemeAlgorithm::RsaPss,
         Some(ak_auth.clone()),
         None,
@@ -158,13 +225,19 @@ fn test_create_custom_ak() {
     }
     let mut context = create_ctx_without_session();
 
-    let ek_rsa = ek::create_ek_object(&mut context, AsymmetricAlgorithm::Rsa, None).unwrap();
+    let ek_rsa = ek::create_ek_object(
+        &mut context,
+        AsymmetricAlgorithmSelection::Rsa(RsaKeyBits::Rsa2048),
+        None,
+    )
+    .unwrap();
     let ak_auth = Auth::try_from(vec![0x1, 0x2, 0x42]).unwrap();
     // Without customization, no st clear
     let att_key_without = ak::create_ak(
         &mut context,
         ek_rsa,
         HashingAlgorithm::Sha256,
+        AsymmetricAlgorithmSelection::Rsa(RsaKeyBits::Rsa2048),
         SignatureSchemeAlgorithm::RsaPss,
         Some(ak_auth.clone()),
         None,
@@ -181,6 +254,7 @@ fn test_create_custom_ak() {
         &mut context,
         ek_rsa,
         HashingAlgorithm::Sha256,
+        AsymmetricAlgorithmSelection::Rsa(RsaKeyBits::Rsa2048),
         SignatureSchemeAlgorithm::RsaPss,
         Some(ak_auth),
         &CustomizeKey,
