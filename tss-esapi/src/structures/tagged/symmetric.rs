@@ -165,6 +165,11 @@ impl SymmetricDefinitionObject {
         key_bits: AesKeyBits::Aes256,
         mode: SymmetricMode::Cfb,
     };
+    // Constant for the SM4 128 bits CFB symmetric definition object
+    pub const SM4_128_CFB: SymmetricDefinitionObject = SymmetricDefinitionObject::Sm4 {
+        key_bits: Sm4KeyBits::Sm4_128,
+        mode: SymmetricMode::Cfb,
+    };
     pub(crate) fn is_null(&self) -> bool {
         matches!(self, Self::Null)
     }
