@@ -330,6 +330,10 @@ pub mod public_key_rsa {
                 RsaKeyBits::Rsa4096 => PublicKeyRsa(vec![0u8; 512].into()),
             }
         }
+
+        pub fn new_empty() -> Self {
+            PublicKeyRsa(vec![0u8; 0].into())
+        }
     }
 
     impl TryFrom<PublicKeyRsa> for [u8; 128] {
