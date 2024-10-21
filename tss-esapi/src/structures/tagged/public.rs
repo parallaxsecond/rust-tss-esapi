@@ -21,6 +21,8 @@ use log::error;
 use std::convert::{TryFrom, TryInto};
 use tss_esapi_sys::{TPMU_PUBLIC_ID, TPMU_PUBLIC_PARMS};
 
+use super::symmetric::SymmetricDefinitionObject;
+
 /// A builder for the [Public] type.
 #[derive(Debug, Clone)]
 pub struct PublicBuilder {
@@ -371,6 +373,16 @@ impl Public {
                 name_hashing_algorithm,
                 ..
             } => *name_hashing_algorithm,
+        }
+    }
+
+    /// Returns the name symmetric definition object if available
+    pub fn symmetric_algorithm(&self) -> Result<SymmetricDefinitionObject> {
+        match self {
+            Public::Rsa { parameters, .. } => Ok(parameters.symmetric_definition_object()),
+            Public::KeyedHash { .. } => Err(Error::local_error(WrapperErrorKind::InvalidParam)),
+            Public::Ecc { parameters, .. } => Ok(parameters.symmetric_definition_object()),
+            Public::SymCipher { parameters, .. } => Ok(parameters.symmetric_definition_object()),
         }
     }
 
