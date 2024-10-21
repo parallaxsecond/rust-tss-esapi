@@ -25,6 +25,11 @@ impl SymmetricCipherParameters {
             symmetric_definition_object,
         }
     }
+
+    /// Returns the [SymmetricDefinitionObject].
+    pub const fn symmetric_definition_object(&self) -> SymmetricDefinitionObject {
+        self.symmetric_definition_object
+    }
 }
 
 impl TryFrom<TPMS_SYMCIPHER_PARMS> for SymmetricCipherParameters {
