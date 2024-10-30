@@ -40,19 +40,32 @@ fn test_retrieve_ek_pubcert() {
 }
 
 #[test]
-fn test_create_ek() {
+fn test_create_ek_rsa() {
+    // RSA key sizes currently supported by swtpm
+    let supported_ek_sizes = vec![RsaKeyBits::Rsa2048, RsaKeyBits::Rsa3072];
     let mut context = create_ctx_without_session();
 
-    let _ = ek::create_ek_object(
-        &mut context,
-        AsymmetricAlgorithmSelection::Rsa(RsaKeyBits::Rsa2048),
-        None,
-    )
-    .unwrap();
-    let _ = ek::create_ek_object(
-        &mut context,
-        AsymmetricAlgorithmSelection::Ecc(EccCurve::NistP256),
-        None,
-    )
-    .unwrap();
+    for key_bits in supported_ek_sizes {
+        let handle = ek::create_ek_object(
+            &mut context,
+            AsymmetricAlgorithmSelection::Rsa(key_bits),
+            None,
+        )
+        .unwrap_or_else(|_| panic!("failed to create EK {:?}", key_bits));
+        context.flush_context(handle.into()).unwrap();
+    }
+}
+
+#[test]
+fn test_create_ek_ecc() {
+    // ECC curves currently supported by swtpm
+    let supported_ek_curves = vec![EccCurve::NistP256, EccCurve::NistP384];
+    let mut context = create_ctx_without_session();
+
+    for curve in supported_ek_curves {
+        let handle =
+            ek::create_ek_object(&mut context, AsymmetricAlgorithmSelection::Ecc(curve), None)
+                .unwrap_or_else(|_| panic!("failed to create EK {:?}", curve));
+        context.flush_context(handle.into()).unwrap();
+    }
 }

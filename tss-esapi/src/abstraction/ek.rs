@@ -12,9 +12,9 @@ use crate::{
         reserved_handles::{Hierarchy, NvAuth},
     },
     structures::{
-        Digest, EccParameter, EccPoint, EccScheme, KeyDerivationFunctionScheme, Public,
-        PublicBuilder, PublicEccParametersBuilder, PublicKeyRsa, PublicRsaParametersBuilder,
-        RsaExponent, RsaScheme, SymmetricDefinitionObject,
+        EccParameter, EccPoint, EccScheme, KeyDerivationFunctionScheme, Public, PublicBuilder,
+        PublicEccParametersBuilder, PublicKeyRsa, PublicRsaParametersBuilder, RsaExponent,
+        RsaScheme, SymmetricDefinitionObject,
     },
     Context, Error, Result, WrapperErrorKind,
 };
@@ -32,7 +32,31 @@ const ECC_P256_SM2_EK_CERTIFICATE_NV_INDEX: u32 = 0x01c0001a;
 const RSA_3072_EK_CERTIFICATE_NV_INDEX: u32 = 0x01c0001c;
 const RSA_4096_EK_CERTIFICATE_NV_INDEX: u32 = 0x01c0001e;
 
+// Source: TCG EK Credential Profile for TPM Family 2.0; Level 0 Version 2.5 Revision 2
+// Section B.3 and B.4
+const AUTHPOLICY_A_SHA256: [u8; 32] = [
+    0x83, 0x71, 0x97, 0x67, 0x44, 0x84, 0xb3, 0xf8, 0x1a, 0x90, 0xcc, 0x8d, 0x46, 0xa5, 0xd7, 0x24,
+    0xfd, 0x52, 0xd7, 0x6e, 0x06, 0x52, 0x0b, 0x64, 0xf2, 0xa1, 0xda, 0x1b, 0x33, 0x14, 0x69, 0xaa,
+];
+const AUTHPOLICY_B_SHA384: [u8; 48] = [
+    0xb2, 0x6e, 0x7d, 0x28, 0xd1, 0x1a, 0x50, 0xbc, 0x53, 0xd8, 0x82, 0xbc, 0xf5, 0xfd, 0x3a, 0x1a,
+    0x07, 0x41, 0x48, 0xbb, 0x35, 0xd3, 0xb4, 0xe4, 0xcb, 0x1c, 0x0a, 0xd9, 0xbd, 0xe4, 0x19, 0xca,
+    0xcb, 0x47, 0xba, 0x09, 0x69, 0x96, 0x46, 0x15, 0x0f, 0x9f, 0xc0, 0x00, 0xf3, 0xf8, 0x0e, 0x12,
+];
+const AUTHPOLICY_B_SHA512: [u8; 64] = [
+    0xb8, 0x22, 0x1c, 0xa6, 0x9e, 0x85, 0x50, 0xa4, 0x91, 0x4d, 0xe3, 0xfa, 0xa6, 0xa1, 0x8c, 0x07,
+    0x2c, 0xc0, 0x12, 0x08, 0x07, 0x3a, 0x92, 0x8d, 0x5d, 0x66, 0xd5, 0x9e, 0xf7, 0x9e, 0x49, 0xa4,
+    0x29, 0xc4, 0x1a, 0x6b, 0x26, 0x95, 0x71, 0xd5, 0x7e, 0xdb, 0x25, 0xfb, 0xdb, 0x18, 0x38, 0x42,
+    0x56, 0x08, 0xb4, 0x13, 0xcd, 0x61, 0x6a, 0x5f, 0x6d, 0xb5, 0xb6, 0x07, 0x1a, 0xf9, 0x9b, 0xea,
+];
+const AUTHPOLICY_B_SM3_256: [u8; 32] = [
+    0x16, 0x78, 0x60, 0xa3, 0x5f, 0x2c, 0x5c, 0x35, 0x67, 0xf9, 0xc9, 0x27, 0xac, 0x56, 0xc0, 0x32,
+    0xf3, 0xb3, 0xa6, 0x46, 0x2f, 0x8d, 0x03, 0x79, 0x98, 0xe7, 0xa1, 0x0f, 0x77, 0xfa, 0x45, 0x4a,
+];
+
 /// Get the [`Public`] representing a default Endorsement Key
+///
+/// **Note**: This only works for key algorithms specified in TCG EK Credential Profile for TPM Family 2.0.
 ///
 /// Source: TCG EK Credential Profile for TPM Family 2.0; Level 0 Version 2.3 Revision 2
 /// Appendix B.3.3 and B.3.4
@@ -42,12 +66,19 @@ pub fn create_ek_public_from_default_template<IKC: IntoKeyCustomization>(
 ) -> Result<Public> {
     let key_customization = key_customization.into_key_customization();
 
+    // user_with_auth is not set for the lower profiles (RSA 20248 and ECC P256)
+    let user_with_auth = !matches!(
+        alg,
+        AsymmetricAlgorithmSelection::Rsa(RsaKeyBits::Rsa2048)
+            | AsymmetricAlgorithmSelection::Ecc(EccCurve::NistP256)
+    );
+
     let obj_attrs_builder = ObjectAttributesBuilder::new()
         .with_fixed_tpm(true)
         .with_st_clear(false)
         .with_fixed_parent(true)
         .with_sensitive_data_origin(true)
-        .with_user_with_auth(false)
+        .with_user_with_auth(user_with_auth)
         .with_admin_with_policy(true)
         .with_no_da(false)
         .with_encrypted_duplication(false)
@@ -62,54 +93,93 @@ pub fn create_ek_public_from_default_template<IKC: IntoKeyCustomization>(
     }
     .build()?;
 
-    // TPM2_PolicySecret(TPM_RH_ENDORSEMENT)
-    // With 32 null-bytes attached, because of the type of with_auth_policy
-    let authpolicy: [u8; 64] = [
-        0x83, 0x71, 0x97, 0x67, 0x44, 0x84, 0xb3, 0xf8, 0x1a, 0x90, 0xcc, 0x8d, 0x46, 0xa5, 0xd7,
-        0x24, 0xfd, 0x52, 0xd7, 0x6e, 0x06, 0x52, 0x0b, 0x64, 0xf2, 0xa1, 0xda, 0x1b, 0x33, 0x14,
-        0x69, 0xaa, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-        0x00, 0x00, 0x00, 0x00,
-    ];
-
     let key_builder = match alg {
-        AsymmetricAlgorithmSelection::Rsa(key_bits) => PublicBuilder::new()
-            .with_public_algorithm(PublicAlgorithm::Rsa)
-            .with_name_hashing_algorithm(HashingAlgorithm::Sha256)
-            .with_object_attributes(obj_attrs)
-            .with_auth_policy(Digest::try_from(authpolicy[0..32].to_vec())?)
-            .with_rsa_parameters(
-                PublicRsaParametersBuilder::new()
-                    .with_symmetric(SymmetricDefinitionObject::AES_128_CFB)
-                    .with_scheme(RsaScheme::Null)
-                    .with_key_bits(key_bits)
-                    .with_exponent(RsaExponent::default())
-                    .with_is_signing_key(obj_attrs.sign_encrypt())
-                    .with_is_decryption_key(obj_attrs.decrypt())
-                    .with_restricted(obj_attrs.decrypt())
-                    .build()?,
-            )
-            .with_rsa_unique_identifier(PublicKeyRsa::new_empty_with_size(RsaKeyBits::Rsa2048)),
-        AsymmetricAlgorithmSelection::Ecc(ecc_curve) => PublicBuilder::new()
-            .with_public_algorithm(PublicAlgorithm::Ecc)
-            .with_name_hashing_algorithm(HashingAlgorithm::Sha256)
-            .with_object_attributes(obj_attrs)
-            .with_auth_policy(Digest::try_from(authpolicy[0..32].to_vec())?)
-            .with_ecc_parameters(
-                PublicEccParametersBuilder::new()
-                    .with_symmetric(SymmetricDefinitionObject::AES_128_CFB)
-                    .with_ecc_scheme(EccScheme::Null)
-                    .with_curve(ecc_curve)
-                    .with_key_derivation_function_scheme(KeyDerivationFunctionScheme::Null)
-                    .with_is_signing_key(obj_attrs.sign_encrypt())
-                    .with_is_decryption_key(obj_attrs.decrypt())
-                    .with_restricted(obj_attrs.decrypt())
-                    .build()?,
-            )
-            .with_ecc_unique_identifier(EccPoint::new(
-                EccParameter::try_from(vec![0u8; 32])?,
-                EccParameter::try_from(vec![0u8; 32])?,
-            )),
+        AsymmetricAlgorithmSelection::Rsa(key_bits) => {
+            let (hash_alg, authpolicy, symmetric, unique) = match key_bits {
+                RsaKeyBits::Rsa2048 => (
+                    HashingAlgorithm::Sha256,
+                    AUTHPOLICY_A_SHA256.into(),
+                    SymmetricDefinitionObject::AES_128_CFB,
+                    PublicKeyRsa::new_empty_with_size(RsaKeyBits::Rsa2048),
+                ),
+                RsaKeyBits::Rsa3072 | RsaKeyBits::Rsa4096 => (
+                    HashingAlgorithm::Sha384,
+                    AUTHPOLICY_B_SHA384.into(),
+                    SymmetricDefinitionObject::AES_256_CFB,
+                    PublicKeyRsa::new_empty(),
+                ),
+                // Other key sizes are not supported in the spec, so return a error
+                _ => return Err(Error::local_error(WrapperErrorKind::UnsupportedParam)),
+            };
+
+            PublicBuilder::new()
+                .with_public_algorithm(PublicAlgorithm::Rsa)
+                .with_name_hashing_algorithm(hash_alg)
+                .with_object_attributes(obj_attrs)
+                .with_auth_policy(authpolicy)
+                .with_rsa_parameters(
+                    PublicRsaParametersBuilder::new()
+                        .with_symmetric(symmetric)
+                        .with_scheme(RsaScheme::Null)
+                        .with_key_bits(key_bits)
+                        .with_exponent(RsaExponent::default())
+                        .with_is_signing_key(obj_attrs.sign_encrypt())
+                        .with_is_decryption_key(obj_attrs.decrypt())
+                        .with_restricted(obj_attrs.decrypt())
+                        .build()?,
+                )
+                .with_rsa_unique_identifier(unique)
+        }
+        AsymmetricAlgorithmSelection::Ecc(ecc_curve) => {
+            let (hash_alg, authpolicy, symmetric, xy_size) = match ecc_curve {
+                EccCurve::NistP256 => (
+                    HashingAlgorithm::Sha256,
+                    AUTHPOLICY_A_SHA256.into(),
+                    SymmetricDefinitionObject::AES_128_CFB,
+                    32,
+                ),
+                EccCurve::NistP384 => (
+                    HashingAlgorithm::Sha384,
+                    AUTHPOLICY_B_SHA384.into(),
+                    SymmetricDefinitionObject::AES_256_CFB,
+                    0,
+                ),
+                EccCurve::NistP521 => (
+                    HashingAlgorithm::Sha512,
+                    AUTHPOLICY_B_SHA512.into(),
+                    SymmetricDefinitionObject::AES_256_CFB,
+                    0,
+                ),
+                EccCurve::Sm2P256 => (
+                    HashingAlgorithm::Sm3_256,
+                    AUTHPOLICY_B_SM3_256.into(),
+                    SymmetricDefinitionObject::SM4_128_CFB,
+                    0,
+                ),
+                // Other curves are not supported in the spec, so return a error
+                _ => return Err(Error::local_error(WrapperErrorKind::UnsupportedParam)),
+            };
+            PublicBuilder::new()
+                .with_public_algorithm(PublicAlgorithm::Ecc)
+                .with_name_hashing_algorithm(hash_alg)
+                .with_object_attributes(obj_attrs)
+                .with_auth_policy(authpolicy)
+                .with_ecc_parameters(
+                    PublicEccParametersBuilder::new()
+                        .with_symmetric(symmetric)
+                        .with_ecc_scheme(EccScheme::Null)
+                        .with_curve(ecc_curve)
+                        .with_key_derivation_function_scheme(KeyDerivationFunctionScheme::Null)
+                        .with_is_signing_key(obj_attrs.sign_encrypt())
+                        .with_is_decryption_key(obj_attrs.decrypt())
+                        .with_restricted(obj_attrs.decrypt())
+                        .build()?,
+                )
+                .with_ecc_unique_identifier(EccPoint::new(
+                    EccParameter::try_from(vec![0u8; xy_size])?,
+                    EccParameter::try_from(vec![0u8; xy_size])?,
+                ))
+        }
     };
 
     let key_builder = if let Some(ref k) = key_customization {

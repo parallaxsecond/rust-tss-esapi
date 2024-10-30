@@ -40,6 +40,30 @@ fn test_create_ak_rsa_rsa() {
         None,
     )
     .unwrap();
+    context.flush_context(ek_rsa.into()).unwrap();
+}
+
+#[test]
+fn test_create_ak_rsa_rsa_3072() {
+    let mut context = create_ctx_without_session();
+
+    let ek_rsa = ek::create_ek_object(
+        &mut context,
+        AsymmetricAlgorithmSelection::Rsa(RsaKeyBits::Rsa3072),
+        None,
+    )
+    .unwrap();
+    ak::create_ak(
+        &mut context,
+        ek_rsa,
+        HashingAlgorithm::Sha384,
+        AsymmetricAlgorithmSelection::Rsa(RsaKeyBits::Rsa3072),
+        SignatureSchemeAlgorithm::RsaPss,
+        None,
+        None,
+    )
+    .unwrap();
+    context.flush_context(ek_rsa.into()).unwrap();
 }
 
 #[test]
@@ -66,6 +90,7 @@ fn test_create_ak_rsa_ecc() {
             "Should've gotten an 'InconsistentParams' error when trying to create an a P256 AK with an SM2 signing scheme."
         );
     }
+    context.flush_context(ek_rsa.into()).unwrap();
 }
 
 #[test]
@@ -78,16 +103,29 @@ fn test_create_ak_ecc() {
         None,
     )
     .unwrap();
-    ak::create_ak(
+
+    let ak_res = ak::create_ak(
         &mut context,
         ek_ecc,
-        HashingAlgorithm::Sha256,
-        AsymmetricAlgorithmSelection::Ecc(EccCurve::NistP256),
+        HashingAlgorithm::Sha384,
+        AsymmetricAlgorithmSelection::Ecc(EccCurve::NistP384),
         SignatureSchemeAlgorithm::EcDsa,
         None,
         None,
     )
     .unwrap();
+
+    let ak_ecc = ak::load_ak(
+        &mut context,
+        ek_ecc,
+        None,
+        ak_res.out_private,
+        ak_res.out_public,
+    )
+    .unwrap();
+
+    context.flush_context(ek_ecc.into()).unwrap();
+    context.flush_context(ak_ecc.into()).unwrap();
 }
 
 #[test]
@@ -110,6 +148,8 @@ fn test_create_ak_ecdaa() {
         None,
     )
     .unwrap();
+
+    context.flush_context(ek_ecc.into()).unwrap();
 }
 
 #[test]
@@ -204,6 +244,9 @@ fn test_create_and_use_ak() {
         .unwrap();
 
     assert_eq!(expected, decrypted);
+
+    context.flush_context(ek_rsa.into()).unwrap();
+    context.flush_context(loaded_ak.into()).unwrap();
 }
 
 #[test]
