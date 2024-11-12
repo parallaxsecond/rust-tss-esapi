@@ -194,11 +194,31 @@ impl PublicEccParametersBuilder {
             return Err(Error::local_error(WrapperErrorKind::InconsistentParams));
         }
 
-        if (ecc_curve == EccCurve::BnP256 || ecc_curve == EccCurve::BnP638)
-            && ecc_scheme.algorithm() != EccSchemeAlgorithm::EcDaa
-        {
-            error!("Bn curve should use only EcDaa scheme");
-            return Err(Error::local_error(WrapperErrorKind::InconsistentParams));
+        match (ecc_curve, ecc_scheme.algorithm()) {
+            (EccCurve::BnP256 | EccCurve::BnP638, EccSchemeAlgorithm::EcDaa)
+            | (EccCurve::Sm2P256, EccSchemeAlgorithm::Sm2)
+            | (
+                EccCurve::NistP192
+                | EccCurve::NistP224
+                | EccCurve::NistP256
+                | EccCurve::NistP384
+                | EccCurve::NistP521,
+                EccSchemeAlgorithm::EcDh
+                | EccSchemeAlgorithm::EcDaa
+                | EccSchemeAlgorithm::EcDsa
+                | EccSchemeAlgorithm::EcMqv
+                | EccSchemeAlgorithm::EcSchnorr,
+            )
+            | (_, EccSchemeAlgorithm::Null) => (),
+
+            _ => {
+                error!(
+                    "Mismatch between elliptic curve ({:#?}) and signing scheme ({:#?}) used",
+                    ecc_curve,
+                    ecc_scheme.algorithm()
+                );
+                return Err(Error::local_error(WrapperErrorKind::InconsistentParams));
+            }
         }
 
         Ok(PublicEccParameters {

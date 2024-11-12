@@ -7,7 +7,9 @@ pub mod rsa;
 use crate::{
     attributes::ObjectAttributes,
     interface_types::algorithm::{HashingAlgorithm, PublicAlgorithm},
-    structures::{Digest, EccPoint, PublicKeyRsa, SymmetricCipherParameters},
+    structures::{
+        Digest, EccPoint, PublicKeyRsa, SymmetricCipherParameters, SymmetricDefinitionObject,
+    },
     traits::{Marshall, UnMarshall},
     tss2_esys::{TPM2B_PUBLIC, TPMT_PUBLIC},
     Error, Result, WrapperErrorKind,
@@ -371,6 +373,16 @@ impl Public {
                 name_hashing_algorithm,
                 ..
             } => *name_hashing_algorithm,
+        }
+    }
+
+    /// Returns the name symmetric definition object if available.
+    pub fn symmetric_algorithm(&self) -> Option<SymmetricDefinitionObject> {
+        match self {
+            Public::Rsa { parameters, .. } => Some(parameters.symmetric_definition_object()),
+            Public::KeyedHash { .. } => None,
+            Public::Ecc { parameters, .. } => Some(parameters.symmetric_definition_object()),
+            Public::SymCipher { parameters, .. } => Some(parameters.symmetric_definition_object()),
         }
     }
 

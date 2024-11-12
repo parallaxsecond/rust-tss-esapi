@@ -2,13 +2,14 @@
 // SPDX-License-Identifier: Apache-2.0
 use std::convert::{TryFrom, TryInto};
 use tss_esapi::{
-    abstraction::ek,
-    abstraction::transient::{KeyParams, ObjectWrapper, TransientKeyContextBuilder},
+    abstraction::{
+        ek,
+        transient::{KeyParams, ObjectWrapper, TransientKeyContextBuilder},
+        AsymmetricAlgorithmSelection,
+    },
     constants::response_code::Tss2ResponseCodeKind,
     interface_types::{
-        algorithm::{
-            AsymmetricAlgorithm, EccSchemeAlgorithm, HashingAlgorithm, RsaSchemeAlgorithm,
-        },
+        algorithm::{EccSchemeAlgorithm, HashingAlgorithm, RsaSchemeAlgorithm},
         ecc::EccCurve,
         key_bits::RsaKeyBits,
         resource_handles::Hierarchy,
@@ -630,8 +631,11 @@ fn activate_credential() {
     let mut basic_ctx = crate::common::create_ctx_with_session();
 
     // the public part of the EK is used, so we retrieve the parameters
-    let key_pub =
-        ek::create_ek_public_from_default_template(AsymmetricAlgorithm::Rsa, None).unwrap();
+    let key_pub = ek::create_ek_public_from_default_template(
+        AsymmetricAlgorithmSelection::Rsa(RsaKeyBits::Rsa2048),
+        None,
+    )
+    .unwrap();
     let key_pub = if let Public::Rsa {
         object_attributes,
         name_hashing_algorithm,
@@ -749,8 +753,11 @@ fn activate_credential_wrong_key() {
     let mut basic_ctx = crate::common::create_ctx_with_session();
 
     // the public part of the EK is used, so we retrieve the parameters
-    let key_pub =
-        ek::create_ek_public_from_default_template(AsymmetricAlgorithm::Rsa, None).unwrap();
+    let key_pub = ek::create_ek_public_from_default_template(
+        AsymmetricAlgorithmSelection::Rsa(RsaKeyBits::Rsa2048),
+        None,
+    )
+    .unwrap();
     let key_pub = if let Public::Rsa {
         object_attributes,
         name_hashing_algorithm,
