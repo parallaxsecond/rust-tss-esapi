@@ -1,8 +1,8 @@
 // Copyright 2020 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
 
-/// This module contains both the constants defined in the TSS specification (tss module)
-/// but also the internal representation of the TSS constants.
+//! This module contains both the constants defined in the TSS specification (tss module)
+//! but also the internal representation of the TSS constants.
 
 /// Representation of the constants defined in the
 /// Constants -> TPM_ALG_ID section of the specification
