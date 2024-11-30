@@ -8,8 +8,8 @@ use crate::{
     handles::{AuthHandle, KeyHandle, SessionHandle},
     interface_types::{
         algorithm::{
-            EccSchemeAlgorithm, HashingAlgorithm, PublicAlgorithm, RsaSchemeAlgorithm,
-            SignatureSchemeAlgorithm,
+            AsymmetricAlgorithm, EccSchemeAlgorithm, HashingAlgorithm, PublicAlgorithm,
+            RsaSchemeAlgorithm, SignatureSchemeAlgorithm,
         },
         session_handles::PolicySession,
     },
@@ -21,6 +21,7 @@ use crate::{
     },
     Context, Error, Result, WrapperErrorKind,
 };
+use log::error;
 use std::convert::TryFrom;
 
 // Source: TCG EK Credential Profile for TPM Family 2.0; Level 0 Version 2.5 Revision 2
@@ -56,6 +57,7 @@ const POLICY_C_SM3_256: [u8; 32] = [
     0x56, 0x99, 0xa3, 0xe3, 0x9f, 0xc3, 0x55, 0x1b, 0xfe, 0xff, 0xcf, 0x13, 0x2b, 0x49, 0xe1, 0x1d,
 ];
 
+/// Creates a Public object for an AK key.
 fn create_ak_public<IKC: IntoKeyCustomization>(
     key_alg: AsymmetricAlgorithmSelection,
     hash_alg: HashingAlgorithm,
@@ -131,7 +133,7 @@ fn create_ak_public<IKC: IntoKeyCustomization>(
     key_builder.build()
 }
 
-// extracts the hashing and sysmmetric algorithm from parent and constructs the correct DigestList for OR policy
+/// Extracts the hashing and symmetric algorithm from parent and constructs the correct DigestList for OR policy
 fn session_config(
     context: &mut Context,
     parent: KeyHandle,
@@ -228,8 +230,46 @@ pub fn load_ak(
     Ok(key_handle)
 }
 
-/// This creates an Attestation Key in the Endorsement hierarchy
+/// This creates an Attestation Key in the Endorsement hierarchy.
+///
+/// <div class="warning">
+///
+/// The API of this function will be changed to that of [`create_ak_2`]
+/// in the next major version.
+///
+/// </div>
 pub fn create_ak<IKC: IntoKeyCustomization>(
+    context: &mut Context,
+    parent: KeyHandle,
+    hash_alg: HashingAlgorithm,
+    sign_alg: SignatureSchemeAlgorithm,
+    ak_auth_value: Option<Auth>,
+    key_customization: IKC,
+) -> Result<CreateKeyResult> {
+    let key_alg = AsymmetricAlgorithm::try_from(sign_alg).map_err(|e| {
+        // sign_alg is either HMAC or Null.
+        error!("Could not retrieve asymmetric algorithm for provided signature scheme");
+        e
+    })?;
+    create_ak_2(
+        context,
+        parent,
+        hash_alg,
+        AsymmetricAlgorithmSelection::try_from(key_alg)?,
+        sign_alg,
+        ak_auth_value,
+        key_customization,
+    )
+}
+
+/// This creates an Attestation Key in the Endorsement hierarchy.
+///
+/// <div class="warning">
+///
+/// This function will be removed in the next major version.
+///
+/// </div>
+pub fn create_ak_2<IKC: IntoKeyCustomization>(
     context: &mut Context,
     parent: KeyHandle,
     hash_alg: HashingAlgorithm,

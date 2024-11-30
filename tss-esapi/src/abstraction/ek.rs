@@ -6,7 +6,7 @@ use crate::{
     attributes::ObjectAttributesBuilder,
     handles::{KeyHandle, NvIndexTpmHandle, TpmHandle},
     interface_types::{
-        algorithm::{HashingAlgorithm, PublicAlgorithm},
+        algorithm::{AsymmetricAlgorithm, HashingAlgorithm, PublicAlgorithm},
         ecc::EccCurve,
         key_bits::RsaKeyBits,
         resource_handles::{Hierarchy, NvAuth},
@@ -60,7 +60,36 @@ const AUTH_POLICY_B_SM3_256: [u8; 32] = [
 ///
 /// Source: TCG EK Credential Profile for TPM Family 2.0; Level 0 Version 2.3 Revision 2
 /// Appendix B.3.3 and B.3.4
+///
+/// <div class="warning">
+///
+/// The API of this function will be changed to that of [`create_ek_public_from_default_template_2`]
+/// in the next major version.
+///
+/// </div>
 pub fn create_ek_public_from_default_template<IKC: IntoKeyCustomization>(
+    alg: AsymmetricAlgorithm,
+    key_customization: IKC,
+) -> Result<Public> {
+    create_ek_public_from_default_template_2(
+        AsymmetricAlgorithmSelection::try_from(alg)?,
+        key_customization,
+    )
+}
+
+/// Get the [`Public`] representing a default Endorsement Key
+///
+/// **Note**: This only works for key algorithms specified in TCG EK Credential Profile for TPM Family 2.0.
+///
+/// Source: TCG EK Credential Profile for TPM Family 2.0; Level 0 Version 2.3 Revision 2
+/// Appendix B.3.3 and B.3.4
+///
+/// <div class="warning">
+///
+/// This function will be removed in the next major version.
+///
+/// </div>
+pub fn create_ek_public_from_default_template_2<IKC: IntoKeyCustomization>(
     alg: AsymmetricAlgorithmSelection,
     key_customization: IKC,
 ) -> Result<Public> {
@@ -191,12 +220,38 @@ pub fn create_ek_public_from_default_template<IKC: IntoKeyCustomization>(
 }
 
 /// Create the Endorsement Key object from the specification templates
+///
+/// <div class="warning">
+///
+/// The API of this function will be changed to that of [`create_ek_object_2`]
+/// in the next major version.
+///
+/// </div>
 pub fn create_ek_object<IKC: IntoKeyCustomization>(
+    context: &mut Context,
+    alg: AsymmetricAlgorithm,
+    key_customization: IKC,
+) -> Result<KeyHandle> {
+    create_ek_object_2(
+        context,
+        AsymmetricAlgorithmSelection::try_from(alg)?,
+        key_customization,
+    )
+}
+
+/// Create the Endorsement Key object from the specification templates
+///
+/// <div class="warning">
+///
+/// This function will be removed in the next major version.
+///
+/// </div>
+pub fn create_ek_object_2<IKC: IntoKeyCustomization>(
     context: &mut Context,
     alg: AsymmetricAlgorithmSelection,
     key_customization: IKC,
 ) -> Result<KeyHandle> {
-    let ek_public = create_ek_public_from_default_template(alg, key_customization)?;
+    let ek_public = create_ek_public_from_default_template_2(alg, key_customization)?;
 
     Ok(context
         .execute_with_nullauth_session(|ctx| {
