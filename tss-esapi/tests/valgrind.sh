@@ -8,6 +8,10 @@
 
 set -euf -o pipefail
 
+if [[ ! -z ${RUST_TOOLCHAIN_VERSION:+x} ]]; then
+	rustup override set ${RUST_TOOLCHAIN_VERSION}
+fi
+
 #################################
 # Run the TPM simulation server #
 #################################
