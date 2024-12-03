@@ -66,6 +66,47 @@ mod test_quote {
     }
 
     #[test]
+    fn time() {
+        let mut context = create_ctx_with_session();
+        // No qualifying data
+        let qualifying_data = vec![0xff; 16];
+
+        let key_handle = context
+            .create_primary(Hierarchy::Owner, signing_key_pub(), None, None, None, None)
+            .unwrap()
+            .key_handle;
+        let (attest, _signature) = context
+            .execute_with_sessions(
+                (
+                    Some(AuthSession::Password),
+                    Some(AuthSession::Password),
+                    None,
+                ),
+                |ctx| {
+                    ctx.get_time(
+                        key_handle,
+                        Data::try_from(qualifying_data).unwrap(),
+                        SignatureScheme::Null,
+                    )
+                },
+            )
+            .expect("Failed to get time");
+
+        assert_eq!(
+            AttestationType::Time,
+            attest.attestation_type(),
+            "Attestation type of the returned value is not indicating Time"
+        );
+
+        match attest.attested() {
+            AttestInfo::Time { info: _ } => {}
+            _ => {
+                panic!("Attested did not contain the expected variant.")
+            }
+        }
+    }
+
+    #[test]
     fn certify() {
         let mut context = create_ctx_with_session();
         let qualifying_data = vec![0xff; 16];
