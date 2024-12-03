@@ -8,6 +8,10 @@
 
 set -euf -o pipefail
 
+if [[ ! -z ${RUST_TOOLCHAIN_VERSION:+x} ]]; then
+	rustup override set ${RUST_TOOLCHAIN_VERSION}
+fi
+
 #################################
 # Run the TPM simulation server #
 #################################
@@ -18,11 +22,10 @@ tpm2_startup -c -T mssim
 ##########################
 # Install cargo-valgrind #
 ##########################
-apt update
 apt install -y valgrind
 cargo install cargo-valgrind
 
 #################
 # Run the tests #
 #################
-TEST_TCTI=mssim: RUST_BACKTRACE=1 RUST_LOG=info cargo valgrind test --features "integration-tests serde" --  --test-threads=1 --nocapture
+TEST_TCTI=mssim: RUST_BACKTRACE=1 RUST_LOG=info cargo valgrind test --  --test-threads=1 --nocapture

@@ -38,7 +38,7 @@ where
 /// The owned bytes in the form of a `Vec<u8>` object.
 pub fn to_owned_bytes(ffi_bytes_ptr: *mut u8, size: usize) -> Vec<u8> {
     let ffi_bytes = unsafe { Malloced::<[u8]>::slice_from_raw_parts(ffi_bytes_ptr, size) };
-    return Vec::<u8>::from(ffi_bytes.as_ref());
+    Vec::<u8>::from(ffi_bytes.as_ref())
 }
 
 /// Type used for handling `size_t` variables

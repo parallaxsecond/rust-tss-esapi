@@ -88,6 +88,7 @@ jobs:
       - name: Run the tests
         run: docker run -v $(pwd):/tmp/rust-tss-esapi -w /tmp/rust-tss-esapi/tss-esapi --security-opt seccomp=unconfined fedoracontainer dbus-run-session -- /tmp/rust-tss-esapi/tss-esapi/tests/all-fedora.sh
 
+  # SEE #558 : remove use of 1.82 once 1.84 rolls out;
   tests-valgrind:
     name: Valgrind test run
     runs-on: ubuntu-latest
@@ -96,7 +97,7 @@ jobs:
       - name: Build the container
         run: docker build -t ubuntucontainer tss-esapi/tests/ --file tss-esapi/tests/Dockerfile-ubuntu --target tpm2-tools
       - name: Run the tests
-        run: docker run -v $(pwd):/tmp/rust-tss-esapi -w /tmp/rust-tss-esapi/tss-esapi ubuntucontainer /tmp/rust-tss-esapi/tss-esapi/tests/valgrind.sh
+        run: docker run -v $(pwd):/tmp/rust-tss-esapi -w /tmp/rust-tss-esapi/tss-esapi -e RUST_TOOLCHAIN_VERSION="1.82" ubuntucontainer /tmp/rust-tss-esapi/tss-esapi/tests/valgrind.sh
 
   # Check that the documentation builds as well.
   docs:
