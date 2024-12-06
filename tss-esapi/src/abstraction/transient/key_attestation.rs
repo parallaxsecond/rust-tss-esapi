@@ -152,7 +152,7 @@ impl TransientKeyContext {
             None,
         );
         Ok((
-            ek::create_ek_object(
+            ek::create_ek_object_2(
                 &mut self.context,
                 AsymmetricAlgorithmSelection::Rsa(RsaKeyBits::Rsa2048),
                 None,
@@ -192,7 +192,7 @@ impl TransientKeyContext {
 }
 
 fn get_ek_object_public(context: &mut crate::Context) -> Result<PublicKey> {
-    let key_handle = ek::create_ek_object(
+    let key_handle = ek::create_ek_object_2(
         context,
         AsymmetricAlgorithmSelection::Rsa(RsaKeyBits::Rsa2048),
         None,
