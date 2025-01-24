@@ -22,6 +22,7 @@ tpm2_startup -c -T mssim
 ##########################
 # Install cargo-valgrind #
 ##########################
+apt update 
 apt install -y valgrind
 cargo install cargo-valgrind
 
