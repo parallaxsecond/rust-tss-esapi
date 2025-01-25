@@ -7,4 +7,22 @@ p192 = { git = "https://github.com/RustCrypto/elliptic-curves.git" }
 p224 = { git = "https://github.com/RustCrypto/elliptic-curves.git" }
 sm2 = { git = "https://github.com/RustCrypto/elliptic-curves.git" }
 
+# https://github.com/RustCrypto/KDFs/pull/108
+concat-kdf = { git = "https://github.com/RustCrypto/KDFs.git" }
+
+cfb-mode = { git = "https://github.com/RustCrypto/block-modes.git" }
+
+# https://github.com/RustCrypto/RSA/pull/467
 rsa = { git = "https://github.com/RustCrypto/RSA.git" }
+
+# https://github.com/RustCrypto/traits/issues/1738
+# https://github.com/RustCrypto/traits/pull/1742
+# Pending release of crypto-common 0.2.0-rc.2
+# Pending release of digest 0.11.0-rc.0
+crypto-common = { git = "https://github.com/RustCrypto/traits.git" }
+digest = { git = "https://github.com/RustCrypto/traits.git" }
+
+# https://github.com/RustCrypto/block-ciphers/pull/465
+aes = { git = "https://github.com/RustCrypto/block-ciphers.git" }
+# Not actually in the graph, but a consumer should use the weak key detection there.
+# des = { git = "https://github.com/RustCrypto/block-ciphers.git" }
