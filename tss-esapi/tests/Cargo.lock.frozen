@@ -3,6 +3,17 @@
 version = 4
 
 [[package]]
+name = "aes"
+version = "0.9.0-rc.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "04097e08a47d9ad181c2e1f4a5fabc9ae06ce8839a333ba9a949bcb0d31fd2a3"
+dependencies = [
+ "cipher",
+ "cpubits",
+ "cpufeatures 0.2.17",
+]
+
+[[package]]
 name = "aho-corasick"
 version = "1.1.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -136,6 +147,26 @@ dependencies = [
 ]
 
 [[package]]
+name = "byte-strings"
+version = "0.3.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "002ee5531feb8450e59862fefa550eeac39b726d60b186071672751045ebc29a"
+dependencies = [
+ "byte-strings-proc_macros",
+]
+
+[[package]]
+name = "byte-strings-proc_macros"
+version = "0.3.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "62f7e0e71f98d6c71bfe42b0a7a47d0f870ad808401fad2d44fa156ed5b0ae03"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
+]
+
+[[package]]
 name = "cc"
 version = "1.2.51"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -155,6 +186,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "cfb-mode"
+version = "0.9.0-rc.3"
+source = "git+https://github.com/RustCrypto/block-modes.git#6f589cbaaedf6415b01584e018002533eb4435e5"
+dependencies = [
+ "cipher",
+]
+
+[[package]]
 name = "cfg-if"
 version = "1.0.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -169,6 +208,16 @@ dependencies = [
  "cfg-if",
  "cpufeatures 0.3.0",
  "rand_core",
+]
+
+[[package]]
+name = "cipher"
+version = "0.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "64727038c8c5e2bb503a15b9f5b9df50a1da9a33e83e1f93067d914f2c6604a5"
+dependencies = [
+ "crypto-common",
+ "inout",
 ]
 
 [[package]]
@@ -295,6 +344,15 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn",
+]
+
+[[package]]
+name = "des"
+version = "0.9.0-rc.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3214053e68a813b9c06ef61075c844f3a1cdeb307d8998ea8555c063caa52fa9"
+dependencies = [
+ "cipher",
 ]
 
 [[package]]
@@ -468,6 +526,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2304e00983f87ffb38b55b444b5e3b60a884b5d30c0fca7d82fe33449bbe55ea"
 
 [[package]]
+name = "hex-literal"
+version = "1.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e712f64ec3850b98572bffac52e2c6f282b29fe6c5fa6d42334b30be438d95c1"
+
+[[package]]
 name = "hkdf"
 version = "0.13.0-rc.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -521,6 +585,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "inout"
+version = "0.2.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4250ce6452e92010fdf7268ccc5d14faa80bb12fc741938534c58f16804e03c7"
+dependencies = [
+ "hybrid-array",
+]
+
+[[package]]
 name = "is_terminal_polyfill"
 version = "1.70.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -563,6 +636,15 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn",
+]
+
+[[package]]
+name = "kbkdf"
+version = "0.1.0-rc.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "90ac93c9768b8d587407881c98b0c3a5d3e3049daa73408ebe5bfb1ab1cb9c84"
+dependencies = [
+ "digest",
 ]
 
 [[package]]
@@ -718,6 +800,15 @@ name = "once_cell_polyfill"
 version = "1.70.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "384b8ab6d37215f3c5301a95a4accb5d64aa607f1fcb26a11b5303878451b4fe"
+
+[[package]]
+name = "one-step-kdf"
+version = "0.1.0-rc.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "fd4dc68a57d9494825faa914644f4ec754f23366f51b4f09d8feea37c64808db"
+dependencies = [
+ "digest",
+]
 
 [[package]]
 name = "p192"
@@ -1231,19 +1322,28 @@ dependencies = [
 name = "tss-esapi"
 version = "8.0.0-alpha.1"
 dependencies = [
+ "aes",
  "bitfield",
+ "byte-strings",
+ "cfb-mode",
  "cfg-if",
+ "cipher",
+ "des",
  "digest",
  "ecdsa",
  "elliptic-curve",
  "enumflags2",
  "env_logger",
  "getrandom",
+ "hex-literal",
+ "hmac",
  "hostname-validator",
+ "kbkdf",
  "log",
  "malloced",
  "num-derive",
  "num-traits",
+ "one-step-kdf",
  "p192",
  "p224",
  "p256",
