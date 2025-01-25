@@ -10,7 +10,14 @@ p384 = { git = "https://github.com/baloo/elliptic-curves.git", branch = "baloo/g
 p521 = { git = "https://github.com/baloo/elliptic-curves.git", branch = "baloo/group/try-from-rng" }
 sm2  = { git = "https://github.com/baloo/elliptic-curves.git", branch = "baloo/group/try-from-rng" }
 
+# https://github.com/RustCrypto/KDFs/pull/108
+concat-kdf = { git = "https://github.com/RustCrypto/KDFs.git" }
+
+cfb-mode = { git = "https://github.com/RustCrypto/block-modes.git" }
+
+# https://github.com/RustCrypto/RSA/pull/467
 rsa = { git = "https://github.com/RustCrypto/RSA.git" }
+
 crypto-bigint = { git = "https://github.com/RustCrypto/crypto-bigint.git" }
 crypto-primes = { git = "https://github.com/entropyxyz/crypto-primes.git" }
 
@@ -21,9 +28,12 @@ x509-cert = { git = "https://github.com/baloo/formats.git", branch = "baloo/reun
 
 elliptic-curve = { git = "https://github.com/RustCrypto/traits.git" }
 signature      = { git = "https://github.com/RustCrypto/traits.git" }
+#crypto-common = { git = "https://github.com/RustCrypto/traits.git" }
+#digest = { git = "https://github.com/RustCrypto/traits.git" }
 
 hmac = { git = "https://github.com/RustCrypto/MACs.git" }
 
 ff = { git = "https://github.com/zkcrypto/ff.git", branch = "release-0.14.0" }
 group = { git = "https://github.com/baloo/group.git", branch = "baloo/try_from_rng" }
 
+aes = { git = "https://github.com/RustCrypto/block-ciphers.git" }
