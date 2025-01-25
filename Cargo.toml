@@ -6,3 +6,5 @@ members = ["tss-esapi", "tss-esapi-sys"]
 p192       = { git = "https://github.com/RustCrypto/elliptic-curves.git" }
 p224       = { git = "https://github.com/RustCrypto/elliptic-curves.git" }
 sm2        = { git = "https://github.com/RustCrypto/elliptic-curves.git" }
+ 
+concat-kdf = { git = "https://github.com/RustCrypto/KDFs.git" }
