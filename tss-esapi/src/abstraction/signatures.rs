@@ -34,11 +34,9 @@ where
 
         let signature = ecdsa::Signature::from_scalars(
             FieldBytes::<C>::try_from(r)
-                .map_err(|_| Error::local_error(WrapperErrorKind::InvalidParam))?
-                .clone(),
+                .map_err(|_| Error::local_error(WrapperErrorKind::InvalidParam))?,
             FieldBytes::<C>::try_from(s)
-                .map_err(|_| Error::local_error(WrapperErrorKind::InvalidParam))?
-                .clone(),
+                .map_err(|_| Error::local_error(WrapperErrorKind::InvalidParam))?,
         )
         .map_err(|_| Error::local_error(WrapperErrorKind::InvalidParam))?;
         Ok(signature)
