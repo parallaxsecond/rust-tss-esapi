@@ -466,11 +466,11 @@ pub mod tpm2_tss {
                 .filter(|file| {
                     file.extension()
                         .and_then(|ext| ext.to_str())
-                        .map_or(false, |file_ext| ["so", "lib"].contains(&file_ext))
+                        .is_some_and(|file_ext| ["so", "lib"].contains(&file_ext))
                         && file
                             .file_stem()
                             .and_then(|stem| stem.to_str())
-                            .map_or(false, |file_name| file_name.contains(lib_name))
+                            .is_some_and(|file_name| file_name.contains(lib_name))
                 })
                 .peekable();
 
