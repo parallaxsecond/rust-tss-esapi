@@ -518,7 +518,7 @@ fn ctx_migration_test() {
     // one for just the public part of the key
     let mut basic_ctx = crate::common::create_ctx_with_session();
     let mut random_digest = vec![0u8; 16];
-    getrandom::getrandom(&mut random_digest).unwrap();
+    getrandom::fill(&mut random_digest).unwrap();
     let key_auth = Auth::from_bytes(random_digest.as_slice()).unwrap();
     let prim_key_handle = basic_ctx
         .create_primary(
@@ -902,10 +902,10 @@ fn sign_csr() {
     let subject = Name::from_str("CN=tpm.example").expect("Parse common name");
     let signer = EcSigner::<NistP256, _>::new((Mutex::new(&mut ctx), tpm_km, key_params, None))
         .expect("Create a signer");
-    let builder = RequestBuilder::new(subject, &signer).expect("Create certificate request");
+    let builder = RequestBuilder::new(subject).expect("Create certificate request");
 
     let cert_req = builder
-        .build::<p256::ecdsa::DerSignature>()
+        .build::<_, p256::ecdsa::DerSignature>(&signer)
         .expect("Sign a CSR");
 
     println!(
@@ -927,12 +927,19 @@ fn sign_p256_sha2_256() {
         .expect("Create a signer");
 
     let payload = b"Example of ECDSA with P-256";
-    let mut hash = Sha256::new();
-    hash.update(payload);
 
-    let signature: p256::ecdsa::Signature = signer.sign_digest(hash.clone());
+    let signature: p256::ecdsa::Signature =
+        signer.sign_digest(|hash: &mut Sha256| hash.update(payload));
     let verifying_key: VerifyingKey = *signer.as_ref();
-    assert!(verifying_key.verify_digest(hash, &signature).is_ok());
+    assert!(verifying_key
+        .verify_digest(
+            |hash: &mut Sha256| {
+                hash.update(payload);
+                Ok(())
+            },
+            &signature
+        )
+        .is_ok());
 }
 
 // NOTE(baloo): I believe this is a legitimate case, but support is not available yet in libtpms (or swtpm)
@@ -958,13 +965,19 @@ fn sign_p256_sha3_256() {
         .expect("Create a signer");
 
     let payload = b"Example of ECDSA with P-256";
-    let mut hash = Sha3_256::new();
-    hash.update(payload);
 
     let signature = <EcSigner<_, _> as DigestSigner<Sha3_256, p256::ecdsa::Signature>>::sign_digest(
         &signer,
-        hash.clone(),
+        |hash: &mut Sha3_256| hash.update(payload),
     );
     let verifying_key: VerifyingKey = *signer.as_ref();
-    assert!(verifying_key.verify_digest(hash, &signature).is_ok());
+    assert!(verifying_key
+        .verify_digest(
+            |hash: &mut Sha3_256| {
+                hash.update(payload);
+                Ok(())
+            },
+            &signature
+        )
+        .is_ok());
 }

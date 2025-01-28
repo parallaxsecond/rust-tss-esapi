@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 mod public_rsa_test {
-    use rsa::{pkcs1, traits::PublicKeyParts, BigUint};
+    use rsa::{pkcs1, traits::PublicKeyParts, BoxedUint};
     use std::convert::TryFrom;
     use tss_esapi::{
         attributes::ObjectAttributesBuilder,
@@ -71,11 +71,11 @@ mod public_rsa_test {
     #[test]
     fn test_public_to_decoded_key_rsa() {
         let public_rsa = get_ext_rsa_pub();
-        let default_exponent = BigUint::from(RSA_DEFAULT_EXP);
+        let default_exponent = BoxedUint::from(RSA_DEFAULT_EXP);
         let key = rsa::RsaPublicKey::try_from(&public_rsa)
             .expect("Failed to convert Public structure to DecodedKey (RSA).");
         assert_eq!(key.e(), &default_exponent, "RSA exponents are not equal.");
-        assert_eq!(key.n().to_bytes_be(), RSA_KEY);
+        assert_eq!(key.n_bytes().as_ref(), RSA_KEY);
     }
 
     #[test]
@@ -83,7 +83,7 @@ mod public_rsa_test {
         let public_rsa = get_ext_rsa_pub();
         let key = SubjectPublicKeyInfoOwned::try_from(&public_rsa)
             .expect("Failed to convert Public structure to SubjectPublicKeyInfo (RSA).");
-        let default_exponent = BigUint::from(RSA_DEFAULT_EXP);
+        let default_exponent = BoxedUint::from(RSA_DEFAULT_EXP);
         assert_eq!(key.algorithm, pkcs1::ALGORITHM_ID.ref_to_owned());
         let pkcs1_key = pkcs1::RsaPublicKey::try_from(
             key.subject_public_key
@@ -94,7 +94,7 @@ mod public_rsa_test {
 
         assert_eq!(
             pkcs1_key.public_exponent.as_bytes(),
-            default_exponent.to_bytes_be()
+            default_exponent.to_be_bytes_trimmed_vartime().as_ref()
         );
         assert_eq!(pkcs1_key.modulus.as_bytes(), RSA_KEY);
     }
@@ -168,7 +168,7 @@ mod public_ecc_test {
         let key = p256::PublicKey::try_from(&public_ecc)
             .expect("Failed to convert Public structure to DecodedKey (ECC).");
 
-        let ec_point = p256::EncodedPoint::from(key);
+        let ec_point = p256::Sec1Point::from(key);
         assert_eq!(ec_point.as_bytes(), EC_POINT.to_vec());
     }
 
