@@ -225,8 +225,8 @@ pub mod digest {
     #[cfg(feature = "rustcrypto")]
     mod rustcrypto {
         use digest::{
+            array::Array,
             consts::{U20, U32, U48, U64},
-            generic_array::GenericArray,
             typenum::Unsigned,
         };
 
@@ -234,15 +234,15 @@ pub mod digest {
 
         macro_rules! impl_from_digest {
             ($($size:ty),+) => {
-                $(impl From<GenericArray<u8, $size>> for Digest {
-                    fn from(mut value: GenericArray<u8, $size>) -> Self {
+                $(impl From<Array<u8, $size>> for Digest {
+                    fn from(mut value: Array<u8, $size>) -> Self {
                         let value_as_vec = value.as_slice().to_vec();
                         value.zeroize();
                         Digest(value_as_vec.into())
                     }
                 }
 
-                impl TryFrom<Digest> for GenericArray<u8, $size> {
+                impl TryFrom<Digest> for Array<u8, $size> {
                     type Error = Error;
 
                     fn try_from(value: Digest) -> Result<Self> {

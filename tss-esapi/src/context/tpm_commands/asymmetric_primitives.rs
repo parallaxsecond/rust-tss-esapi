@@ -102,6 +102,7 @@ impl Context {
     /// #        RsaDecryptionScheme, HashScheme, SymmetricDefinition,
     /// #    },
     /// # };
+    /// # use signature::rand_core::{OsRng, TryRngCore};
     /// # use std::{env, str::FromStr, convert::TryFrom};
     /// # // Create context
     /// # let mut context =
@@ -128,7 +129,7 @@ impl Context {
     /// #     .expect("Failed to set attributes on session");
     /// # context.set_sessions((Some(session), None, None));
     /// # let mut random_digest = vec![0u8; 16];
-    /// # getrandom::getrandom(&mut random_digest).unwrap();
+    /// # OsRng.try_fill_bytes(&mut random_digest).unwrap();
     /// # let key_auth = Auth::from_bytes(random_digest.as_slice()).unwrap();
     /// #
     /// // Create a key suitable for ECDH key generation
@@ -238,6 +239,7 @@ impl Context {
     /// #        RsaDecryptionScheme, HashScheme, SymmetricDefinition,
     /// #    },
     /// # };
+    /// # use signature::rand_core::{OsRng, TryRngCore};
     /// # use std::{env, str::FromStr, convert::TryFrom};
     /// # // Create context
     /// # let mut context =
@@ -264,7 +266,7 @@ impl Context {
     /// #     .expect("Failed to set attributes on session");
     /// # context.set_sessions((Some(session), None, None));
     /// # let mut random_digest = vec![0u8; 16];
-    /// # getrandom::getrandom(&mut random_digest).unwrap();
+    /// # OsRng.try_fill_bytes(&mut random_digest).unwrap();
     /// # let key_auth = Auth::from_bytes(random_digest.as_slice()).unwrap();
     /// #
     /// // Create a key suitable for ECDH key generation
