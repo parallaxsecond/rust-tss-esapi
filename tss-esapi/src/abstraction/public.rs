@@ -8,7 +8,7 @@ use crate::{Error, WrapperErrorKind};
 
 use core::convert::TryFrom;
 use elliptic_curve::{
-    generic_array::typenum::Unsigned,
+    array::typenum::Unsigned,
     sec1::{EncodedPoint, FromEncodedPoint, ModulusSize, ToEncodedPoint},
     AffinePoint, CurveArithmetic, FieldBytesSize, PublicKey,
 };
@@ -57,15 +57,13 @@ where
                 let x = unique.x().as_bytes();
                 let y = unique.y().as_bytes();
 
-                if x.len() != FieldBytesSize::<C>::USIZE {
-                    return Err(Error::local_error(WrapperErrorKind::InvalidParam));
-                }
-                if y.len() != FieldBytesSize::<C>::USIZE {
-                    return Err(Error::local_error(WrapperErrorKind::InvalidParam));
-                }
-
-                let encoded_point =
-                    EncodedPoint::<C>::from_affine_coordinates(x.into(), y.into(), false);
+                let encoded_point = EncodedPoint::<C>::from_affine_coordinates(
+                    x.try_into()
+                        .map_err(|_| Error::local_error(WrapperErrorKind::InvalidParam))?,
+                    y.try_into()
+                        .map_err(|_| Error::local_error(WrapperErrorKind::InvalidParam))?,
+                    false,
+                );
                 let public_key = PublicKey::<C>::try_from(&encoded_point)
                     .map_err(|_| Error::local_error(WrapperErrorKind::InvalidParam))?;
 
@@ -173,8 +171,6 @@ where
                 let x = x.as_slice();
                 let y = y.as_slice();
 
-                // TODO: When elliptic_curve bumps to 0.14, we can use the TryFrom implementation instead
-                // of checking lengths manually
                 if x.len() != FieldBytesSize::<C>::USIZE {
                     return Err(Error::local_error(WrapperErrorKind::InvalidParam));
                 }
@@ -182,8 +178,14 @@ where
                     return Err(Error::local_error(WrapperErrorKind::InvalidParam));
                 }
 
-                let encoded_point =
-                    EncodedPoint::<C>::from_affine_coordinates(x.into(), y.into(), false);
+                let encoded_point = EncodedPoint::<C>::from_affine_coordinates(
+                    x.try_into()
+                        .map_err(|_| Error::local_error(WrapperErrorKind::InvalidParam))?,
+                    y.try_into()
+                        .map_err(|_| Error::local_error(WrapperErrorKind::InvalidParam))?,
+                    false,
+                );
+
                 let public_key = PublicKey::<C>::try_from(&encoded_point)
                     .map_err(|_| Error::local_error(WrapperErrorKind::InvalidParam))?;
 
