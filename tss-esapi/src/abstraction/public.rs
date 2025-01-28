@@ -9,17 +9,14 @@ use crate::{Error, WrapperErrorKind};
 use core::convert::TryFrom;
 use elliptic_curve::{
     AffinePoint, CurveArithmetic, FieldBytesSize, PublicKey,
-    generic_array::typenum::Unsigned,
-    sec1::{EncodedPoint, FromEncodedPoint, ModulusSize, ToEncodedPoint},
+    array::typenum::Unsigned,
+    sec1::{FromSec1Point, ModulusSize, Sec1Point, ToSec1Point},
 };
 
 use x509_cert::spki::SubjectPublicKeyInfoOwned;
 
 #[cfg(feature = "rsa")]
-use {
-    crate::structures::RsaExponent,
-    rsa::{BigUint, RsaPublicKey},
-};
+use {crate::structures::RsaExponent, rsa::BoxedUint};
 
 #[cfg(any(
     feature = "p192",
@@ -41,7 +38,7 @@ impl<C> TryFrom<&Public> for PublicKey<C>
 where
     C: CurveArithmetic + AssociatedTpmCurve,
     FieldBytesSize<C>: ModulusSize,
-    AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
+    AffinePoint<C>: FromSec1Point<C> + ToSec1Point<C>,
 {
     type Error = Error;
 
@@ -57,15 +54,13 @@ where
                 let x = unique.x().as_bytes();
                 let y = unique.y().as_bytes();
 
-                if x.len() != FieldBytesSize::<C>::USIZE {
-                    return Err(Error::local_error(WrapperErrorKind::InvalidParam));
-                }
-                if y.len() != FieldBytesSize::<C>::USIZE {
-                    return Err(Error::local_error(WrapperErrorKind::InvalidParam));
-                }
-
-                let encoded_point =
-                    EncodedPoint::<C>::from_affine_coordinates(x.into(), y.into(), false);
+                let encoded_point = Sec1Point::<C>::from_affine_coordinates(
+                    x.try_into()
+                        .map_err(|_| Error::local_error(WrapperErrorKind::InvalidParam))?,
+                    y.try_into()
+                        .map_err(|_| Error::local_error(WrapperErrorKind::InvalidParam))?,
+                    false,
+                );
                 let public_key = PublicKey::<C>::try_from(&encoded_point)
                     .map_err(|_| Error::local_error(WrapperErrorKind::InvalidParam))?;
 
@@ -80,12 +75,12 @@ impl<C> TryFrom<&PublicKey<C>> for EccPoint
 where
     C: CurveArithmetic + AssociatedTpmCurve,
     FieldBytesSize<C>: ModulusSize,
-    AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
+    AffinePoint<C>: FromSec1Point<C> + ToSec1Point<C>,
 {
     type Error = Error;
 
     fn try_from(value: &PublicKey<C>) -> Result<Self, Self::Error> {
-        let affine = value.to_encoded_point(false);
+        let affine = value.to_sec1_point(false);
         let x_bytes = affine
             .x()
             .ok_or_else(|| Error::local_error(WrapperErrorKind::InvalidParam))?;
@@ -103,7 +98,7 @@ where
 }
 
 #[cfg(feature = "rsa")]
-impl TryFrom<&Public> for RsaPublicKey {
+impl TryFrom<&Public> for rsa::PublicKey {
     type Error = Error;
 
     fn try_from(value: &Public) -> Result<Self, Self::Error> {
@@ -112,12 +107,12 @@ impl TryFrom<&Public> for RsaPublicKey {
                 unique, parameters, ..
             } => {
                 let exponent = match parameters.exponent() {
-                    RsaExponent::ZERO_EXPONENT => BigUint::from(RSA_DEFAULT_EXP),
-                    _ => BigUint::from(parameters.exponent().value()),
+                    RsaExponent::ZERO_EXPONENT => BoxedUint::from(RSA_DEFAULT_EXP),
+                    _ => BoxedUint::from(parameters.exponent().value()),
                 };
-                let modulus = BigUint::from_bytes_be(unique.as_bytes());
+                let modulus = BoxedUint::from_be_slice_vartime(unique.as_bytes());
 
-                let public_key = RsaPublicKey::new(modulus, exponent)
+                let public_key = rsa::PublicKey::new(modulus, exponent)
                     .map_err(|_| Error::local_error(WrapperErrorKind::InvalidParam))?;
 
                 Ok(public_key)
@@ -141,7 +136,7 @@ impl TryFrom<&Public> for SubjectPublicKeyInfoOwned {
         match value {
             #[cfg(feature = "rsa")]
             Public::Rsa { .. } => {
-                let public_key = RsaPublicKey::try_from(value)?;
+                let public_key = rsa::PublicKey::try_from(value)?;
 
                 Ok(public_key
                     .to_public_key_der()
@@ -189,7 +184,7 @@ impl<C> TryFrom<&TpmPublicKey> for PublicKey<C>
 where
     C: CurveArithmetic + AssociatedTpmCurve,
     FieldBytesSize<C>: ModulusSize,
-    AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
+    AffinePoint<C>: FromSec1Point<C> + ToSec1Point<C>,
 {
     type Error = Error;
 
@@ -199,8 +194,6 @@ where
                 let x = x.as_slice();
                 let y = y.as_slice();
 
-                // TODO: When elliptic_curve bumps to 0.14, we can use the TryFrom implementation instead
-                // of checking lengths manually
                 if x.len() != FieldBytesSize::<C>::USIZE {
                     return Err(Error::local_error(WrapperErrorKind::InvalidParam));
                 }
@@ -208,8 +201,14 @@ where
                     return Err(Error::local_error(WrapperErrorKind::InvalidParam));
                 }
 
-                let encoded_point =
-                    EncodedPoint::<C>::from_affine_coordinates(x.into(), y.into(), false);
+                let encoded_point = Sec1Point::<C>::from_affine_coordinates(
+                    x.try_into()
+                        .map_err(|_| Error::local_error(WrapperErrorKind::InvalidParam))?,
+                    y.try_into()
+                        .map_err(|_| Error::local_error(WrapperErrorKind::InvalidParam))?,
+                    false,
+                );
+
                 let public_key = PublicKey::<C>::try_from(&encoded_point)
                     .map_err(|_| Error::local_error(WrapperErrorKind::InvalidParam))?;
 
@@ -221,16 +220,16 @@ where
 }
 
 #[cfg(feature = "rsa")]
-impl TryFrom<&TpmPublicKey> for RsaPublicKey {
+impl TryFrom<&TpmPublicKey> for rsa::PublicKey {
     type Error = Error;
 
     fn try_from(value: &TpmPublicKey) -> Result<Self, Self::Error> {
         match value {
             TpmPublicKey::Rsa(modulus) => {
-                let exponent = BigUint::from(RSA_DEFAULT_EXP);
-                let modulus = BigUint::from_bytes_be(modulus.as_slice());
+                let exponent = BoxedUint::from(RSA_DEFAULT_EXP);
+                let modulus = BoxedUint::from_be_slice_vartime(modulus.as_slice());
 
-                let public_key = RsaPublicKey::new(modulus, exponent)
+                let public_key = rsa::PublicKey::new(modulus, exponent)
                     .map_err(|_| Error::local_error(WrapperErrorKind::InvalidParam))?;
 
                 Ok(public_key)
