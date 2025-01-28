@@ -8,16 +8,16 @@ use crate::{
 
 use std::convert::TryFrom;
 
-use ecdsa::SignatureSize;
+use ecdsa::{EcdsaCurve, SignatureSize};
 use elliptic_curve::{
-    generic_array::{typenum::Unsigned, ArrayLength},
+    array::{typenum::Unsigned, ArraySize},
     FieldBytes, FieldBytesSize, PrimeCurve,
 };
 
 impl<C> TryFrom<&EccSignature> for ecdsa::Signature<C>
 where
-    C: PrimeCurve,
-    SignatureSize<C>: ArrayLength<u8>,
+    C: PrimeCurve + EcdsaCurve,
+    SignatureSize<C>: ArraySize,
 {
     type Error = Error;
 
@@ -33,8 +33,12 @@ where
         }
 
         let signature = ecdsa::Signature::from_scalars(
-            FieldBytes::<C>::clone_from_slice(r),
-            FieldBytes::<C>::clone_from_slice(s),
+            FieldBytes::<C>::try_from(r)
+                .map_err(|_| Error::local_error(WrapperErrorKind::InvalidParam))?
+                .clone(),
+            FieldBytes::<C>::try_from(s)
+                .map_err(|_| Error::local_error(WrapperErrorKind::InvalidParam))?
+                .clone(),
         )
         .map_err(|_| Error::local_error(WrapperErrorKind::InvalidParam))?;
         Ok(signature)
@@ -43,8 +47,8 @@ where
 
 impl<C> TryFrom<&Signature> for ecdsa::Signature<C>
 where
-    C: PrimeCurve,
-    SignatureSize<C>: ArrayLength<u8>,
+    C: PrimeCurve + EcdsaCurve,
+    SignatureSize<C>: ArraySize,
 {
     type Error = Error;
 
