@@ -215,9 +215,8 @@ fn main() {
                 None,
             )
         })
-        .map_err(|err| {
+        .inspect_err(|err| {
             eprintln!("⚠️  {err}");
-            err
         })
         .unwrap();
 
@@ -268,9 +267,8 @@ fn main() {
         .execute_with_nullauth_session(|ctx| {
             ctx.create(loaded_storage_key, hmac_public, None, None, None, None)
         })
-        .map_err(|err| {
+        .inspect_err(|err| {
             eprintln!("⚠️  {err}");
-            err
         })
         .unwrap();
 
@@ -370,9 +368,8 @@ fn main() {
             // Return the duplicate result.
             result
         })
-        .map_err(|err| {
+        .inspect_err(|err| {
             eprintln!("⚠️  {err}");
-            err
         })
         .unwrap();
 
