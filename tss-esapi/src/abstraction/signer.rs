@@ -23,15 +23,15 @@ use std::{convert::TryFrom, ops::Add, sync::Mutex};
 
 use digest::{Digest, FixedOutput, Output};
 use ecdsa::{
-    Signature, SignatureSize, VerifyingKey,
+    EcdsaCurve, Signature, SignatureSize, VerifyingKey,
     der::{MaxOverhead, MaxSize, Signature as DerSignature},
-    hazmat::{DigestPrimitive, SignPrimitive},
+    hazmat::DigestAlgorithm,
 };
 use elliptic_curve::{
     AffinePoint, CurveArithmetic, FieldBytesSize, PrimeCurve, PublicKey, Scalar,
-    generic_array::ArrayLength,
+    array::ArraySize,
     ops::Invert,
-    sec1::{FromEncodedPoint, ModulusSize, ToEncodedPoint},
+    sec1::{FromSec1Point, ModulusSize, ToSec1Point},
     subtle::CtOption,
 };
 use log::error;
@@ -139,7 +139,7 @@ impl TpmSigner
 #[derive(Debug)]
 pub struct EcSigner<C, Ctx>
 where
-    C: PrimeCurve + CurveArithmetic,
+    C: PrimeCurve + CurveArithmetic + EcdsaCurve,
 {
     context: Ctx,
     verifying_key: VerifyingKey<C>,
@@ -147,10 +147,10 @@ where
 
 impl<C, Ctx> EcSigner<C, Ctx>
 where
-    C: PrimeCurve + CurveArithmetic,
+    C: PrimeCurve + CurveArithmetic + EcdsaCurve,
     C: AssociatedTpmCurve,
     FieldBytesSize<C>: ModulusSize,
-    AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
+    AffinePoint<C>: FromSec1Point<C> + ToSec1Point<C>,
     Ctx: TpmSigner,
 {
     pub fn new(context: Ctx) -> Result<Self, Error> {
@@ -178,17 +178,17 @@ where
 
 impl<C, Ctx> EcSigner<C, Ctx>
 where
-    C: PrimeCurve + CurveArithmetic,
+    C: PrimeCurve + CurveArithmetic + EcdsaCurve,
     C: AssociatedTpmCurve,
 {
-    /// Key parameters for this curve, selected digest is the one selected by DigestPrimitive
+    /// Key parameters for this curve, selected digest is the one selected by DigestAlgorithm
     pub fn key_params_default() -> KeyParams
     where
-        C: DigestPrimitive,
-        <C as DigestPrimitive>::Digest: FixedOutput<OutputSize = FieldBytesSize<C>>,
-        <C as DigestPrimitive>::Digest: AssociatedHashingAlgorithm,
+        C: DigestAlgorithm,
+        <C as DigestAlgorithm>::Digest: FixedOutput,
+        <C as DigestAlgorithm>::Digest: AssociatedHashingAlgorithm,
     {
-        Self::key_params::<<C as DigestPrimitive>::Digest>()
+        Self::key_params::<<C as DigestAlgorithm>::Digest>()
     }
 
     /// Key parameters for this curve
@@ -198,7 +198,7 @@ where
     /// The hashing algorithm `D` is the digest that will be used for signatures (SHA-256, SHA3-256, ...).
     pub fn key_params<D>() -> KeyParams
     where
-        D: FixedOutput<OutputSize = FieldBytesSize<C>>,
+        D: FixedOutput,
         D: AssociatedHashingAlgorithm,
     {
         KeyParams::Ecc {
@@ -211,9 +211,9 @@ where
 
 impl<C, Ctx> AsRef<VerifyingKey<C>> for EcSigner<C, Ctx>
 where
-    C: PrimeCurve + CurveArithmetic,
-    Scalar<C>: Invert<Output = CtOption<Scalar<C>>> + SignPrimitive<C>,
-    SignatureSize<C>: ArrayLength<u8>,
+    C: PrimeCurve + CurveArithmetic + EcdsaCurve,
+    Scalar<C>: Invert<Output = CtOption<Scalar<C>>>,
+    SignatureSize<C>: ArraySize,
 {
     fn as_ref(&self) -> &VerifyingKey<C> {
         &self.verifying_key
@@ -222,25 +222,30 @@ where
 
 impl<C, Ctx> KeypairRef for EcSigner<C, Ctx>
 where
-    C: PrimeCurve + CurveArithmetic,
-    Scalar<C>: Invert<Output = CtOption<Scalar<C>>> + SignPrimitive<C>,
-    SignatureSize<C>: ArrayLength<u8>,
+    C: PrimeCurve + CurveArithmetic + EcdsaCurve,
+    Scalar<C>: Invert<Output = CtOption<Scalar<C>>>,
+    SignatureSize<C>: ArraySize,
 {
     type VerifyingKey = VerifyingKey<C>;
 }
 
 impl<C, Ctx, D> DigestSigner<D, Signature<C>> for EcSigner<C, Ctx>
 where
-    C: PrimeCurve + CurveArithmetic,
+    C: PrimeCurve + CurveArithmetic + EcdsaCurve,
     C: AssociatedTpmCurve,
-    D: Digest + FixedOutput<OutputSize = FieldBytesSize<C>>,
+    D: Digest + FixedOutput,
     D: AssociatedHashingAlgorithm,
-    Scalar<C>: Invert<Output = CtOption<Scalar<C>>> + SignPrimitive<C>,
-    SignatureSize<C>: ArrayLength<u8>,
+    Scalar<C>: Invert<Output = CtOption<Scalar<C>>>,
+    SignatureSize<C>: ArraySize,
     TpmDigest: From<Output<D>>,
     Ctx: TpmSigner,
 {
-    fn try_sign_digest(&self, digest: D) -> Result<Signature<C>, SigError> {
+    fn try_sign_digest<F: Fn(&mut D) -> Result<(), SigError>>(
+        &self,
+        f: F,
+    ) -> Result<Signature<C>, SigError> {
+        let mut digest = D::new();
+        f(&mut digest)?;
         let digest = TpmDigest::from(digest.finalize_fixed());
 
         //let key_params = Self::key_params::<D>();
@@ -260,60 +265,69 @@ where
 
 impl<C, Ctx, D> DigestSigner<D, DerSignature<C>> for EcSigner<C, Ctx>
 where
-    C: PrimeCurve + CurveArithmetic,
+    C: PrimeCurve + CurveArithmetic + EcdsaCurve,
     C: AssociatedTpmCurve,
-    D: Digest + FixedOutput<OutputSize = FieldBytesSize<C>>,
+    D: Digest + FixedOutput,
     D: AssociatedHashingAlgorithm,
-    Scalar<C>: Invert<Output = CtOption<Scalar<C>>> + SignPrimitive<C>,
-    SignatureSize<C>: ArrayLength<u8>,
+    Scalar<C>: Invert<Output = CtOption<Scalar<C>>>,
+    SignatureSize<C>: ArraySize,
     TpmDigest: From<Output<D>>,
-    MaxSize<C>: ArrayLength<u8>,
-    <FieldBytesSize<C> as Add>::Output: Add<MaxOverhead> + ArrayLength<u8>,
+    MaxSize<C>: ArraySize,
+    <FieldBytesSize<C> as Add>::Output: Add<MaxOverhead> + ArraySize,
     Ctx: TpmSigner,
 {
-    fn try_sign_digest(&self, digest: D) -> Result<DerSignature<C>, SigError> {
-        let signature: Signature<_> = self.try_sign_digest(digest)?;
+    fn try_sign_digest<F: Fn(&mut D) -> Result<(), SigError>>(
+        &self,
+        f: F,
+    ) -> Result<DerSignature<C>, SigError> {
+        let signature: Signature<_> = self.try_sign_digest(f)?;
         Ok(signature.to_der())
     }
 }
 
 impl<C, Ctx> Signer<Signature<C>> for EcSigner<C, Ctx>
 where
-    C: PrimeCurve + CurveArithmetic + DigestPrimitive,
+    C: PrimeCurve + CurveArithmetic + EcdsaCurve + DigestAlgorithm,
     C: AssociatedTpmCurve,
-    <C as DigestPrimitive>::Digest: AssociatedHashingAlgorithm,
-    Scalar<C>: Invert<Output = CtOption<Scalar<C>>> + SignPrimitive<C>,
-    SignatureSize<C>: ArrayLength<u8>,
-    TpmDigest: From<Output<<C as DigestPrimitive>::Digest>>,
+    <C as DigestAlgorithm>::Digest: AssociatedHashingAlgorithm + FixedOutput,
+    Scalar<C>: Invert<Output = CtOption<Scalar<C>>>,
+    SignatureSize<C>: ArraySize,
+    TpmDigest: From<Output<<C as DigestAlgorithm>::Digest>>,
     Ctx: TpmSigner,
 {
     fn try_sign(&self, msg: &[u8]) -> Result<Signature<C>, SigError> {
-        self.try_sign_digest(C::Digest::new_with_prefix(msg))
+        self.try_sign_digest(|d: &mut C::Digest| {
+            Digest::update(d, msg);
+            Ok(())
+        })
     }
 }
 
 impl<C, Ctx> Signer<DerSignature<C>> for EcSigner<C, Ctx>
 where
-    C: PrimeCurve + CurveArithmetic + DigestPrimitive,
+    C: PrimeCurve + CurveArithmetic + EcdsaCurve + DigestAlgorithm,
     C: AssociatedTpmCurve,
-    <C as DigestPrimitive>::Digest: AssociatedHashingAlgorithm,
-    Scalar<C>: Invert<Output = CtOption<Scalar<C>>> + SignPrimitive<C>,
-    SignatureSize<C>: ArrayLength<u8>,
-    TpmDigest: From<Output<<C as DigestPrimitive>::Digest>>,
-    MaxSize<C>: ArrayLength<u8>,
-    <FieldBytesSize<C> as Add>::Output: Add<MaxOverhead> + ArrayLength<u8>,
+    <C as DigestAlgorithm>::Digest: AssociatedHashingAlgorithm + FixedOutput,
+    Scalar<C>: Invert<Output = CtOption<Scalar<C>>>,
+    SignatureSize<C>: ArraySize,
+    TpmDigest: From<Output<<C as DigestAlgorithm>::Digest>>,
+    MaxSize<C>: ArraySize,
+    <FieldBytesSize<C> as Add>::Output: Add<MaxOverhead> + ArraySize,
     Ctx: TpmSigner,
 {
     fn try_sign(&self, msg: &[u8]) -> Result<DerSignature<C>, SigError> {
-        self.try_sign_digest(C::Digest::new_with_prefix(msg))
+        self.try_sign_digest(|d: &mut C::Digest| {
+            Digest::update(d, msg);
+            Ok(())
+        })
     }
 }
 
 impl<C, Ctx> SignatureAlgorithmIdentifier for EcSigner<C, Ctx>
 where
-    C: PrimeCurve + CurveArithmetic,
-    Scalar<C>: Invert<Output = CtOption<Scalar<C>>> + SignPrimitive<C>,
-    SignatureSize<C>: ArrayLength<u8>,
+    C: PrimeCurve + CurveArithmetic + EcdsaCurve,
+    Scalar<C>: Invert<Output = CtOption<Scalar<C>>>,
+    SignatureSize<C>: ArraySize,
     Signature<C>: AssociatedAlgorithmIdentifier<Params = AnyRef<'static>>,
 {
     type Params = AnyRef<'static>;
@@ -440,7 +454,12 @@ mod rsa {
         TpmDigest: From<Output<D>>,
         Ctx: TpmSigner,
     {
-        fn try_sign_digest(&self, digest: D) -> Result<pkcs1v15::Signature, SigError> {
+        fn try_sign_digest<F: Fn(&mut D) -> Result<(), SigError>>(
+            &self,
+            f: F,
+        ) -> Result<pkcs1v15::Signature, SigError> {
+            let mut digest = D::new();
+            f(&mut digest)?;
             let digest = TpmDigest::from(digest.finalize_fixed());
 
             //let key_params = Self::key_params::<D>();
@@ -461,10 +480,10 @@ mod rsa {
         Ctx: TpmSigner,
     {
         fn try_sign(&self, msg: &[u8]) -> Result<pkcs1v15::Signature, SigError> {
-            let mut d = D::new();
-            Digest::update(&mut d, msg);
-
-            self.try_sign_digest(d)
+            self.try_sign_digest(|d: &mut D| {
+                Digest::update(d, msg);
+                Ok(())
+            })
         }
     }
 
@@ -570,7 +589,12 @@ mod rsa {
         TpmDigest: From<Output<D>>,
         Ctx: TpmSigner,
     {
-        fn try_sign_digest(&self, digest: D) -> Result<pss::Signature, SigError> {
+        fn try_sign_digest<F: Fn(&mut D) -> Result<(), SigError>>(
+            &self,
+            f: F,
+        ) -> Result<pss::Signature, SigError> {
+            let mut digest = D::new();
+            f(&mut digest)?;
             let digest = TpmDigest::from(digest.finalize_fixed());
 
             let signature = self.context.sign(digest).map_err(SigError::from_source)?;
@@ -589,10 +613,10 @@ mod rsa {
         Ctx: TpmSigner,
     {
         fn try_sign(&self, msg: &[u8]) -> Result<pss::Signature, SigError> {
-            let mut d = D::new();
-            Digest::update(&mut d, msg);
-
-            self.try_sign_digest(d)
+            self.try_sign_digest(|d: &mut D| {
+                Digest::update(d, msg);
+                Ok(())
+            })
         }
     }
 
