@@ -124,8 +124,8 @@ pub mod data {
 pub mod digest {
     use crate::tss2_esys::TPMU_HA;
     use digest::{
+        array::Array,
         consts::{U20, U32, U48, U64},
-        generic_array::GenericArray,
         typenum::Unsigned,
     };
     use std::mem::size_of;
@@ -229,13 +229,13 @@ pub mod digest {
 
     macro_rules! impl_from_digest {
         ($($size:ty),+) => {
-            $(impl From<GenericArray<u8, $size>> for Digest {
-                fn from(value: GenericArray<u8, $size>) -> Self {
+            $(impl From<Array<u8, $size>> for Digest {
+                fn from(value: Array<u8, $size>) -> Self {
                     Digest(value.as_slice().to_vec().into())
                 }
             }
 
-            impl TryFrom<Digest> for GenericArray<u8, $size> {
+            impl TryFrom<Digest> for Array<u8, $size> {
                 type Error = Error;
 
                 fn try_from(value: Digest) -> Result<Self> {

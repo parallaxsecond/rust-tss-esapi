@@ -21,11 +21,11 @@ use std::{convert::TryFrom, ops::Add, sync::Mutex};
 use digest::{Digest, FixedOutput, Output};
 use ecdsa::{
     der::{MaxOverhead, MaxSize, Signature as DerSignature},
-    hazmat::{DigestPrimitive, SignPrimitive},
-    Signature, SignatureSize, VerifyingKey,
+    hazmat::DigestPrimitive,
+    EcdsaCurve, Signature, SignatureSize, VerifyingKey,
 };
 use elliptic_curve::{
-    generic_array::ArrayLength,
+    array::ArraySize,
     ops::Invert,
     sec1::{FromEncodedPoint, ModulusSize, ToEncodedPoint},
     subtle::CtOption,
@@ -70,7 +70,7 @@ use x509_cert::{
 #[derive(Debug)]
 pub struct EcSigner<'ctx, C>
 where
-    C: PrimeCurve + CurveArithmetic,
+    C: PrimeCurve + CurveArithmetic + EcdsaCurve,
 {
     context: Mutex<&'ctx mut TransientKeyContext>,
     key_material: KeyMaterial,
@@ -80,7 +80,7 @@ where
 
 impl<'ctx, C> EcSigner<'ctx, C>
 where
-    C: PrimeCurve + CurveArithmetic,
+    C: PrimeCurve + CurveArithmetic + EcdsaCurve,
     C: AssociatedTpmCurve,
     FieldBytesSize<C>: ModulusSize,
     AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
@@ -106,7 +106,7 @@ where
 
 impl<C> EcSigner<'_, C>
 where
-    C: PrimeCurve + CurveArithmetic,
+    C: PrimeCurve + CurveArithmetic + EcdsaCurve,
     C: AssociatedTpmCurve,
 {
     /// Key parameters for this curve, selected digest is the one selected by DigestPrimitive
@@ -126,7 +126,7 @@ where
     /// The hashing algorithm `D` is the digest that will be used for signatures (SHA-256, SHA3-256, ...).
     pub fn key_params<D>() -> KeyParams
     where
-        D: FixedOutput<OutputSize = FieldBytesSize<C>>,
+        D: FixedOutput,
         D: AssociatedHashingAlgorithm,
     {
         KeyParams::Ecc {
@@ -139,9 +139,9 @@ where
 
 impl<C> AsRef<VerifyingKey<C>> for EcSigner<'_, C>
 where
-    C: PrimeCurve + CurveArithmetic,
-    Scalar<C>: Invert<Output = CtOption<Scalar<C>>> + SignPrimitive<C>,
-    SignatureSize<C>: ArrayLength<u8>,
+    C: PrimeCurve + CurveArithmetic + EcdsaCurve,
+    Scalar<C>: Invert<Output = CtOption<Scalar<C>>>,
+    SignatureSize<C>: ArraySize,
 {
     fn as_ref(&self) -> &VerifyingKey<C> {
         &self.verifying_key
@@ -150,21 +150,21 @@ where
 
 impl<C> KeypairRef for EcSigner<'_, C>
 where
-    C: PrimeCurve + CurveArithmetic,
-    Scalar<C>: Invert<Output = CtOption<Scalar<C>>> + SignPrimitive<C>,
-    SignatureSize<C>: ArrayLength<u8>,
+    C: PrimeCurve + CurveArithmetic + EcdsaCurve,
+    Scalar<C>: Invert<Output = CtOption<Scalar<C>>>,
+    SignatureSize<C>: ArraySize,
 {
     type VerifyingKey = VerifyingKey<C>;
 }
 
 impl<C, D> DigestSigner<D, Signature<C>> for EcSigner<'_, C>
 where
-    C: PrimeCurve + CurveArithmetic,
+    C: PrimeCurve + CurveArithmetic + EcdsaCurve,
     C: AssociatedTpmCurve,
-    D: Digest + FixedOutput<OutputSize = FieldBytesSize<C>>,
+    D: Digest + FixedOutput,
     D: AssociatedHashingAlgorithm,
-    Scalar<C>: Invert<Output = CtOption<Scalar<C>>> + SignPrimitive<C>,
-    SignatureSize<C>: ArrayLength<u8>,
+    Scalar<C>: Invert<Output = CtOption<Scalar<C>>>,
+    SignatureSize<C>: ArraySize,
     TpmDigest: From<Output<D>>,
 {
     fn try_sign_digest(&self, digest: D) -> Result<Signature<C>, SigError> {
@@ -195,16 +195,16 @@ where
 
 impl<C, D> DigestSigner<D, DerSignature<C>> for EcSigner<'_, C>
 where
-    C: PrimeCurve + CurveArithmetic,
+    C: PrimeCurve + CurveArithmetic + EcdsaCurve,
     C: AssociatedTpmCurve,
-    D: Digest + FixedOutput<OutputSize = FieldBytesSize<C>>,
+    D: Digest + FixedOutput,
     D: AssociatedHashingAlgorithm,
-    Scalar<C>: Invert<Output = CtOption<Scalar<C>>> + SignPrimitive<C>,
-    SignatureSize<C>: ArrayLength<u8>,
+    Scalar<C>: Invert<Output = CtOption<Scalar<C>>>,
+    SignatureSize<C>: ArraySize,
     TpmDigest: From<Output<D>>,
 
-    MaxSize<C>: ArrayLength<u8>,
-    <FieldBytesSize<C> as Add>::Output: Add<MaxOverhead> + ArrayLength<u8>,
+    MaxSize<C>: ArraySize,
+    <FieldBytesSize<C> as Add>::Output: Add<MaxOverhead> + ArraySize,
 {
     fn try_sign_digest(&self, digest: D) -> Result<DerSignature<C>, SigError> {
         let signature: Signature<_> = self.try_sign_digest(digest)?;
@@ -214,11 +214,11 @@ where
 
 impl<C> Signer<Signature<C>> for EcSigner<'_, C>
 where
-    C: PrimeCurve + CurveArithmetic + DigestPrimitive,
+    C: PrimeCurve + CurveArithmetic + EcdsaCurve + DigestPrimitive,
     C: AssociatedTpmCurve,
     <C as DigestPrimitive>::Digest: AssociatedHashingAlgorithm,
-    Scalar<C>: Invert<Output = CtOption<Scalar<C>>> + SignPrimitive<C>,
-    SignatureSize<C>: ArrayLength<u8>,
+    Scalar<C>: Invert<Output = CtOption<Scalar<C>>>,
+    SignatureSize<C>: ArraySize,
     TpmDigest: From<Output<<C as DigestPrimitive>::Digest>>,
 {
     fn try_sign(&self, msg: &[u8]) -> Result<Signature<C>, SigError> {
@@ -228,15 +228,15 @@ where
 
 impl<C> Signer<DerSignature<C>> for EcSigner<'_, C>
 where
-    C: PrimeCurve + CurveArithmetic + DigestPrimitive,
+    C: PrimeCurve + CurveArithmetic + EcdsaCurve + DigestPrimitive,
     C: AssociatedTpmCurve,
     <C as DigestPrimitive>::Digest: AssociatedHashingAlgorithm,
-    Scalar<C>: Invert<Output = CtOption<Scalar<C>>> + SignPrimitive<C>,
-    SignatureSize<C>: ArrayLength<u8>,
+    Scalar<C>: Invert<Output = CtOption<Scalar<C>>>,
+    SignatureSize<C>: ArraySize,
     TpmDigest: From<Output<<C as DigestPrimitive>::Digest>>,
 
-    MaxSize<C>: ArrayLength<u8>,
-    <FieldBytesSize<C> as Add>::Output: Add<MaxOverhead> + ArrayLength<u8>,
+    MaxSize<C>: ArraySize,
+    <FieldBytesSize<C> as Add>::Output: Add<MaxOverhead> + ArraySize,
 {
     fn try_sign(&self, msg: &[u8]) -> Result<DerSignature<C>, SigError> {
         self.try_sign_digest(C::Digest::new_with_prefix(msg))
@@ -245,9 +245,9 @@ where
 
 impl<C> SignatureAlgorithmIdentifier for EcSigner<'_, C>
 where
-    C: PrimeCurve + CurveArithmetic,
-    Scalar<C>: Invert<Output = CtOption<Scalar<C>>> + SignPrimitive<C>,
-    SignatureSize<C>: ArrayLength<u8>,
+    C: PrimeCurve + CurveArithmetic + EcdsaCurve,
+    Scalar<C>: Invert<Output = CtOption<Scalar<C>>>,
+    SignatureSize<C>: ArraySize,
     Signature<C>: AssociatedAlgorithmIdentifier<Params = AnyRef<'static>>,
 {
     type Params = AnyRef<'static>;

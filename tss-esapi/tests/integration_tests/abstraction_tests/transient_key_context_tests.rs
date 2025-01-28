@@ -901,10 +901,10 @@ fn sign_csr() {
 
     let subject = Name::from_str("CN=tpm.example").expect("Parse common name");
     let signer = EcSigner::<NistP256>::new(&mut ctx, tpm_km, None).expect("Create a signer");
-    let builder = RequestBuilder::new(subject, &signer).expect("Create certificate request");
+    let builder = RequestBuilder::new(subject).expect("Create certificate request");
 
     let cert_req = builder
-        .build::<p256::ecdsa::DerSignature>()
+        .build::<_, p256::ecdsa::DerSignature>(&signer)
         .expect("Sign a CSR");
 
     println!(
