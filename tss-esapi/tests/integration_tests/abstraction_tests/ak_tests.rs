@@ -187,7 +187,7 @@ fn test_create_and_use_ak() {
     let cred = vec![1, 2, 3, 4, 5];
     let expected = Digest::try_from(vec![1, 2, 3, 4, 5]).unwrap();
 
-    let (session_aastributes, session_attributes_mask) = SessionAttributesBuilder::new().build();
+    let (session_attributes, session_attributes_mask) = SessionAttributesBuilder::new().build();
     let session_1 = context
         .start_auth_session(
             None,
@@ -200,7 +200,7 @@ fn test_create_and_use_ak() {
         .expect("Failed to call start_auth_session")
         .expect("Failed invalid session value");
     context
-        .tr_sess_set_attributes(session_1, session_aastributes, session_attributes_mask)
+        .tr_sess_set_attributes(session_1, session_attributes, session_attributes_mask)
         .unwrap();
     let session_2 = context
         .start_auth_session(
@@ -214,7 +214,7 @@ fn test_create_and_use_ak() {
         .expect("Failed to call start_auth_session")
         .expect("Failed invalid session value");
     context
-        .tr_sess_set_attributes(session_2, session_aastributes, session_attributes_mask)
+        .tr_sess_set_attributes(session_2, session_attributes, session_attributes_mask)
         .expect("Failed to call tr_sess_set_attributes");
 
     let (credential_blob, secret) = context
