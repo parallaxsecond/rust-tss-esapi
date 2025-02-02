@@ -2,11 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 mod public_rsa_test {
-    use picky_asn1::wrapper::IntegerAsn1;
-    use picky_asn1_x509::{AlgorithmIdentifier, PublicKey, SubjectPublicKeyInfo};
+    use rsa::{pkcs1, traits::PublicKeyParts, BigUint};
     use std::convert::TryFrom;
     use tss_esapi::{
-        abstraction::public::DecodedKey,
         attributes::ObjectAttributesBuilder,
         interface_types::{
             algorithm::{HashingAlgorithm, PublicAlgorithm, RsaSchemeAlgorithm},
@@ -14,6 +12,7 @@ mod public_rsa_test {
         },
         structures::{Public, PublicBuilder, PublicKeyRsa, PublicRsaParametersBuilder, RsaScheme},
     };
+    use x509_cert::{der::referenced::RefToOwned, spki::SubjectPublicKeyInfoOwned};
 
     const RSA_KEY: [u8; 256] = [
         0xc9, 0x75, 0xf8, 0xb2, 0x30, 0xf4, 0x24, 0x6e, 0x95, 0xb1, 0x3c, 0x55, 0x0f, 0xe4, 0x48,
@@ -35,6 +34,8 @@ mod public_rsa_test {
         0x90, 0xdd, 0x29, 0x37, 0x67, 0xb1, 0xc9, 0x99, 0x3a, 0x3f, 0xa6, 0x69, 0xc9, 0x0d, 0x24,
         0x3f,
     ];
+
+    const RSA_DEFAULT_EXP: u64 = 65537;
 
     pub fn get_ext_rsa_pub() -> Public {
         let object_attributes = ObjectAttributesBuilder::new()
@@ -70,44 +71,38 @@ mod public_rsa_test {
     #[test]
     fn test_public_to_decoded_key_rsa() {
         let public_rsa = get_ext_rsa_pub();
-        let default_exponent = IntegerAsn1::from_bytes_be_signed(65537_u32.to_be_bytes().to_vec());
-        let decoded_key = DecodedKey::try_from(public_rsa)
+        let default_exponent = BigUint::from(RSA_DEFAULT_EXP);
+        let key = rsa::RsaPublicKey::try_from(&public_rsa)
             .expect("Failed to convert Public structure to DecodedKey (RSA).");
-        match decoded_key {
-            DecodedKey::RsaPublicKey(key) => {
-                assert_eq!(
-                    key.public_exponent, default_exponent,
-                    "RSA exponents are not equal."
-                );
-                assert_eq!(key.modulus.as_unsigned_bytes_be(), RSA_KEY);
-            }
-            DecodedKey::EcPoint(..) => panic!("RSA key was decoded to EcPoint!"),
-        }
+        assert_eq!(key.e(), &default_exponent, "RSA exponents are not equal.");
+        assert_eq!(key.n().to_bytes_be(), RSA_KEY);
     }
 
     #[test]
     fn test_public_to_subject_public_key_info_rsa() {
         let public_rsa = get_ext_rsa_pub();
-        let default_exponent = IntegerAsn1::from_bytes_be_signed(65537_u32.to_be_bytes().to_vec());
-        let key = SubjectPublicKeyInfo::try_from(public_rsa)
+        let key = SubjectPublicKeyInfoOwned::try_from(&public_rsa)
             .expect("Failed to convert Public structure to SubjectPublicKeyInfo (RSA).");
-        assert_eq!(key.algorithm, AlgorithmIdentifier::new_rsa_encryption());
-        match key.subject_public_key {
-            PublicKey::Rsa(key) => {
-                assert_eq!(key.public_exponent, default_exponent);
-                assert_eq!(key.modulus.as_unsigned_bytes_be(), RSA_KEY)
-            }
-            _ => panic!("PublicKey of SubjectPublicKeyInfo is not an instance for RSA"),
-        }
+        let default_exponent = BigUint::from(RSA_DEFAULT_EXP);
+        assert_eq!(key.algorithm, pkcs1::ALGORITHM_ID.ref_to_owned());
+        let pkcs1_key = pkcs1::RsaPublicKey::try_from(
+            key.subject_public_key
+                .as_bytes()
+                .expect("non bitstring serialized"),
+        )
+        .expect("non rsa key serialized");
+
+        assert_eq!(
+            pkcs1_key.public_exponent.as_bytes(),
+            default_exponent.to_bytes_be()
+        );
+        assert_eq!(pkcs1_key.modulus.as_bytes(), RSA_KEY);
     }
 }
 
 mod public_ecc_test {
-    use picky_asn1::bit_string::BitString;
-    use picky_asn1_x509::{AlgorithmIdentifier, EcParameters, PublicKey, SubjectPublicKeyInfo};
     use std::convert::TryFrom;
     use tss_esapi::{
-        abstraction::public::DecodedKey,
         attributes::ObjectAttributesBuilder,
         interface_types::{
             algorithm::{HashingAlgorithm, PublicAlgorithm},
@@ -117,6 +112,10 @@ mod public_ecc_test {
             EccParameter, EccPoint, EccScheme, KeyDerivationFunctionScheme, Public, PublicBuilder,
             PublicEccParametersBuilder,
         },
+    };
+    use x509_cert::{
+        der::referenced::OwnedToRef,
+        spki::{AssociatedAlgorithmIdentifier, SubjectPublicKeyInfoOwned},
     };
 
     const EC_POINT: [u8; 65] = [
@@ -166,35 +165,33 @@ mod public_ecc_test {
     #[test]
     fn test_public_to_decoded_key_ecc() {
         let public_ecc = get_ext_ecc_pub();
-        let decoded_key = DecodedKey::try_from(public_ecc)
+        let key = p256::PublicKey::try_from(&public_ecc)
             .expect("Failed to convert Public structure to DecodedKey (ECC).");
 
-        match decoded_key {
-            DecodedKey::RsaPublicKey(..) => panic!("ECC key was decoded to RsaPublicKey!"),
-            DecodedKey::EcPoint(ec_point) => {
-                assert_eq!(ec_point.to_vec(), EC_POINT.to_vec());
-            }
-        }
+        let ec_point = p256::EncodedPoint::from(key);
+        assert_eq!(ec_point.as_bytes(), EC_POINT.to_vec());
     }
 
     #[test]
     fn test_public_to_subject_public_key_info_ecc() {
         let public_ecc = get_ext_ecc_pub();
-        let key = SubjectPublicKeyInfo::try_from(public_ecc)
+        let key = SubjectPublicKeyInfoOwned::try_from(&public_ecc)
             .expect("Failed to convert Public structure to SubjectPublicKeyInfo (ECC).");
-        assert_eq!(
-            key.algorithm,
-            AlgorithmIdentifier::new_elliptic_curve(EcParameters::NamedCurve(
-                picky_asn1_x509::oids::secp256r1().into()
-            ))
-        );
-        match key.subject_public_key {
-            PublicKey::Ec(ec_point) => {
-                let ec_point_bitstring: BitString = ec_point.into();
-                let ec_point_vec: Vec<u8> = ec_point_bitstring.into();
-                assert_eq!(ec_point_vec, EC_POINT.to_vec());
-            }
-            _ => panic!("PublicKey of SubjectPublicKeyInfo is not an instance for ECC"),
-        }
+
+        key.algorithm
+            .owned_to_ref()
+            .assert_oids(
+                p256::PublicKey::ALGORITHM_IDENTIFIER.oid,
+                p256::PublicKey::ALGORITHM_IDENTIFIER
+                    .parameters
+                    .expect("curve parameters are expected in NistP256"),
+            )
+            .expect("Curve parameters should be the one for NistP256");
+
+        let ec_point = key
+            .subject_public_key
+            .as_bytes()
+            .expect("serialized EC point");
+        assert_eq!(ec_point, EC_POINT);
     }
 }

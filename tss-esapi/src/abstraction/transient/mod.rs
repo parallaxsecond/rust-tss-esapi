@@ -35,7 +35,13 @@ use zeroize::Zeroize;
 
 mod key_attestation;
 
+#[cfg(feature = "rustcrypto")]
+mod signer;
+
 pub use key_attestation::MakeCredParams;
+
+#[cfg(feature = "rustcrypto")]
+pub use signer::EcSigner;
 
 /// Parameters for the kinds of keys supported by the context
 #[derive(Debug, Clone, Copy)]
