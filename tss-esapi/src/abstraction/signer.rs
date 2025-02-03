@@ -327,3 +327,290 @@ where
     const SIGNATURE_ALGORITHM_IDENTIFIER: AlgorithmIdentifier<Self::Params> =
         Signature::<C>::ALGORITHM_IDENTIFIER;
 }
+
+#[cfg(feature = "rsa")]
+mod rsa {
+    use super::TpmSigner;
+
+    use crate::{
+        abstraction::{signer::KeyParams, AssociatedHashingAlgorithm},
+        structures::{Digest as TpmDigest, RsaScheme},
+        Error, WrapperErrorKind,
+    };
+
+    use std::fmt;
+
+    use digest::{Digest, FixedOutput, Output};
+    use log::error;
+    use pkcs8::AssociatedOid;
+    use signature::{DigestSigner, Error as SigError, Keypair, Signer};
+    use x509_cert::{
+        der::asn1::AnyRef,
+        spki::{
+            self, AlgorithmIdentifier, AlgorithmIdentifierOwned, AssociatedAlgorithmIdentifier,
+            DynSignatureAlgorithmIdentifier, SignatureAlgorithmIdentifier,
+        },
+    };
+
+    use ::rsa::{pkcs1v15, pss, RsaPublicKey};
+
+    /// [`RsaPkcsSigner`] will sign a payload with an RSA secret key stored on the TPM.
+    ///
+    /// ```no_run
+    /// # use std::sync::Mutex;
+    /// # use tss_esapi::{
+    /// #     abstraction::{RsaPkcsSigner, transient::{TransientKeyContextBuilder, KeyParams}},
+    /// #     interface_types::{algorithm::{HashingAlgorithm, RsaSchemeAlgorithm}, key_bits::RsaKeyBits},
+    /// #     structures::{RsaExponent, RsaScheme},
+    /// #     TctiNameConf
+    /// # };
+    /// use signature::Signer;
+    /// #
+    /// # // Create context
+    /// # let mut context = TransientKeyContextBuilder::new()
+    /// #     .with_tcti(
+    /// #         TctiNameConf::from_environment_variable().expect("Failed to get TCTI"),
+    /// #     )
+    /// #     .build()
+    /// #     .expect("Failed to create Context");
+    ///
+    /// let key_params = KeyParams::Rsa {
+    ///     size: RsaKeyBits::Rsa1024,
+    ///     scheme: RsaScheme::create(RsaSchemeAlgorithm::RsaSsa, Some(HashingAlgorithm::Sha256))
+    ///         .expect("Failed to create RSA scheme"),
+    ///     pub_exponent: RsaExponent::default(),
+    /// };
+    /// let (tpm_km, _tpm_auth) = context
+    ///     .create_key(key_params, 0)
+    ///     .expect("Failed to create a private keypair");
+    ///
+    /// let signer = RsaPkcsSigner::<_, sha2::Sha256>::new((Mutex::new(&mut context), tpm_km, key_params, None))
+    ///      .expect("Failed to create a signer");
+    /// let signature  = signer.sign(b"Hello Bob, Alice here.");
+    /// ```
+    #[derive(Debug)]
+    pub struct RsaPkcsSigner<Ctx, D>
+    where
+        D: Digest,
+    {
+        context: Ctx,
+        verifying_key: pkcs1v15::VerifyingKey<D>,
+    }
+
+    impl<Ctx, D> RsaPkcsSigner<Ctx, D>
+    where
+        Ctx: TpmSigner,
+        D: Digest + AssociatedOid + AssociatedHashingAlgorithm + fmt::Debug,
+    {
+        pub fn new(context: Ctx) -> Result<Self, Error> {
+            match context.key_params()? {
+                KeyParams::Rsa {
+                    scheme: RsaScheme::RsaSsa(hash),
+                    ..
+                } if hash.hashing_algorithm() == D::TPM_DIGEST => {}
+                other => {
+                    error!(
+                        "Unsupported key parameters: {other:?}, expected RsaSsa({:?})",
+                        D::new()
+                    );
+                    return Err(Error::local_error(WrapperErrorKind::InvalidParam));
+                }
+            }
+
+            let public_key = context.public()?;
+            let public_key = RsaPublicKey::try_from(&public_key)?;
+            let verifying_key = pkcs1v15::VerifyingKey::new(public_key);
+
+            Ok(Self {
+                context,
+                verifying_key,
+            })
+        }
+    }
+
+    impl<Ctx, D> Keypair for RsaPkcsSigner<Ctx, D>
+    where
+        D: Digest,
+    {
+        type VerifyingKey = pkcs1v15::VerifyingKey<D>;
+
+        fn verifying_key(&self) -> Self::VerifyingKey {
+            self.verifying_key.clone()
+        }
+    }
+
+    impl<Ctx, D> DigestSigner<D, pkcs1v15::Signature> for RsaPkcsSigner<Ctx, D>
+    where
+        D: Digest + FixedOutput,
+        D: AssociatedHashingAlgorithm,
+        TpmDigest: From<Output<D>>,
+        Ctx: TpmSigner,
+    {
+        fn try_sign_digest(&self, digest: D) -> Result<pkcs1v15::Signature, SigError> {
+            let digest = TpmDigest::from(digest.finalize_fixed());
+
+            //let key_params = Self::key_params::<D>();
+            let signature = self.context.sign(digest).map_err(SigError::from_source)?;
+
+            let signature =
+                pkcs1v15::Signature::try_from(signature).map_err(SigError::from_source)?;
+
+            Ok(signature)
+        }
+    }
+
+    impl<Ctx, D> Signer<pkcs1v15::Signature> for RsaPkcsSigner<Ctx, D>
+    where
+        D: Digest + FixedOutput,
+        D: AssociatedHashingAlgorithm,
+        TpmDigest: From<Output<D>>,
+        Ctx: TpmSigner,
+    {
+        fn try_sign(&self, msg: &[u8]) -> Result<pkcs1v15::Signature, SigError> {
+            let mut d = D::new();
+            Digest::update(&mut d, msg);
+
+            self.try_sign_digest(d)
+        }
+    }
+
+    impl<Ctx, D> SignatureAlgorithmIdentifier for RsaPkcsSigner<Ctx, D>
+    where
+        D: Digest + pkcs1v15::RsaSignatureAssociatedOid,
+    {
+        type Params = AnyRef<'static>;
+
+        const SIGNATURE_ALGORITHM_IDENTIFIER: AlgorithmIdentifier<Self::Params> =
+            pkcs1v15::SigningKey::<D>::ALGORITHM_IDENTIFIER;
+    }
+
+    /// [`RsaPssSigner`] will sign a payload with an RSA secret key stored on the TPM.
+    ///
+    /// ```no_run
+    /// # use std::sync::Mutex;
+    /// # use tss_esapi::{
+    /// #     abstraction::{RsaPssSigner, transient::{TransientKeyContextBuilder, KeyParams}},
+    /// #     interface_types::{algorithm::{HashingAlgorithm, RsaSchemeAlgorithm}, key_bits::RsaKeyBits},
+    /// #     structures::{RsaExponent, RsaScheme},
+    /// #     TctiNameConf
+    /// # };
+    /// use signature::Signer;
+    /// #
+    /// # // Create context
+    /// # let mut context = TransientKeyContextBuilder::new()
+    /// #     .with_tcti(
+    /// #         TctiNameConf::from_environment_variable().expect("Failed to get TCTI"),
+    /// #     )
+    /// #     .build()
+    /// #     .expect("Failed to create Context");
+    ///
+    /// let key_params = KeyParams::Rsa {
+    ///     size: RsaKeyBits::Rsa1024,
+    ///     scheme: RsaScheme::create(RsaSchemeAlgorithm::RsaPss, Some(HashingAlgorithm::Sha256))
+    ///         .expect("Failed to create RSA scheme"),
+    ///     pub_exponent: RsaExponent::default(),
+    /// };
+    /// let (tpm_km, _tpm_auth) = context
+    ///     .create_key(key_params, 0)
+    ///     .expect("Failed to create a private keypair");
+    ///
+    /// let signer = RsaPssSigner::<_, sha2::Sha256>::new((Mutex::new(&mut context), tpm_km, key_params, None))
+    ///      .expect("Failed to create a signer");
+    /// let signature  = signer.sign(b"Hello Bob, Alice here.");
+    /// ```
+    #[derive(Debug)]
+    pub struct RsaPssSigner<Ctx, D>
+    where
+        D: Digest,
+    {
+        context: Ctx,
+        verifying_key: pss::VerifyingKey<D>,
+    }
+
+    impl<Ctx, D> RsaPssSigner<Ctx, D>
+    where
+        Ctx: TpmSigner,
+        D: Digest + AssociatedHashingAlgorithm + fmt::Debug,
+    {
+        pub fn new(context: Ctx) -> Result<Self, Error> {
+            match context.key_params()? {
+                KeyParams::Rsa {
+                    scheme: RsaScheme::RsaPss(hash),
+                    ..
+                } if hash.hashing_algorithm() == D::TPM_DIGEST => {}
+                other => {
+                    error!(
+                        "Unsupported key parameters: {other:?}, expected RsaSsa({:?})",
+                        D::new()
+                    );
+                    return Err(Error::local_error(WrapperErrorKind::InvalidParam));
+                }
+            }
+
+            let public_key = context.public()?;
+            let public_key = RsaPublicKey::try_from(&public_key)?;
+            let verifying_key = pss::VerifyingKey::new(public_key);
+
+            Ok(Self {
+                context,
+                verifying_key,
+            })
+        }
+    }
+
+    impl<Ctx, D> Keypair for RsaPssSigner<Ctx, D>
+    where
+        D: Digest,
+    {
+        type VerifyingKey = pss::VerifyingKey<D>;
+
+        fn verifying_key(&self) -> Self::VerifyingKey {
+            self.verifying_key.clone()
+        }
+    }
+
+    impl<Ctx, D> DigestSigner<D, pss::Signature> for RsaPssSigner<Ctx, D>
+    where
+        D: Digest + FixedOutput,
+        D: AssociatedHashingAlgorithm,
+        TpmDigest: From<Output<D>>,
+        Ctx: TpmSigner,
+    {
+        fn try_sign_digest(&self, digest: D) -> Result<pss::Signature, SigError> {
+            let digest = TpmDigest::from(digest.finalize_fixed());
+
+            let signature = self.context.sign(digest).map_err(SigError::from_source)?;
+
+            let signature = pss::Signature::try_from(signature).map_err(SigError::from_source)?;
+
+            Ok(signature)
+        }
+    }
+
+    impl<Ctx, D> Signer<pss::Signature> for RsaPssSigner<Ctx, D>
+    where
+        D: Digest + FixedOutput,
+        D: AssociatedHashingAlgorithm,
+        TpmDigest: From<Output<D>>,
+        Ctx: TpmSigner,
+    {
+        fn try_sign(&self, msg: &[u8]) -> Result<pss::Signature, SigError> {
+            let mut d = D::new();
+            Digest::update(&mut d, msg);
+
+            self.try_sign_digest(d)
+        }
+    }
+
+    impl<Ctx, D> DynSignatureAlgorithmIdentifier for RsaPssSigner<Ctx, D>
+    where
+        D: Digest + AssociatedOid,
+    {
+        fn signature_algorithm_identifier(&self) -> spki::Result<AlgorithmIdentifierOwned> {
+            pss::get_default_pss_signature_algo_id::<D>()
+        }
+    }
+}
+
+#[cfg(feature = "rsa")]
+pub use self::rsa::{RsaPkcsSigner, RsaPssSigner};

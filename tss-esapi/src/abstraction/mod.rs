@@ -14,6 +14,8 @@ mod signatures;
 mod signer;
 pub use hashing::AssociatedHashingAlgorithm;
 pub use signer::EcSigner;
+#[cfg(feature = "rsa")]
+pub use signer::{RsaPkcsSigner, RsaPssSigner};
 
 use std::convert::TryFrom;
 
