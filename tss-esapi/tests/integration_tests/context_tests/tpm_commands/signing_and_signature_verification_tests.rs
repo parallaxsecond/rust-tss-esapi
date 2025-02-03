@@ -170,21 +170,33 @@ mod test_sign {
     use crate::common::{create_ctx_with_session, signing_key_pub, HASH};
     use std::convert::TryFrom;
     use tss_esapi::{
-        interface_types::reserved_handles::Hierarchy,
-        structures::{Auth, Digest, SignatureScheme},
+        interface_types::{
+            algorithm::RsaSchemeAlgorithm, key_bits::RsaKeyBits, reserved_handles::Hierarchy,
+        },
+        structures::{Auth, Digest, RsaExponent, RsaScheme, SignatureScheme},
+    };
+
+    use {
+        digest::Digest as _,
+        signature::{DigestVerifier, Keypair, Signer, Verifier},
+        std::sync::Mutex,
     };
 
     #[cfg(feature = "p256")]
     use {
         p256::{ecdsa::Signature, NistP256},
-        signature::{Keypair, Signer, Verifier},
-        std::sync::Mutex,
         tss_esapi::{
             abstraction::EcSigner,
             interface_types::{algorithm::HashingAlgorithm, ecc::EccCurve},
             structures::{EccScheme, HashScheme},
             utils,
         },
+    };
+
+    #[cfg(feature = "rsa")]
+    use {
+        rsa::{pkcs1v15, pss},
+        tss_esapi::abstraction::{RsaPkcsSigner, RsaPssSigner},
     };
 
     #[test]
@@ -301,5 +313,74 @@ mod test_sign {
         let signature: Signature = signer.sign(&random);
 
         verifying_key.verify(&random, &signature).unwrap();
+    }
+
+    #[cfg(feature = "rsa")]
+    #[test]
+    fn test_sign_signer_rsa_pkcs() {
+        let mut context = create_ctx_with_session();
+        let mut random_digest = vec![0u8; 16];
+        getrandom::getrandom(&mut random_digest).unwrap();
+        let key_auth = Auth::from_bytes(random_digest.as_slice()).unwrap();
+
+        let key_handle = context
+            .create_primary(
+                Hierarchy::Owner,
+                signing_key_pub(),
+                Some(key_auth),
+                None,
+                None,
+                None,
+            )
+            .unwrap()
+            .key_handle;
+
+        let mut payload = vec![0u8; 47];
+        getrandom::getrandom(&mut payload).unwrap();
+
+        let signer =
+            RsaPkcsSigner::<_, sha2::Sha256>::new((Mutex::new(&mut context), key_handle)).unwrap();
+        let verifying_key = signer.verifying_key();
+        let signature: pkcs1v15::Signature = signer.sign(&payload);
+
+        verifying_key.verify(&payload, &signature).unwrap();
+
+        let d = sha2::Sha256::new_with_prefix(&payload);
+        verifying_key.verify_digest(d, &signature).unwrap();
+    }
+
+    #[cfg(feature = "rsa")]
+    #[test]
+    fn test_sign_signer_rsa_pss() {
+        let mut context = create_ctx_with_session();
+        let mut random_digest = vec![0u8; 16];
+        getrandom::getrandom(&mut random_digest).unwrap();
+        let key_auth = Auth::from_bytes(random_digest.as_slice()).unwrap();
+
+        let rsa_pss = utils::create_unrestricted_signing_rsa_public(
+            RsaScheme::create(RsaSchemeAlgorithm::RsaPss, Some(HashingAlgorithm::Sha256))
+                .expect("Failed to create RSA scheme"),
+            RsaKeyBits::Rsa2048,
+            RsaExponent::default(),
+        )
+        .expect("Failed to create an unrestricted signing rsa public structure");
+
+        let key_handle = context
+            .create_primary(Hierarchy::Owner, rsa_pss, Some(key_auth), None, None, None)
+            .unwrap()
+            .key_handle;
+
+        let mut payload = vec![0u8; 47];
+        getrandom::getrandom(&mut payload).unwrap();
+
+        let signer =
+            RsaPssSigner::<_, sha2::Sha256>::new((Mutex::new(&mut context), key_handle)).unwrap();
+        let verifying_key = signer.verifying_key();
+        let signature: pss::Signature = signer.sign(&payload);
+
+        verifying_key.verify(&payload, &signature).unwrap();
+
+        let d = sha2::Sha256::new_with_prefix(&payload);
+        verifying_key.verify_digest(d, &signature).unwrap();
     }
 }
