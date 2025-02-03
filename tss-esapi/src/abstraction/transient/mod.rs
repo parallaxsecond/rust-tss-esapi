@@ -35,11 +35,7 @@ use zeroize::Zeroize;
 
 mod key_attestation;
 
-mod signer;
-
 pub use key_attestation::MakeCredParams;
-
-pub use signer::EcSigner;
 
 /// Parameters for the kinds of keys supported by the context
 #[derive(Debug, Clone, Copy)]
