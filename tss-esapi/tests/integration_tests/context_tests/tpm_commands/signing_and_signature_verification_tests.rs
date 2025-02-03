@@ -174,6 +174,19 @@ mod test_sign {
         structures::{Auth, Digest, SignatureScheme},
     };
 
+    #[cfg(feature = "p256")]
+    use {
+        p256::{ecdsa::Signature, NistP256},
+        signature::{Keypair, Signer, Verifier},
+        std::sync::Mutex,
+        tss_esapi::{
+            abstraction::EcSigner,
+            interface_types::{algorithm::HashingAlgorithm, ecc::EccCurve},
+            structures::{EccScheme, HashScheme},
+            utils,
+        },
+    };
+
     #[test]
     fn test_sign() {
         let mut context = create_ctx_with_session();
@@ -259,5 +272,34 @@ mod test_sign {
                 None,
             )
             .unwrap_err();
+    }
+
+    #[cfg(feature = "p256")]
+    #[test]
+    fn test_sign_signer() {
+        let public = utils::create_unrestricted_signing_ecc_public(
+            EccScheme::EcDsa(HashScheme::new(HashingAlgorithm::Sha256)),
+            EccCurve::NistP256,
+        )
+        .expect("Create ecc public struct");
+
+        let mut context = create_ctx_with_session();
+        let mut random_digest = vec![0u8; 16];
+        getrandom::getrandom(&mut random_digest).unwrap();
+        let key_auth = Auth::from_bytes(random_digest.as_slice()).unwrap();
+
+        let key_handle = context
+            .create_primary(Hierarchy::Owner, public, Some(key_auth), None, None, None)
+            .unwrap()
+            .key_handle;
+
+        let mut random = vec![0u8; 47];
+        getrandom::getrandom(&mut random).unwrap();
+
+        let signer = EcSigner::<NistP256, _>::new((Mutex::new(&mut context), key_handle)).unwrap();
+        let verifying_key = signer.verifying_key();
+        let signature: Signature = signer.sign(&random);
+
+        verifying_key.verify(&random, &signature).unwrap();
     }
 }

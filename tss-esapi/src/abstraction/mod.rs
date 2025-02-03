@@ -11,7 +11,9 @@ pub mod transient;
 
 mod hashing;
 mod signatures;
+mod signer;
 pub use hashing::AssociatedHashingAlgorithm;
+pub use signer::EcSigner;
 
 use std::convert::TryFrom;
 

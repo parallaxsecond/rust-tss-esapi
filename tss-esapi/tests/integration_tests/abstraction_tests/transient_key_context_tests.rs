@@ -3,10 +3,11 @@
 use std::{
     convert::{TryFrom, TryInto},
     str::FromStr,
+    sync::Mutex,
 };
 use tss_esapi::{
-    abstraction::transient::{EcSigner, KeyParams, ObjectWrapper, TransientKeyContextBuilder},
-    abstraction::{ek, AsymmetricAlgorithmSelection},
+    abstraction::transient::{KeyParams, ObjectWrapper, TransientKeyContextBuilder},
+    abstraction::{ek, AsymmetricAlgorithmSelection, EcSigner},
     constants::return_code::{TpmFormatOneError, TpmFormatZeroError},
     error::{TpmFormatZeroResponseCode, TpmResponseCode},
     interface_types::{
@@ -895,12 +896,12 @@ fn sign_csr() {
     // Check that we can convert a reference from TKC to Context
     let mut ctx = create_ctx();
 
-    let (tpm_km, _tpm_auth) = ctx
-        .create_key(EcSigner::<NistP256>::key_params_default(), 0)
-        .expect("create private key");
+    let key_params = EcSigner::<NistP256, ()>::key_params_default();
+    let (tpm_km, _tpm_auth) = ctx.create_key(key_params, 0).expect("create private key");
 
     let subject = Name::from_str("CN=tpm.example").expect("Parse common name");
-    let signer = EcSigner::<NistP256>::new(&mut ctx, tpm_km, None).expect("Create a signer");
+    let signer = EcSigner::<NistP256, _>::new((Mutex::new(&mut ctx), tpm_km, key_params, None))
+        .expect("Create a signer");
     let builder = RequestBuilder::new(subject, &signer).expect("Create certificate request");
 
     let cert_req = builder
@@ -920,10 +921,10 @@ fn sign_p256_sha2_256() {
     // Check that we can convert a reference from TKC to Context
     let mut ctx = create_ctx();
 
-    let (tpm_km, _tpm_auth) = ctx
-        .create_key(EcSigner::<NistP256>::key_params::<sha2::Sha256>(), 0)
-        .expect("create private key");
-    let signer = EcSigner::<NistP256>::new(&mut ctx, tpm_km, None).expect("Create a signer");
+    let key_params = EcSigner::<NistP256, ()>::key_params::<sha2::Sha256>();
+    let (tpm_km, _tpm_auth) = ctx.create_key(key_params, 0).expect("create private key");
+    let signer = EcSigner::<NistP256, _>::new((Mutex::new(&mut ctx), tpm_km, key_params, None))
+        .expect("Create a signer");
 
     let payload = b"Example of ECDSA with P-256";
     let mut hash = Sha256::new();
@@ -951,20 +952,19 @@ fn sign_p256_sha3_256() {
     // Check that we can convert a reference from TKC to Context
     let mut ctx = create_ctx();
 
-    let (tpm_km, _tpm_auth) = ctx
-        .create_key(EcSigner::<NistP256>::key_params::<Sha3_256>(), 0)
-        .expect("create private key");
-    let signer = EcSigner::<NistP256>::new(&mut ctx, tpm_km, None).expect("Create a signer");
+    let key_params = EcSigner::<NistP256, ()>::key_params::<Sha3_256>();
+    let (tpm_km, _tpm_auth) = ctx.create_key(key_params, 0).expect("create private key");
+    let signer = EcSigner::<NistP256, _>::new((Mutex::new(&mut ctx), tpm_km, key_params, None))
+        .expect("Create a signer");
 
     let payload = b"Example of ECDSA with P-256";
     let mut hash = Sha3_256::new();
     hash.update(payload);
 
-    let signature =
-        <EcSigner<'_, _> as DigestSigner<Sha3_256, p256::ecdsa::Signature>>::sign_digest(
-            &signer,
-            hash.clone(),
-        );
+    let signature = <EcSigner<_, _> as DigestSigner<Sha3_256, p256::ecdsa::Signature>>::sign_digest(
+        &signer,
+        hash.clone(),
+    );
     let verifying_key: VerifyingKey = *signer.as_ref();
     assert!(verifying_key.verify_digest(hash, &signature).is_ok());
 }
