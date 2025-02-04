@@ -123,7 +123,13 @@ pub mod data {
 
 pub mod digest {
     use crate::tss2_esys::TPMU_HA;
+    use digest::{
+        array::Array,
+        consts::{U20, U32, U48, U64},
+        typenum::Unsigned,
+    };
     use std::mem::size_of;
+
     const TPM2B_DIGEST_BUFFER_SIZE: usize = size_of::<TPMU_HA>();
 
     buffer_type!(Digest, TPM2B_DIGEST_BUFFER_SIZE, TPM2B_DIGEST);
@@ -220,6 +226,34 @@ pub mod digest {
             Digest(value_as_vec.into())
         }
     }
+
+    macro_rules! impl_from_digest {
+        ($($size:ty),+) => {
+            $(impl From<Array<u8, $size>> for Digest {
+                fn from(value: Array<u8, $size>) -> Self {
+                    Digest(value.as_slice().to_vec().into())
+                }
+            }
+
+            impl TryFrom<Digest> for Array<u8, $size> {
+                type Error = Error;
+
+                fn try_from(value: Digest) -> Result<Self> {
+                    if value.len() != <$size>::USIZE {
+                        return Err(Error::local_error(WrapperErrorKind::WrongParamSize));
+                    }
+
+                    let mut result = [0; <$size>::USIZE];
+
+                    result.copy_from_slice(value.as_bytes());
+
+                    Ok(result.into())
+                }
+            })+
+        }
+    }
+
+    impl_from_digest!(U20, U32, U48, U64);
 }
 
 pub mod ecc_parameter {

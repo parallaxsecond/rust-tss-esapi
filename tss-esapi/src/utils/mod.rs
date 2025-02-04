@@ -23,6 +23,11 @@ use crate::{Context, Error, Result, WrapperErrorKind};
 use std::convert::TryFrom;
 use zeroize::Zeroize;
 
+mod credential;
+pub mod kdf;
+
+pub use self::credential::{make_credential_ecc, make_credential_rsa};
+
 /// Create the [Public] structure for a restricted decryption key.
 ///
 /// * `symmetric` - Cipher to be used for decrypting children of the key
