@@ -28,6 +28,9 @@ The crate currently offers the following features:
   on top of the basic Rust-native ESAPI API provided by the crate. This feature
   can be turned off to reduce the number of dependencies built.
 * `serde` - enable serde `Serialize`/`Deserialize` traits for types. 
+* `rustcrypto-full` (disabled by default) - provides conversion from all
+  supported elliptic curves, rsa or hashes.
+  Support for individual hash, rsa or curves can be pulled individually.
 
 ## Cross compiling
 

@@ -1,9 +1,13 @@
 // Copyright 2020 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
-use std::convert::{TryFrom, TryInto};
+use std::{
+    convert::{TryFrom, TryInto},
+    str::FromStr,
+    sync::Mutex,
+};
 use tss_esapi::{
     abstraction::transient::{KeyParams, ObjectWrapper, TransientKeyContextBuilder},
-    abstraction::{ek, AsymmetricAlgorithmSelection},
+    abstraction::{ek, AsymmetricAlgorithmSelection, EcSigner},
     constants::return_code::{TpmFormatOneError, TpmFormatZeroError},
     error::{TpmFormatZeroResponseCode, TpmResponseCode},
     interface_types::{
@@ -18,6 +22,17 @@ use tss_esapi::{
     },
     utils::{create_restricted_decryption_rsa_public, PublicKey},
     Error, ReturnCode, TransientKeyContext, WrapperErrorKind as ErrorKind,
+};
+
+use digest::Digest as _;
+use p256::{ecdsa::VerifyingKey, NistP256};
+use sha2::Sha256;
+use sha3::Sha3_256;
+use signature::{DigestSigner, DigestVerifier};
+use x509_cert::{
+    builder::{Builder, RequestBuilder},
+    der::{pem::LineEnding, EncodePem},
+    name::Name,
 };
 
 use crate::common::create_tcti;
@@ -874,4 +889,82 @@ fn get_random_from_tkc() {
         .as_mut()
         .execute_without_session(|ctx| ctx.get_random(16))
         .expect("Failed to get random bytes");
+}
+
+#[test]
+fn sign_csr() {
+    // Check that we can convert a reference from TKC to Context
+    let mut ctx = create_ctx();
+
+    let key_params = EcSigner::<NistP256, ()>::key_params_default();
+    let (tpm_km, _tpm_auth) = ctx.create_key(key_params, 0).expect("create private key");
+
+    let subject = Name::from_str("CN=tpm.example").expect("Parse common name");
+    let signer = EcSigner::<NistP256, _>::new((Mutex::new(&mut ctx), tpm_km, key_params, None))
+        .expect("Create a signer");
+    let builder = RequestBuilder::new(subject, &signer).expect("Create certificate request");
+
+    let cert_req = builder
+        .build::<p256::ecdsa::DerSignature>()
+        .expect("Sign a CSR");
+
+    println!(
+        "{}",
+        cert_req
+            .to_pem(LineEnding::default())
+            .expect("Serialize CSR")
+    );
+}
+
+#[test]
+fn sign_p256_sha2_256() {
+    // Check that we can convert a reference from TKC to Context
+    let mut ctx = create_ctx();
+
+    let key_params = EcSigner::<NistP256, ()>::key_params::<sha2::Sha256>();
+    let (tpm_km, _tpm_auth) = ctx.create_key(key_params, 0).expect("create private key");
+    let signer = EcSigner::<NistP256, _>::new((Mutex::new(&mut ctx), tpm_km, key_params, None))
+        .expect("Create a signer");
+
+    let payload = b"Example of ECDSA with P-256";
+    let mut hash = Sha256::new();
+    hash.update(payload);
+
+    let signature: p256::ecdsa::Signature = signer.sign_digest(hash.clone());
+    let verifying_key: VerifyingKey = *signer.as_ref();
+    assert!(verifying_key.verify_digest(hash, &signature).is_ok());
+}
+
+// NOTE(baloo): I believe this is a legitimate case, but support is not available yet in libtpms (or swtpm)
+//
+// See: https://github.com/stefanberger/libtpms/issues/206
+//
+// This will throw:
+// `Error in creating derived key: 0x000002C3` when trying to create a P-256 key with Sha3-256 associated hash.
+//
+// This is combination defined by NIST:
+// https://csrc.nist.gov/CSRC/media/Projects/Cryptographic-Standards-and-Guidelines/documents/examples/P256_SHA3-256.pdf
+//
+// This test is ignored for now to avoid issues with the CI.
+#[ignore]
+#[test]
+fn sign_p256_sha3_256() {
+    // Check that we can convert a reference from TKC to Context
+    let mut ctx = create_ctx();
+
+    let key_params = EcSigner::<NistP256, ()>::key_params::<Sha3_256>();
+    let (tpm_km, _tpm_auth) = ctx.create_key(key_params, 0).expect("create private key");
+    let signer = EcSigner::<NistP256, _>::new((Mutex::new(&mut ctx), tpm_km, key_params, None))
+        .expect("Create a signer");
+
+    let payload = b"Example of ECDSA with P-256";
+    let mut hash = Sha3_256::new();
+    hash.update(payload);
+
+    let signature = <EcSigner<_, _> as DigestSigner<Sha3_256, p256::ecdsa::Signature>>::sign_digest(
+        &signer,
+        hash.clone(),
+    );
+    let verifying_key: VerifyingKey = *signer.as_ref();
+    assert!(verifying_key.verify_digest(hash, &signature).is_ok());
 }
