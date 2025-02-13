@@ -13,9 +13,9 @@ use crate::{
     Error, Result, ReturnCode, WrapperErrorKind,
 };
 
+use self::rsa::PublicRsaParameters;
 use ecc::PublicEccParameters;
 use keyed_hash::PublicKeyedHashParameters;
-use rsa::PublicRsaParameters;
 
 use log::error;
 use std::convert::{TryFrom, TryInto};
