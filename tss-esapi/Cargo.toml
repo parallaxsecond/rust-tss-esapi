@@ -80,3 +80,6 @@ integration-tests = ["strum", "strum_macros"]
 
 rustcrypto = ["digest", "ecdsa", "elliptic-curve", "pkcs8", "signature", "x509-cert"]
 rustcrypto-full = ["rustcrypto", "p192", "p224", "p256", "p384", "p521", "rsa", "sha1", "sha2", "sha3", "sm2", "sm3"]
+
+sha1 = ["dep:sha1", "rsa?/sha1"]
+sha2 = ["dep:sha2", "rsa?/sha2"]

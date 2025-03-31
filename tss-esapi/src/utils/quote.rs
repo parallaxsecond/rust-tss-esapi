@@ -4,105 +4,143 @@ use crate::error::Error;
 use crate::error::Result;
 use crate::WrapperErrorKind;
 use crate::{
+    abstraction::public::AssociatedTpmCurve,
     interface_types::algorithm::HashingAlgorithm,
-    structures::{Attest, AttestInfo, DigestList, PcrSelectionList, Public, QuoteInfo, Signature},
+    structures::{
+        Attest, AttestInfo, DigestList, EccSignature, PcrSelectionList, Public, QuoteInfo,
+        Signature,
+    },
     traits::Marshall,
-    utils::PublicKey,
 };
 use digest::{Digest, DynDigest};
 
-#[cfg(feature = "p256")]
-use crate::structures::EccSignature;
-#[cfg(feature = "p256")]
-use p256::ecdsa::{Signature as SignatureP256, VerifyingKey};
-#[cfg(feature = "p256")]
+use ecdsa::{
+    hazmat::{DigestPrimitive, VerifyPrimitive},
+    PrimeCurve, SignatureSize, VerifyingKey,
+};
+use elliptic_curve::{
+    generic_array::ArrayLength,
+    point::AffinePoint,
+    sec1::{FromEncodedPoint, ModulusSize, ToEncodedPoint},
+    CurveArithmetic, FieldBytesSize,
+};
 use signature::{hazmat::PrehashVerifier, Verifier};
 
 #[cfg(feature = "rsa")]
-use crate::structures::RsaSignature;
-#[cfg(feature = "rsa")]
-use rsa::{pss::Pss, RsaPublicKey};
+use rsa::{pkcs1v15, pss, RsaPublicKey};
 
-#[cfg(feature = "p256")]
-fn verify_p256(public: &Public, message: &[u8], signature: &EccSignature) -> Result<bool> {
-    let public_key = PublicKey::try_from(public.clone())?;
-    let (x, y) = match public_key {
-        PublicKey::Ecc { x, y } => (x, y),
-        _ => {
-            return Err(Error::WrapperError(WrapperErrorKind::InvalidParam));
-        }
+fn verify_ecdsa<C>(
+    public: &Public,
+    message: &[u8],
+    signature: &EccSignature,
+    hashing_algorithm: HashingAlgorithm,
+) -> Result<bool>
+where
+    C: PrimeCurve + CurveArithmetic + DigestPrimitive + AssociatedTpmCurve,
+    AffinePoint<C>: VerifyPrimitive<C> + FromEncodedPoint<C> + ToEncodedPoint<C>,
+    SignatureSize<C>: ArrayLength<u8>,
+    FieldBytesSize<C>: ModulusSize,
+{
+    let Ok(signature) = ecdsa::Signature::<C>::try_from(signature.clone()) else {
+        return Ok(false);
     };
-    let mut sec1_bytes = Vec::<u8>::with_capacity(1 + x.len() + y.len());
-    sec1_bytes.push(0x04);
-    sec1_bytes.extend_from_slice(&x);
-    sec1_bytes.extend_from_slice(&y);
-    let verifying_key = match VerifyingKey::from_sec1_bytes(&sec1_bytes) {
-        Ok(s) => s,
-        Err(_) => {
-            return Err(Error::WrapperError(WrapperErrorKind::InvalidParam));
-        }
+    let Ok(public) = elliptic_curve::PublicKey::<C>::try_from(public) else {
+        return Ok(false);
     };
 
-    let mut sig_bytes = Vec::with_capacity(64);
-    sig_bytes.extend_from_slice(signature.signature_r().as_ref());
-    sig_bytes.extend_from_slice(signature.signature_s().as_ref());
-    let generic_sig = digest::generic_array::GenericArray::clone_from_slice(&sig_bytes);
-    let sig = match SignatureP256::from_bytes(&generic_sig) {
-        Ok(s) => s,
-        Err(_) => {
-            return Err(Error::WrapperError(WrapperErrorKind::InvalidParam));
-        }
-    };
+    let verifying_key = VerifyingKey::from(public);
 
-    let verify_result = match signature.hashing_algorithm() {
+    match hashing_algorithm {
         #[cfg(feature = "sha1")]
         HashingAlgorithm::Sha1 => {
-            let mut hasher = sha1::Sha1::new();
-            Digest::update(&mut hasher, &message);
-            verifying_key.verify_prehash(&hasher.finalize(), &sig)
+            let hash = sha1::Sha1::digest(message);
+            Ok(verifying_key.verify_prehash(&hash, &signature).is_ok())
         }
         #[cfg(feature = "sha2")]
-        HashingAlgorithm::Sha256 => verifying_key.verify(&message, &sig),
-        _ => {
-            return Err(Error::WrapperError(WrapperErrorKind::UnsupportedParam));
+        HashingAlgorithm::Sha256 => {
+            let hash = sha2::Sha256::digest(message);
+            Ok(verifying_key.verify_prehash(&hash, &signature).is_ok())
         }
-    };
-    return Ok(match verify_result {
-        Ok(_) => true,
-        Err(_) => false,
-    });
+        #[cfg(feature = "sha2")]
+        HashingAlgorithm::Sha384 => {
+            let hash = sha2::Sha384::digest(message);
+            Ok(verifying_key.verify_prehash(&hash, &signature).is_ok())
+        }
+        #[cfg(feature = "sha2")]
+        HashingAlgorithm::Sha512 => {
+            let hash = sha2::Sha512::digest(message);
+            Ok(verifying_key.verify_prehash(&hash, &signature).is_ok())
+        }
+        _ => Err(Error::WrapperError(WrapperErrorKind::UnsupportedParam)),
+    }
 }
 
 #[cfg(feature = "rsa")]
-fn verify_rsa(public: &Public, message: &[u8], signature: &RsaSignature) -> Result<bool> {
-    let public_key = PublicKey::try_from(public.clone())?;
-    let rsa_key = RsaPublicKey::try_from(&public_key)?;
-    let sig = signature.signature();
-    let mut hasher: Box<dyn DynDigest> = match signature.hashing_algorithm() {
-        #[cfg(feature = "sha1")]
-        HashingAlgorithm::Sha1 => Box::new(sha1::Sha1::new()),
-        #[cfg(feature = "sha2")]
-        HashingAlgorithm::Sha256 => Box::new(sha2::Sha256::new()),
-        _ => {
-            return Err(Error::WrapperError(WrapperErrorKind::UnsupportedParam));
-        }
-    };
-    hasher.update(&message);
-    let hash = hasher.finalize().to_vec();
+fn verify_rsa_pss(
+    public: &Public,
+    message: &[u8],
+    signature: &pss::Signature,
+    hashing_algorithm: HashingAlgorithm,
+) -> Result<bool> {
+    let rsa_key = RsaPublicKey::try_from(public)?;
 
-    let scheme = match signature.hashing_algorithm() {
+    match hashing_algorithm {
         #[cfg(feature = "sha1")]
-        HashingAlgorithm::Sha1 => Pss::new::<sha1::Sha1>(),
-        #[cfg(feature = "sha2")]
-        HashingAlgorithm::Sha256 => Pss::new::<sha2::Sha256>(),
-        _ => {
-            return Err(Error::WrapperError(WrapperErrorKind::UnsupportedParam));
+        HashingAlgorithm::Sha1 => {
+            let verifying_key = pss::VerifyingKey::<sha1::Sha1>::from(rsa_key);
+            Ok(verifying_key.verify(message, signature).is_ok())
         }
-    };
-    return Ok(match rsa_key.verify(scheme, &hash, &sig) {
-        Ok(_) => true,
-        Err(_) => false,
-    });
+        #[cfg(feature = "sha2")]
+        HashingAlgorithm::Sha256 => {
+            let verifying_key = pss::VerifyingKey::<sha2::Sha256>::from(rsa_key);
+            Ok(verifying_key.verify(message, signature).is_ok())
+        }
+        #[cfg(feature = "sha2")]
+        HashingAlgorithm::Sha384 => {
+            let verifying_key = pss::VerifyingKey::<sha2::Sha384>::from(rsa_key);
+            Ok(verifying_key.verify(message, signature).is_ok())
+        }
+        #[cfg(feature = "sha2")]
+        HashingAlgorithm::Sha512 => {
+            let verifying_key = pss::VerifyingKey::<sha2::Sha512>::from(rsa_key);
+            Ok(verifying_key.verify(message, signature).is_ok())
+        }
+        _ => Err(Error::WrapperError(WrapperErrorKind::UnsupportedParam)),
+    }
+}
+
+#[cfg(feature = "rsa")]
+fn verify_rsa_pkcs1v15(
+    public: &Public,
+    message: &[u8],
+    signature: &pkcs1v15::Signature,
+    hashing_algorithm: HashingAlgorithm,
+) -> Result<bool> {
+    let rsa_key = RsaPublicKey::try_from(public)?;
+
+    match hashing_algorithm {
+        #[cfg(feature = "sha1")]
+        HashingAlgorithm::Sha1 => {
+            let verifying_key = pkcs1v15::VerifyingKey::<sha1::Sha1>::new(rsa_key);
+            Ok(verifying_key.verify(message, signature).is_ok())
+        }
+        #[cfg(feature = "sha2")]
+        HashingAlgorithm::Sha256 => {
+            let verifying_key = pkcs1v15::VerifyingKey::<sha2::Sha256>::new(rsa_key);
+            Ok(verifying_key.verify(message, signature).is_ok())
+        }
+        #[cfg(feature = "sha2")]
+        HashingAlgorithm::Sha384 => {
+            let verifying_key = pkcs1v15::VerifyingKey::<sha2::Sha384>::new(rsa_key);
+            Ok(verifying_key.verify(message, signature).is_ok())
+        }
+        #[cfg(feature = "sha2")]
+        HashingAlgorithm::Sha512 => {
+            let verifying_key = pkcs1v15::VerifyingKey::<sha2::Sha512>::new(rsa_key);
+            Ok(verifying_key.verify(message, signature).is_ok())
+        }
+        _ => Err(Error::WrapperError(WrapperErrorKind::UnsupportedParam)),
+    }
 }
 
 fn checkquote_pcr_digests(
@@ -121,6 +159,10 @@ fn checkquote_pcr_digests(
         HashingAlgorithm::Sha1 => Box::new(sha1::Sha1::new()),
         #[cfg(feature = "sha2")]
         HashingAlgorithm::Sha256 => Box::new(sha2::Sha256::new()),
+        #[cfg(feature = "sha2")]
+        HashingAlgorithm::Sha384 => Box::new(sha2::Sha384::new()),
+        #[cfg(feature = "sha2")]
+        HashingAlgorithm::Sha512 => Box::new(sha2::Sha512::new()),
         _ => {
             return Err(Error::WrapperError(WrapperErrorKind::UnsupportedParam));
         }
@@ -261,25 +303,63 @@ pub fn checkquote(
     } else {
         return Err(Error::WrapperError(WrapperErrorKind::InvalidParam));
     };
+
     let bytes = attest.marshall()?;
-    let hash_alg = match signature {
-        #[cfg(feature = "p256")]
-        Signature::EcDsa(sig) => {
-            if !verify_p256(&public, &bytes, &sig)? {
-                return Ok(false);
+
+    let mut hash_alg = None;
+    match (public, signature) {
+        (Public::Ecc { parameters, .. }, _) => {
+            macro_rules! impl_check_ecdsa {
+                ($curve: ty) => {
+                    if parameters.ecc_curve() == <$curve>::TPM_CURVE {
+                        let Signature::EcDsa(sig) = signature else {
+                            return Err(Error::WrapperError(WrapperErrorKind::UnsupportedParam));
+                        };
+                        if !verify_ecdsa::<$curve>(&public, &bytes, &sig, sig.hashing_algorithm())?
+                        {
+                            return Ok(false);
+                        }
+
+                        hash_alg = Some(sig.hashing_algorithm());
+                    }
+                };
             }
-            sig.hashing_algorithm()
+            #[cfg(feature = "p224")]
+            impl_check_ecdsa!(p224::NistP224);
+            #[cfg(feature = "p256")]
+            impl_check_ecdsa!(p256::NistP256);
+            #[cfg(feature = "p384")]
+            impl_check_ecdsa!(p384::NistP384);
         }
         #[cfg(feature = "rsa")]
-        Signature::RsaPss(sig) => {
-            if !verify_rsa(&public, &bytes, &sig)? {
+        (Public::Rsa { .. }, sig @ Signature::RsaSsa(pkcs_sig)) => {
+            let Ok(sig) = pkcs1v15::Signature::try_from(sig.clone()) else {
+                return Err(Error::WrapperError(WrapperErrorKind::UnsupportedParam));
+            };
+
+            if !verify_rsa_pkcs1v15(public, &bytes, &sig, pkcs_sig.hashing_algorithm())? {
                 return Ok(false);
             }
-            sig.hashing_algorithm()
+            hash_alg = Some(pkcs_sig.hashing_algorithm());
+        }
+        #[cfg(feature = "rsa")]
+        (Public::Rsa { .. }, sig @ Signature::RsaPss(pkcs_sig)) => {
+            let Ok(sig) = pss::Signature::try_from(sig.clone()) else {
+                return Err(Error::WrapperError(WrapperErrorKind::UnsupportedParam));
+            };
+
+            if !verify_rsa_pss(public, &bytes, &sig, pkcs_sig.hashing_algorithm())? {
+                return Ok(false);
+            }
+            hash_alg = Some(pkcs_sig.hashing_algorithm());
         }
         _ => {
             return Err(Error::WrapperError(WrapperErrorKind::UnsupportedParam));
         }
+    };
+
+    let Some(hash_alg) = hash_alg else {
+        return Ok(false);
     };
     if qualifying_data != attest.extra_data().as_bytes() {
         return Ok(false);

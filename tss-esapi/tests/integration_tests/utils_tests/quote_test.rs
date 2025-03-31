@@ -172,7 +172,16 @@ mod test_quote {
         checkquote_ecc(HashingAlgorithm::Sha256);
     }
 
-    fn checkquote_rsa(keybits: RsaKeyBits, hash_alg: HashingAlgorithm) {
+    #[test]
+    fn checkquote_ecc_sha512() {
+        checkquote_ecc(HashingAlgorithm::Sha512);
+    }
+
+    fn checkquote_rsa(
+        keybits: RsaKeyBits,
+        hash_alg: HashingAlgorithm,
+        sig_scheme: SignatureSchemeAlgorithm,
+    ) {
         let mut context = create_ctx_with_session();
         let ek_rsa = ek::create_ek_object(
             &mut context,
@@ -186,7 +195,7 @@ mod test_quote {
             ek_rsa,
             hash_alg,
             AsymmetricAlgorithmSelection::Rsa(keybits),
-            SignatureSchemeAlgorithm::RsaPss,
+            sig_scheme,
             Some(ak_auth.clone()),
             None,
         )
@@ -228,12 +237,29 @@ mod test_quote {
     }
 
     #[test]
-    fn checkquote_rsa_sha1() {
-        checkquote_rsa(RsaKeyBits::Rsa2048, HashingAlgorithm::Sha1);
+    fn checkquote_rsa_pss_sha1() {
+        checkquote_rsa(
+            RsaKeyBits::Rsa1024,
+            HashingAlgorithm::Sha1,
+            SignatureSchemeAlgorithm::RsaPss,
+        );
     }
 
     #[test]
-    fn checkquote_rsa_sha256() {
-        checkquote_rsa(RsaKeyBits::Rsa3072, HashingAlgorithm::Sha256);
+    fn checkquote_rsa_ssa_sha256() {
+        checkquote_rsa(
+            RsaKeyBits::Rsa2048,
+            HashingAlgorithm::Sha256,
+            SignatureSchemeAlgorithm::RsaSsa,
+        );
+    }
+
+    #[test]
+    fn checkquote_rsa_pss_sha384() {
+        checkquote_rsa(
+            RsaKeyBits::Rsa3072,
+            HashingAlgorithm::Sha384,
+            SignatureSchemeAlgorithm::RsaPss,
+        );
     }
 }
