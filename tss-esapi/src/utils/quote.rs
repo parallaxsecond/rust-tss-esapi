@@ -4,31 +4,35 @@ use crate::error::Error;
 use crate::error::Result;
 use crate::WrapperErrorKind;
 use crate::{
-    abstraction::public::AssociatedTpmCurve,
     interface_types::algorithm::HashingAlgorithm,
-    structures::{
-        Attest, AttestInfo, DigestList, EccSignature, PcrSelectionList, Public, QuoteInfo,
-        Signature,
-    },
+    structures::{Attest, AttestInfo, DigestList, PcrSelectionList, Public, QuoteInfo, Signature},
     traits::Marshall,
 };
 use digest::{Digest, DynDigest};
 
+#[cfg(any(feature = "p224", feature = "p256", feature = "p384"))]
+use crate::{abstraction::public::AssociatedTpmCurve, structures::EccSignature};
+#[cfg(any(feature = "p224", feature = "p256", feature = "p384"))]
 use ecdsa::{
     hazmat::{DigestPrimitive, VerifyPrimitive},
     PrimeCurve, SignatureSize, VerifyingKey,
 };
+#[cfg(any(feature = "p224", feature = "p256", feature = "p384"))]
 use elliptic_curve::{
     generic_array::ArrayLength,
     point::AffinePoint,
     sec1::{FromEncodedPoint, ModulusSize, ToEncodedPoint},
     CurveArithmetic, FieldBytesSize,
 };
-use signature::{hazmat::PrehashVerifier, Verifier};
+#[cfg(any(feature = "p224", feature = "p256", feature = "p384"))]
+use signature::hazmat::PrehashVerifier;
 
 #[cfg(feature = "rsa")]
 use rsa::{pkcs1v15, pss, RsaPublicKey};
+#[cfg(feature = "rsa")]
+use signature::Verifier;
 
+#[cfg(any(feature = "p224", feature = "p256", feature = "p384"))]
 fn verify_ecdsa<C>(
     public: &Public,
     message: &[u8],
@@ -306,9 +310,10 @@ pub fn checkquote(
 
     let bytes = attest.marshall()?;
 
-    let mut hash_alg = None;
-    match (public, signature) {
+    let hash_alg = match (public, signature) {
+        #[cfg(any(feature = "p224", feature = "p256", feature = "p384"))]
         (Public::Ecc { parameters, .. }, _) => {
+            let mut hash_alg = None;
             macro_rules! impl_check_ecdsa {
                 ($curve: ty) => {
                     if parameters.ecc_curve() == <$curve>::TPM_CURVE {
@@ -319,7 +324,6 @@ pub fn checkquote(
                         {
                             return Ok(false);
                         }
-
                         hash_alg = Some(sig.hashing_algorithm());
                     }
                 };
@@ -330,6 +334,12 @@ pub fn checkquote(
             impl_check_ecdsa!(p256::NistP256);
             #[cfg(feature = "p384")]
             impl_check_ecdsa!(p384::NistP384);
+
+            if let Some(h) = hash_alg {
+                h
+            } else {
+                return Err(Error::WrapperError(WrapperErrorKind::InvalidParam));
+            }
         }
         #[cfg(feature = "rsa")]
         (Public::Rsa { .. }, sig @ Signature::RsaSsa(pkcs_sig)) => {
@@ -340,7 +350,7 @@ pub fn checkquote(
             if !verify_rsa_pkcs1v15(public, &bytes, &sig, pkcs_sig.hashing_algorithm())? {
                 return Ok(false);
             }
-            hash_alg = Some(pkcs_sig.hashing_algorithm());
+            pkcs_sig.hashing_algorithm()
         }
         #[cfg(feature = "rsa")]
         (Public::Rsa { .. }, sig @ Signature::RsaPss(pkcs_sig)) => {
@@ -351,16 +361,13 @@ pub fn checkquote(
             if !verify_rsa_pss(public, &bytes, &sig, pkcs_sig.hashing_algorithm())? {
                 return Ok(false);
             }
-            hash_alg = Some(pkcs_sig.hashing_algorithm());
+            pkcs_sig.hashing_algorithm()
         }
         _ => {
             return Err(Error::WrapperError(WrapperErrorKind::UnsupportedParam));
         }
     };
 
-    let Some(hash_alg) = hash_alg else {
-        return Ok(false);
-    };
     if qualifying_data != attest.extra_data().as_bytes() {
         return Ok(false);
     }
