@@ -146,7 +146,7 @@ impl Context {
     ///
     /// # Arguments
     /// * `tpm_handle` - The TPM handle that references the TPM object for which
-    ///                  the ESYS object is being created.
+    ///   the ESYS object is being created.
     ///
     /// # Returns
     /// A handle to the ESYS object that was created from a TPM resource.
@@ -277,7 +277,7 @@ impl Context {
     ///
     /// # Arguments
     /// * object_handle`- An [ObjectHandle] referring to an object for which all metadata and
-    ///                   resources is going to be released.
+    ///   resources is going to be released.
     ///
     /// # Example
     /// ```rust
@@ -468,7 +468,7 @@ impl Context {
     ///
     /// # Arguments
     /// * `buffer` - The buffer containing the data to restore the object.
-    ///              It can be created using [`tr_serialize`](Self::tr_serialize).
+    ///   It can be created using [`tr_serialize`](Self::tr_serialize).
     ///
     /// # Returns
     /// A handle to the object that was created from the buffer.

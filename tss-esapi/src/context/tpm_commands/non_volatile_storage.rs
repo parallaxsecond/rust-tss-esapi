@@ -139,7 +139,7 @@ impl Context {
     /// # Arguments
     /// * `nv_auth` - The [Provision] used for authorization.
     /// * `nv_index_handle`- The [NvIndexHandle] associated with
-    ///                      the nv area that is to be removed.
+    ///   the nv area that is to be removed.
     ///
     /// # Example
     /// ```rust
@@ -238,7 +238,7 @@ impl Context {
     /// # Arguments
     /// * `nv_auth` - The [Provision] used for authorization.
     /// * `nv_index_handle`- The [NvIndexHandle] associated with
-    ///                      the nv area that is to be removed.
+    ///   the nv area that is to be removed.
     ///
     /// # Example
     /// ```rust
@@ -378,7 +378,7 @@ impl Context {
     ///
     /// # Arguments
     /// * `nv_index_handle` - The [NvIndexHandle] associated with NV memory
-    ///                       for which the public part is to be read.
+    ///   for which the public part is to be read.
     /// # Returns
     /// A tuple containing the public area and the name of an nv index.
     ///
@@ -493,7 +493,7 @@ impl Context {
     /// # Arguments
     /// * `auth_handle` - Handle indicating the source of authorization value.
     /// * `nv_index_handle` - The [NvIndexHandle] associated with NV memory
-    ///                       where data is to be written.
+    ///   where data is to be written.
     /// * `data` - The data, in the form of a [MaxNvBuffer], that is to be written.
     /// * `offset` - The octet offset into the NV area.
     ///
@@ -608,7 +608,7 @@ impl Context {
     /// # Arguments
     /// * `auth_handle` - Handle indicating the source of authorization value.
     /// * `nv_index_handle` - The [NvIndexHandle] associated with NV memory
-    ///                       where data is to be written.
+    ///   where data is to be written.
     /// ```rust
     /// # use tss_esapi::{
     /// #     Context, TctiNameConf, attributes::{SessionAttributes, NvIndexAttributes},
@@ -715,7 +715,7 @@ impl Context {
     /// # Arguments
     /// * `auth_handle` - Handle indicating the source of authorization value.
     /// * `nv_index_handle` - The [NvIndexHandle] associated with NV memory
-    ///                       where data is to be written.
+    ///   where data is to be written.
     /// * `size` -  The number of octets to read.
     /// * `offset`- Octet offset into the NV area.
     ///

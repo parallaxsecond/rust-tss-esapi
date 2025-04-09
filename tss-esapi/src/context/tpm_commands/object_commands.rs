@@ -35,8 +35,8 @@ impl Context {
     /// * `auth_value` - The value used to be used for authorize usage of the object.
     /// * `sensitive_data` - The data that is to be sealed, a key or derivation values.
     /// * `outside_info` - Data that will be included in the creation data for this
-    ///                  object to provide permanent, verifiable linkage between
-    ///                  the object that is being created and some object owner data.
+    ///   object to provide permanent, verifiable linkage between the object
+    ///   that is being created and some object owner data.
     /// * `creation_pcrs`- PCRs that will be used in creation data.
     ///
     /// # Errors
