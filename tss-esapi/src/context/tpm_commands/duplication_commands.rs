@@ -24,7 +24,7 @@ impl Context {
     /// * `object_to_duplicate` - An [ObjectHandle] of the object that will be duplicated.
     /// * `new_parent_handle` - An [ObjectHandle] of the new parent.
     /// * `encryption_key_in` - An optional encryption key. If this parameter is `None`
-    ///                         then a [default value][Default::default] is used.
+    ///   then a [default value][Default::default] is used.
     /// * `symmetric_alg` - Symmetric algorithm to be used for the inner wrapper.
     ///
     /// The `object_to_duplicate` need to be have Fixed TPM and Fixed Parent attributes set to `false`.
@@ -347,7 +347,7 @@ impl Context {
     /// # Arguments
     /// * `parent_handle` - An [ObjectHandle] of the new parent for the object.
     /// * `encryption_key` - An optional symmetric encryption key used as the inner wrapper.
-    ///                      If `encryption_key` is `None` then a [default value][Default::default] is used.
+    ///   If `encryption_key` is `None` then a [default value][Default::default] is used.
     /// * `public` - A [Public] of the imported object.
     /// * `duplicate` - A symmetrically encrypted duplicated object.
     /// * `encrypted_secret` - The seed for the symmetric key and HMAC key.

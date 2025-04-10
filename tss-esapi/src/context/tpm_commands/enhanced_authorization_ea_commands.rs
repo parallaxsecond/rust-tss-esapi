@@ -331,7 +331,7 @@ impl Context {
     /// * `object_name` - The [name][Name] of the object being duplicated.
     /// * `new_parent_name` - The [name][Name] of the new parent.
     /// * `include_object` - Flag indicating if `object_name` will be included in policy
-    ///                      calculation.
+    ///   calculation.
     ///
     /// # Details
     /// Set `include_object` only when this command is used in conjunction with
@@ -601,7 +601,7 @@ impl Context {
     /// * `policy_session` - The [policy session][PolicySession] being extended.
     /// * `auth_handle` - Handle indicating the source of authorization value.
     /// * `nv_index_handle` - The [NvIndexHandle] associated with NV memory
-    ///                       where the policy is stored.
+    ///   where the policy is stored.
     ///
     /// # Example
     /// ```rust

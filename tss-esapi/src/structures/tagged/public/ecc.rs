@@ -95,7 +95,7 @@ impl PublicEccParametersBuilder {
     ///
     /// # Arguments
     /// * `set` - `true` indicates that the key is going to be used for signing operations.
-    ///           `false` indicates that the key is not going to be used for signing operations.
+    ///   `false` indicates that the key is not going to be used for signing operations.
     pub const fn with_is_signing_key(mut self, set: bool) -> Self {
         self.is_signing_key = set;
         self
@@ -106,7 +106,7 @@ impl PublicEccParametersBuilder {
     ///
     /// # Arguments
     /// * `set` - `true` indicates that the key is going to be used for decryption operations.
-    ///           `false` indicates that the key is not going to be used for decryption operations.
+    ///   `false` indicates that the key is not going to be used for decryption operations.
     pub const fn with_is_decryption_key(mut self, set: bool) -> Self {
         self.is_decryption_key = set;
         self
@@ -117,7 +117,7 @@ impl PublicEccParametersBuilder {
     ///
     /// # Arguments
     /// * `set` - `true` indicates that it is going to be a restricted key.
-    ///           `false` indicates that it is going to be a non restricted key.
+    ///   `false` indicates that it is going to be a non restricted key.
     pub const fn with_restricted(mut self, set: bool) -> Self {
         self.restricted = set;
         self

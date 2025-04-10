@@ -76,7 +76,7 @@ impl Context {
     ///
     /// # Arguments
     /// * `key_handle`- A [KeyHandle] of ECC key which curve parameters will be used
-    ///                 to generate the ephemeral key.
+    ///   to generate the ephemeral key.
     ///
     /// # Details
     /// This command uses the TPM to generate an ephemeral
@@ -211,7 +211,7 @@ impl Context {
     ///
     /// # Arguments
     /// * `key_handle` - A [KeyHandle] of ECC key which curve parameters will be used
-    ///                 to generate the ephemeral key.
+    ///   to generate the ephemeral key.
     /// * `in_point` - An [EccPoint] on the curve of the key referenced by `key_handle`
     ///
     /// # Details

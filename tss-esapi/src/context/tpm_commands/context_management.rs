@@ -146,13 +146,12 @@ impl Context {
     ///
     /// # Arguments
     /// * `auth` - An a handle used for authorization that is limited to the ones
-    ///            specified in [Provision].
+    ///   specified in [Provision].
     /// * `object_handle` - The handle of a loaded object.
     /// * `persistent` - If the `object_handle` is transient object then this
-    ///                  then this will become the persistent handle of that
-    ///                  object. If the `object_handle` refers to a persistent
-    ///                  object then this shall be the persistent handle of that
-    ///                  object.
+    ///   then this will become the persistent handle of that object. If the
+    ///   `object_handle` refers to a persistent object then this shall be the
+    ///   persistent handle of that object.
     ///
     /// # Returns
     /// If the input `object_handle` was transient object then it will be made
