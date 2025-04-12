@@ -5,7 +5,7 @@ mod test_quote {
     use crate::common::create_ctx_with_session;
     use std::convert::TryFrom;
     use tss_esapi::{
-        abstraction::{ak, ek, AsymmetricAlgorithmSelection},
+        abstraction::{ak, ek, no_tpm, AsymmetricAlgorithmSelection},
         handles::PcrHandle,
         interface_types::{
             algorithm::{HashingAlgorithm, SignatureSchemeAlgorithm},
@@ -16,7 +16,6 @@ mod test_quote {
             Auth, Data, Digest, DigestList, DigestValues, EccSignature, PcrSelectionListBuilder,
             PcrSlot, Signature, SignatureScheme,
         },
-        utils,
     };
 
     fn checkquote_ecc(hash_alg: HashingAlgorithm) {
@@ -79,7 +78,7 @@ mod test_quote {
             .unwrap();
 
         let public = ak_res.out_public;
-        assert!(utils::checkquote(
+        assert!(no_tpm::checkquote(
             &attest,
             &signature,
             &public,
@@ -88,10 +87,10 @@ mod test_quote {
         )
         .unwrap());
         // Test without pcrs
-        assert!(utils::checkquote(&attest, &signature, &public, &None, &qualifying_data).unwrap());
+        assert!(no_tpm::checkquote(&attest, &signature, &public, &None, &qualifying_data).unwrap());
 
         let wrong_nonce = vec![5, 2, 3, 8, 1, 4, 8];
-        assert!(!utils::checkquote(&attest, &signature, &public, &None, &wrong_nonce).unwrap());
+        assert!(!no_tpm::checkquote(&attest, &signature, &public, &None, &wrong_nonce).unwrap());
 
         let wrong_ak_res = ak::create_ak(
             &mut context,
@@ -103,7 +102,7 @@ mod test_quote {
             None,
         )
         .unwrap();
-        assert!(!utils::checkquote(
+        assert!(!no_tpm::checkquote(
             &attest,
             &signature,
             &wrong_ak_res.out_public,
@@ -117,7 +116,7 @@ mod test_quote {
             .with_selection(HashingAlgorithm::Sha256, &[PcrSlot::Slot2])
             .build()
             .expect("Failed to create PcrSelectionList");
-        assert!(!utils::checkquote(
+        assert!(!no_tpm::checkquote(
             &attest,
             &signature,
             &public,
@@ -131,7 +130,7 @@ mod test_quote {
             wrong_pcr_data.add(pcr_data.value()[i].clone()).unwrap();
         }
         wrong_pcr_data.add(pcr_data.value()[0].clone()).unwrap();
-        assert!(!utils::checkquote(
+        assert!(!no_tpm::checkquote(
             &attest,
             &signature,
             &public,
@@ -152,7 +151,7 @@ mod test_quote {
             ecc.signature_r().clone(),
         )
         .unwrap();
-        assert!(!utils::checkquote(
+        assert!(!no_tpm::checkquote(
             &attest,
             &Signature::EcDsa(wrong_signature),
             &public,
@@ -226,7 +225,7 @@ mod test_quote {
             .execute_without_session(|ctx| ctx.pcr_read(pcr_selection_list))
             .unwrap();
 
-        assert!(utils::checkquote(
+        assert!(no_tpm::checkquote(
             &attest,
             &signature,
             &ak_rsa.out_public,

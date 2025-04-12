@@ -23,17 +23,6 @@ use crate::{Context, Error, Result, WrapperErrorKind};
 use std::convert::TryFrom;
 use zeroize::Zeroize;
 
-#[cfg(all(
-    any(feature = "p224", feature = "p256", feature = "p384", feature = "rsa"),
-    any(feature = "sha1", feature = "sha2",)
-))]
-mod quote;
-#[cfg(all(
-    any(feature = "p224", feature = "p256", feature = "p384", feature = "rsa"),
-    any(feature = "sha1", feature = "sha2",)
-))]
-pub use quote::checkquote;
-
 /// Create the [Public] structure for a restricted decryption key.
 ///
 /// * `symmetric` - Cipher to be used for decrypting children of the key

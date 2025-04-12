@@ -4,6 +4,7 @@
 pub mod ak;
 pub mod cipher;
 pub mod ek;
+pub mod no_tpm;
 pub mod nv;
 pub mod pcr;
 pub mod public;

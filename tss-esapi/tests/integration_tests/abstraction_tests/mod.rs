@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 mod ak_tests;
 mod ek_tests;
+mod no_tpm;
 mod nv_tests;
 mod pcr_data_tests;
 mod pcr_tests;

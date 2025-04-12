@@ -210,7 +210,7 @@ fn checkquote_pcr_digests(
 /// # use std::convert::TryFrom;
 /// # use tss_esapi::{
 /// #     attributes::SessionAttributes,
-/// #     abstraction::{ak, ek, AsymmetricAlgorithmSelection},
+/// #     abstraction::{ak, ek, AsymmetricAlgorithmSelection, no_tpm},
 /// #     constants::SessionType, Context,
 /// #     interface_types::{
 /// #         algorithm::{HashingAlgorithm, SignatureSchemeAlgorithm},
@@ -221,7 +221,6 @@ fn checkquote_pcr_digests(
 /// #         SignatureScheme, SymmetricDefinition,
 /// #     },
 /// #     TctiNameConf,
-/// #     utils,
 /// # };
 /// # let mut context =
 /// #     Context::new(
@@ -286,7 +285,7 @@ fn checkquote_pcr_digests(
 ///     .execute_without_session(|ctx| ctx.pcr_read(pcr_selection_list))
 ///     .unwrap();
 /// let public = ak_res.out_public;
-/// utils::checkquote(
+/// no_tpm::checkquote(
 ///     &attest,
 ///     &signature,
 ///     &public,
