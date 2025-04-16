@@ -45,7 +45,7 @@ where
     SignatureSize<C>: ArrayLength<u8>,
     FieldBytesSize<C>: ModulusSize,
 {
-    let Ok(signature) = ecdsa::Signature::<C>::try_from(signature.clone()) else {
+    let Ok(signature) = ecdsa::Signature::<C>::try_from(signature) else {
         return Ok(false);
     };
     let Ok(public) = elliptic_curve::PublicKey::<C>::try_from(public) else {
@@ -342,7 +342,7 @@ pub fn checkquote(
         }
         #[cfg(feature = "rsa")]
         (Public::Rsa { .. }, sig @ Signature::RsaSsa(pkcs_sig)) => {
-            let Ok(sig) = pkcs1v15::Signature::try_from(sig.clone()) else {
+            let Ok(sig) = pkcs1v15::Signature::try_from(sig) else {
                 return Err(Error::WrapperError(WrapperErrorKind::UnsupportedParam));
             };
 
@@ -353,7 +353,7 @@ pub fn checkquote(
         }
         #[cfg(feature = "rsa")]
         (Public::Rsa { .. }, sig @ Signature::RsaPss(pkcs_sig)) => {
-            let Ok(sig) = pss::Signature::try_from(sig.clone()) else {
+            let Ok(sig) = pss::Signature::try_from(sig) else {
                 return Err(Error::WrapperError(WrapperErrorKind::UnsupportedParam));
             };
 
