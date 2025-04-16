@@ -13,13 +13,10 @@ use digest::{Digest, DynDigest};
 #[cfg(any(feature = "p224", feature = "p256", feature = "p384"))]
 use crate::{abstraction::public::AssociatedTpmCurve, structures::EccSignature};
 #[cfg(any(feature = "p224", feature = "p256", feature = "p384"))]
-use ecdsa::{
-    hazmat::{DigestPrimitive, VerifyPrimitive},
-    PrimeCurve, SignatureSize, VerifyingKey,
-};
+use ecdsa::{hazmat::DigestPrimitive, PrimeCurve, SignatureSize, VerifyingKey};
 #[cfg(any(feature = "p224", feature = "p256", feature = "p384"))]
 use elliptic_curve::{
-    generic_array::ArrayLength,
+    array::ArraySize,
     point::AffinePoint,
     sec1::{FromEncodedPoint, ModulusSize, ToEncodedPoint},
     CurveArithmetic, FieldBytesSize,
@@ -41,8 +38,8 @@ fn verify_ecdsa<C>(
 ) -> Result<bool>
 where
     C: PrimeCurve + CurveArithmetic + DigestPrimitive + AssociatedTpmCurve,
-    AffinePoint<C>: VerifyPrimitive<C> + FromEncodedPoint<C> + ToEncodedPoint<C>,
-    SignatureSize<C>: ArrayLength<u8>,
+    AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
+    SignatureSize<C>: ArraySize,
     FieldBytesSize<C>: ModulusSize,
 {
     let Ok(signature) = ecdsa::Signature::<C>::try_from(signature.clone()) else {
