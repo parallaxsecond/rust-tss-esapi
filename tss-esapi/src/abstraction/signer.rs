@@ -253,7 +253,7 @@ where
             )));
         };
 
-        let signature = Signature::try_from(signature).map_err(SigError::from_source)?;
+        let signature = Signature::try_from(&signature).map_err(SigError::from_source)?;
 
         Ok(signature)
     }
@@ -453,7 +453,7 @@ mod rsa {
             let signature = self.context.sign(digest).map_err(SigError::from_source)?;
 
             let signature =
-                pkcs1v15::Signature::try_from(signature).map_err(SigError::from_source)?;
+                pkcs1v15::Signature::try_from(&signature).map_err(SigError::from_source)?;
 
             Ok(signature)
         }
@@ -581,7 +581,7 @@ mod rsa {
 
             let signature = self.context.sign(digest).map_err(SigError::from_source)?;
 
-            let signature = pss::Signature::try_from(signature).map_err(SigError::from_source)?;
+            let signature = pss::Signature::try_from(&signature).map_err(SigError::from_source)?;
 
             Ok(signature)
         }
