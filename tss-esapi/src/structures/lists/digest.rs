@@ -14,7 +14,7 @@ pub struct DigestList {
 impl DigestList {
     pub const MAX_SIZE: usize = 8;
 
-    /// Creates a nnew empty DigestList
+    /// Creates a new empty DigestList
     pub const fn new() -> Self {
         DigestList {
             digests: Vec::new(),

@@ -2,7 +2,7 @@ FROM ghcr.io/tpm2-software/ubuntu-20.04:latest AS base
 
 FROM base AS rust-toolchain
 # Install Rust toolchain
-RUN curl https://sh.rustup.rs -sSf | bash -s -- -y
+RUN (curl https://sh.rustup.rs -sSf || exit 1) | bash -s -- -y
 ENV PATH="/root/.cargo/bin:${PATH}"
 
 FROM rust-toolchain AS tpm2-tss
