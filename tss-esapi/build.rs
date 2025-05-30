@@ -1,6 +1,6 @@
 // Copyright 2021 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
-use semver::{Version, VersionReq};
+use semver::{Version, VersionReq, Prerelease};
 
 const TPM2_TSS_MINIMUM_VERSION: Version = Version::new(4, 1, 3);
 
@@ -13,7 +13,7 @@ fn main() {
 
     // If documentation for Docs.rs is being built then the version is set
     // to the minimum supported tpm2-tss version.
-    let tss_version = if std::env::var("DOCS_RS").is_ok() {
+    let mut tss_version = if std::env::var("DOCS_RS").is_ok() {
         TPM2_TSS_MINIMUM_VERSION
     } else {
         let tss_version_string = std::env::var("DEP_TSS2_ESYS_VERSION")
@@ -22,6 +22,11 @@ fn main() {
         Version::parse(&tss_version_string)
             .expect("Failed to parse the DEP_TSS2_ESYS_VERSION variable as a semver version")
     };
+
+    // nuke any prerelease info, which probably is just a git repo/dirty flag
+    // like: 4.0.1-67-gb7bad346
+    tss_version.pre = Prerelease::EMPTY;
+    //eprintln!("tss version: {} / {:?}", tss_version_string, tss_version);
 
     let supported_tss_version =
         VersionReq::parse("<5.0.0, >=2.3.3").expect("Failed to parse supported TSS version");
