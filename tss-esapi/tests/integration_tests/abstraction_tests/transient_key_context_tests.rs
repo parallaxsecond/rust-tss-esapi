@@ -518,7 +518,7 @@ fn ctx_migration_test() {
     // one for just the public part of the key
     let mut basic_ctx = crate::common::create_ctx_with_session();
     let mut random_digest = vec![0u8; 16];
-    getrandom::getrandom(&mut random_digest).unwrap();
+    getrandom::fill(&mut random_digest).unwrap();
     let key_auth = Auth::from_bytes(random_digest.as_slice()).unwrap();
     let prim_key_handle = basic_ctx
         .create_primary(
@@ -902,10 +902,10 @@ fn sign_csr() {
     let subject = Name::from_str("CN=tpm.example").expect("Parse common name");
     let signer = EcSigner::<NistP256, _>::new((Mutex::new(&mut ctx), tpm_km, key_params, None))
         .expect("Create a signer");
-    let builder = RequestBuilder::new(subject, &signer).expect("Create certificate request");
+    let builder = RequestBuilder::new(subject).expect("Create certificate request");
 
     let cert_req = builder
-        .build::<p256::ecdsa::DerSignature>()
+        .build::<_, p256::ecdsa::DerSignature>(&signer)
         .expect("Sign a CSR");
 
     println!(
