@@ -202,7 +202,7 @@ impl Read for NvReaderWriter<'_> {
         let res = self
             .context
             .nv_read(self.auth_handle, self.nv_idx, size, self.offset as u16)
-            .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))?;
+            .map_err(std::io::Error::other)?;
         buf[0..size as usize].copy_from_slice(&res);
         self.offset += size as usize;
 
@@ -219,11 +219,10 @@ impl std::io::Write for NvReaderWriter<'_> {
         let desired_size = std::cmp::min(buf.len(), self.data_size - self.offset);
         let size = std::cmp::min(self.buffer_size, desired_size) as u16;
 
-        let data = MaxNvBuffer::from_bytes(&buf[0..size.into()])
-            .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))?;
+        let data = MaxNvBuffer::from_bytes(&buf[0..size.into()]).map_err(std::io::Error::other)?;
         self.context
             .nv_write(self.auth_handle, self.nv_idx, data, self.offset as u16)
-            .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))?;
+            .map_err(std::io::Error::other)?;
         self.offset += size as usize;
 
         Ok(size.into())

@@ -34,7 +34,7 @@ impl TaggedPcrPropertyList {
         self.tagged_pcr_properties
             .iter()
             .fold(Vec::<&TaggedPcrSelect>::new(), |mut acc, tps| {
-                if tps.selected_pcrs().iter().any(|&ps| ps == pcr_slot) {
+                if tps.selected_pcrs().contains(&pcr_slot) {
                     acc.push(tps);
                 }
                 acc

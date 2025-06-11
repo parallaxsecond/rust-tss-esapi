@@ -97,7 +97,7 @@ jobs:
       - name: Build the container
         run: docker build -t ubuntucontainer tss-esapi/tests/ --file tss-esapi/tests/Dockerfile-ubuntu --target tpm2-tools
       - name: Run the tests
-        run: docker run -v $(pwd):/tmp/rust-tss-esapi -w /tmp/rust-tss-esapi/tss-esapi -e RUST_TOOLCHAIN_VERSION="1.82" ubuntucontainer /tmp/rust-tss-esapi/tss-esapi/tests/valgrind.sh
+        run: docker run -v $(pwd):/tmp/rust-tss-esapi -w /tmp/rust-tss-esapi/tss-esapi -e RUST_TOOLCHAIN_VERSION="1.87" ubuntucontainer /tmp/rust-tss-esapi/tss-esapi/tests/valgrind.sh
 
   # Check that the documentation builds as well.
   docs:
