@@ -254,7 +254,7 @@ mod test_duplicate {
                 SymmetricDefinitionObject::Null,
             )
             .unwrap();
-        eprintln!("D: {:?}, P: {:?}, S: {:?}", data, duplicate, secret);
+        eprintln!("D: {data:?}, P: {duplicate:?}, S: {secret:?}");
 
         // Public is also needed when transferring the duplicatee
         // for integrity validation.
@@ -300,6 +300,6 @@ mod test_duplicate {
             )
             .unwrap();
 
-        eprintln!("P: {:?}", private);
+        eprintln!("P: {private:?}");
     }
 }

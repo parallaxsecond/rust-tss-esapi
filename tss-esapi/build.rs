@@ -20,8 +20,7 @@ fn main() {
 
     assert!(
         supported_tss_version.matches(&tss_version),
-        "Unsupported TSS version {}",
-        tss_version
+        "Unsupported TSS version {tss_version}"
     );
 
     let hierarchy_is_esys_tr_req = VersionReq::parse(">=3.0.0").unwrap();

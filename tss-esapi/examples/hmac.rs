@@ -164,8 +164,8 @@ fn main() {
         })
         .unwrap();
 
-    println!("hmac1 = {:?}", hmac1);
-    println!("hmac2 = {:?}", hmac2);
+    println!("hmac1 = {hmac1:?}");
+    println!("hmac2 = {hmac2:?}");
     // They are the same!
     assert_eq!(hmac1, hmac2);
 }

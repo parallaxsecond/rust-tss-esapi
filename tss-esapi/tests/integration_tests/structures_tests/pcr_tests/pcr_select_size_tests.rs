@@ -112,8 +112,7 @@ fn test_invalid_conversions() {
         assert_eq!(
             Err(Error::WrapperError(WrapperErrorKind::InvalidParam)),
             PcrSelectSize::try_from(value),
-            "Converting an invalid size_of_select value {} did not result in the expected error",
-            value,
+            "Converting an invalid size_of_select value {value} did not result in the expected error",
         );
     }
 }
@@ -135,8 +134,7 @@ fn test_try_parse_u8_with_invalid_values() {
         assert_eq!(
             Err(Error::WrapperError(WrapperErrorKind::InvalidParam)),
             PcrSelectSize::try_parse_u8(value),
-            "try_parse_u8 using an invalid size_of_select value {} did not result in the expected error",
-            value,
+            "try_parse_u8 using an invalid size_of_select value {value} did not result in the expected error",
         );
     }
 }
@@ -147,8 +145,7 @@ fn test_try_parse_u32_with_invalid_values() {
         assert_eq!(
             Err(Error::WrapperError(WrapperErrorKind::InvalidParam)),
             PcrSelectSize::try_parse_u32(value as u32),
-            "try_parse_u32 using an invalid size_of_select value {} did not result in the expected error",
-            value,
+            "try_parse_u32 using an invalid size_of_select value {value} did not result in the expected error",
         );
     }
 }
@@ -159,8 +156,7 @@ fn test_try_parse_usize_with_invalid_values() {
         assert_eq!(
             Err(Error::WrapperError(WrapperErrorKind::InvalidParam)),
             PcrSelectSize::try_parse_usize(value as usize),
-            "try_parse_usize using an invalid size_of_select value {} did not result in the expected error",
-            value,
+            "try_parse_usize using an invalid size_of_select value {value} did not result in the expected error",
         );
     }
 }

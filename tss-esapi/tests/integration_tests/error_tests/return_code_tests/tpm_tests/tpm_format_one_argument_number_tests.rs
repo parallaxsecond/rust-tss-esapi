@@ -47,15 +47,13 @@ fn test_valid_parameter_conversions() {
                 .checked_shr(6).expect("Failed to extract argument information.")
             )
             .map (ArgumentNumber::from)
-            .unwrap_or_else(|_| panic!("Failed to convert argument information {:#b} to u8.", return_code_argument_info));
+            .unwrap_or_else(|_| panic!("Failed to convert argument information {return_code_argument_info:#b} to u8."));
         let expected = ArgumentNumber::Parameter(val);
         assert_eq!(
             expected,
             actual,
-            "Performing `from` conversion return code {:#02X} did not produce the expected {} with value {}",
-            return_code_argument_info,
+            "Performing `from` conversion return code {return_code_argument_info:#02X} did not produce the expected {} with value {val}",
             std::stringify!(ArgumentNumber::Parameter),
-            val
         );
     })
 }
@@ -80,18 +78,15 @@ fn test_valid_session_conversions() {
         .map(ArgumentNumber::from)
         .unwrap_or_else(|_| {
             panic!(
-                "Failed to convert argument information {:#b} to u8.",
-                return_code_argument_info
+                "Failed to convert argument information {return_code_argument_info:#b} to u8."
             )
         });
         let expected = ArgumentNumber::Session(val);
         assert_eq!(
             expected,
             actual,
-            "Performing `from` conversion return code {:#02X} did not produce the expected {} with value {}",
-            return_code_argument_info,
+            "Performing `from` conversion return code {return_code_argument_info:#02X} did not produce the expected {} with value {val}",
             std::stringify!(ArgumentNumber::Session),
-            val
         );
     })
 }
@@ -116,17 +111,15 @@ fn test_valid_handle_conversions() {
         .map(ArgumentNumber::from)
         .unwrap_or_else(|_| {
             panic!(
-                "Failed to convert argument information {:#b} to u8.",
-                return_code_argument_info
+                "Failed to convert argument information {return_code_argument_info:#b} to u8.",
             )
         });
         let expected = ArgumentNumber::Handle(val);
         assert_eq!(
             expected,
             actual,
-            "Performing `from` conversion return code {:#02X} did not produce the expected {} with value {}",
-            return_code_argument_info, std::stringify!(ArgumentNumber::Handle),
-            val
+            "Performing `from` conversion return code {return_code_argument_info:#02X} did not produce the expected {} with value {val}",
+            std::stringify!(ArgumentNumber::Handle)
         );
     })
 }
@@ -135,11 +128,10 @@ fn test_valid_handle_conversions() {
 fn test_display_trait_implementation_for_parameters() {
     for val in 1u8..16u8 {
         assert_eq!(
-            format!("associated with parameter number {}", val),
+            format!("associated with parameter number {val}"),
             format!("{}", ArgumentNumber::Parameter(val)),
-            "{} with value {} did not produce the expected error message",
+            "{} with value {val} did not produce the expected error message",
             std::stringify!(ArgumentNumber::Parameter),
-            val,
         );
     }
 }
@@ -148,11 +140,10 @@ fn test_display_trait_implementation_for_parameters() {
 fn test_display_trait_implementation_for_sessions() {
     for val in 1u8..7u8 {
         assert_eq!(
-            format!("associated with session number {}", val),
+            format!("associated with session number {val}"),
             format!("{}", ArgumentNumber::Session(val)),
-            "{} with value {} did not produce the expected error message",
+            "{} with value {val} did not produce the expected error message",
             std::stringify!(ArgumentNumber::Session),
-            val,
         );
     }
 }
@@ -161,11 +152,10 @@ fn test_display_trait_implementation_for_sessions() {
 fn test_display_trait_implementation_for_handles() {
     for val in 1u8..7u8 {
         assert_eq!(
-            format!("associated with handle number {}", val),
+            format!("associated with handle number {val}"),
             format!("{}", ArgumentNumber::Handle(val)),
-            "{} with value {} did not produce the expected error message",
+            "{} with value {val} did not produce the expected error message",
             std::stringify!(ArgumentNumber::Handle),
-            val,
         );
     }
 }

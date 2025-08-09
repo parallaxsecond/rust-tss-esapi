@@ -830,7 +830,7 @@ fn activate_credential_wrong_key() {
     if let Error::TssError(ReturnCode::Tpm(TpmResponseCode::FormatOne(error))) = e {
         assert_eq!(error.error_number(), TpmFormatOneError::Integrity);
     } else {
-        panic!("Got crate error ({}) when expecting an error from TPM.", e);
+        panic!("Got crate error ({e}) when expecting an error from TPM.");
     }
 }
 
@@ -861,7 +861,7 @@ fn activate_credential_wrong_data() {
     if let Error::TssError(ReturnCode::Tpm(TpmResponseCode::FormatOne(error))) = e {
         assert_eq!(error.error_number(), TpmFormatOneError::Size);
     } else {
-        panic!("Got crate error ({}) when expecting an error from TPM.", e);
+        panic!("Got crate error ({e}) when expecting an error from TPM.");
     }
 
     // Correct size but gibberish
@@ -877,7 +877,7 @@ fn activate_credential_wrong_data() {
     {
         assert_eq!(error.error_number(), TpmFormatZeroError::Failure);
     } else {
-        panic!("Got crate error ({}) when expecting an error from TPM.", e);
+        panic!("Got crate error ({e}) when expecting an error from TPM.");
     }
 }
 

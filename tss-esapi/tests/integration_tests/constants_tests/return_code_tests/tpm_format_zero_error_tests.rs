@@ -98,15 +98,13 @@ fn test_invalid_conversions() {
         if VALID_VALUES.contains(&item) {
             assert!(
                 TpmFormatZeroError::try_from(item).is_ok(),
-                "Converting {} into TpmFormatZeroError did not result in Ok as expected",
-                item
+                "Converting {item} into TpmFormatZeroError did not result in Ok as expected",
             );
         } else {
             assert_eq!(
                 Err(Error::WrapperError(WrapperErrorKind::InvalidParam)),
                 TpmFormatZeroError::try_from(item),
-                "Converting {} into TpmFormatZeroError did not result in the expected error",
-                item
+                "Converting {item} into TpmFormatZeroError did not result in the expected error",
             );
         }
     }

@@ -195,7 +195,7 @@ impl TryFrom<TctiNameConf> for CString {
                         return Err(Error::WrapperError(WrapperErrorKind::InvalidParam));
                     }
                 }
-                format!("host={},port={}", host, port)
+                format!("host={host},port={port}")
             }
             TctiNameConf::Swtpm(TpmSimulatorConfig::Tcp { host, port }) => {
                 if let ServerAddress::Hostname(name) = &host {
@@ -203,11 +203,11 @@ impl TryFrom<TctiNameConf> for CString {
                         return Err(Error::WrapperError(WrapperErrorKind::InvalidParam));
                     }
                 }
-                format!("host={},port={}", host, port)
+                format!("host={host},port={port}")
             }
             TctiNameConf::Mssim(TpmSimulatorConfig::Unix { path })
             | TctiNameConf::Swtpm(TpmSimulatorConfig::Unix { path }) => {
-                format!("path={}", path)
+                format!("path={path}")
             }
             TctiNameConf::Device(DeviceConfig { path }) => path
                 .to_str()
@@ -225,7 +225,7 @@ impl TryFrom<TctiNameConf> for CString {
         if tcti_conf.is_empty() {
             CString::new(tcti_name).or(Err(Error::WrapperError(WrapperErrorKind::InvalidParam)))
         } else {
-            CString::new(format!("{}:{}", tcti_name, tcti_conf))
+            CString::new(format!("{tcti_name}:{tcti_conf}"))
                 .or(Err(Error::WrapperError(WrapperErrorKind::InvalidParam)))
         }
     }

@@ -27,7 +27,7 @@ pub mod target {
     /// Ensures that the `TARGET` is valid for cross compilation.
     pub fn ensure_supported() {
         let target = Triple::from_str(&std::env::var(TARGET_ENV_VAR_NAME).unwrap_or_else(|_| {
-            panic!("Missing environment variable `{}`.", TARGET_ENV_VAR_NAME);
+            panic!("Missing environment variable `{TARGET_ENV_VAR_NAME}`.");
         }))
         .expect("Failed to parse target triple.");
         match (target.architecture, target.operating_system) {
@@ -37,10 +37,9 @@ pub mod target {
             | (Architecture::X86_64, OperatingSystem::Linux) => {}
             (arch, os) => {
                 panic!(
-                    "Compilation target (architecture, OS) tuple ({}, {}) is not part of the \
+                    "Compilation target (architecture, OS) tuple ({arch}, {os}) is not part of the \
                      supported tuples. Please compile with the \"generate-bindings\" feature or \
-                     add support for your platform.",
-                    arch, os
+                     add support for your platform."
                 );
             }
         }
@@ -163,10 +162,7 @@ pub mod tpm2_tss {
             std::env::var(PATH_ENV_VAR_NAME).map_or_else(
                 |e| match e {
                     std::env::VarError::NotUnicode(invalid_value) => {
-                        panic!(
-                            "Invalid `{}` env var: `{:?}`.",
-                            PATH_ENV_VAR_NAME, invalid_value
-                        );
+                        panic!("Invalid `{PATH_ENV_VAR_NAME}` env var: `{invalid_value:?}`.");
                     }
                     std::env::VarError::NotPresent => None,
                 },
@@ -196,64 +192,53 @@ pub mod tpm2_tss {
             let install_path = PathBuf::from(env_var);
             if !install_path.is_dir() {
                 panic!(
-                    "The tpm2-tss installation path `{}` specifies an existing directory (`{}`).",
-                    PATH_ENV_VAR_NAME,
-                    install_path.to_string_lossy(),
+                    "The tpm2-tss installation path `{PATH_ENV_VAR_NAME}` specifies an existing directory (`{}`).",
+                    install_path.to_string_lossy()
                 );
             }
             if !install_path.join("include").is_dir() {
                 panic!(
-                    "The tpm2-tss installation path `{}` specifies a path `{}`, that does not \
+                    "The tpm2-tss installation path `{PATH_ENV_VAR_NAME}` specifies a path `{}`, that does not \
                      contain an `include` directory",
-                    PATH_ENV_VAR_NAME,
-                    install_path.to_string_lossy(),
+                    install_path.to_string_lossy()
                 );
             }
             if !install_path.join("lib").is_dir() {
                 panic!(
-                    "The tpm2-tss installation path `{}` specifies a path `{}`, that does not \
+                    "The tpm2-tss installation path `{PATH_ENV_VAR_NAME}` specifies a path `{}`, that does not \
                      contain an `lib` directory",
-                    PATH_ENV_VAR_NAME,
-                    install_path.to_string_lossy(),
+                    install_path.to_string_lossy()
                 );
             }
             let version_str =
                 std::fs::read_to_string(install_path.join("VERSION")).unwrap_or_else(|e| {
                     panic!(
-                        "The tpm2-tss installation path `{}` specifies a path `{}`, that does not \
-                         contain a readable VERSION file: {}.",
-                        PATH_ENV_VAR_NAME,
-                        install_path.to_string_lossy(),
-                        e,
+                        "The tpm2-tss installation path `{PATH_ENV_VAR_NAME}` specifies a path `{}`, that does not \
+                         contain a readable VERSION file: {e}.",
+                        install_path.to_string_lossy()
                     );
                 });
             let version = Version::parse(version_str.trim()).unwrap_or_else(|e| {
                 panic!(
-                    "The tpm2-tss installation path `{}` specifies a path `{}`, contains a \
-                     VERSION file that cannot be parsed: {}.",
-                    PATH_ENV_VAR_NAME,
-                    install_path.to_string_lossy(),
-                    e
+                    "The tpm2-tss installation path `{PATH_ENV_VAR_NAME}` specifies a path `{}`, contains a \
+                     VERSION file that cannot be parsed: {e}.",
+                    install_path.to_string_lossy()
                 );
             });
 
-            let min_version_req_str = format!(">={}", MINIMUM_VERSION);
+            let min_version_req_str = format!(">={MINIMUM_VERSION}");
             let min_version_req = VersionReq::parse(&min_version_req_str).unwrap_or_else(|e| {
                 panic!(
                     "[Internal Error]: Failed to parse minimum tpm2-tss library version \
-                     requirement. Error: `{}`. Please report this.",
-                    e
+                     requirement. Error: `{e}`. Please report this."
                 );
             });
             if !min_version_req.matches(&version) {
                 panic!(
-                    "The tpm2-tss installation path `{}` specifies a path `{}`, contains a \
-                     VERSION file that specifies a version `{}` that does not meet the minimum \
-                     version requirement `{}`.",
-                    PATH_ENV_VAR_NAME,
-                    install_path.to_string_lossy(),
-                    version_str,
-                    MINIMUM_VERSION,
+                    "The tpm2-tss installation path `{PATH_ENV_VAR_NAME}` specifies a path `{}`, contains a \
+                     VERSION file that specifies a version `{version_str}` that does not meet the minimum \
+                     version requirement `{MINIMUM_VERSION}`.",
+                    install_path.to_string_lossy()
                 );
             }
             println!(
@@ -296,8 +281,7 @@ pub mod tpm2_tss {
             Self::probe_optional(lib_name, install_path, with_header_files).map_or_else(
                 || {
                     panic!(
-                        "Failed to find {} library of version {MINIMUM_VERSION} or greater.",
-                        lib_name
+                        "Failed to find {lib_name} library of version {MINIMUM_VERSION} or greater."
                     )
                 },
                 |lib| {
@@ -356,7 +340,7 @@ pub mod tpm2_tss {
                             self.name
                         );
                     },
-                    |v| format!("-I{}", v),
+                    |v| format!("-I{v}"),
                 )
         }
 
@@ -436,7 +420,7 @@ pub mod tpm2_tss {
             let lib_path = path.join("lib");
             Self::lib_file(lib_name, &lib_path)?;
             // If the lib file was found then the name is reported to Cargo.
-            println!("cargo:rustc-link-lib={}", lib_name);
+            println!("cargo:rustc-link-lib={lib_name}");
 
             let include_path = path.join("include/tss2");
             Some(Self {
@@ -481,8 +465,7 @@ pub mod tpm2_tss {
                     let mut associated_files = hit_iter.collect::<Vec<PathBuf>>();
                     associated_files.push(hit.clone());
                     panic!(
-                        "More then one match found for library `{}`: {:?}",
-                        lib_name, associated_files
+                        "More then one match found for library `{lib_name}`: {associated_files:?}",
                     );
                 }
             }

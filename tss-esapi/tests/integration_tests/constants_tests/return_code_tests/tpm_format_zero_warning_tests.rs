@@ -90,15 +90,13 @@ fn test_invalid_conversions() {
         if VALID_VALUES.contains(&item) {
             assert!(
                 TpmFormatZeroWarning::try_from(item).is_ok(),
-                "Converting {} into TpmFormatZeroWarning did not result in Ok as expected",
-                item
+                "Converting {item} into TpmFormatZeroWarning did not result in Ok as expected",
             );
         } else {
             assert_eq!(
                 Err(Error::WrapperError(WrapperErrorKind::InvalidParam)),
                 TpmFormatZeroWarning::try_from(item),
-                "Converting {} into TpmFormatZeroWarning did not result in the expected error",
-                item
+                "Converting {item} into TpmFormatZeroWarning did not result in the expected error",
             );
         }
     }

@@ -217,7 +217,7 @@ fn main() {
             )
         })
         .map_err(|err| {
-            eprintln!("⚠️  {}", err);
+            eprintln!("⚠️  {err}");
             err
         })
         .unwrap();
@@ -268,7 +268,7 @@ fn main() {
             ctx.create(loaded_storage_key, hmac_public, None, None, None, None)
         })
         .map_err(|err| {
-            eprintln!("⚠️  {}", err);
+            eprintln!("⚠️  {err}");
             err
         })
         .unwrap();
@@ -364,7 +364,7 @@ fn main() {
             result
         })
         .map_err(|err| {
-            eprintln!("⚠️  {}", err);
+            eprintln!("⚠️  {err}");
             err
         })
         .unwrap();
@@ -428,8 +428,8 @@ fn main() {
         })
         .unwrap();
 
-    println!("hmac1 = {:?}", hmac1);
-    println!("hmac2 = {:?}", hmac2);
+    println!("hmac1 = {hmac1:?}");
+    println!("hmac2 = {hmac2:?}");
     // They are the same!
     assert_eq!(hmac1, hmac2);
 }

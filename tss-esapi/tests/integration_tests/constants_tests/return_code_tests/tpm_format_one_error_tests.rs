@@ -96,15 +96,13 @@ fn test_invalid_conversions() {
         if VALID_VALUES.contains(&item) {
             assert!(
                 TpmFormatOneError::try_from(item).is_ok(),
-                "Converting {} into TpmFormatOneError did not result in Ok as expected",
-                item
+                "Converting {item} into TpmFormatOneError did not result in Ok as expected",
             );
         } else {
             assert_eq!(
                 Err(Error::WrapperError(WrapperErrorKind::InvalidParam)),
                 TpmFormatOneError::try_from(item),
-                "Converting {} into TpmFormatOneError did not result in the expected error",
-                item
+                "Converting {item} into TpmFormatOneError did not result in the expected error",
             );
         }
     }

@@ -103,7 +103,7 @@ fn main() {
         .unwrap();
 
     // The data is now encrypted.
-    println!("encrypted_data = {:?}", encrypted_data);
+    println!("encrypted_data = {encrypted_data:?}");
     assert_ne!(encrypted_data, data_to_encrypt);
 
     // To decrypt the data, we need to load the private key into the TPM.
@@ -122,8 +122,8 @@ fn main() {
         })
         .unwrap();
 
-    println!("data_to_encrypt = {:?}", data_to_encrypt);
-    println!("decrypted_data = {:?}", decrypted_data);
+    println!("data_to_encrypt = {data_to_encrypt:?}");
+    println!("decrypted_data = {decrypted_data:?}");
     // They are the same!
     assert_eq!(data_to_encrypt, decrypted_data);
 }

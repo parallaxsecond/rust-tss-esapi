@@ -158,8 +158,7 @@ fn test_invalid_locality() {
             LocalityAttributesBuilder::new()
                 .with_locality(locality)
                 .build(),
-            "Locality builder did not produce expected error when using locality {}",
-            locality
+            "Locality builder did not produce expected error when using locality {locality}"
         );
     }
 }
@@ -174,14 +173,13 @@ fn test_invalid_extended_locality() {
 
         assert!(
             !locality_attributes.is_extended(),
-            "The non extended locality {} is unexpectedly indicating that it is extended",
-            locality
+            "The non extended locality {locality} is unexpectedly indicating that it is extended"
         );
 
         assert_eq!(
             Err(Error::WrapperError(WrapperErrorKind::InvalidParam)),
             locality_attributes.as_extended(),
-            "Calling as_extended() on locality {} that is not extended, did not result in the expected error", locality,
+            "Calling as_extended() on locality {locality} that is not extended, did not result in the expected error"
         );
     }
 }
@@ -195,8 +193,7 @@ fn test_invalid_locality_combinataions() {
                 .with_locality(32)
                 .with_locality(locality)
                 .build(),
-            "Locality builder did not produce expected error when using locality 32 in combination with locality {}",
-            locality,
+            "Locality builder did not produce expected error when using locality 32 in combination with locality {locality}"
         );
     }
 
@@ -207,8 +204,7 @@ fn test_invalid_locality_combinataions() {
                 .with_locality(1)
                 .with_locality(locality)
                 .build(),
-            "Locality builder did not produce expected error when using locality 32 in combination with locality {}",
-            locality,
+            "Locality builder did not produce expected error when using locality 32 in combination with locality {locality}"
         );
     }
 }

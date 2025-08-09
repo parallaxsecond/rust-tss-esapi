@@ -11,14 +11,12 @@ fn test_conversions() {
     assert_eq!(
         expected_yes_value,
         TPMI_YES_NO::from(YesNo::Yes),
-        "Yes did not convert to the correct value '{}'",
-        expected_yes_value,
+        "Yes did not convert to the correct value '{expected_yes_value}'"
     );
     assert_eq!(
         expected_no_value,
         TPMI_YES_NO::from(YesNo::No),
-        "No did not convert to the correct value '{}'",
-        expected_no_value,
+        "No did not convert to the correct value '{expected_no_value}'",
     );
     assert_eq!(
         YesNo::Yes,
