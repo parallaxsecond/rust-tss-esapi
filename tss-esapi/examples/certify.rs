@@ -184,7 +184,7 @@ fn main() {
     // Alternately on the CLI you can view the certificate with:
     // # tpm2_getekcertificate | openssl x509 -inform DER -noout -text
 
-    eprintln!("ek_pubcert der: {:x?}", ek_pubcert);
+    eprintln!("ek_pubcert der: {ek_pubcert:x?}");
 
     // Retrieve the EK public template that allows us to access a handle to the EK
     let ek_template = create_ek_public_from_default_template(ek_alg, None).unwrap();
@@ -495,8 +495,8 @@ fn main() {
         .flush_context(SessionHandle::from(aik_auth_session).into())
         .expect("Failed to clear policy_auth_session");
 
-    println!("attest: {:?}", attest);
-    println!("signature: {:?}", signature);
+    println!("attest: {attest:?}");
+    println!("signature: {signature:?}");
 
     // ================================================================================
     // Now back on our certifying authority, we want to assert that the attestation we
@@ -537,7 +537,7 @@ fn main() {
         })
         .expect("Failed to verify attestation");
 
-    println!("verification: {:?}", verified_ticket);
+    println!("verification: {verified_ticket:?}");
 }
 
 fn create_key(context: &mut Context) -> KeyHandle {

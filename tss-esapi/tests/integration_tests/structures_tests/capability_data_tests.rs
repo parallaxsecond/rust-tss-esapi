@@ -17,7 +17,7 @@ fn test_algorithms() {
     if let CapabilityData::Algorithms(list) = capabs {
         assert!(!list.is_empty());
     } else {
-        panic!("Got wrong type of capability data: {:?}", capabs);
+        panic!("Got wrong type of capability data: {capabs:?}");
     }
 }
 
@@ -32,7 +32,7 @@ fn test_handles() {
     if let CapabilityData::Handles(vec) = capabs {
         assert!(!vec.is_empty());
     } else {
-        panic!("Got wrong type of capability data: {:?}", capabs);
+        panic!("Got wrong type of capability data: {capabs:?}");
     }
 }
 
@@ -47,7 +47,7 @@ fn test_command() {
     if let CapabilityData::Commands(vec) = capabs {
         assert!(!vec.is_empty());
     } else {
-        panic!("Got wrong type of capability data: {:?}", capabs);
+        panic!("Got wrong type of capability data: {capabs:?}");
     }
 }
 
@@ -62,7 +62,7 @@ fn test_pp_commands() {
     if let CapabilityData::PpCommands(list) = capabs {
         assert!(!list.is_empty());
     } else {
-        panic!("Got wrong type of capability data: {:?}", capabs);
+        panic!("Got wrong type of capability data: {capabs:?}");
     }
 }
 
@@ -77,7 +77,7 @@ fn test_audit_commands() {
     if let CapabilityData::AuditCommands(list) = capabs {
         assert!(!list.is_empty());
     } else {
-        panic!("Got wrong type of capability data: {:?}", capabs);
+        panic!("Got wrong type of capability data: {capabs:?}");
     }
 }
 
@@ -92,7 +92,7 @@ fn test_assigned_pcr() {
     if let CapabilityData::AssignedPcr(list) = capabs {
         assert!(!list.is_empty());
     } else {
-        panic!("Got wrong type of capability data: {:?}", capabs);
+        panic!("Got wrong type of capability data: {capabs:?}");
     }
 }
 
@@ -107,7 +107,7 @@ fn test_tpm_properties() {
     if let CapabilityData::TpmProperties(list) = capabs {
         assert!(!list.is_empty());
     } else {
-        panic!("Got wrong type of capability data: {:?}", capabs);
+        panic!("Got wrong type of capability data: {capabs:?}");
     }
 }
 
@@ -122,7 +122,7 @@ fn test_pcr_properties() {
     if let CapabilityData::PcrProperties(list) = capabs {
         assert!(!list.is_empty());
     } else {
-        panic!("Got wrong type of capability data: {:?}", capabs);
+        panic!("Got wrong type of capability data: {capabs:?}");
     }
 }
 
@@ -137,7 +137,7 @@ fn test_ecc_curves() {
     if let CapabilityData::EccCurves(vec) = capabs {
         assert!(!vec.is_empty());
     } else {
-        panic!("Got wrong type of capability data: {:?}", capabs);
+        panic!("Got wrong type of capability data: {capabs:?}");
     }
 }
 

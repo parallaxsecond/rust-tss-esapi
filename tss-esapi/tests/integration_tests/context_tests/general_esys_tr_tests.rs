@@ -69,7 +69,7 @@ mod test_tr_from_tpm_public {
             context
                 .nv_undefine_space(Provision::Owner, handle)
                 .expect("Call to nv_undefine_space failed");
-            panic!("{} failed: {}", fn_name, e);
+            panic!("{fn_name} failed: {e}");
         };
 
         // Create nv public.
@@ -148,7 +148,7 @@ mod test_tr_from_tpm_public {
             context
                 .nv_undefine_space(Provision::Owner, handle)
                 .expect("Failed to call nv_undefine_space");
-            panic!("{} failed: {}", fn_name, e);
+            panic!("{fn_name} failed: {e}");
         };
 
         // Create nv public.
@@ -203,7 +203,7 @@ mod test_tr_from_tpm_public {
         let new_nv_index_handle = context
             .tr_from_tpm_public(nv_index_tpm_handle.into())
             .map_err(|e| -> tss_esapi::Result<ObjectHandle> {
-                panic!("tr_from_tpm_public failed: {}", e);
+                panic!("tr_from_tpm_public failed: {e}");
             })
             .expect("Error when call tr_from_tpm_public");
         ///////////////////////////////////////////////////////////////
@@ -251,7 +251,7 @@ mod test_tr_from_tpm_public {
             context
                 .nv_undefine_space(Provision::Owner, handle)
                 .expect("Call to nv_undefine_space failed");
-            panic!("{} failed: {}", fn_name, e);
+            panic!("{fn_name} failed: {e}");
         };
 
         // Create nv public. Only use auth for write.
@@ -400,7 +400,7 @@ mod test_tr_from_tpm_public {
             context
                 .nv_undefine_space(Provision::Owner, handle)
                 .expect("Failed to call nv_undefine_space");
-            panic!("{} failed: {}", fn_name, e);
+            panic!("{fn_name} failed: {e}");
         };
 
         // Create nv public.

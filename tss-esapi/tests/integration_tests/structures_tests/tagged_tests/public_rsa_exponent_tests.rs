@@ -7,10 +7,7 @@ fn rsa_exponent_value_test() {
     let expected_value = 97;
 
     let rsa_exponent = RsaExponent::create(expected_value).unwrap_or_else(|_| {
-        panic!(
-            "Failed to create a RsaExponent from the value {}",
-            expected_value
-        )
+        panic!("Failed to create a RsaExponent from the value {expected_value}",)
     });
 
     assert_eq!(expected_value, rsa_exponent.value());

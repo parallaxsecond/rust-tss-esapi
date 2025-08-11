@@ -73,8 +73,7 @@ fn test_invalid_conversion() {
             assert_eq!(
                 Err(Error::WrapperError(WrapperErrorKind::InvalidParam)),
                 ReturnCodeLayer::try_from(item),
-                "Converting an invalid value {} into ReturnCodeLayer did not result in the expected error",
-                item
+                "Converting an invalid value {item} into ReturnCodeLayer did not result in the expected error"
             );
         }
     }

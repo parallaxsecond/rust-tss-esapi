@@ -86,7 +86,7 @@ fn test_vendor_specific_display_trait_implementation() {
 
     assert_eq!(
         "Vendor specific error.",
-        format!("{}", vendor_specific_rc),
+        format!("{vendor_specific_rc}"),
         "The vendor specific return code did not produce the expected error message."
     );
 }

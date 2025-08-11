@@ -51,13 +51,13 @@ impl std::fmt::Display for ArgumentNumber {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             ArgumentNumber::Parameter(number) => {
-                write!(f, "associated with parameter number {}", number)
+                write!(f, "associated with parameter number {number}")
             }
             ArgumentNumber::Session(number) => {
-                write!(f, "associated with session number {}", number)
+                write!(f, "associated with session number {number}")
             }
             ArgumentNumber::Handle(number) => {
-                write!(f, "associated with handle number {}", number)
+                write!(f, "associated with handle number {number}")
             }
         }
     }

@@ -25,7 +25,7 @@ fn test_retrieve_ek_pubcert() {
         Err(Error::TssError(ReturnCode::Tpm(TpmResponseCode::FormatOne(error)))) => {
             assert_eq!(error.error_number(), TpmFormatOneError::Handle)
         }
-        Err(e) => panic!("Error was unexpected: {:?}", e),
+        Err(e) => panic!("Error was unexpected: {e:?}"),
     };
     match ek::retrieve_ek_pubcert(
         &mut context,
@@ -35,7 +35,7 @@ fn test_retrieve_ek_pubcert() {
         Err(Error::TssError(ReturnCode::Tpm(TpmResponseCode::FormatOne(error)))) => {
             assert_eq!(error.error_number(), TpmFormatOneError::Handle)
         }
-        Err(e) => panic!("Error was unexpected: {:?}", e),
+        Err(e) => panic!("Error was unexpected: {e:?}"),
     };
 }
 
@@ -51,7 +51,7 @@ fn test_create_ek_rsa() {
             AsymmetricAlgorithmSelection::Rsa(key_bits),
             None,
         )
-        .unwrap_or_else(|_| panic!("failed to create EK {:?}", key_bits));
+        .unwrap_or_else(|_| panic!("failed to create EK {key_bits:?}"));
         context.flush_context(handle.into()).unwrap();
     }
 }
@@ -65,7 +65,7 @@ fn test_create_ek_ecc() {
     for curve in supported_ek_curves {
         let handle =
             ek::create_ek_object(&mut context, AsymmetricAlgorithmSelection::Ecc(curve), None)
-                .unwrap_or_else(|_| panic!("failed to create EK {:?}", curve));
+                .unwrap_or_else(|_| panic!("failed to create EK {curve:?}"));
         context.flush_context(handle.into()).unwrap();
     }
 }

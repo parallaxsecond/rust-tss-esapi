@@ -107,8 +107,8 @@ fn main() {
         .unwrap();
 
     // We can now assert that we correctly unsealed our data.
-    println!("sensitive_data = {:?}", sensitive_data);
-    println!("unsealed_data  = {:?}", unsealed);
+    println!("sensitive_data = {sensitive_data:?}");
+    println!("unsealed_data  = {unsealed:?}");
     assert_eq!(unsealed, sensitive_data);
 }
 
