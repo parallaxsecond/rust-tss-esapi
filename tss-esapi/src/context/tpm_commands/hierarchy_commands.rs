@@ -70,10 +70,10 @@ impl Context {
                 error!("Error in creating primary key: {:#010X}", ret);
             },
         )?;
-        let out_public_owned = Context::ffi_data_to_owned(out_public_ptr);
-        let creation_data_owned = Context::ffi_data_to_owned(creation_data_ptr);
-        let creation_hash_owned = Context::ffi_data_to_owned(creation_hash_ptr);
-        let creation_ticket_owned = Context::ffi_data_to_owned(creation_ticket_ptr);
+        let out_public_owned = Context::ffi_data_to_owned(out_public_ptr)?;
+        let creation_data_owned = Context::ffi_data_to_owned(creation_data_ptr)?;
+        let creation_hash_owned = Context::ffi_data_to_owned(creation_hash_ptr)?;
+        let creation_ticket_owned = Context::ffi_data_to_owned(creation_ticket_ptr)?;
         let primary_key_handle = KeyHandle::from(object_handle);
         self.handle_manager
             .add_handle(primary_key_handle.into(), HandleDropAction::Flush)?;

@@ -476,8 +476,8 @@ impl Context {
         )?;
 
         Ok((
-            NvPublic::try_from(Context::ffi_data_to_owned(nv_public_ptr))?,
-            Name::try_from(Context::ffi_data_to_owned(nv_name_ptr))?,
+            NvPublic::try_from(Context::ffi_data_to_owned(nv_public_ptr)?)?,
+            Name::try_from(Context::ffi_data_to_owned(nv_name_ptr)?)?,
         ))
     }
 
@@ -825,7 +825,7 @@ impl Context {
                 error!("Error when reading NV: {:#010X}", ret);
             },
         )?;
-        MaxNvBuffer::try_from(Context::ffi_data_to_owned(data_ptr))
+        MaxNvBuffer::try_from(Context::ffi_data_to_owned(data_ptr)?)
     }
 
     // Missing function: NV_ReadLock

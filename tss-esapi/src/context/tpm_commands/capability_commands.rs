@@ -69,7 +69,7 @@ impl Context {
         )?;
 
         Ok((
-            CapabilityData::try_from(Context::ffi_data_to_owned(capability_data_ptr))?,
+            CapabilityData::try_from(Context::ffi_data_to_owned(capability_data_ptr)?)?,
             YesNo::try_from(more_data)?.into(),
         ))
     }

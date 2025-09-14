@@ -216,9 +216,9 @@ impl Context {
             },
         )?;
         Ok((
-            Public::try_from(Context::ffi_data_to_owned(out_public_ptr))?,
-            Name::try_from(Context::ffi_data_to_owned(name_ptr))?,
-            Name::try_from(Context::ffi_data_to_owned(qualified_name_ptr))?,
+            Public::try_from(Context::ffi_data_to_owned(out_public_ptr)?)?,
+            Name::try_from(Context::ffi_data_to_owned(name_ptr)?)?,
+            Name::try_from(Context::ffi_data_to_owned(qualified_name_ptr)?)?,
         ))
     }
 
@@ -250,7 +250,7 @@ impl Context {
             },
         )?;
 
-        Digest::try_from(Context::ffi_data_to_owned(cert_info_ptr))
+        Digest::try_from(Context::ffi_data_to_owned(cert_info_ptr)?)
     }
 
     /// Perform actions to create a [IdObject] containing an activation credential.
@@ -283,8 +283,8 @@ impl Context {
             },
         )?;
         Ok((
-            IdObject::try_from(Context::ffi_data_to_owned(credential_blob_ptr))?,
-            EncryptedSecret::try_from(Context::ffi_data_to_owned(secret_ptr))?,
+            IdObject::try_from(Context::ffi_data_to_owned(credential_blob_ptr)?)?,
+            EncryptedSecret::try_from(Context::ffi_data_to_owned(secret_ptr)?)?,
         ))
     }
 
@@ -307,7 +307,7 @@ impl Context {
                 error!("Error in unsealing: {:#010X}", ret);
             },
         )?;
-        SensitiveData::try_from(Context::ffi_data_to_owned(out_data_ptr))
+        SensitiveData::try_from(Context::ffi_data_to_owned(out_data_ptr)?)
     }
 
     /// Change authorization for a TPM-resident object.
@@ -335,7 +335,7 @@ impl Context {
                 error!("Error changing object auth: {:#010X}", ret);
             },
         )?;
-        Private::try_from(Context::ffi_data_to_owned(out_private_ptr))
+        Private::try_from(Context::ffi_data_to_owned(out_private_ptr)?)
     }
 
     // Missing function: CreateLoaded

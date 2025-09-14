@@ -39,7 +39,7 @@ impl Context {
                 error!("Error when performing RSA encryption: {:#010X}", ret);
             },
         )?;
-        PublicKeyRsa::try_from(Context::ffi_data_to_owned(out_data_ptr))
+        PublicKeyRsa::try_from(Context::ffi_data_to_owned(out_data_ptr)?)
     }
 
     /// Perform an asymmetric RSA decryption.
@@ -69,7 +69,7 @@ impl Context {
                 error!("Error when performing RSA decryption: {:#010X}", ret);
             },
         )?;
-        PublicKeyRsa::try_from(Context::ffi_data_to_owned(message_ptr))
+        PublicKeyRsa::try_from(Context::ffi_data_to_owned(message_ptr)?)
     }
 
     /// Generate an ephemeral key pair.
@@ -199,8 +199,8 @@ impl Context {
             },
         )?;
 
-        let z_point = Context::ffi_data_to_owned(z_point_ptr);
-        let pub_point = Context::ffi_data_to_owned(pub_point_ptr);
+        let z_point = Context::ffi_data_to_owned(z_point_ptr)?;
+        let pub_point = Context::ffi_data_to_owned(pub_point_ptr)?;
         Ok((
             EccPoint::try_from(z_point.point)?,
             EccPoint::try_from(pub_point.point)?,
@@ -335,7 +335,7 @@ impl Context {
                 error!("Error when performing ECDH ZGen: {:#010X}", ret);
             },
         )?;
-        let out_point = Context::ffi_data_to_owned(out_point_ptr);
+        let out_point = Context::ffi_data_to_owned(out_point_ptr)?;
         EccPoint::try_from(out_point.point)
     }
 

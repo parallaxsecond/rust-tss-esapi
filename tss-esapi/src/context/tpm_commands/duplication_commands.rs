@@ -327,9 +327,9 @@ impl Context {
         )?;
 
         Ok((
-            Data::try_from(Context::ffi_data_to_owned(encryption_key_out_ptr))?,
-            Private::try_from(Context::ffi_data_to_owned(duplicate_ptr))?,
-            EncryptedSecret::try_from(Context::ffi_data_to_owned(out_sym_seed_ptr))?,
+            Data::try_from(Context::ffi_data_to_owned(encryption_key_out_ptr)?)?,
+            Private::try_from(Context::ffi_data_to_owned(duplicate_ptr)?)?,
+            EncryptedSecret::try_from(Context::ffi_data_to_owned(out_sym_seed_ptr)?)?,
         ))
     }
 
@@ -683,6 +683,6 @@ impl Context {
                 error!("Error when performing import: {:#010X}", ret);
             },
         )?;
-        Private::try_from(Context::ffi_data_to_owned(out_private_ptr))
+        Private::try_from(Context::ffi_data_to_owned(out_private_ptr)?)
     }
 }

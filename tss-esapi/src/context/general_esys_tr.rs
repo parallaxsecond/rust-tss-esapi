@@ -139,7 +139,7 @@ impl Context {
                 error!("Error in getting name: {:#010X}", ret);
             },
         )?;
-        Name::try_from(Context::ffi_data_to_owned(name_ptr))
+        Name::try_from(Context::ffi_data_to_owned(name_ptr)?)
     }
 
     /// Used to construct an esys object from the resources inside the TPM.

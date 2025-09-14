@@ -215,8 +215,8 @@ impl Context {
             },
         )?;
         Ok((
-            MaxBuffer::try_from(Context::ffi_data_to_owned(out_data_ptr))?,
-            InitialValue::try_from(Context::ffi_data_to_owned(iv_out_ptr))?,
+            MaxBuffer::try_from(Context::ffi_data_to_owned(out_data_ptr)?)?,
+            InitialValue::try_from(Context::ffi_data_to_owned(iv_out_ptr)?)?,
         ))
     }
 
@@ -290,8 +290,8 @@ impl Context {
             },
         )?;
         Ok((
-            Digest::try_from(Context::ffi_data_to_owned(out_hash_ptr))?,
-            HashcheckTicket::try_from(Context::ffi_data_to_owned(validation_ptr))?,
+            Digest::try_from(Context::ffi_data_to_owned(out_hash_ptr)?)?,
+            HashcheckTicket::try_from(Context::ffi_data_to_owned(validation_ptr)?)?,
         ))
     }
 
@@ -369,7 +369,7 @@ impl Context {
                 error!("Error in hmac: {:#010X}", ret);
             },
         )?;
-        Digest::try_from(Context::ffi_data_to_owned(out_hmac_ptr))
+        Digest::try_from(Context::ffi_data_to_owned(out_hmac_ptr)?)
     }
 
     // Missing function: MAC

@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use crate::{
+    ffi::take_from_esys,
     structures::{CreateKeyResult, CreationData, CreationTicket, Digest, Private, Public},
     tss2_esys::{TPM2B_CREATION_DATA, TPM2B_DIGEST, TPM2B_PRIVATE, TPM2B_PUBLIC, TPMT_TK_CREATION},
     Error, Result,
@@ -61,17 +62,28 @@ impl CreateCommandOutputHandler {
 impl TryFrom<CreateCommandOutputHandler> for CreateKeyResult {
     type Error = Error;
 
-    fn try_from(ffi_data_handler: CreateCommandOutputHandler) -> Result<CreateKeyResult> {
-        let out_private_owned =
-            crate::ffi::to_owned_with_zeroized_source(ffi_data_handler.ffi_out_private_ptr);
-        let out_public_owned =
-            crate::ffi::to_owned_with_zeroized_source(ffi_data_handler.ffi_out_public_ptr);
+    fn try_from(mut ffi_data_handler: CreateCommandOutputHandler) -> Result<CreateKeyResult> {
+        // Take and free with Esys_Free; then null out the handler's fields so Drop (if any)
+        // won't free them a second time.
+
+        let out_private_owned = unsafe { take_from_esys(ffi_data_handler.ffi_out_private_ptr)? };
+        ffi_data_handler.ffi_out_private_ptr = null_mut();
+
+        let out_public_owned = unsafe { take_from_esys(ffi_data_handler.ffi_out_public_ptr)? };
+        ffi_data_handler.ffi_out_public_ptr = null_mut();
+
         let creation_data_owned =
-            crate::ffi::to_owned_with_zeroized_source(ffi_data_handler.ffi_creation_data_ptr);
+            unsafe { take_from_esys(ffi_data_handler.ffi_creation_data_ptr)? };
+        ffi_data_handler.ffi_creation_data_ptr = null_mut();
+
         let creation_hash_owned =
-            crate::ffi::to_owned_with_zeroized_source(ffi_data_handler.ffi_creation_hash_ptr);
+            unsafe { take_from_esys(ffi_data_handler.ffi_creation_hash_ptr)? };
+        ffi_data_handler.ffi_creation_hash_ptr = null_mut();
+
         let creation_ticket_owned =
-            crate::ffi::to_owned_with_zeroized_source(ffi_data_handler.ffi_creation_ticket_ptr);
+            unsafe { take_from_esys(ffi_data_handler.ffi_creation_ticket_ptr)? };
+        ffi_data_handler.ffi_creation_ticket_ptr = null_mut();
+
         Ok(CreateKeyResult {
             out_private: Private::try_from(out_private_owned)?,
             out_public: Public::try_from(out_public_owned)?,
