@@ -11,7 +11,7 @@ set -euf -o pipefail
 OPENSSL_GIT="https://github.com/openssl/openssl.git"
 OPENSSL_VERSION="OpenSSL_1_1_1j"
 TPM2_TSS_GIT="https://github.com/tpm2-software/tpm2-tss.git"
-TPM2_TSS_VERSION="4.0.1"
+TPM2_TSS_VERSION="4.1.3"
 
 export SYSROOT="/tmp/sysroot"
 
@@ -48,7 +48,7 @@ cross-compile-openssl() {
 cross-compile-tpm2-tss() {
     pushd /tmp/tpm2-tss
     [ ! -f configure ] && ./bootstrap
-    ./configure --disable-fapi --disable-policy --prefix=/ --build=x86_64-pc-linux-gnu --host=$1 --target=$1 CC=$1-gcc
+    ./configure --disable-fapi --disable-policy --disable-tcti-spidev --disable-tcti-spi-ltt2go --disable-tcti-spi-ftdi --disable-tcti-i2c-ftdi --disable-tcti-i2c-helper --prefix=/ --build=x86_64-pc-linux-gnu --host=$1 --target=$1 CC=$1-gcc
     make clean
     make -j$(nproc)
     make DESTDIR="$SYSROOT" install

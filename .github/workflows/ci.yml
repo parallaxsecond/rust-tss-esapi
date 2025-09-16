@@ -62,7 +62,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Build the container
-        run: docker build -t ubuntucontainer tss-esapi/tests/ --build-arg TPM2_TSS_VERSION=4.0.1 --file tss-esapi/tests/Dockerfile-ubuntu --target tpm2-tss-install-dir
+        run: docker build -t ubuntucontainer tss-esapi/tests/ --build-arg TPM2_TSS_VERSION=4.1.3 --file tss-esapi/tests/Dockerfile-ubuntu --target tpm2-tss-install-dir
       - name: Run the container
         run: docker run -v $(pwd):/tmp/rust-tss-esapi -w /tmp/rust-tss-esapi/tss-esapi ubuntucontainer /tmp/rust-tss-esapi/tss-esapi/tests/all-ubuntu.sh
 
