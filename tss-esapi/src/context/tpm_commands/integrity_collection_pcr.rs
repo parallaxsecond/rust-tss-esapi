@@ -175,8 +175,8 @@ impl Context {
 
         Ok((
             pcr_update_counter,
-            PcrSelectionList::try_from(Context::ffi_data_to_owned(pcr_selection_out_ptr))?,
-            DigestList::try_from(Context::ffi_data_to_owned(pcr_values_ptr))?,
+            PcrSelectionList::try_from(Context::ffi_data_to_owned(pcr_selection_out_ptr)?)?,
+            DigestList::try_from(Context::ffi_data_to_owned(pcr_values_ptr)?)?,
         ))
     }
 

@@ -26,7 +26,7 @@ impl Context {
                 error!("Error in saving context: {:#010X}", ret);
             },
         )?;
-        SavedTpmContext::try_from(Context::ffi_data_to_owned(context_ptr))
+        SavedTpmContext::try_from(Context::ffi_data_to_owned(context_ptr)?)
     }
 
     /// Load a previously saved context into the TPM and return the object handle.

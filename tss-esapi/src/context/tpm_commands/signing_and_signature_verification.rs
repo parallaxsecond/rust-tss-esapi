@@ -36,7 +36,7 @@ impl Context {
                 error!("Error when verifying signature: {:#010X}", ret);
             },
         )?;
-        VerifiedTicket::try_from(Context::ffi_data_to_owned(validation_ptr))
+        VerifiedTicket::try_from(Context::ffi_data_to_owned(validation_ptr)?)
     }
 
     /// Sign a digest with a key present in the TPM and return the signature.
@@ -118,6 +118,6 @@ impl Context {
                 error!("Error when signing: {:#010X}", ret);
             },
         )?;
-        Signature::try_from(Context::ffi_data_to_owned(signature_ptr))
+        Signature::try_from(Context::ffi_data_to_owned(signature_ptr)?)
     }
 }

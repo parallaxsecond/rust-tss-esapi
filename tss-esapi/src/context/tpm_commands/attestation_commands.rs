@@ -147,8 +147,8 @@ impl Context {
             },
         )?;
 
-        let certify_info = Context::ffi_data_to_owned(certify_info_ptr);
-        let signature = Context::ffi_data_to_owned(signature_ptr);
+        let certify_info = Context::ffi_data_to_owned(certify_info_ptr)?;
+        let signature = Context::ffi_data_to_owned(signature_ptr)?;
         Ok((
             Attest::try_from(AttestBuffer::try_from(certify_info)?)?,
             Signature::try_from(signature)?,
@@ -272,8 +272,8 @@ impl Context {
             },
         )?;
 
-        let certify_info = Context::ffi_data_to_owned(certify_info_ptr);
-        let signature = Context::ffi_data_to_owned(signature_ptr);
+        let certify_info = Context::ffi_data_to_owned(certify_info_ptr)?;
+        let signature = Context::ffi_data_to_owned(signature_ptr)?;
         Ok((
             Attest::try_from(AttestBuffer::try_from(certify_info)?)?,
             Signature::try_from(signature)?,
@@ -313,8 +313,8 @@ impl Context {
             },
         )?;
 
-        let quoted = Context::ffi_data_to_owned(quoted_ptr);
-        let signature = Context::ffi_data_to_owned(signature_ptr);
+        let quoted = Context::ffi_data_to_owned(quoted_ptr)?;
+        let signature = Context::ffi_data_to_owned(signature_ptr)?;
         Ok((
             Attest::try_from(AttestBuffer::try_from(quoted)?)?,
             Signature::try_from(signature)?,
@@ -426,8 +426,8 @@ impl Context {
             },
         )?;
 
-        let timeinfo = Context::ffi_data_to_owned(timeinfo_ptr);
-        let signature = Context::ffi_data_to_owned(signature_ptr);
+        let timeinfo = Context::ffi_data_to_owned(timeinfo_ptr)?;
+        let signature = Context::ffi_data_to_owned(signature_ptr)?;
         Ok((
             Attest::try_from(AttestBuffer::try_from(timeinfo)?)?,
             Signature::try_from(signature)?,

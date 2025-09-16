@@ -33,7 +33,7 @@ impl Context {
                 error!("Error in getting random bytes: {:#010X}", ret);
             },
         )?;
-        Digest::try_from(Context::ffi_data_to_owned(random_bytes_ptr))
+        Digest::try_from(Context::ffi_data_to_owned(random_bytes_ptr)?)
     }
 
     /// Add additional information into the TPM RNG state

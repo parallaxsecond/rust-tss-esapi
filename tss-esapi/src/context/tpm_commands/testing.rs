@@ -75,7 +75,7 @@ impl Context {
             },
         )?;
         Ok((
-            MaxBuffer::try_from(Context::ffi_data_to_owned(out_data_ptr))?,
+            MaxBuffer::try_from(Context::ffi_data_to_owned(out_data_ptr)?)?,
             ReturnCode::ensure_success(test_result, |_| {}),
         ))
     }

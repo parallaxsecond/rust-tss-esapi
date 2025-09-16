@@ -64,8 +64,8 @@ impl Context {
             },
         )?;
         Ok((
-            Timeout::try_from(Context::ffi_data_to_owned(out_timeout_ptr))?,
-            AuthTicket::try_from(Context::ffi_data_to_owned(out_policy_ticket_ptr))?,
+            Timeout::try_from(Context::ffi_data_to_owned(out_timeout_ptr)?)?,
+            AuthTicket::try_from(Context::ffi_data_to_owned(out_policy_ticket_ptr)?)?,
         ))
     }
 
@@ -106,8 +106,8 @@ impl Context {
             },
         )?;
         Ok((
-            Timeout::try_from(Context::ffi_data_to_owned(out_timeout_ptr))?,
-            AuthTicket::try_from(Context::ffi_data_to_owned(out_policy_ticket_ptr))?,
+            Timeout::try_from(Context::ffi_data_to_owned(out_timeout_ptr)?)?,
+            AuthTicket::try_from(Context::ffi_data_to_owned(out_policy_ticket_ptr)?)?,
         ))
     }
 
@@ -533,7 +533,7 @@ impl Context {
             },
         )?;
 
-        Digest::try_from(Context::ffi_data_to_owned(policy_digest_ptr))
+        Digest::try_from(Context::ffi_data_to_owned(policy_digest_ptr)?)
     }
 
     /// Cause conditional gating of a policy based on NV written state.

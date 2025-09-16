@@ -15,7 +15,7 @@ use handle_manager::HandleManager;
 use log::{debug, error};
 use malloced::Malloced;
 use std::collections::HashMap;
-use std::ptr::null_mut;
+use std::{ffi::c_void, ptr, ptr::null_mut};
 
 /// Safe abstraction over an ESYS_CONTEXT.
 ///
@@ -454,12 +454,16 @@ impl Context {
 
     /// Private function for handling that has been allocated with
     /// C memory allocation functions in TSS.
-    fn ffi_data_to_owned<T: Copy>(data_ptr: *mut T) -> T {
-        let out = unsafe { *data_ptr };
+    fn ffi_data_to_owned<T: Copy>(data_ptr: *mut T) -> Result<T> {
+        if data_ptr.is_null() {
+            error!("Null pointer received from TSS");
+            return Err(Error::local_error(ErrorKind::WrongValueFromTpm));
+        }
 
-        // Free the malloced data.
-        drop(unsafe { Malloced::from_raw(data_ptr) });
-        out
+        let out = unsafe { ptr::read(data_ptr) };
+        unsafe { Esys_Free(data_ptr.cast::<c_void>()) };
+
+        Ok(out)
     }
 }
 

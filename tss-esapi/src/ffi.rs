@@ -2,29 +2,33 @@
 // SPDX-License-Identifier: Apache-2.0
 
 pub mod data_zeroize;
-
-use crate::{ffi::data_zeroize::FfiDataZeroize, Error, Result, WrapperErrorKind};
+use crate::{
+    ffi::data_zeroize::FfiDataZeroize, tss2_esys::Esys_Free, Error, Result, WrapperErrorKind,
+};
 use log::error;
 use malloced::Malloced;
-use std::{convert::TryFrom, ops::Deref};
+use std::convert::TryFrom;
+use std::{ffi::c_void, ptr};
 
-/// Function that takes ownership of data that has been
-/// allocated with C memory allocation functions in TSS while also
-/// zeroizing the memory before freeing it.
-///
-/// # Arguments
-/// * `ffi_data_ptr` - A pointer to the FFI data.
+/// Move a value `T` out of ESAPI-allocated memory and free the source with Esys_Free.
+/// The memory is zeroized before being freed.
 ///
 /// # Returns
-/// The owned version of the FFI data.
-pub(crate) fn to_owned_with_zeroized_source<T>(ffi_data_ptr: *mut T) -> T
+/// Returns an error if the pointer is null.
+pub(crate) unsafe fn take_from_esys<T>(ptr: *mut T) -> Result<T>
 where
     T: FfiDataZeroize + Copy,
 {
-    let mut ffi_data = unsafe { Malloced::from_raw(ffi_data_ptr) };
-    let owned_ffi_data: T = *ffi_data.deref();
-    ffi_data.ffi_data_zeroize();
-    owned_ffi_data
+    if ptr.is_null() {
+        error!("Received null pointer from ESAPI");
+        return Err(Error::local_error(WrapperErrorKind::WrongValueFromTpm));
+    }
+
+    let out = ptr::read(ptr);
+    (*ptr).ffi_data_zeroize();
+    Esys_Free(ptr.cast::<c_void>());
+
+    Ok(out)
 }
 
 /// Function that takes ownership of bytes that are stored in a
