@@ -23,6 +23,16 @@ use crate::{Context, Error, Result, WrapperErrorKind};
 use std::convert::TryFrom;
 use zeroize::Zeroize;
 
+#[cfg(feature = "rustcrypto")]
+mod credential;
+#[cfg(feature = "rustcrypto")]
+pub mod kdf;
+
+#[cfg(feature = "rustcrypto")]
+pub use self::credential::make_credential_ecc;
+#[cfg(all(feature = "rustcrypto", feature = "rsa"))]
+pub use self::credential::make_credential_rsa;
+
 /// Create the [Public] structure for a restricted decryption key.
 ///
 /// * `symmetric` - Cipher to be used for decrypting children of the key
