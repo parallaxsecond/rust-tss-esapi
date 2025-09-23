@@ -17,6 +17,10 @@ time using the headers identified on the system.
 
 Our end-goal is to achieve a fully Rust-native interface that offers strong safety and security guarantees. Check out our [documentation](https://docs.rs/tss-esapi/*/tss_esapi/#notes-on-code-safety) for an overview of our code safety approach.
 
+## Integration Tests
+
+See the [integration tests](https://github.com/parallaxsecond/rust-tss-esapi/tree/main/tss-esapi/tests)
+
 ## Cargo Features
 
 The crate currently offers the following features:

@@ -13,12 +13,12 @@ interface to Rust to [TSS](https://github.com/tpm2-software/tpm2-tss).
 
 This crate exposes an interface for the TSS Enhanced System API and thus
 links to libraries that expose this interface. In order to allow proper use
-of the ESAPI, this FFI layer includes bindings to TCTI and MU headers, and 
+of the ESAPI, this FFI layer includes bindings to TCTI and MU headers, and
 must therefore link to all of them at build time.
 
 The paths to the libraries are discovered using `pkg-config` - make sure they
-are discoverable in this way on your system. Our build script looks for 
-`tss2-esys`, `tss2-tctildr` and `tss2-mu`. A minimum version of `4.0.1` is 
+are discoverable in this way on your system. Our build script looks for
+`tss2-esys`, `tss2-tctildr` and `tss2-mu`. A minimum version of `4.1.3` is
 required for all of them.
 
 Having installed the open-source implementation libraries at `/usr/local/lib` (by default), it
@@ -41,9 +41,72 @@ available, feel free to raise a Pull Request to add it or to use build-time
 generation of bindings. All the committed bindings **MUST** be generated from
 the library version found under the `vendor` submodule.
 
+## Bundling TPM-TSS
+
+[`tpm-tss`](https://github.com/tpm2-software/tpm2-tss) is used by this 
+library to communicate with TPMs. If this library is not available on 
+your system you may optionally bundle (vendor) tpm-tss during builds. 
+tpm-tss can be provided from a local source path with the
+environment variable `TPM_TSS_SOURCE_PATH` or it will be retrieved from
+Github during the build. The version to retrieve can be controlled by setting
+the `TPM2_TSS_SOURCE_VERSION` environment variable.
+[!IMPORTANT]
+On windows it might be necessary to manually create the VERSION file
+when a local source is being used.
+
+To enable this feature:
+
+```bash
+cargo build --features=bundled
+```
+
+```bash
+TPM2_TSS_VERSION="4.1.3" cargo build --features=bundled
+```
+
+```bash
+TPM_TSS_SOURCE_PATH=/path/to/tpm-tss cargo build --features=bundled
+```
+
+If using this feature from an external project
+
+```
+tss-esapi-sys = { version = "...", features = ["bundled"] }
+```
+
+### Windows
+
+Compiling for windows requires a bit of setup to work with the bundled feature.
+
+* OpenSSL must be installed to a non-standard location at `C:\OpenSSL-v11-Win64`
+* Visual Studio 2019 must be installed with the Clang/C2 experimental component,
+  and windows sdk 10.0 (Other versions of Visual Studio may work but are untested 
+  at this point).
+
+### MacOS
+
+Compiling on MacOS requires the bundling feature. This requires dependencies
+from brew.
+
+```bashbre
+brew install autoconf autoconf-archive automake json-c libtool m4 pkg-config
+```
+
+Optionally you may require these libraries for certain classes of TPM transport
+
+```
+brew install libftdi
+```
+
+### OpenSUSE / SUSE
+
+```
+sudo zypper in autoconf autoconf-archive automake libjson-c-devel libtool libtpms-devel gawk make
+```
+
 ## Cross compiling
 
-Cross-compilation can be done as long as you have on your build system the TSS 
+Cross-compilation can be done as long as you have on your build system the TSS
 libraries compiled for your target system of choice. We rely on `pkg-config` to
 identify the libraries which we link against. Installing `tpm2-tss` does yield
 `.pc` files which can be used for this purpose, but depending on the exact build
