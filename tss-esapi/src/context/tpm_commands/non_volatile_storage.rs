@@ -6,7 +6,7 @@ use crate::{
     interface_types::reserved_handles::{NvAuth, Provision},
     structures::{Auth, MaxNvBuffer, Name, NvPublic},
     tss2_esys::{
-        Esys_NV_DefineSpace, Esys_NV_Increment, Esys_NV_Read, Esys_NV_ReadPublic,
+        Esys_NV_DefineSpace, Esys_NV_Extend, Esys_NV_Increment, Esys_NV_Read, Esys_NV_ReadPublic,
         Esys_NV_UndefineSpace, Esys_NV_UndefineSpaceSpecial, Esys_NV_Write,
     },
     Context, Result, ReturnCode,
@@ -698,7 +698,123 @@ impl Context {
         )
     }
 
-    // Missing function: NV_Extend
+    /// Extends data to the NV memory associated with a nv index.
+    ///
+    /// # Details
+    /// This method is used to extend a value to
+    /// the nv memory in the TPM.
+    ///
+    /// Please beware that this method requires an authorization
+    /// session handle to be present.
+    ///
+    /// # Arguments
+    /// * `auth_handle` - Handle indicating the source of authorization value.
+    /// * `nv_index_handle` - The [NvIndexHandle] associated with NV memory
+    ///   which will be extended by data hashed with the previous data.
+    /// * `data` - The data, in the form of a [MaxNvBuffer], that is to be written.
+    ///
+    /// # Example
+    /// ```rust
+    /// # use tss_esapi::{
+    /// #     Context, TctiNameConf, attributes::{SessionAttributes, NvIndexAttributes},
+    /// #     handles::NvIndexTpmHandle, interface_types::algorithm::HashingAlgorithm,
+    /// #     structures::{SymmetricDefinition, NvPublic},
+    /// #     constants::SessionType, constants::nv_index_type::NvIndexType,
+    /// # };
+    /// use tss_esapi::{
+    ///       interface_types::reserved_handles::{Provision, NvAuth}, structures::MaxNvBuffer,
+    /// };
+    ///
+    /// # // Create context
+    /// # let mut context =
+    /// #     Context::new(
+    /// #         TctiNameConf::from_environment_variable().expect("Failed to get TCTI"),
+    /// #     ).expect("Failed to create Context");
+    /// #
+    /// # let session = context
+    /// #     .start_auth_session(
+    /// #         None,
+    /// #         None,
+    /// #         None,
+    /// #         SessionType::Hmac,
+    /// #         SymmetricDefinition::AES_256_CFB,
+    /// #         tss_esapi::interface_types::algorithm::HashingAlgorithm::Sha256,
+    /// #     )
+    /// #     .expect("Failed to create session")
+    /// #     .expect("Received invalid handle");
+    /// # let (session_attributes, session_attributes_mask) = SessionAttributes::builder()
+    /// #     .with_decrypt(true)
+    /// #     .with_encrypt(true)
+    /// #     .build();
+    /// # context.tr_sess_set_attributes(session, session_attributes, session_attributes_mask)
+    /// #     .expect("Failed to set attributes on session");
+    /// # context.set_sessions((Some(session), None, None));
+    /// #
+    /// # let nv_index = NvIndexTpmHandle::new(0x01500028)
+    /// #     .expect("Failed to create NV index tpm handle");
+    /// #
+    /// // Create NV index attributes
+    /// let owner_nv_index_attributes = NvIndexAttributes::builder()
+    ///     .with_owner_write(true)
+    ///     .with_owner_read(true)
+    ///     .with_orderly(true)
+    ///     .with_nv_index_type(NvIndexType::Extend)
+    ///     .build()
+    ///     .expect("Failed to create owner nv index attributes");
+    ///
+    /// // Create owner nv public.
+    /// let owner_nv_public = NvPublic::builder()
+    ///     .with_nv_index(nv_index)
+    ///     .with_index_name_algorithm(HashingAlgorithm::Sha256)
+    ///     .with_index_attributes(owner_nv_index_attributes)
+    ///     .with_data_area_size(32)
+    ///     .build()
+    ///     .expect("Failed to build NvPublic for owner");
+    ///
+    /// let nv_index_handle = context
+    ///     .nv_define_space(Provision::Owner, None, owner_nv_public.clone())
+    ///     .expect("Call to nv_define_space failed");
+    ///
+    /// let data = MaxNvBuffer::try_from(vec![0x0]).unwrap();
+    /// let result = context.nv_extend(NvAuth::Owner, nv_index_handle, data);
+    ///
+    /// # let nv_read_result = context
+    /// #     .nv_read(NvAuth::Owner, nv_index_handle, 32, 0);
+    /// # let read_data = nv_read_result.expect("Call to nv_read failed");
+    /// # // expected value is sha256([0; 32] + [0; 1])
+    /// # assert_eq!([
+    /// #         0x7f, 0x9c, 0x9e, 0x31, 0xac, 0x82, 0x56, 0xca,
+    /// #         0x2f, 0x25, 0x85, 0x83, 0xdf, 0x26, 0x2d, 0xbc,
+    /// #         0x7d, 0x6f, 0x68, 0xf2, 0xa0, 0x30, 0x43, 0xd5,
+    /// #         0xc9, 0x9a, 0x4a, 0xe5, 0xa7, 0x39, 0x6c, 0xe9],
+    /// #     read_data.as_ref());
+    /// #
+    /// # context
+    /// #    .nv_undefine_space(Provision::Owner, nv_index_handle)
+    /// #    .expect("Call to nv_undefine_space failed");
+    /// ```
+    pub fn nv_extend(
+        &mut self,
+        auth_handle: NvAuth,
+        nv_index_handle: NvIndexHandle,
+        data: MaxNvBuffer,
+    ) -> Result<()> {
+        ReturnCode::ensure_success(
+            unsafe {
+                Esys_NV_Extend(
+                    self.mut_context(),
+                    AuthHandle::from(auth_handle).into(),
+                    nv_index_handle.into(),
+                    self.required_session_1()?,
+                    self.optional_session_2(),
+                    self.optional_session_3(),
+                    &data.into(),
+                )
+            },
+            |ret| error!("Error when extending NV: {:#010X}", ret),
+        )
+    }
+
     // Missing function: NV_SetBits
     // Missing function: NV_WriteLock
     // Missing function: NV_GlobalWriteLock
