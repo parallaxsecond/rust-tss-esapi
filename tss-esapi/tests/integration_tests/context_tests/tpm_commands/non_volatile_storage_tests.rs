@@ -421,3 +421,125 @@ mod test_nv_increment {
         assert_eq!(first_value + 1, second_value);
     }
 }
+
+mod test_nv_extend {
+    use crate::common::create_ctx_with_session;
+    use tss_esapi::{
+        attributes::NvIndexAttributesBuilder,
+        constants::nv_index_type::NvIndexType,
+        handles::NvIndexTpmHandle,
+        interface_types::{
+            algorithm::HashingAlgorithm,
+            reserved_handles::{NvAuth, Provision},
+        },
+        structures::{MaxNvBuffer, NvPublicBuilder},
+    };
+
+    #[test]
+    fn test_nv_extend() {
+        let mut context = create_ctx_with_session();
+        let nv_index = NvIndexTpmHandle::new(0x01500029).unwrap();
+
+        // Create owner nv public.
+        let owner_nv_index_attributes = NvIndexAttributesBuilder::new()
+            .with_owner_write(true)
+            .with_owner_read(true)
+            .with_orderly(true)
+            .with_nv_index_type(NvIndexType::Extend)
+            .build()
+            .expect("Failed to create owner nv index attributes");
+
+        let owner_nv_public = NvPublicBuilder::new()
+            .with_nv_index(nv_index)
+            .with_index_name_algorithm(HashingAlgorithm::Sha256)
+            .with_index_attributes(owner_nv_index_attributes)
+            .with_data_area_size(32)
+            .build()
+            .expect("Failed to build NvPublic for owner");
+
+        let owner_nv_index_handle = context
+            .nv_define_space(Provision::Owner, None, owner_nv_public)
+            .expect("Call to nv_define_space failed");
+
+        // Attempt to read an un-"written"/uninitialized NV index that is defined as extend type
+        let nv_read_result = context.nv_read(NvAuth::Owner, owner_nv_index_handle, 32, 0);
+        assert!(nv_read_result.is_err());
+
+        // Extend NV index with data
+        let data = MaxNvBuffer::try_from(vec![0x0]).unwrap();
+        context
+            .nv_extend(NvAuth::Owner, owner_nv_index_handle, data)
+            .expect("Failed to extend NV index");
+
+        // Validate the new state of the index, which was extended by the data
+        let nv_read_result = context.nv_read(NvAuth::Owner, owner_nv_index_handle, 32, 0);
+        let read_data = nv_read_result.expect("Call to nv_read failed");
+
+        // Expected value is sha256([0; 32] + [0; 1])
+        assert_eq!(
+            [
+                0x7f, 0x9c, 0x9e, 0x31, 0xac, 0x82, 0x56, 0xca, 0x2f, 0x25, 0x85, 0x83, 0xdf, 0x26,
+                0x2d, 0xbc, 0x7d, 0x6f, 0x68, 0xf2, 0xa0, 0x30, 0x43, 0xd5, 0xc9, 0x9a, 0x4a, 0xe5,
+                0xa7, 0x39, 0x6c, 0xe9
+            ],
+            read_data.as_ref()
+        );
+
+        // Clean up defined NV index
+        context
+            .nv_undefine_space(Provision::Owner, owner_nv_index_handle)
+            .expect("Call to nv_undefine_space failed");
+
+        // Create platform nv public that is cleared on TPM reset/shutdown
+        let platform_nv_index_attributes = NvIndexAttributesBuilder::new()
+            .with_pp_write(true)
+            .with_pp_read(true)
+            .with_orderly(true)
+            .with_platform_create(true)
+            .with_nv_index_type(NvIndexType::Extend)
+            .with_clear_stclear(true)
+            .build()
+            .expect("Failed to create owner nv index attributes");
+
+        let platform_nv_public = NvPublicBuilder::new()
+            .with_nv_index(nv_index)
+            .with_index_name_algorithm(HashingAlgorithm::Sha256)
+            .with_index_attributes(platform_nv_index_attributes)
+            .with_data_area_size(32)
+            .build()
+            .expect("Failed to build NvPublic for owner");
+
+        let platform_nv_index_handle = context
+            .nv_define_space(Provision::Platform, None, platform_nv_public)
+            .expect("Call to nv_define_space failed");
+
+        // Attempt to read an un-"written"/uninitialized NV index that is defined as extend type
+        let nv_read_result = context.nv_read(NvAuth::Platform, platform_nv_index_handle, 32, 0);
+        assert!(nv_read_result.is_err());
+
+        // Extend NV index with data
+        let data = MaxNvBuffer::try_from(vec![0x0]).unwrap();
+        context
+            .nv_extend(NvAuth::Platform, platform_nv_index_handle, data)
+            .expect("Failed to extend NV index");
+
+        // Validate the new state of the index, which was extended by the data
+        let nv_read_result = context.nv_read(NvAuth::Platform, platform_nv_index_handle, 32, 0);
+        let read_data = nv_read_result.expect("Call to nv_read failed");
+
+        // Expected value is sha256([0; 32] + [0; 1])
+        assert_eq!(
+            [
+                0x7f, 0x9c, 0x9e, 0x31, 0xac, 0x82, 0x56, 0xca, 0x2f, 0x25, 0x85, 0x83, 0xdf, 0x26,
+                0x2d, 0xbc, 0x7d, 0x6f, 0x68, 0xf2, 0xa0, 0x30, 0x43, 0xd5, 0xc9, 0x9a, 0x4a, 0xe5,
+                0xa7, 0x39, 0x6c, 0xe9
+            ],
+            read_data.as_ref()
+        );
+
+        // Clean up defined NV index
+        context
+            .nv_undefine_space(Provision::Platform, platform_nv_index_handle)
+            .expect("Call to nv_undefine_space failed");
+    }
+}
