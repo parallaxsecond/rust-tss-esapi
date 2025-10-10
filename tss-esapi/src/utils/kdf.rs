@@ -77,6 +77,10 @@ impl_kdf_label!(Session, b"SESSION");
 pub struct Identity;
 impl_kdf_label!(Identity, b"IDENTITY");
 
+#[derive(Copy, Clone, Debug)]
+pub struct Duplicate;
+impl_kdf_label!(Duplicate, b"DUPLICATE");
+
 /// KDFa
 ///
 /// This is a counter mode KDF from SP 800-108. It uses HMAC as the pseudo-random function (PRF). It is referred

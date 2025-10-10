@@ -18,9 +18,97 @@ use rsa::{Oaep, RsaPublicKey};
 
 use crate::{
     error::{Error, Result, WrapperErrorKind},
-    structures::EncryptedSecret,
+    structures::{EncryptedSecret, Public},
     utils::kdf::{self, KdfLabel},
 };
+
+/// Generates and encrypt a seed for a public key
+///
+/// See [A.10 Secret Sharing] for RSA
+/// See [B.6 Secret Sharing] for ECC
+///
+/// # Parameters
+///   - Type parameters
+///     - `R` a [`CryptoRng`]
+///     - `Use` an application-dependent value
+///       See [Table 27: Protection Values], for the appropriate `seed Label`
+///     - `K` is the type of [`Key`] we should provide a seed for
+///   - Values
+///     - `rng` the [`CryptoRng`] to derive a random seed or an ephemeral for the ECDH,
+///     - `recipient_key` is the Public key we shall encrypt the seed to.
+///
+/// [A.10 Secret Sharing]: https://trustedcomputinggroup.org/wp-content/uploads/Trusted-Platform-Module-2.0-Library-Part-1-Version-184_pub.pdf#page=284
+/// [B.6 Secret Sharing]: https://trustedcomputinggroup.org/wp-content/uploads/Trusted-Platform-Module-2.0-Library-Part-1-Version-184_pub.pdf#page=284
+/// [Table 27: Protection Values]: https://trustedcomputinggroup.org/wp-content/uploads/Trusted-Platform-Module-2.0-Library-Part-1-Version-184_pub.pdf#page=155
+#[allow(unused)] // TODO
+pub(super) fn secret_sharing<R, Use, K>(
+    rng: &mut R,
+    recipient_key: &Public,
+) -> Result<(Zeroizing<Key<K>>, EncryptedSecret)>
+where
+    R: CryptoRng + ?Sized,
+    Use: KdfLabel,
+    K: KeySizeUser,
+{
+    fn secret_sharing_hash<R, Use, K, NameHash>(
+        rng: &mut R,
+        recipient_key: &Public,
+    ) -> Result<(Zeroizing<Key<K>>, EncryptedSecret)>
+    where
+        R: CryptoRng + ?Sized,
+        Use: KdfLabel,
+        K: KeySizeUser,
+        NameHash: Digest + FixedOutputReset,
+    {
+        match recipient_key {
+            Public::KeyedHash { .. } | Public::SymCipher { .. } => {
+                Err(Error::local_error(WrapperErrorKind::InvalidParam))
+            }
+            #[cfg(feature = "rsa")]
+            Public::Rsa { .. } => {
+                let recipient_key = RsaPublicKey::try_from(recipient_key)?;
+                secret_sharing_rsa::<R, Use, K, NameHash>(rng, &recipient_key)
+            }
+            Public::Ecc { parameters, .. } => {
+                macro_rules! impl_curve {
+                    ($curve: ty) => {{
+                        use crate::abstraction::public::AssociatedTpmCurve;
+                        if parameters.ecc_curve() == <$curve>::TPM_CURVE {
+                            let recipient_key = PublicKey::<$curve>::try_from(recipient_key)?;
+                            return secret_sharing_ecc_curve::<R, Use, $curve, K, NameHash>(
+                                rng,
+                                &recipient_key,
+                            );
+                        }
+                    }};
+                }
+
+                #[cfg(feature = "p192")]
+                impl_curve!(p192::NistP192);
+                #[cfg(feature = "p224")]
+                impl_curve!(p224::NistP224);
+                #[cfg(feature = "p256")]
+                impl_curve!(p256::NistP256);
+                #[cfg(feature = "p384")]
+                impl_curve!(p384::NistP384);
+                // TODO P521, bnp256, bnp638, sm2p256
+
+                Err(Error::local_error(WrapperErrorKind::InvalidParam))
+            }
+            #[cfg(not(feature = "rsa"))]
+            _ => Err(Error::local_error(WrapperErrorKind::UnsupportedParam)),
+        }
+    }
+
+    macro_rules! match_inner {
+        ($hash: ty) => {
+            secret_sharing_hash::<R, Use, K, $hash>(rng, recipient_key)
+        };
+    }
+
+    super::match_name_hashing_algorithm!(recipient_key, match_inner)
+}
+
 /// Generates and encrypt a seed for a given ECC Public key on the curve
 ///
 /// See [B.6 Secret Sharing]

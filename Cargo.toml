@@ -14,3 +14,6 @@ sm2        = { git = "https://github.com/RustCrypto/elliptic-curves.git" }
 concat-kdf = { git = "https://github.com/RustCrypto/KDFs.git" }
 
 rsa = { git = "https://github.com/RustCrypto/RSA.git" }
+
+camellia = { git = "https://github.com/RustCrypto/block-ciphers.git" }
+sm4      = { git = "https://github.com/RustCrypto/block-ciphers.git" }
