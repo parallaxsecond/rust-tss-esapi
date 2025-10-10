@@ -1,3 +1,14 @@
 [workspace]
 resolver = "2"
 members = ["tss-esapi", "tss-esapi-sys"]
+
+[patch.crates-io]
+primefield = { git = "https://github.com/RustCrypto/elliptic-curves.git" }
+p192       = { git = "https://github.com/RustCrypto/elliptic-curves.git" }
+p224       = { git = "https://github.com/RustCrypto/elliptic-curves.git" }
+p256       = { git = "https://github.com/RustCrypto/elliptic-curves.git" }
+p384       = { git = "https://github.com/RustCrypto/elliptic-curves.git" }
+p521       = { git = "https://github.com/RustCrypto/elliptic-curves.git" }
+sm2        = { git = "https://github.com/RustCrypto/elliptic-curves.git" }
+
+concat-kdf = { git = "https://github.com/RustCrypto/KDFs.git" }
