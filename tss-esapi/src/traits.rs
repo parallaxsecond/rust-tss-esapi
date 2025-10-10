@@ -1,6 +1,7 @@
 // Copyright 2021 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
-use crate::{tss2_esys::UINT32, Result};
+use crate::{tss2_esys::UINT32, Error, Result, WrapperErrorKind};
+use log::error;
 use std::convert::TryFrom;
 
 /// Trait for types that can be converted into
@@ -24,6 +25,23 @@ pub trait Marshall: Sized {
     /// which was not written in the conversion.
     fn marshall_offset(&self, _marshalled_data: &mut [u8], _offset: &mut usize) -> Result<()> {
         unimplemented!();
+    }
+
+    /// Returns the type in form of marshalled data prefixed with their length
+    fn marshall_prefixed(&self) -> Result<Vec<u8>> {
+        let data = self.marshall()?;
+        let mut buffer = vec![0; data.len() + 2];
+        buffer[..2].copy_from_slice(
+            &u16::try_from(data.len())
+                .map_err(|_| {
+                    error!("object may only be 2^16 bytes long");
+                    Error::local_error(WrapperErrorKind::WrongParamSize)
+                })?
+                .to_be_bytes()[..],
+        );
+        buffer[2..].copy_from_slice(&data);
+
+        Ok(buffer)
     }
 }
 
@@ -185,3 +203,20 @@ pub(crate) use impl_mu_standard;
 pub(crate) use impl_unmarshall_trait;
 // Implementation of Marshall and UnMarshall macro for base TSS types.
 impl_mu_aliases!(UINT32);
+
+#[cfg(feature = "rustcrypto")]
+impl<T> Marshall for digest::CtOutput<T>
+where
+    T: digest::OutputSizeUser,
+{
+    const BUFFER_SIZE: usize = <T::OutputSize as digest::typenum::Unsigned>::USIZE;
+
+    fn marshall_offset(&self, buf: &mut [u8], offset: &mut usize) -> Result<()> {
+        let src = &self.as_bytes()[*offset..];
+        let to_write = buf.len().min(src.len());
+        buf[..to_write].copy_from_slice(&src[..to_write]);
+        *offset += to_write;
+
+        Ok(())
+    }
+}

@@ -37,8 +37,9 @@ tss-esapi-sys = { path = "../tss-esapi-sys", version = "0.6.0-alpha.1" }
 x509-cert = { version = "0.3.0-rc.3", optional = true }
 aes = { version = "0.9.0-rc.2", optional = true }
 byte-strings = { version = "0.3.1", optional = true }
-cipher = { version = "0.5.0-rc.2", optional = true }
+camellia = { version = "0.2.0-rc.0", optional = true }
 cfb-mode = { version = "0.9.0-rc.1", optional = true }
+cipher = { version = "0.5.0-rc.3", optional = true, default-features = false, features = ["zeroize"] }
 ecdsa = { version = "0.17.0-rc.11", features = [
     "algorithm",
     "der",
@@ -61,6 +62,7 @@ sha2 = { version = "0.11.0-rc.3", optional = true }
 sha3 = { version = "0.11.0-rc.3", optional = true }
 sm2 = { version = "0.14.0-rc.4", optional = true }
 sm3 = { version = "0.5.0-rc.3", optional = true }
+sm4 = { version = "0.6.0-rc.2", optional = true }
 digest = { version = "0.11.0-rc.4", optional = true }
 signature = { version = "3.0.0-rc.5", features = [
     "alloc",
@@ -79,6 +81,7 @@ rand = "0.10.0-rc.1"
 aes = "0.9.0-pre.2"
 env_logger = "0.11.5"
 hex-literal = "1"
+paste = "1.0.15"
 rsa = { version = "0.10.0-pre.3" }
 serde_json = "^1.0.108"
 sha2 = { version = "0.11.0-rc.3", features = ["oid"] }
@@ -117,6 +120,7 @@ rustcrypto = [
 rustcrypto-full = [
     "rustcrypto",
     "aes",
+    "camellia",
     "p192",
     "p224",
     "p256",
@@ -128,6 +132,7 @@ rustcrypto-full = [
     "sha3",
     "sm2",
     "sm3",
+    "sm4",
 ]
  
 rsa = ["dep:rsa", "kbkdf"]

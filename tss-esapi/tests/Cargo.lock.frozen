@@ -138,6 +138,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "96eb4cdd6cf1b31d671e9efe75c5d1ec614776856cefbe109ca373554a6d514f"
 dependencies = [
  "hybrid-array",
+ "zeroize",
 ]
 
 [[package]]
@@ -158,6 +159,22 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn",
+]
+
+[[package]]
+name = "byteorder"
+version = "1.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1fd0f2584146f6f2ef48085050886acf353beff7305ebd1ae69500e27c67f64b"
+
+[[package]]
+name = "camellia"
+version = "0.2.0-rc.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1990a33d1b30b126cad2c46751fe4e8b1537fa44740b2225fbce3f41a0a902e1"
+dependencies = [
+ "byteorder",
+ "cipher",
 ]
 
 [[package]]
@@ -211,8 +228,10 @@ version = "0.5.0-rc.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "98d708bac5451350d56398433b19a7889022fa9187df1a769c0edbc3b2c03167"
 dependencies = [
+ "block-buffer",
  "crypto-common",
  "inout",
+ "zeroize",
 ]
 
 [[package]]
@@ -1165,6 +1184,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "sm4"
+version = "0.6.0-rc.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "18ccbe86be26e583ca7593a379f345a667d8ca6d7c1afc68102079faa8bb7682"
+dependencies = [
+ "cipher",
+]
+
+[[package]]
 name = "spki"
 version = "0.8.0-rc.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1244,6 +1272,7 @@ dependencies = [
  "aes",
  "bitfield",
  "byte-strings",
+ "camellia",
  "cfb-mode",
  "cfg-if",
  "cipher",
@@ -1281,6 +1310,7 @@ dependencies = [
  "signature",
  "sm2",
  "sm3",
+ "sm4",
  "strum",
  "strum_macros",
  "tss-esapi",

@@ -25,21 +25,27 @@ use zeroize::Zeroize;
 
 #[cfg(feature = "rustcrypto")]
 use {
+    crate::traits::Marshall,
     core::marker::PhantomData,
-    digest::{crypto_common::KeySizeUser, OutputSizeUser},
+    digest::{crypto_common::KeySizeUser, Digest, OutputSizeUser},
 };
 
 #[cfg(feature = "rustcrypto")]
 mod credential;
 #[cfg(feature = "rustcrypto")]
+mod duplication;
+#[cfg(feature = "rustcrypto")]
 pub mod kdf;
 #[cfg(feature = "rustcrypto")]
 mod secret_sharing;
 
-#[cfg(feature = "rustcrypto")]
-pub use self::credential::make_credential_ecc;
 #[cfg(all(feature = "rustcrypto", feature = "rsa"))]
 pub use self::credential::make_credential_rsa;
+#[cfg(feature = "rustcrypto")]
+pub use self::{
+    credential::make_credential_ecc,
+    duplication::{create_duplicate, DuplicatePayload},
+};
 
 /// Create the [Public] structure for a restricted decryption key.
 ///
@@ -286,6 +292,82 @@ pub fn get_tpm_vendor(context: &mut Context) -> Result<String> {
     // Collect to a single string
     .collect())
 }
+
+/// Hash an object into a [`Digest`]
+#[cfg(feature = "rustcrypto")]
+pub(crate) fn hash_object<D, T>(hasher: &mut D, object: &T) -> Result<()>
+where
+    D: Digest,
+    T: Marshall,
+{
+    let buf = object.marshall()?;
+    hasher.update(buf);
+
+    //const BUF_SIZE: usize = 128;
+    //let mut buf = [0u8; BUF_SIZE];
+    //let mut offset = 0;
+
+    //// TODO: BUFFER_SIZE is a max, we shall stop if offset didn't bodge
+    //while offset < T::BUFFER_SIZE {
+    //    let remaining = T::BUFFER_SIZE - offset;
+    //    let buf = &mut buf[..BUF_SIZE.min(remaining)];
+
+    //    object.marshall_offset(buf, &mut offset)?;
+    //    hasher.update(buf);
+    //}
+
+    Ok(())
+}
+
+/// Helper macro to match on the name_hashing_algorithm of a public object
+///
+/// ```ignore
+/// macro_rules! match_inner {
+///     ($hash: ty) => {
+///         inner_wrapper_hash::<R, PSymAlg, $hash>(rng, sensitive_kp)
+///     };
+/// }
+///
+/// match_name_hashing_algorithm!(sensitive_pub, match_inner);
+/// ```
+macro_rules! match_name_hashing_algorithm {
+    ($pub_object: expr, $inner: ident) => {{
+        use crate::{
+            error::{Error, WrapperErrorKind},
+            interface_types::algorithm::HashingAlgorithm,
+        };
+        match $pub_object.name_hashing_algorithm() {
+            HashingAlgorithm::Null => Err(Error::local_error(WrapperErrorKind::InvalidParam)),
+            #[cfg(feature = "sha1")]
+            HashingAlgorithm::Sha1 => $inner!(sha1::Sha1),
+            #[cfg(feature = "sha2")]
+            HashingAlgorithm::Sha256 => $inner!(sha2::Sha256),
+            #[cfg(feature = "sha2")]
+            HashingAlgorithm::Sha384 => $inner!(sha2::Sha384),
+            #[cfg(feature = "sha2")]
+            HashingAlgorithm::Sha512 => $inner!(sha2::Sha512),
+            #[cfg(feature = "sha3")]
+            HashingAlgorithm::Sha3_256 => $inner!(sha3::Sha3_256),
+            #[cfg(feature = "sha3")]
+            HashingAlgorithm::Sha3_384 => $inner!(sha3::Sha3_384),
+            #[cfg(feature = "sha3")]
+            HashingAlgorithm::Sha3_512 => $inner!(sha3::Sha3_512),
+            #[cfg(feature = "sm3")]
+            HashingAlgorithm::Sm3_256 => $inner!(sm3::Sm3),
+            #[cfg(not(all(
+                feature = "sha1",
+                feature = "sha2",
+                feature = "sha3",
+                feature = "sm3",
+            )))]
+            _ => Err(Error::local_error(WrapperErrorKind::UnsupportedParam)),
+        }
+    }};
+}
+
+// Ensure we can use the macro elsewhere in the crate
+pub(crate) use match_name_hashing_algorithm;
+
 // [`TpmHmac`] intends to code for the key expected for hmac
 // in the KDFa and KDFe derivations. There are no standard sizes for hmac keys really,
 // upstream RustCrypto considers it to be [BlockSize], but TPM specification
