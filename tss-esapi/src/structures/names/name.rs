@@ -65,3 +65,50 @@ impl AsRef<TPM2B_NAME> for Name {
         &self.value
     }
 }
+
+#[cfg(feature = "rustcrypto")]
+mod as_name {
+    use digest::{Digest, Update};
+    use log::error;
+
+    use super::{Name, TPM2B_NAME};
+    use crate::{
+        abstraction::AssociatedHashingAlgorithm,
+        constants::AlgorithmIdentifier,
+        error::{Error, Result, WrapperErrorKind},
+        traits::Marshall,
+        utils::hash_object,
+    };
+
+    #[cfg(feature = "rustcrypto")]
+    pub(crate) fn make_name<D, T>(object: &T) -> Result<Name>
+    where
+        D: Digest + Update + AssociatedHashingAlgorithm,
+        T: Marshall,
+    {
+        let mut hasher = D::new();
+
+        hash_object(&mut hasher, object)?;
+
+        let alg_id: u16 = AlgorithmIdentifier::from(D::TPM_DIGEST).into();
+        let bytes = hasher.finalize();
+
+        let len = bytes.len() + 2;
+        if len > Name::MAX_SIZE {
+            error!("Invalid Digest output size (> {})", Name::MAX_SIZE);
+            return Err(Error::local_error(WrapperErrorKind::WrongParamSize));
+        }
+        let size = len as u16;
+
+        let mut name = [0; Name::MAX_SIZE];
+        name[..2].copy_from_slice(&alg_id.to_be_bytes());
+        name[2..len].copy_from_slice(&bytes);
+
+        Ok(Name {
+            value: TPM2B_NAME { size, name },
+        })
+    }
+}
+
+#[cfg(feature = "rustcrypto")]
+pub(crate) use self::as_name::make_name;
