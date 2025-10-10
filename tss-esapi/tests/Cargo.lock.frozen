@@ -172,6 +172,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cdd35008169921d80bc60d3d0ab416eecb028c4cd653352907921d95084790be"
 dependencies = [
  "hybrid-array",
+ "zeroize",
 ]
 
 [[package]]
@@ -202,6 +203,22 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn",
+]
+
+[[package]]
+name = "byteorder"
+version = "1.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1fd0f2584146f6f2ef48085050886acf353beff7305ebd1ae69500e27c67f64b"
+
+[[package]]
+name = "camellia"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "26f8497bae7a64e5ba66a107df01378570a9a6b282a61913d1e9c28e76f8c65a"
+dependencies = [
+ "byteorder",
+ "cipher",
 ]
 
 [[package]]
@@ -255,8 +272,10 @@ version = "0.5.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e8cf2a2c93cd704877c0858356ed03480ff301ee950b43f1cbe4573b088bfa6c"
 dependencies = [
+ "block-buffer",
  "crypto-common",
  "inout",
+ "zeroize",
 ]
 
 [[package]]
@@ -1410,6 +1429,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "sm4"
+version = "0.6.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ff2d621883cdeeaee6759d39f4bc8cd314b29db72b6ac3d6714b31422512ee11"
+dependencies = [
+ "cipher",
+]
+
+[[package]]
 name = "socket2"
 version = "0.6.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1523,6 +1551,7 @@ dependencies = [
  "assert_fs",
  "bitfield",
  "byte-strings",
+ "camellia",
  "cfb-mode",
  "cfg-if",
  "cipher",
@@ -1561,6 +1590,7 @@ dependencies = [
  "signature",
  "sm2",
  "sm3",
+ "sm4",
  "socket2",
  "strum",
  "strum_macros",

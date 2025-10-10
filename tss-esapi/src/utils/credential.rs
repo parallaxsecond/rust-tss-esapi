@@ -252,6 +252,26 @@ mod key_test_des {
     }
 }
 
+#[cfg(any(feature = "camellia", feature = "sm4"))]
+macro_rules! dummy_weak_key_test {
+    ($k: ty) => {
+        impl TcgKeyTest for $k {
+            fn tcg_weak_key_test(_key: &Key<Self>) -> core::result::Result<(), WeakKeyError> {
+                Ok(())
+            }
+        }
+    };
+}
+
+#[cfg(feature = "camellia")]
+dummy_weak_key_test!(camellia::Camellia128);
+#[cfg(feature = "camellia")]
+dummy_weak_key_test!(camellia::Camellia192);
+#[cfg(feature = "camellia")]
+dummy_weak_key_test!(camellia::Camellia256);
+#[cfg(feature = "sm4")]
+dummy_weak_key_test!(sm4::Sm4);
+
 /// [`make_credential_ecc`] creates a credential that will only be decrypted by the target
 /// elliptic-curve EK.
 ///
