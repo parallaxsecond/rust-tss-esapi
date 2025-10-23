@@ -138,6 +138,30 @@ mod test_start_auth_session {
             .unwrap_err();
         });
     }
+
+    #[test]
+    fn test_get_nonce_tpm() {
+        let mut context = create_ctx_without_session();
+        let session = context
+            .start_auth_session(
+                None,
+                None,
+                None,
+                SessionType::Policy,
+                SymmetricDefinition::AES_256_CFB,
+                HashingAlgorithm::Sha256,
+            )
+            .unwrap()
+            .expect("Received invalid handle");
+
+        // Get the TPM nonce from the session
+        let nonce_tpm = context
+            .tr_sess_get_nonce_tpm(session)
+            .expect("Failed to get nonceTPM");
+
+        // Verify the nonce is not empty
+        assert!(!nonce_tpm.as_bytes().is_empty());
+    }
 }
 
 mod test_policy_restart {
