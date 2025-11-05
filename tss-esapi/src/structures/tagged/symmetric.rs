@@ -136,7 +136,7 @@ impl TryFrom<TPMT_SYM_DEF> for SymmetricDefinition {
 ///
 /// # Details
 /// This corresponds to TPMT_SYM_DEF_OBJECT
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
 pub enum SymmetricDefinitionObject {
     // TDOD: Investigate why TDES is missing.
     Aes {
@@ -151,6 +151,7 @@ pub enum SymmetricDefinitionObject {
         key_bits: CamelliaKeyBits,
         mode: SymmetricMode,
     },
+    #[default]
     Null,
 }
 
@@ -172,12 +173,6 @@ impl SymmetricDefinitionObject {
     };
     pub(crate) fn is_null(&self) -> bool {
         matches!(self, Self::Null)
-    }
-}
-
-impl Default for SymmetricDefinitionObject {
-    fn default() -> Self {
-        Self::Null
     }
 }
 
