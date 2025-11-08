@@ -869,10 +869,8 @@ pub mod tpm2_tss {
                         "release" => "Release",
                         _ => panic!("Unknown cargo profile: {}", profile),
                     };
-                    println!(
-                        "cargo:rustc-link-search=dylib={}",
-                        _source_path.join("x64").join(build_string).display()
-                    );
+                    let lib_out_path: PathBuf = _source_path.join("x64").join(build_string);
+                    println!("cargo:rustc-link-search=all={}", lib_out_path.display());
                 }
             }
         }

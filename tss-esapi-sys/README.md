@@ -18,8 +18,8 @@ must therefore link to all of them at build time.
 
 The paths to the libraries are discovered using `pkg-config` - make sure they
 are discoverable in this way on your system. Our build script looks for
-`tss2-esys`, `tss2-tctildr` and `tss2-mu`. A minimum version of `4.1.3` is
-required for all of them.
+`tss2-sys`, `tss2-esys`, `tss2-tctildr` and `tss2-mu`. A minimum version of `4.1.3` is
+required for all of them. On windows `tss2-tcti-tbs` is also required.
 
 Having installed the open-source implementation libraries at `/usr/local/lib` (by default), it
 might happen that `pkg-config` can not find them. Run the following command if that is the
@@ -51,8 +51,12 @@ environment variable `TPM_TSS_SOURCE_PATH` or it will be retrieved from
 Github during the build. The version to retrieve can be controlled by setting
 the `TPM2_TSS_SOURCE_VERSION` environment variable.
 [!IMPORTANT]
-On windows it might be necessary to manually create the VERSION file
-when a local source is being used.
+* The `bundled` feature will make it possible to build the crate without
+   having to worry about the `tpm2-tss` library dependencies. But it is still
+   necessary to make the shared libraries available to the executable that uses
+   the library.
+* On Windows it might be necessary to manually create the `VERSION` file
+   when a local source is being used.
 
 To enable this feature:
 
