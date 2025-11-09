@@ -303,7 +303,7 @@ fn main() {
         .execute_without_session(|ctx| {
             // Ensure we load the new parent handle before we start
             let new_parent_handle = ctx
-                .load_external_public(primary_key_2_public, Hierarchy::Null)
+                .load_external(None, primary_key_2_public, Hierarchy::Null)
                 .unwrap();
 
             // IMPORTANT! After you start the policy session, you can't do *anything* else except

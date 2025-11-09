@@ -15,7 +15,7 @@ use crate::{
         Esys_ActivateCredential, Esys_Create, Esys_Load, Esys_LoadExternal, Esys_MakeCredential,
         Esys_ObjectChangeAuth, Esys_ReadPublic, Esys_Unseal,
     },
-    Context, Result, ReturnCode,
+    Context, Error, Result, ReturnCode, WrapperErrorKind,
 };
 use create_command_input::CreateCommandInputHandler;
 use create_command_output::CreateCommandOutputHandler;
@@ -123,13 +123,118 @@ impl Context {
     }
 
     /// Load an external key into the TPM and return its new handle.
+    ///
+    /// # Details
+    /// This command is used to load an object that is not a Protected Object into the TPM. The command allows
+    /// loading of a public area or both a public and sensitive area.
+    ///
+    /// # Arguments
+    /// * `private` - The optional sensitive portion of the object.
+    /// * `public` - The public portion of the object.
+    /// * `hierarchy` - The hierarchy with which the object area is associated.
+    ///
+    /// # Returns
+    /// The handle to the loaded key.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// # use tss_esapi::{
+    /// #    Context, TctiNameConf,
+    /// #    attributes::ObjectAttributesBuilder,
+    /// #    constants::SessionType,
+    /// #    interface_types::{
+    /// #        algorithm::{HashingAlgorithm, PublicAlgorithm, RsaSchemeAlgorithm},
+    /// #        key_bits::RsaKeyBits,
+    /// #        reserved_handles::Hierarchy,
+    /// #    },
+    /// #    structures::{
+    /// #        Public, PublicBuilder, PublicKeyRsa, PublicRsaParametersBuilder, RsaScheme,
+    /// #        SymmetricDefinition,
+    /// #    },
+    /// # };
+    /// #
+    /// # const KEY: [u8; 256] = [
+    /// #     231, 97, 201, 180, 0, 1, 185, 150, 85, 90, 174, 188, 105, 133, 188, 3, 206, 5, 222, 71, 185, 1,
+    /// #     209, 243, 36, 130, 250, 116, 17, 0, 24, 4, 25, 225, 250, 198, 245, 210, 140, 23, 139, 169, 15,
+    /// #     193, 4, 145, 52, 138, 149, 155, 238, 36, 74, 152, 179, 108, 200, 248, 250, 100, 115, 214, 166,
+    /// #     165, 1, 27, 51, 11, 11, 244, 218, 157, 3, 174, 171, 142, 45, 8, 9, 36, 202, 171, 165, 43, 208,
+    /// #     186, 232, 15, 241, 95, 81, 174, 189, 30, 213, 47, 86, 115, 239, 49, 214, 235, 151, 9, 189, 174,
+    /// #     144, 238, 200, 201, 241, 157, 43, 37, 6, 96, 94, 152, 159, 205, 54, 9, 181, 14, 35, 246, 49,
+    /// #     150, 163, 118, 242, 59, 54, 42, 221, 215, 248, 23, 18, 223, 179, 229, 0, 204, 65, 69, 166, 180,
+    /// #     11, 49, 131, 96, 163, 96, 158, 7, 109, 119, 208, 17, 237, 125, 187, 121, 94, 65, 2, 86, 105,
+    /// #     68, 51, 197, 73, 108, 185, 231, 126, 199, 81, 1, 251, 211, 45, 47, 15, 113, 135, 197, 152, 239,
+    /// #     180, 111, 18, 192, 136, 222, 11, 99, 41, 248, 205, 253, 209, 56, 214, 32, 225, 3, 49, 161, 58,
+    /// #     57, 190, 69, 86, 95, 185, 184, 155, 76, 8, 122, 104, 81, 222, 234, 246, 40, 98, 182, 90, 160,
+    /// #     111, 74, 102, 36, 148, 99, 69, 207, 214, 104, 87, 128, 238, 26, 121, 107, 166, 4, 64, 5, 210,
+    /// #     164, 162, 189,
+    /// # ];
+    /// #
+    /// # // Create context
+    /// # let mut context =
+    /// #     Context::new(
+    /// #         TctiNameConf::from_environment_variable().expect("Failed to get TCTI"),
+    /// #     ).expect("Failed to create Context");
+    /// #
+    /// # let session = context
+    /// #     .start_auth_session(
+    /// #         None,
+    /// #         None,
+    /// #         None,
+    /// #         SessionType::Hmac,
+    /// #         SymmetricDefinition::AES_256_CFB,
+    /// #         tss_esapi::interface_types::algorithm::HashingAlgorithm::Sha256,
+    /// #     )
+    /// #     .expect("Failed to create session")
+    /// #     .expect("Received invalid handle");
+    /// #
+    /// let object_attributes = ObjectAttributesBuilder::new()
+    ///     .with_user_with_auth(true)
+    ///     .with_decrypt(false)
+    ///     .with_sign_encrypt(true)
+    ///     .with_restricted(false)
+    ///     .build()
+    ///     .expect("Failed to build object attributes");
+    ///
+    /// let public = PublicBuilder::new()
+    ///     .with_public_algorithm(PublicAlgorithm::Rsa)
+    ///     .with_name_hashing_algorithm(HashingAlgorithm::Sha256)
+    ///     .with_object_attributes(object_attributes)
+    ///     .with_rsa_parameters(
+    ///         PublicRsaParametersBuilder::new_unrestricted_signing_key(
+    ///             RsaScheme::create(RsaSchemeAlgorithm::RsaSsa, Some(HashingAlgorithm::Sha256))
+    ///                 .expect("Failed to create rsa scheme"),
+    ///             RsaKeyBits::Rsa2048,
+    ///             Default::default(),
+    ///         )
+    ///         .build()
+    ///         .expect("Failed to create rsa parameters for public structure"),
+    ///     )
+    ///     .with_rsa_unique_identifier(
+    ///         PublicKeyRsa::from_bytes(&KEY[..256])
+    ///             .expect("Failed to create Public RSA key from buffer"),
+    ///     )
+    ///     .build()
+    ///     .expect("Failed to build Public structure");
+    ///
+    /// // Load public key into Owner hierarchy.
+    /// let key_handle = context.load_external(None, public, Hierarchy::Owner)
+    ///     .expect("The load_external should have returned a valid key handle.");
+    /// ```
     pub fn load_external(
         &mut self,
-        private: Sensitive,
+        private: impl Into<Option<Sensitive>>,
         public: Public,
         hierarchy: Hierarchy,
     ) -> Result<KeyHandle> {
+        let potential_private = private.into();
+        if (hierarchy != Hierarchy::Null) && potential_private.is_some() {
+            error!("Only NULL hierarchy is valid in load_external when loading both private and public part.");
+            return Err(Error::local_error(WrapperErrorKind::InvalidParam));
+        }
         let mut object_handle = ObjectHandle::None.into();
+        let potential_private_in = potential_private.map(|v| v.try_into()).transpose()?;
+        let public_in = public.try_into()?;
         ReturnCode::ensure_success(
             unsafe {
                 Esys_LoadExternal(
@@ -137,8 +242,8 @@ impl Context {
                     self.optional_session_1(),
                     self.optional_session_2(),
                     self.optional_session_3(),
-                    &private.try_into()?,
-                    &public.try_into()?,
+                    potential_private_in.as_ref().map_or_else(null, |v| v),
+                    &public_in,
                     if cfg!(hierarchy_is_esys_tr) {
                         ObjectHandle::from(hierarchy).into()
                     } else {
@@ -149,41 +254,6 @@ impl Context {
             },
             |ret| {
                 error!("Error in loading external object: {:#010X}", ret);
-            },
-        )?;
-
-        let key_handle = KeyHandle::from(object_handle);
-        self.handle_manager
-            .add_handle(key_handle.into(), HandleDropAction::Flush)?;
-        Ok(key_handle)
-    }
-
-    /// Load the public part of an external key and return its new handle.
-    pub fn load_external_public(
-        &mut self,
-        public: Public,
-        hierarchy: Hierarchy,
-    ) -> Result<KeyHandle> {
-        let mut object_handle = ObjectHandle::None.into();
-        ReturnCode::ensure_success(
-            unsafe {
-                Esys_LoadExternal(
-                    self.mut_context(),
-                    self.optional_session_1(),
-                    self.optional_session_2(),
-                    self.optional_session_3(),
-                    null(),
-                    &public.try_into()?,
-                    if cfg!(hierarchy_is_esys_tr) {
-                        ObjectHandle::from(hierarchy).into()
-                    } else {
-                        TpmHandle::from(hierarchy).into()
-                    },
-                    &mut object_handle,
-                )
-            },
-            |ret| {
-                error!("Error in loading external public object: {:#010X}", ret);
             },
         )?;
 

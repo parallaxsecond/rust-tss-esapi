@@ -76,60 +76,6 @@ mod test_load {
     }
 }
 
-mod test_load_external_public {
-    use crate::common::{create_ctx_with_session, KEY};
-    use tss_esapi::{
-        attributes::ObjectAttributesBuilder,
-        interface_types::{
-            algorithm::{HashingAlgorithm, PublicAlgorithm, RsaSchemeAlgorithm},
-            key_bits::RsaKeyBits,
-            reserved_handles::Hierarchy,
-        },
-        structures::{Public, PublicBuilder, PublicKeyRsa, PublicRsaParametersBuilder, RsaScheme},
-    };
-
-    pub fn get_ext_rsa_pub() -> Public {
-        let object_attributes = ObjectAttributesBuilder::new()
-            .with_user_with_auth(true)
-            .with_decrypt(false)
-            .with_sign_encrypt(true)
-            .with_restricted(false)
-            .build()
-            .expect("Failed to build object attributes");
-
-        PublicBuilder::new()
-            .with_public_algorithm(PublicAlgorithm::Rsa)
-            .with_name_hashing_algorithm(HashingAlgorithm::Sha256)
-            .with_object_attributes(object_attributes)
-            .with_rsa_parameters(
-                PublicRsaParametersBuilder::new_unrestricted_signing_key(
-                    RsaScheme::create(RsaSchemeAlgorithm::RsaSsa, Some(HashingAlgorithm::Sha256))
-                        .expect("Failed to create rsa scheme"),
-                    RsaKeyBits::Rsa2048,
-                    Default::default(),
-                )
-                .build()
-                .expect("Failed to create rsa parameters for public structure"),
-            )
-            .with_rsa_unique_identifier(
-                PublicKeyRsa::from_bytes(&KEY[..256])
-                    .expect("Failed to create Public RSA key from buffer"),
-            )
-            .build()
-            .expect("Failed to build Public structure")
-    }
-
-    #[test]
-    fn test_load_external_public() {
-        let mut context = create_ctx_with_session();
-        let pub_key = get_ext_rsa_pub();
-
-        context
-            .load_external_public(pub_key, Hierarchy::Owner)
-            .unwrap();
-    }
-}
-
 mod test_load_external {
     use crate::common::create_ctx_with_session;
     use std::convert::TryInto;
@@ -218,13 +164,24 @@ mod test_load_external {
     }
 
     #[test]
-    fn test_load_external() {
+    fn test_load_external_private_and_public_parts() {
         let mut context = create_ctx_with_session();
         let pub_key = get_ext_rsa_pub();
         let priv_key = get_ext_rsa_priv();
 
         let key_handle = context
-            .load_external(priv_key, pub_key, Hierarchy::Null)
+            .load_external(Some(priv_key), pub_key, Hierarchy::Null)
+            .unwrap();
+        context.flush_context(key_handle.into()).unwrap();
+    }
+
+    #[test]
+    fn test_load_external_only_public_part() {
+        let mut context = create_ctx_with_session();
+        let pub_key = get_ext_rsa_pub();
+
+        let key_handle = context
+            .load_external(None, pub_key, Hierarchy::Null)
             .unwrap();
         context.flush_context(key_handle.into()).unwrap();
     }

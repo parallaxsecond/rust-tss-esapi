@@ -90,7 +90,7 @@ fn main() {
     let encrypted_data = context
         .execute_with_nullauth_session(|ctx| {
             let rsa_pub_key = ctx
-                .load_external_public(public.clone(), Hierarchy::Null)
+                .load_external(None, public.clone(), Hierarchy::Null)
                 .unwrap();
 
             ctx.rsa_encrypt(
