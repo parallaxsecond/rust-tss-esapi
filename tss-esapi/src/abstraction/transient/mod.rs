@@ -194,9 +194,7 @@ impl TransientKeyContext {
     ) -> Result<KeyMaterial> {
         let public = TransientKeyContext::get_public_from_params(params, Some(public_key.clone()))?;
         self.set_session_attrs()?;
-        let key_handle = self
-            .context
-            .load_external_public(public, Hierarchy::Owner)?;
+        let key_handle = self.context.load_external(None, public, Hierarchy::Owner)?;
         self.context.flush_context(key_handle.into())?;
         Ok(KeyMaterial {
             public: public_key,
@@ -522,8 +520,7 @@ impl TransientKeyContext {
 
         self.set_session_attrs()?;
         let key_handle = if material.private.is_empty() {
-            self.context
-                .load_external_public(public, Hierarchy::Owner)?
+            self.context.load_external(None, public, Hierarchy::Owner)?
         } else {
             self.context
                 .load(self.root_key_handle, material.private.try_into()?, public)?

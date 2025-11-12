@@ -558,7 +558,7 @@ fn ctx_migration_test() {
     let key_context = basic_ctx.context_save(key_handle.into()).unwrap();
 
     let pub_key_handle = basic_ctx
-        .load_external_public(result.out_public.clone(), Hierarchy::Owner)
+        .load_external(None, result.out_public.clone(), Hierarchy::Owner)
         .unwrap();
     let pub_key_context = basic_ctx.context_save(pub_key_handle.into()).unwrap();
 
@@ -672,7 +672,7 @@ fn activate_credential() {
         panic!("Wrong Public type");
     };
     let pub_handle = basic_ctx
-        .load_external_public(key_pub, Hierarchy::Owner)
+        .load_external(None, key_pub, Hierarchy::Owner)
         .unwrap();
 
     // Credential to expect back as proof for attestation
@@ -799,7 +799,7 @@ fn activate_credential_wrong_key() {
         panic!("Wrong Public type");
     };
     let pub_handle = basic_ctx
-        .load_external_public(key_pub, Hierarchy::Owner)
+        .load_external(None, key_pub, Hierarchy::Owner)
         .unwrap();
 
     // Credential to expect back as proof for attestation

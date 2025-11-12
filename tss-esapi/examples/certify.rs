@@ -267,7 +267,7 @@ fn main() {
     // challenge encryption.
     let (_public, ak_name, _qualified_name) = context_2
         .execute_with_nullauth_session(|ctx| {
-            let ak_handle = ctx.load_external_public(ak_public.clone(), Hierarchy::Null)?;
+            let ak_handle = ctx.load_external(None, ak_public.clone(), Hierarchy::Null)?;
             let r = ctx.read_public(ak_handle);
             ctx.flush_context(ak_handle.into())?;
             r
@@ -291,7 +291,7 @@ fn main() {
     // Now we load the ek_public, and create our encrypted challenge.
     let (idobject, encrypted_secret) = context_2
         .execute_with_nullauth_session(|ctx| {
-            let ek_handle = ctx.load_external_public(ek_public, Hierarchy::Null)?;
+            let ek_handle = ctx.load_external(None, ek_public, Hierarchy::Null)?;
             let r = ctx.make_credential(ek_handle, challenge.clone(), ak_name);
             ctx.flush_context(ek_handle.into())?;
             r
@@ -510,7 +510,8 @@ fn main() {
     // First, load the public from the aik
     let ak_handle = context_2
         .execute_with_nullauth_session(|ctx| {
-            ctx.load_external_public(
+            ctx.load_external(
+                None,
                 ak_public,
                 // We put it into the null hierarchy as this is ephemeral.
                 Hierarchy::Null,
