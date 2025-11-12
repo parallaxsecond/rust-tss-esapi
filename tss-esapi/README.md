@@ -35,6 +35,11 @@ The crate currently offers the following features:
 * `rustcrypto-full` (disabled by default) - provides conversion from all
   supported elliptic curves, rsa or hashes.
   Support for individual hash, rsa or curves can be pulled individually.
+* `bundled` - Downloads, builds and dynamically links against the tpm2-tss libraries.
+  This means that the executable using the crate needs to have the tpm2-tss shared
+  libraries available to the executable. This can be achieved by copying the shared libraries
+  to the same folder as the executable or by adding the path to them to the appropriate environmental
+  variable e.g. `LD_LIBRARY_PATH`, `DYLD_FALLBACK_LIBRARY_PATH` or `PATH`.
 
 ## Cross compiling
 
