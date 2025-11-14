@@ -82,7 +82,8 @@ impl TryFrom<CreateCommandOutputHandler> for CreateKeyResult {
 
         let creation_ticket_owned =
             unsafe { take_from_esys(ffi_data_handler.ffi_creation_ticket_ptr)? };
-        ffi_data_handler.ffi_creation_ticket_ptr = null_mut();
+        //#[allow(unused_assignments)]
+        //ffi_data_handler.ffi_creation_ticket_ptr = null_mut();
 
         Ok(CreateKeyResult {
             out_private: Private::try_from(out_private_owned)?,
