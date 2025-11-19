@@ -92,6 +92,10 @@
 //! controlled through environment variables as explained
 //! [here](https://github.com/tpm2-software/tpm2-tss/blob/main/doc/logging.md#runtime-log-level).
 //!
+//! # Code examples
+//! The code examples are just small snippets of all the different steps that are necessary
+//! in order to get the examples to actually work so it is recommended to check all the steps
+//! in comments in the source code.
 
 mod context;
 
