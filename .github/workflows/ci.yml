@@ -9,7 +9,7 @@ jobs:
     name: Check spelling
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Check spelling
         uses: codespell-project/actions-codespell@v1
         with:
@@ -19,7 +19,7 @@ jobs:
     name: Check formatting
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Check formatting
         run: cargo fmt --all -- --check
   # Check that it builds with the Minimum Supported Rust Version
@@ -27,7 +27,7 @@ jobs:
     name: Check minimum supported rust version (MSRV)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Build the container
         run: docker build -t ubuntucontainer tss-esapi/tests/ --file tss-esapi/tests/Dockerfile-ubuntu --target tpm2-tools
       - name: Run the container
@@ -38,7 +38,7 @@ jobs:
     name: Ubuntu tests
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Build the container
         run: docker build -t ubuntucontainer tss-esapi/tests/ --file tss-esapi/tests/Dockerfile-ubuntu --target tpm2-tools
       - name: Run the container
@@ -50,7 +50,7 @@ jobs:
     name: Ubuntu tests on v4.x.y of tpm2-tss libraries found using pkg-config --target tpm2-tools
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Build the container
         run: docker build -t ubuntucontainer tss-esapi/tests/ --build-arg TPM2_TSS_VERSION=4.1.3 --file tss-esapi/tests/Dockerfile-ubuntu --target tpm2-tools
       - name: Run the container
@@ -60,7 +60,7 @@ jobs:
     name: Ubuntu tests on v4.x.y of tpm2-tss libraries found using a path
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Build the container
         run: docker build -t ubuntucontainer tss-esapi/tests/ --build-arg TPM2_TSS_VERSION=4.1.3 --file tss-esapi/tests/Dockerfile-ubuntu --target tpm2-tss-install-dir
       - name: Run the container
@@ -71,7 +71,7 @@ jobs:
     # We just build a container... GitHub doesn't like Fedora :(
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Build the container
         run: docker build -t fedoracontainer tss-esapi/tests/ --file tss-esapi/tests/Dockerfile-fedora
       - name: Run the tests
@@ -82,7 +82,7 @@ jobs:
     # We just build a container... GitHub doesn't like Fedora :(
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Build the container
         run: docker build -t fedoracontainer tss-esapi/tests/ --file tss-esapi/tests/Dockerfile-fedora-rawhide
       - name: Run the tests
@@ -92,7 +92,7 @@ jobs:
     name: Valgrind test run
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Build the container
         run: docker build -t ubuntucontainer tss-esapi/tests/ --file tss-esapi/tests/Dockerfile-ubuntu --target tpm2-tools
       - name: Run the tests
@@ -103,7 +103,7 @@ jobs:
     name: Check documentation
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Build the container
         run: docker build -t ubuntucontainer tss-esapi/tests/ --file tss-esapi/tests/Dockerfile-ubuntu --target tpm2-tools
       - name: Check documentation
@@ -114,10 +114,22 @@ jobs:
     name: Check Clippy lints
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Build the container
         run: docker build -t ubuntucontainer tss-esapi/tests/ --file tss-esapi/tests/Dockerfile-ubuntu  --target tpm2-tss
       - name: Check Clippy lints MSRV
         run: docker run -v $(pwd):/tmp/rust-tss-esapi -w /tmp/rust-tss-esapi/tss-esapi --env RUST_TOOLCHAIN_VERSION=1.74.0 ubuntucontainer /tmp/rust-tss-esapi/tss-esapi/tests/lint-checks.sh
       - name: Check Clippy lints latest
         run: docker run -v $(pwd):/tmp/rust-tss-esapi -w /tmp/rust-tss-esapi/tss-esapi ubuntucontainer /tmp/rust-tss-esapi/tss-esapi/tests/lint-checks.sh
+  # Check that it is possible to build the documentation the same way as it is done in Docs.rs
+  docs-rs:
+    name: Check Docs.rs compatibility
+    runs-on: ubuntu-latest
+    env:
+      RUSTDOCFLAGS: -Dwarnings
+    steps:
+      - uses: actions/checkout@v5
+      - uses: dtolnay/rust-toolchain@nightly
+      - uses: dtolnay/install@cargo-docs-rs
+      - run: cargo docs-rs -p tss-esapi
+      - run: cargo docs-rs -p tss-esapi-sys
