@@ -1,6 +1,5 @@
 use core::str;
-use std::convert::TryFrom;
-use std::fs;
+use std::{convert::TryFrom, fs, path::Path};
 use tss_esapi::{
     attributes::ObjectAttributesBuilder,
     interface_types::{
@@ -13,6 +12,9 @@ use tss_esapi::{
     },
     Context, TctiNameConf,
 };
+
+const DEFAULT_INITIAL_DATA_FILE: &str =
+    "tss-esapi/examples/symmetric_file_encrypt_decrypt_example.txt";
 
 fn main() {
     // Create a new TPM context. This reads from the environment variable `TPM2TOOLS_TCTI` or `TCTI`
@@ -68,12 +70,20 @@ fn main() {
     // Once the key is created, we have it's parameters in the private and public values.
     // We now need to load it into the tpm so that it can be used.
     //
-    // The enc_private and public values can be serialised and persisted - that way they can
+    // The enc_private and public values can be serialized and persisted - that way they can
     // be reloaded for future use.
 
     // We load the data from a file system file, it can be somewhat large (like a certificate), larger than MaxBuffer::MAX_SIZE
-    let initial_data = fs::read("tss-esapi/examples/symmetric_file_encrypt_decrypt_example.txt")
-        .expect("could not open data file");
+    let initial_data_file_str = std::env::var("EXAMPLES_INITIAL_DATA_FILE")
+        .unwrap_or(DEFAULT_INITIAL_DATA_FILE.to_string());
+    let initial_data_file = Path::new(&initial_data_file_str);
+    if !initial_data_file.is_file() {
+        panic!(
+            "The initial data file: {}, does not exist",
+            initial_data_file.display()
+        );
+    }
+    let initial_data = fs::read(initial_data_file).expect("could not open data file");
 
     // We create an initialisation vector, since it is needed for decryption, it should be persisted in a real world use case
     let iv = context
