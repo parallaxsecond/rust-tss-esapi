@@ -1,3 +1,5 @@
 [workspace]
 resolver = "2"
 members = ["tss-esapi", "tss-esapi-sys"]
+[patch.crates-io]
+camellia = { git = "https://github.com/RustCrypto/block-ciphers.git" }
