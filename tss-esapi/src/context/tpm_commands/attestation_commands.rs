@@ -282,8 +282,110 @@ impl Context {
 
     /// Generate a quote on the selected PCRs
     ///
+    /// # Arguments
+    /// * `signing_key_handle`  - Handle of key that will perform signature.
+    /// * `qualifying_data`     - Data supplied by the caller.
+    /// * `signing_scheme`      - Signing scheme to use if the scheme for signing_key_handle is the null scheme.
+    /// * `pcr_selection_list`  - The PCR set to quote.
+    ///
     /// # Errors
-    /// * if the qualifying data provided is too long, a `WrongParamSize` wrapper error will be returned
+    /// * if the qualifying data provided is too long, a `WrongParamSize` wrapper error will be returned.
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// # use tss_esapi::{Context, TctiNameConf};
+    /// use std::convert::TryFrom;
+    /// # use tss_esapi::{
+    /// #     handles::KeyHandle,
+    /// #     interface_types::{
+    /// #         algorithm::{RsaSchemeAlgorithm, SignatureSchemeAlgorithm},
+    /// #         key_bits::RsaKeyBits,
+    /// #         reserved_handles::Hierarchy,
+    /// #     },
+    /// #     structures::{
+    /// #         AttestInfo, RsaExponent, RsaScheme, Signature,
+    /// #     },
+    /// #     utils::{create_unrestricted_signing_rsa_public, create_restricted_decryption_rsa_public},
+    /// # };
+    /// use tss_esapi::{
+    ///     interface_types::{
+    ///         algorithm::HashingAlgorithm,
+    ///         session_handles::AuthSession,
+    ///     },
+    ///     structures::{
+    ///         Data, PcrSelectionListBuilder, PcrSlot, SignatureScheme,
+    ///     },
+    /// };
+    ///
+    /// # let mut context =
+    /// #     Context::new(
+    /// #         TctiNameConf::from_environment_variable().expect("Failed to get TCTI"),
+    /// #     ).expect("Failed to create Context");
+    /// let qualifying_data = Data::try_from(vec![0xff; 16])
+    ///     .expect("It should be possible to create qualifying data from bytes.");
+    /// # let signing_key_pub = create_unrestricted_signing_rsa_public(
+    /// #         RsaScheme::create(RsaSchemeAlgorithm::RsaSsa, Some(HashingAlgorithm::Sha256))
+    /// #         .expect("Failed to create RSA scheme"),
+    /// #     RsaKeyBits::Rsa2048,
+    /// #     RsaExponent::default(),
+    /// # )
+    /// # .expect("Failed to create an unrestricted signing rsa public structure");
+    /// # let sign_key_handle = context
+    /// #     .execute_with_nullauth_session(|ctx| {
+    /// #         ctx.create_primary(Hierarchy::Owner, signing_key_pub, None, None, None, None)
+    /// #     })
+    /// #     .unwrap()
+    /// #     .key_handle;
+    ///
+    /// // Quote PCR 0, 1, 2
+    /// let pcr_selection_list = PcrSelectionListBuilder::new()
+    ///     .with_selection(HashingAlgorithm::Sha256, &[PcrSlot::Slot0, PcrSlot::Slot1, PcrSlot::Slot2])
+    ///     .build()
+    ///     .expect("It should be possible to create PCR selection list with valid values.");
+    ///
+    /// let (attest, signature) = context
+    ///     .execute_with_sessions(
+    ///         (
+    ///             Some(AuthSession::Password),
+    ///             None,
+    ///             None,
+    ///         ),
+    ///         |ctx| {
+    ///             ctx.quote(
+    ///                 sign_key_handle,
+    ///                 qualifying_data,
+    ///                 SignatureScheme::Null,
+    ///                 pcr_selection_list.clone(),
+    ///             )
+    ///         },
+    ///     )
+    ///     .expect("Failed to get quote");
+    /// # match signature {
+    /// #     Signature::RsaSsa(signature) => {
+    /// #         assert_eq!(signature.hashing_algorithm(), HashingAlgorithm::Sha256);
+    /// #     }
+    /// #     _ => {
+    /// #         panic!("Received the wrong signature from the call to `quote`.");
+    /// #     }
+    /// # }
+    /// # match attest.attested() {
+    /// #     AttestInfo::Quote { info } => {
+    /// #         assert!(
+    /// #             !info.pcr_digest().is_empty(),
+    /// #             "Digest in QuoteInfo is empty"
+    /// #         );
+    /// #         assert_eq!(
+    /// #             &pcr_selection_list,
+    /// #             info.pcr_selection(),
+    /// #             "QuoteInfo selection list did not match the input selection list"
+    /// #         );
+    /// #     }
+    /// #     _ => {
+    /// #         panic!("Attested did not contain the expected variant.")
+    /// #     }
+    /// # }
+    /// ```
     pub fn quote(
         &mut self,
         signing_key_handle: KeyHandle,
