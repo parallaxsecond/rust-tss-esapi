@@ -121,6 +121,7 @@ jobs:
         run: docker run -v $(pwd):/tmp/rust-tss-esapi -w /tmp/rust-tss-esapi/tss-esapi --env RUST_TOOLCHAIN_VERSION=1.74.0 ubuntucontainer /tmp/rust-tss-esapi/tss-esapi/tests/lint-checks.sh
       - name: Check Clippy lints latest
         run: docker run -v $(pwd):/tmp/rust-tss-esapi -w /tmp/rust-tss-esapi/tss-esapi ubuntucontainer /tmp/rust-tss-esapi/tss-esapi/tests/lint-checks.sh
+        
   # Check that it is possible to build the documentation the same way as it is done in Docs.rs
   docs-rs:
     name: Check Docs.rs compatibility
@@ -133,3 +134,14 @@ jobs:
       - uses: dtolnay/install@cargo-docs-rs
       - run: cargo docs-rs -p tss-esapi
       - run: cargo docs-rs -p tss-esapi-sys
+        
+  # Check that examples builds can be executed.
+  tests-examples:
+    name: Check examples
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Build the container
+        run: docker build -t fedoracontainer tss-esapi/tests/ --file tss-esapi/tests/Dockerfile-fedora
+      - name: Run the container
+        run: docker run -v $(pwd):/tmp/rust-tss-esapi -w /tmp/rust-tss-esapi/tss-esapi --env USE_FROZEN_LOCKFILE=1 fedoracontainer dbus-run-session -- /tmp/rust-tss-esapi/tss-esapi/tests/examples.sh
