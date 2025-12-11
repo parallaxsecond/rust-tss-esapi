@@ -8,19 +8,150 @@ use crate::{
     Context, Result, ReturnCode,
 };
 use log::error;
-use std::convert::TryFrom;
 use std::ptr::null_mut;
+use std::{convert::TryFrom, ptr::null};
 
 impl Context {
     /// Perform an asymmetric RSA encryption.
+    ///
+    /// # Arguments
+    ///
+    /// * `key_handle` - A [KeyHandle] to to public portion of RSA key to use for encryption.
+    /// * `message`    - The message to be encrypted.
+    /// * `in_scheme`  - The padding scheme to use if scheme associated with
+    ///   the `key_handle` is [RsaDecryptionScheme::Null].
+    /// * `label`      - An optional label to be associated with the message.
+    ///
+    /// # Details
+    ///
+    /// *From the specification*
+    /// > This command performs RSA encryption using the indicated padding scheme
+    /// > according to IETF [RFC 8017](https://www.rfc-editor.org/rfc/rfc8017).
+    ///
+    /// > The label parameter is optional. If provided (label.size != 0) then the TPM shall return TPM_RC_VALUE if
+    /// > the last octet in label is not zero. The terminating octet of zero is included in the label used in the padding
+    /// > scheme.
+    /// > If the scheme does not use a label, the TPM will still verify that label is properly formatted if label is
+    /// > present.
+    ///
+    /// # Returns
+    ///
+    /// The encrypted output.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// # use tss_esapi::{
+    /// #    Context, TctiNameConf,
+    /// #    attributes::{SessionAttributesBuilder, ObjectAttributesBuilder},
+    /// #    constants::SessionType,
+    /// #    interface_types::{
+    /// #        algorithm::{
+    /// #            HashingAlgorithm, PublicAlgorithm, RsaDecryptAlgorithm,
+    /// #        },
+    /// #        key_bits::RsaKeyBits,
+    /// #        reserved_handles::Hierarchy,
+    /// #   },
+    /// #   structures::{
+    /// #       Auth, Data, RsaScheme, PublicBuilder, PublicRsaParametersBuilder, PublicKeyRsa,
+    /// #       RsaDecryptionScheme, HashScheme, SymmetricDefinition, RsaExponent,
+    /// #    },
+    /// # };
+    /// # use std::{env, str::FromStr, convert::TryFrom};
+    /// # // Create context
+    /// # let mut context =
+    /// #     Context::new(
+    /// #         TctiNameConf::from_environment_variable().expect("Failed to get TCTI"),
+    /// #     ).expect("Failed to create Context");
+    /// #
+    /// # let session = context
+    /// #     .start_auth_session(
+    /// #         None,
+    /// #         None,
+    /// #         None,
+    /// #         SessionType::Hmac,
+    /// #         SymmetricDefinition::AES_256_CFB,
+    /// #         tss_esapi::interface_types::algorithm::HashingAlgorithm::Sha256,
+    /// #     )
+    /// #     .expect("Failed to create session")
+    /// #     .expect("Received invalid handle");
+    /// # let (session_attributes, session_attributes_mask) = SessionAttributesBuilder::new()
+    /// #     .with_decrypt(true)
+    /// #     .with_encrypt(true)
+    /// #     .build();
+    /// # context.tr_sess_set_attributes(session, session_attributes, session_attributes_mask)
+    /// #     .expect("Failed to set attributes on session");
+    /// # context.set_sessions((Some(session), None, None));
+    /// # let mut random_digest = vec![0u8; 16];
+    /// # getrandom::getrandom(&mut random_digest).unwrap();
+    /// # let key_auth = Auth::from_bytes(random_digest.as_slice()).unwrap();
+    /// #
+    /// # let object_attributes = ObjectAttributesBuilder::new()
+    /// #     .with_fixed_tpm(true)
+    /// #     .with_fixed_parent(true)
+    /// #     .with_sensitive_data_origin(true)
+    /// #     .with_user_with_auth(true)
+    /// #     .with_decrypt(true)
+    /// #     .with_sign_encrypt(true)
+    /// #     .with_restricted(false)
+    /// #     .build()
+    /// #     .expect("Should be able to build object attributes when the attributes are not conflicting.");
+    /// #
+    /// # let key_pub = PublicBuilder::new()
+    /// #     .with_public_algorithm(PublicAlgorithm::Rsa)
+    /// #     .with_name_hashing_algorithm(HashingAlgorithm::Sha256)
+    /// #     .with_object_attributes(object_attributes)
+    /// #     .with_rsa_parameters(
+    /// #         PublicRsaParametersBuilder::new()
+    /// #             .with_scheme(RsaScheme::Null)
+    /// #             .with_key_bits(RsaKeyBits::Rsa2048)
+    /// #             .with_exponent(RsaExponent::default())
+    /// #             .with_is_signing_key(true)
+    /// #             .with_is_decryption_key(true)
+    /// #             .with_restricted(false)
+    /// #             .build()
+    /// #             .expect("Should be possible to build valid RSA parameters")
+    /// #    )
+    /// #    .with_rsa_unique_identifier(PublicKeyRsa::default())
+    /// #    .build()
+    /// #    .expect("Should be possible to build a valid Public object.");
+    /// #
+    /// # let key_handle = context
+    /// #     .create_primary(
+    /// #         Hierarchy::Owner,
+    /// #         key_pub,
+    /// #         None,
+    /// #         None,
+    /// #         None,
+    /// #         None,
+    /// #     )
+    /// #     .expect("Should be possible to create primary key from using valid Public object.")
+    /// #     .key_handle;
+    /// // Because the key was created with RsaScheme::Null it is possible to
+    /// // provide a scheme for the rsa_encrypt function to use.
+    /// let scheme =
+    ///        RsaDecryptionScheme::create(RsaDecryptAlgorithm::Oaep, Some(HashingAlgorithm::Sha256))
+    ///            .expect("Failed to create rsa decryption scheme");
+    /// let plain_text_bytes = vec![1, 2, 3, 4];
+    /// let message_in = PublicKeyRsa::try_from(plain_text_bytes.clone())
+    ///     .expect("Should be possible to create a PublicKeyRsa object from valid bytes.");
+    /// let cipher_text = context.rsa_encrypt(key_handle, message_in, scheme, None)
+    ///     .expect("Should be possible to call rsa_encrypt using valid arguments.");
+    /// # let message_out = context.rsa_decrypt(key_handle, cipher_text, scheme, None)
+    /// #     .expect("Should be possible to call rsa_decrypt using valid arguments.");
+    /// # let decrypted_bytes = message_out.as_bytes();
+    /// # assert_eq!(plain_text_bytes, decrypted_bytes);
+    /// ```
     pub fn rsa_encrypt(
         &mut self,
         key_handle: KeyHandle,
         message: PublicKeyRsa,
         in_scheme: RsaDecryptionScheme,
-        label: Data,
+        label: impl Into<Option<Data>>,
     ) -> Result<PublicKeyRsa> {
         let mut out_data_ptr = null_mut();
+        let potential_label = label.into().map(|v| v.into());
+        let label_ptr = potential_label.as_ref().map_or_else(null, |v| v);
         ReturnCode::ensure_success(
             unsafe {
                 Esys_RSA_Encrypt(
@@ -31,7 +162,7 @@ impl Context {
                     self.optional_session_3(),
                     &message.into(),
                     &in_scheme.into(),
-                    &label.into(),
+                    label_ptr,
                     &mut out_data_ptr,
                 )
             },
@@ -43,14 +174,143 @@ impl Context {
     }
 
     /// Perform an asymmetric RSA decryption.
+    ///
+    /// # Arguments
+    ///
+    /// * `key_handle`  - A [KeyHandle] of the RSA key to use for decryption.
+    /// * `cipher_text` - The cipher text to be decrypted.
+    /// * `in_scheme`  - The padding scheme to use if scheme associated with
+    ///   the `key_handle` is [RsaDecryptionScheme::Null].
+    /// * `label`       - An optional label whose association with the message is to be verified.
+    ///
+    /// # Details
+    ///
+    /// *From the specification*
+    /// > This command performs RSA decryption using the indicated padding scheme according to IETF RFC
+    /// > 8017 ((PKCS#1).
+    ///
+    /// > If a label is used in the padding process of the scheme during encryption, the label parameter is required
+    /// > to be present in the decryption process and label is required to be the same in both cases. If label is not
+    /// > the same, the decrypt operation is very likely to fail.
+    ///
+    /// # Returns
+    ///
+    /// The decrypted output.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// # use tss_esapi::{
+    /// #    Context, TctiNameConf,
+    /// #    attributes::{SessionAttributesBuilder, ObjectAttributesBuilder},
+    /// #    constants::SessionType,
+    /// #    interface_types::{
+    /// #        algorithm::{
+    /// #            HashingAlgorithm, PublicAlgorithm, RsaDecryptAlgorithm,
+    /// #        },
+    /// #        key_bits::RsaKeyBits,
+    /// #        reserved_handles::Hierarchy,
+    /// #   },
+    /// #   structures::{
+    /// #       Auth, Data, RsaScheme, PublicBuilder, PublicRsaParametersBuilder, PublicKeyRsa,
+    /// #       RsaDecryptionScheme, HashScheme, SymmetricDefinition, RsaExponent,
+    /// #    },
+    /// # };
+    /// # use std::{env, str::FromStr, convert::TryFrom};
+    /// # // Create context
+    /// # let mut context =
+    /// #     Context::new(
+    /// #         TctiNameConf::from_environment_variable().expect("Failed to get TCTI"),
+    /// #     ).expect("Failed to create Context");
+    /// #
+    /// # let session = context
+    /// #     .start_auth_session(
+    /// #         None,
+    /// #         None,
+    /// #         None,
+    /// #         SessionType::Hmac,
+    /// #         SymmetricDefinition::AES_256_CFB,
+    /// #         tss_esapi::interface_types::algorithm::HashingAlgorithm::Sha256,
+    /// #     )
+    /// #     .expect("Failed to create session")
+    /// #     .expect("Received invalid handle");
+    /// # let (session_attributes, session_attributes_mask) = SessionAttributesBuilder::new()
+    /// #     .with_decrypt(true)
+    /// #     .with_encrypt(true)
+    /// #     .build();
+    /// # context.tr_sess_set_attributes(session, session_attributes, session_attributes_mask)
+    /// #     .expect("Failed to set attributes on session");
+    /// # context.set_sessions((Some(session), None, None));
+    /// # let mut random_digest = vec![0u8; 16];
+    /// # getrandom::getrandom(&mut random_digest).unwrap();
+    /// # let key_auth = Auth::from_bytes(random_digest.as_slice()).unwrap();
+    /// #
+    /// # let object_attributes = ObjectAttributesBuilder::new()
+    /// #     .with_fixed_tpm(true)
+    /// #     .with_fixed_parent(true)
+    /// #     .with_sensitive_data_origin(true)
+    /// #     .with_user_with_auth(true)
+    /// #     .with_decrypt(true)
+    /// #     .with_sign_encrypt(true)
+    /// #     .with_restricted(false)
+    /// #     .build()
+    /// #     .expect("Should be able to build object attributes when the attributes are not conflicting.");
+    /// #
+    /// # let key_pub = PublicBuilder::new()
+    /// #     .with_public_algorithm(PublicAlgorithm::Rsa)
+    /// #     .with_name_hashing_algorithm(HashingAlgorithm::Sha256)
+    /// #     .with_object_attributes(object_attributes)
+    /// #     .with_rsa_parameters(
+    /// #         PublicRsaParametersBuilder::new()
+    /// #             .with_scheme(RsaScheme::Null)
+    /// #             .with_key_bits(RsaKeyBits::Rsa2048)
+    /// #             .with_exponent(RsaExponent::default())
+    /// #             .with_is_signing_key(true)
+    /// #             .with_is_decryption_key(true)
+    /// #             .with_restricted(false)
+    /// #             .build()
+    /// #             .expect("Should be possible to build valid RSA parameters")
+    /// #    )
+    /// #    .with_rsa_unique_identifier(PublicKeyRsa::default())
+    /// #    .build()
+    /// #    .expect("Should be possible to build a valid Public object.");
+    /// #
+    /// # let key_handle = context
+    /// #     .create_primary(
+    /// #         Hierarchy::Owner,
+    /// #         key_pub,
+    /// #         None,
+    /// #         None,
+    /// #         None,
+    /// #         None,
+    /// #     )
+    /// #     .expect("Should be possible to create primary key from using valid Public object.")
+    /// #     .key_handle;
+    /// # let scheme =
+    /// #        RsaDecryptionScheme::create(RsaDecryptAlgorithm::RsaEs, None)
+    /// #            .expect("Failed to create rsa decryption scheme");
+    /// # let plain_text_bytes = vec![4, 3, 2, 1, 0];
+    /// # let message_in = PublicKeyRsa::try_from(plain_text_bytes.clone())
+    /// #     .expect("Should be possible to create a PublicKeyRsa object from valid bytes.");
+    /// # let label = Data::default();
+    /// # let cipher_text = context.rsa_encrypt(key_handle, message_in, scheme, label.clone())
+    /// #     .expect("Should be possible to call rsa_encrypt using valid arguments.");
+    /// // label text needs to be the same as the on used when data was encrypted.
+    /// let message_out = context.rsa_decrypt(key_handle, cipher_text, scheme, label)
+    ///     .expect("Should be possible to call rsa_decrypt using valid arguments.");
+    /// let decrypted_bytes = message_out.as_bytes();
+    /// # assert_eq!(plain_text_bytes, decrypted_bytes);
+    /// ```
     pub fn rsa_decrypt(
         &mut self,
         key_handle: KeyHandle,
         cipher_text: PublicKeyRsa,
         in_scheme: RsaDecryptionScheme,
-        label: Data,
+        label: impl Into<Option<Data>>,
     ) -> Result<PublicKeyRsa> {
         let mut message_ptr = null_mut();
+        let potential_label = label.into().map(|v| v.into());
+        let label_ptr = potential_label.as_ref().map_or_else(null, |v| v);
         ReturnCode::ensure_success(
             unsafe {
                 Esys_RSA_Decrypt(
@@ -61,7 +321,7 @@ impl Context {
                     self.optional_session_3(),
                     &cipher_text.into(),
                     &in_scheme.into(),
-                    &label.into(),
+                    label_ptr,
                     &mut message_ptr,
                 )
             },
