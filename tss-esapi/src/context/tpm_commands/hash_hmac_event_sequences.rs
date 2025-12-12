@@ -4,14 +4,45 @@ use crate::{
     handles::{ObjectHandle, TpmHandle},
     interface_types::{algorithm::HashingAlgorithm, reserved_handles::Hierarchy},
     structures::{Auth, Digest, HashcheckTicket, MaxBuffer},
-    tss2_esys::{Esys_HashSequenceStart, Esys_SequenceComplete, Esys_SequenceUpdate},
+    tss2_esys::{
+        Esys_HMAC_Start, Esys_HashSequenceStart, Esys_SequenceComplete, Esys_SequenceUpdate,
+    },
     Context, Result, ReturnCode,
 };
 use log::error;
 use std::ptr::null_mut;
 
 impl Context {
-    // Missing function: HMAC_Start
+    pub fn hmac_sequence_start(
+        &mut self,
+        handle: ObjectHandle,
+        hashing_algorithm: HashingAlgorithm,
+        auth: Option<Auth>,
+    ) -> Result<ObjectHandle> {
+        let mut sequence_handle = ObjectHandle::None.into();
+        ReturnCode::ensure_success(
+            unsafe {
+                Esys_HMAC_Start(
+                    self.mut_context(),
+                    handle.into(),
+                    self.optional_session_1(),
+                    self.optional_session_2(),
+                    self.optional_session_3(),
+                    &auth.unwrap_or_default().into(),
+                    hashing_algorithm.into(),
+                    &mut sequence_handle,
+                )
+            },
+            |ret| {
+                error!(
+                    "Error failed to perform HMAC sequence start operation: {:#010X}",
+                    ret
+                );
+            },
+        )?;
+        Ok(ObjectHandle::from(sequence_handle))
+    }
+
     // Missing function: MAC_Start
 
     pub fn hash_sequence_start(
@@ -72,7 +103,7 @@ impl Context {
         sequence_handle: ObjectHandle,
         data: MaxBuffer,
         hierarchy: Hierarchy,
-    ) -> Result<(Digest, HashcheckTicket)> {
+    ) -> Result<(Digest, Option<HashcheckTicket>)> {
         let mut out_hash_ptr = null_mut();
         let mut validation_ptr = null_mut();
         ReturnCode::ensure_success(
@@ -102,7 +133,14 @@ impl Context {
         )?;
         Ok((
             Digest::try_from(Context::ffi_data_to_owned(out_hash_ptr)?)?,
-            HashcheckTicket::try_from(Context::ffi_data_to_owned(validation_ptr)?)?,
+            if validation_ptr.is_null() {
+                // For HMAC sequence validation parameter is NULL
+                None
+            } else {
+                Some(HashcheckTicket::try_from(Context::ffi_data_to_owned(
+                    validation_ptr,
+                )?)?)
+            },
         ))
     }
 
