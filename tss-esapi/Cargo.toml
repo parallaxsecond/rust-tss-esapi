@@ -64,6 +64,7 @@ strum = { version = "0.26.3", optional = true }
 strum_macros = { version = "0.26.4", optional = true }
 paste = "1.0.14"
 getrandom = "0.2.11"
+env = "*"
 
 [dev-dependencies]
 env_logger = "0.11.5"
