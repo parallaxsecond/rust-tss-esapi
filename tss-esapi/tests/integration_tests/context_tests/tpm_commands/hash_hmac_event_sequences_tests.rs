@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 mod test_hash_sequence {
-    use crate::common::create_ctx_without_session;
+    use crate::common::create_ctx_with_session;
     use std::convert::TryFrom;
     use tss_esapi::{
         interface_types::{algorithm::HashingAlgorithm, reserved_handles::Hierarchy},
@@ -11,7 +11,7 @@ mod test_hash_sequence {
 
     #[test]
     fn test_hash_sequence_with_sha_256() {
-        let mut context = create_ctx_without_session();
+        let mut context = create_ctx_with_session();
 
         let data = "There is no spoon";
         let expected_hashed_data: [u8; 32] = [
@@ -53,18 +53,15 @@ mod test_hash_sequence {
 
     #[test]
     fn test_hash_sequence_long() {
-        let mut context = create_ctx_without_session();
+        let mut context = create_ctx_with_session();
 
-        let data = [0xEE; 5000];
+        let data = [0xEE; 2*1025];
         let expected_hashed_data: [u8; 32] = [
-            32, 190, 228, 96, 206, 94, 17, 15, 13, 7, 50, 27, 254, 139, 228, 145, 230, 210, 2, 119,
-            69, 16, 252, 245, 236, 126, 214, 6, 171, 196, 33, 212,
+            85, 49, 213, 201, 29, 99, 203, 43, 17, 142, 166, 204, 103, 133, 234, 67, 160, 165, 94, 246, 210, 34, 63, 150, 131, 32, 20, 120, 122, 125, 176, 31
         ];
         let expected_hierarchy = Hierarchy::Owner;
         let expected_ticked_digest: [u8; 48] = [
-            68, 142, 177, 202, 238, 232, 144, 173, 86, 148, 226, 71, 166, 84, 27, 61, 119, 133,
-            122, 230, 74, 81, 149, 43, 193, 102, 99, 147, 2, 173, 120, 64, 69, 76, 62, 12, 231, 6,
-            98, 78, 169, 120, 132, 199, 37, 190, 157, 156,
+            151, 194, 112, 114, 26, 225, 60, 219, 72, 28, 234, 75, 164, 187, 234, 94, 19, 63, 169, 135, 194, 112, 164, 79, 177, 81, 133, 176, 58, 208, 238, 57, 125, 238, 41, 120, 1, 94, 49, 40, 242, 35, 57, 69, 183, 61, 63, 101
         ];
 
         let handle = context
@@ -96,7 +93,7 @@ mod test_hash_sequence {
 }
 
 mod test_hmac_sequence {
-    use crate::common::create_ctx_without_session;
+    use crate::common::create_ctx_with_session;
     use tss_esapi::{
         attributes::ObjectAttributesBuilder,
         interface_types::{
@@ -110,7 +107,7 @@ mod test_hmac_sequence {
 
     #[test]
     fn test_hmac() {
-        let mut context = create_ctx_without_session();
+        let mut context = create_ctx_with_session();
 
         let object_attributes = ObjectAttributesBuilder::new()
             .with_sign_encrypt(true)
