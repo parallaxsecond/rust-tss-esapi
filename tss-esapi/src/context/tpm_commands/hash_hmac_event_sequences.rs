@@ -13,6 +13,65 @@ use log::error;
 use std::ptr::null_mut;
 
 impl Context {
+    /// Starts HMAC sequence of large data (larger than MaxBuffer::MAX_SIZE) using the specified algorithm.
+    ///
+    /// # Details
+    /// When the amount of data to be included in a digest cannot be sent to the TPM in one atomic HMAC
+    /// command then a sequence of commands may be used to provide incremental updates to the digest.
+    /// Follow the pattern:
+    ///  - Initialize sequence with `hmac_sequence_start()`
+    ///  - Send data to calculate the hash with `sequence_update()`
+    ///  - Finish hash calculation with call to `sequence_complete()`
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// # Create context with session.
+    /// # let mut context = create_ctx_with_session();
+    ///
+    /// let object_attributes = ObjectAttributesBuilder::new()
+    ///     .with_sign_encrypt(true)
+    ///     .with_sensitive_data_origin(true)
+    ///     .with_user_with_auth(true)
+    ///     .build()
+    ///     .expect("Failed to build object attributes");
+    ///
+    /// let key_pub = PublicBuilder::new()
+    ///     .with_public_algorithm(PublicAlgorithm::KeyedHash)
+    ///     .with_name_hashing_algorithm(HashingAlgorithm::Sha256)
+    ///     .with_object_attributes(object_attributes)
+    ///     .with_keyed_hash_parameters(PublicKeyedHashParameters::new(
+    ///         KeyedHashScheme::HMAC_SHA_256,
+    ///     ))
+    ///     .with_keyed_hash_unique_identifier(Default::default())
+    ///     .build()
+    ///     .expect("Failed to build public structure for key.");
+    ///
+    /// let key = context
+    ///     .create_primary(Hierarchy::Owner, key_pub, None, None, None, None)
+    ///     .unwrap();
+    ///
+    /// let data = [0xEE; 5000];
+    ///
+    /// let handle = context
+    ///     .hmac_sequence_start(key.key_handle.into(), HashingAlgorithm::Sha256, None)
+    ///     .unwrap();
+    ///
+    /// let chunks = data.chunks_exact(MaxBuffer::MAX_SIZE);
+    /// let last_chunk = chunks.remainder();
+    /// for chunk in chunks {
+    ///     context
+    ///         .sequence_update(handle, MaxBuffer::from_bytes(&chunk).unwrap())
+    ///         .unwrap();
+    /// }
+    /// let (actual_hashed_data, ticket) = context
+    ///     .sequence_complete(
+    ///         handle,
+    ///         MaxBuffer::from_bytes(&last_chunk).unwrap(),
+    ///         Hierarchy::Null,
+    ///     )
+    ///    .unwrap();
+    /// ```
     pub fn hmac_sequence_start(
         &mut self,
         handle: ObjectHandle,
@@ -45,6 +104,43 @@ impl Context {
 
     // Missing function: MAC_Start
 
+    /// Starts hash sequence of large data (larger than MaxBuffer::MAX_SIZE) using the specified algorithm.
+    ///
+    /// # Details
+    /// When the amount of data to be included in a digest cannot be sent to the TPM in one atomic hash
+    /// command then a sequence of commands may be used to provide incremental updates to the digest.
+    /// Follow the pattern:
+    ///  - Initialize sequence with `hash_sequence_start()`
+    ///  - Send data to calculate the hash with `sequence_update()`
+    ///  - Finish hash calculation with call to `sequence_complete()`
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// # Create context with session.
+    /// # let mut context = create_ctx_with_session();
+    ///
+    /// let data = [0xEE; 2*1025];
+    ///
+    /// let handle = context
+    ///     .hash_sequence_start(HashingAlgorithm::Sha256, None)
+    ///     .unwrap();
+    ///
+    /// let chunks = data.chunks_exact(MaxBuffer::MAX_SIZE);
+    /// let last_chung = chunks.remainder();
+    /// for chunk in chunks {
+    ///     context
+    ///         .sequence_update(handle, MaxBuffer::from_bytes(&chunk).unwrap())
+    ///         .unwrap();
+    /// }
+    /// let (actual_hashed_data, ticket) = context
+    ///      .sequence_complete(
+    ///         handle,
+    ///         MaxBuffer::from_bytes(&last_chung).unwrap(),
+    ///         expected_hierarchy,
+    ///     )
+    ///     .unwrap();
+    /// ```
     pub fn hash_sequence_start(
         &mut self,
         hashing_algorithm: HashingAlgorithm,
@@ -73,6 +169,9 @@ impl Context {
         Ok(ObjectHandle::from(sequence_handle))
     }
 
+    /// Continues hash or HMAC sequence.
+    ///
+    /// @see hash_sequence_start(), hmac_sequence_start()
     pub fn sequence_update(
         &mut self,
         sequence_handle: ObjectHandle,
@@ -98,6 +197,9 @@ impl Context {
         )
     }
 
+    /// Finishes hash or HMAC sequence.
+    ///
+    /// @see hash_sequence_start(), hmac_sequence_start()
     pub fn sequence_complete(
         &mut self,
         sequence_handle: ObjectHandle,
