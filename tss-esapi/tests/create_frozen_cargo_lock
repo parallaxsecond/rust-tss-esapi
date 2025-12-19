@@ -3,7 +3,7 @@
 # Copyright 2024 Contributors to the Parsec project.
 # SPDX-License-Identifier: Apache-2.0
 
-export MSRV=1.74.0
+export MSRV=1.76.0
 export EXEC_DIR="tss-esapi"
 
 if [[ "$(basename `pwd`)" != "$EXEC_DIR" ]]; then

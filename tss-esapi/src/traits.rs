@@ -179,7 +179,6 @@ macro_rules! impl_mu_complex {
 
 // Make the macros usable outside of the module.
 pub(crate) use impl_marshall_trait;
-pub(crate) use impl_mu_aliases;
 pub(crate) use impl_mu_complex;
 pub(crate) use impl_mu_simple;
 pub(crate) use impl_mu_standard;
