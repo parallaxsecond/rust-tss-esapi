@@ -48,7 +48,7 @@ mod test_hash_sequence {
         assert_eq!(&expected_hashed_data[..], &actual_hashed_data[..]);
         assert_eq!(ticket.hierarchy(), expected_hierarchy);
         assert_eq!(ticket.digest().len(), expected_ticked_digest.len());
-        assert_eq!(&ticket.digest()[..], &expected_ticked_digest[..]);
+        assert_eq!(ticket.digest(), &expected_ticked_digest[..]);
     }
 
     #[test]
@@ -72,16 +72,16 @@ mod test_hash_sequence {
             .unwrap();
 
         let chunks = data.chunks_exact(MaxBuffer::MAX_SIZE);
-        let last_chung = chunks.remainder();
+        let last_chunk = chunks.remainder();
         for chunk in chunks {
             context
-                .sequence_update(handle, MaxBuffer::from_bytes(&chunk).unwrap())
+                .sequence_update(handle, MaxBuffer::from_bytes(chunk).unwrap())
                 .unwrap();
         }
         let (actual_hashed_data, ticket) = context
             .sequence_complete(
                 handle,
-                MaxBuffer::from_bytes(&last_chung).unwrap(),
+                MaxBuffer::from_bytes(last_chunk).unwrap(),
                 expected_hierarchy,
             )
             .unwrap();
@@ -91,7 +91,7 @@ mod test_hash_sequence {
         assert_eq!(&expected_hashed_data[..], &actual_hashed_data[..]);
         assert_eq!(ticket.hierarchy(), expected_hierarchy);
         assert_eq!(ticket.digest().len(), expected_ticked_digest.len());
-        assert_eq!(&ticket.digest()[..], &expected_ticked_digest[..]);
+        assert_eq!(ticket.digest(), &expected_ticked_digest[..]);
     }
 }
 
@@ -148,13 +148,13 @@ mod test_hmac_sequence {
         let last_chunk = chunks.remainder();
         for chunk in chunks {
             context
-                .sequence_update(handle, MaxBuffer::from_bytes(&chunk).unwrap())
+                .sequence_update(handle, MaxBuffer::from_bytes(chunk).unwrap())
                 .unwrap();
         }
         let (actual_hashed_data, ticket) = context
             .sequence_complete(
                 handle,
-                MaxBuffer::from_bytes(&last_chunk).unwrap(),
+                MaxBuffer::from_bytes(last_chunk).unwrap(),
                 Hierarchy::Null,
             )
             .unwrap();
