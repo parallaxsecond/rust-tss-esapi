@@ -234,6 +234,9 @@ impl Context {
         }
         let mut object_handle = ObjectHandle::None.into();
         let potential_private_in = potential_private.map(|v| v.try_into()).transpose()?;
+        let private_in_ptr = potential_private_in
+            .as_ref()
+            .map_or_else(null, std::ptr::from_ref);
         let public_in = public.try_into()?;
         ReturnCode::ensure_success(
             unsafe {
@@ -242,7 +245,7 @@ impl Context {
                     self.optional_session_1(),
                     self.optional_session_2(),
                     self.optional_session_3(),
-                    potential_private_in.as_ref().map_or_else(null, |v| v),
+                    private_in_ptr,
                     &public_in,
                     if cfg!(hierarchy_is_esys_tr) {
                         ObjectHandle::from(hierarchy).into()

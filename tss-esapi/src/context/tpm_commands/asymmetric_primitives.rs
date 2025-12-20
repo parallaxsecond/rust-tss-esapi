@@ -151,7 +151,9 @@ impl Context {
     ) -> Result<PublicKeyRsa> {
         let mut out_data_ptr = null_mut();
         let potential_label = label.into().map(|v| v.into());
-        let label_ptr = potential_label.as_ref().map_or_else(null, |v| v);
+        let label_ptr = potential_label
+            .as_ref()
+            .map_or_else(null, std::ptr::from_ref);
         ReturnCode::ensure_success(
             unsafe {
                 Esys_RSA_Encrypt(
@@ -310,7 +312,9 @@ impl Context {
     ) -> Result<PublicKeyRsa> {
         let mut message_ptr = null_mut();
         let potential_label = label.into().map(|v| v.into());
-        let label_ptr = potential_label.as_ref().map_or_else(null, |v| v);
+        let label_ptr = potential_label
+            .as_ref()
+            .map_or_else(null, std::ptr::from_ref);
         ReturnCode::ensure_success(
             unsafe {
                 Esys_RSA_Decrypt(
