@@ -57,6 +57,8 @@ pub enum PropertyTag {
     NvBufferMax = TPM2_PT_NV_BUFFER_MAX,
     Modes = TPM2_PT_MODES,
     MaxCapBuffer = TPM2_PT_MAX_CAP_BUFFER,
+    FirmwareSvn = TPM2_PT_FIRMWARE_SVN,
+    FirmwareMaxSvn = TPM2_PT_FIRMWARE_MAX_SVN,
     // Variable
     Permanent = TPM2_PT_PERMANENT,
     StartupClear = TPM2_PT_STARTUP_CLEAR,
