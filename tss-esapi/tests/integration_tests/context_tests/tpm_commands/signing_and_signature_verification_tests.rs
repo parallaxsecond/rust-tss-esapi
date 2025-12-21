@@ -174,6 +174,9 @@ mod test_sign {
             algorithm::RsaSchemeAlgorithm, key_bits::RsaKeyBits, reserved_handles::Hierarchy,
         },
         structures::{Auth, Digest, RsaExponent, RsaScheme, SignatureScheme},
+        error::TpmFormatOneResponseCode, error::ArgumentNumber::Parameter,
+        constants::TpmFormatOneError::Size, error::TpmResponseCode,
+        ReturnCode,
     };
 
     use {
@@ -276,14 +279,19 @@ mod test_sign {
             .unwrap()
             .key_handle;
 
-        context
-            .sign(
-                key_handle,
-                Digest::try_from([0xbb; 40].to_vec()).unwrap(),
-                SignatureScheme::Null,
-                None,
-            )
-            .unwrap_err();
+        assert_eq!(context
+                   .sign(
+                       key_handle,
+                       Digest::try_from([0xbb; 40].to_vec()).unwrap(),
+                       SignatureScheme::Null,
+                       None,
+                   )
+                   .unwrap_err(),
+                   tss_esapi::Error::TssError(
+                       ReturnCode::Tpm(
+                           TpmResponseCode::FormatOne(TpmFormatOneResponseCode::new(
+                               Size, Parameter(1)
+                           )))));
     }
 
     #[cfg(feature = "p256")]
