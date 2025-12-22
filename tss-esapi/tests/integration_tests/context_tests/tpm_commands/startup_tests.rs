@@ -1,10 +1,12 @@
 // Copyright 2021 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
 mod test_startup {
+    use serial_test::serial;
     use crate::common::create_ctx_without_session;
     use tss_esapi::constants::StartupType;
 
     #[test]
+    #[serial]
     fn test_startup() {
         let mut context = create_ctx_without_session();
         context.startup(StartupType::Clear).unwrap();
@@ -12,9 +14,11 @@ mod test_startup {
 }
 
 mod test_shutdown {
+    use serial_test::serial;
     use crate::common::create_ctx_without_session;
     use tss_esapi::constants::StartupType;
     #[test]
+    #[serial]
     fn test_shutdown() {
         let mut context = create_ctx_without_session();
         context.shutdown(StartupType::Clear).unwrap();

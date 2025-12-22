@@ -1,6 +1,7 @@
 // Copyright 2022 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
 use std::convert::TryFrom;
+use serial_test::serial;
 use tss_esapi::{
     constants::AlgorithmIdentifier,
     interface_types::{
@@ -18,6 +19,7 @@ use tss_esapi::{
 };
 
 #[test]
+#[serial]
 fn test_valid_rsa_parameters_conversions() {
     let expected_public_rsa_parameters = PublicRsaParameters::builder()
         .with_restricted(true)
@@ -55,6 +57,7 @@ fn test_valid_rsa_parameters_conversions() {
 }
 
 #[test]
+#[serial]
 fn test_valid_ecc_parameters_conversion() {
     let expected_public_ecc_parameters = PublicEccParameters::builder()
         .with_restricted(true)
@@ -93,6 +96,7 @@ fn test_valid_ecc_parameters_conversion() {
 }
 
 #[test]
+#[serial]
 fn test_valid_keyed_hash_parameters_conversion() {
     let expected_public_keyed_hash_parameters =
         PublicKeyedHashParameters::new(KeyedHashScheme::Hmac {
@@ -128,6 +132,7 @@ fn test_valid_keyed_hash_parameters_conversion() {
 }
 
 #[test]
+#[serial]
 fn test_valid_symmetric_cipher_parameters_conversion() {
     let expected_symmetric_cipher_parameters =
         SymmetricCipherParameters::new(SymmetricDefinitionObject::AES_128_CFB);
@@ -161,6 +166,7 @@ fn test_valid_symmetric_cipher_parameters_conversion() {
 }
 
 #[test]
+#[serial]
 fn test_conversion_failure_due_to_invalid_public_algorithm() {
     assert_eq!(
         Err(Error::WrapperError(WrapperErrorKind::InvalidParam)),

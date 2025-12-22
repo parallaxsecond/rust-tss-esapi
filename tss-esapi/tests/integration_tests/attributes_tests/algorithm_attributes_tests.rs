@@ -1,6 +1,7 @@
 // Copyright 2021 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
 
+use serial_test::serial;
 use std::ops::Shl;
 
 use tss_esapi::{attributes::AlgorithmAttributes, tss2_esys::TPMA_ALGORITHM};

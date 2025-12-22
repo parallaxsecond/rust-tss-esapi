@@ -1,6 +1,7 @@
 // Copyright 2021 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
 mod test_nv_define_space {
+    use serial_test::serial;
     use crate::common::create_ctx_with_session;
     use tss_esapi::{
         attributes::NvIndexAttributesBuilder,
@@ -10,6 +11,7 @@ mod test_nv_define_space {
     };
 
     #[test]
+    #[serial]
     fn test_nv_define_space_failures() {
         let mut context = create_ctx_with_session();
 
@@ -57,6 +59,7 @@ mod test_nv_define_space {
     }
 
     #[test]
+    #[serial]
     fn test_nv_define_space() {
         let mut context = create_ctx_with_session();
 
@@ -115,6 +118,7 @@ mod test_nv_define_space {
 }
 
 mod test_nv_undefine_space {
+    use serial_test::serial;
     use crate::common::create_ctx_with_session;
     use tss_esapi::{
         attributes::NvIndexAttributesBuilder,
@@ -124,6 +128,7 @@ mod test_nv_undefine_space {
     };
 
     #[test]
+    #[serial]
     fn test_nv_undefine_space() {
         let mut context = create_ctx_with_session();
 
@@ -156,6 +161,7 @@ mod test_nv_undefine_space {
 }
 
 mod test_nv_read_public {
+    use serial_test::serial;
     use crate::common::create_ctx_with_session;
     use tss_esapi::{
         attributes::NvIndexAttributesBuilder,
@@ -165,6 +171,7 @@ mod test_nv_read_public {
     };
 
     #[test]
+    #[serial]
     fn test_nv_read_public() {
         let mut context = create_ctx_with_session();
 
@@ -203,6 +210,7 @@ mod test_nv_read_public {
 }
 
 mod test_nv_write {
+    use serial_test::serial;
     use crate::common::create_ctx_with_session;
     use std::convert::TryFrom;
     use tss_esapi::{
@@ -216,6 +224,7 @@ mod test_nv_write {
     };
 
     #[test]
+    #[serial]
     fn test_nv_write() {
         let mut context = create_ctx_with_session();
 
@@ -255,6 +264,7 @@ mod test_nv_write {
 }
 
 mod test_nv_read {
+    use serial_test::serial;
     use crate::common::create_ctx_with_session;
     use std::convert::TryFrom;
     use tss_esapi::{
@@ -268,6 +278,7 @@ mod test_nv_read {
     };
 
     #[test]
+    #[serial]
     fn test_nv_read() {
         let mut context = create_ctx_with_session();
 
@@ -320,6 +331,7 @@ mod test_nv_read {
 }
 
 mod test_nv_increment {
+    use serial_test::serial;
     use crate::common::create_ctx_with_session;
     use std::convert::TryInto;
     use tss_esapi::{
@@ -334,6 +346,7 @@ mod test_nv_increment {
     };
 
     #[test]
+    #[serial]
     fn test_nv_increment() {
         let mut context = create_ctx_with_session();
         let nv_index = NvIndexTpmHandle::new(0x01500021).unwrap();
@@ -423,6 +436,7 @@ mod test_nv_increment {
 }
 
 mod test_nv_extend {
+    use serial_test::serial;
     use crate::common::create_ctx_with_session;
     use tss_esapi::{
         attributes::NvIndexAttributesBuilder,
@@ -436,6 +450,7 @@ mod test_nv_extend {
     };
 
     #[test]
+    #[serial]
     fn test_nv_extend() {
         let mut context = create_ctx_with_session();
         let nv_index = NvIndexTpmHandle::new(0x01500029).unwrap();

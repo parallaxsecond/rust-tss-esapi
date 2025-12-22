@@ -1,6 +1,7 @@
 // Copyright 2021 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
 mod test_verify_signature {
+    use serial_test::serial;
     use crate::common::{create_ctx_with_session, signing_key_pub, HASH};
     use std::convert::TryFrom;
     use tss_esapi::{
@@ -9,6 +10,7 @@ mod test_verify_signature {
     };
 
     #[test]
+    #[serial]
     fn test_verify_signature() {
         let mut context = create_ctx_with_session();
         let mut random_digest = vec![0u8; 16];
@@ -46,6 +48,7 @@ mod test_verify_signature {
     }
 
     #[test]
+    #[serial]
     fn test_verify_wrong_signature() {
         let mut context = create_ctx_with_session();
         let mut random_digest = vec![0u8; 16];
@@ -93,6 +96,7 @@ mod test_verify_signature {
     }
 
     #[test]
+    #[serial]
     fn test_verify_wrong_signature_2() {
         let mut context = create_ctx_with_session();
         let mut random_digest = vec![0u8; 16];
@@ -130,6 +134,7 @@ mod test_verify_signature {
     }
 
     #[test]
+    #[serial]
     fn test_verify_wrong_signature_3() {
         let mut context = create_ctx_with_session();
         let mut random_digest = vec![0u8; 16];
@@ -167,6 +172,7 @@ mod test_verify_signature {
 }
 
 mod test_sign {
+    use serial_test::serial;
     use crate::common::{create_ctx_with_session, signing_key_pub, HASH};
     use std::convert::TryFrom;
     use tss_esapi::{
@@ -203,6 +209,7 @@ mod test_sign {
     };
 
     #[test]
+    #[serial]
     fn test_sign() {
         let mut context = create_ctx_with_session();
         let mut random_digest = vec![0u8; 16];
@@ -232,6 +239,7 @@ mod test_sign {
     }
 
     #[test]
+    #[serial]
     fn test_sign_empty_digest() {
         let mut context = create_ctx_with_session();
         let mut random_digest = vec![0u8; 16];
@@ -261,6 +269,7 @@ mod test_sign {
     }
 
     #[test]
+    #[serial]
     fn test_sign_large_digest() {
         let mut context = create_ctx_with_session();
         let mut random_digest = vec![0u8; 16];
@@ -296,6 +305,7 @@ mod test_sign {
 
     #[cfg(feature = "p256")]
     #[test]
+    #[serial]
     fn test_sign_signer() {
         let public = utils::create_unrestricted_signing_ecc_public(
             EccScheme::EcDsa(HashScheme::new(HashingAlgorithm::Sha256)),
@@ -325,6 +335,7 @@ mod test_sign {
 
     #[cfg(feature = "rsa")]
     #[test]
+    #[serial]
     fn test_sign_signer_rsa_pkcs() {
         let mut context = create_ctx_with_session();
         let mut random_digest = vec![0u8; 16];
@@ -359,6 +370,7 @@ mod test_sign {
 
     #[cfg(feature = "rsa")]
     #[test]
+    #[serial]
     fn test_sign_signer_rsa_pss() {
         let mut context = create_ctx_with_session();
         let mut random_digest = vec![0u8; 16];
