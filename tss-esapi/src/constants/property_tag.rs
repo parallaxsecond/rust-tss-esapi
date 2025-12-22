@@ -86,13 +86,12 @@ pub enum PropertyTag {
     Other(u32),
 }
 
-
 impl From<PropertyTag> for TPM2_PT {
     fn from(property_tag: PropertyTag) -> TPM2_PT {
         // The values are well defined so this cannot fail.
         match property_tag {
-            PropertyTag::PrimitivePropertyTag(base) => { base.to_u32().unwrap() },
-            PropertyTag::Other(value) => { value },
+            PropertyTag::PrimitivePropertyTag(base) => base.to_u32().unwrap(),
+            PropertyTag::Other(value) => value,
         }
     }
 }
@@ -101,8 +100,8 @@ impl TryFrom<TPM2_PT> for PropertyTag {
     type Error = Error;
     fn try_from(tpm_pt: TPM2_PT) -> Result<PropertyTag> {
         match PrimitivePropertyTag::from_u32(tpm_pt) {
-            Some(x) => { Ok(PropertyTag::PrimitivePropertyTag(x)) },
-            None    => { Ok(PropertyTag::Other(tpm_pt)) },
+            Some(x) => Ok(PropertyTag::PrimitivePropertyTag(x)),
+            None => Ok(PropertyTag::Other(tpm_pt)),
         }
     }
 }

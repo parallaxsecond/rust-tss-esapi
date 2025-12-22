@@ -170,6 +170,10 @@ mod test_sign {
     use crate::common::{create_ctx_with_session, signing_key_pub, HASH};
     use std::convert::TryFrom;
     use tss_esapi::{
+        constants::TpmFormatOneError::Size,
+        error::ArgumentNumber::Parameter,
+        error::TpmFormatOneResponseCode,
+        error::TpmResponseCode,
         interface_types::{
             algorithm::RsaSchemeAlgorithm, key_bits::RsaKeyBits, reserved_handles::Hierarchy,
         },

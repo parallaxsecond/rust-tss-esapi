@@ -64,7 +64,7 @@ pub use command_code::CommandCode;
 pub use ecc::EccCurveIdentifier;
 pub use nv_index_type::NvIndexType;
 pub use pcr_property_tag::PcrPropertyTag;
-pub use property_tag::{PropertyTag,PrimitivePropertyTag};
+pub use property_tag::{PrimitivePropertyTag, PropertyTag};
 pub use return_code::{
     BaseError, ReturnCodeLayer, TpmFormatOneError, TpmFormatZeroError, TpmFormatZeroWarning,
 };

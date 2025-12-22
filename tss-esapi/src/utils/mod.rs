@@ -9,7 +9,7 @@
 //! type name. Unions are converted to Rust `enum`s by dropping the `TPMU` qualifier and appending
 //! `Union`.
 use crate::attributes::ObjectAttributesBuilder;
-use crate::constants::{PropertyTag,PrimitivePropertyTag};
+use crate::constants::{PrimitivePropertyTag, PropertyTag};
 use crate::interface_types::{
     algorithm::{HashingAlgorithm, PublicAlgorithm},
     ecc::EccCurve,
