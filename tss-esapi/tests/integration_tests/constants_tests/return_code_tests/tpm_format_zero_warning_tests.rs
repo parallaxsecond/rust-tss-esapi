@@ -1,5 +1,6 @@
 // Copyright 2022 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
+use serial_test::serial;
 use bitfield::bitfield;
 use std::convert::TryFrom;
 use tss_esapi::{

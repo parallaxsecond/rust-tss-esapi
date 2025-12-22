@@ -1,6 +1,7 @@
 // Copyright 2020 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
 
+use serial_test::serial;
 use std::io::{ErrorKind, Seek, SeekFrom, Write};
 use tss_esapi::{
     abstraction::nv,

@@ -1,6 +1,7 @@
 // Copyright 2021 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
 mod test_get_capability {
+    use serial_test::serial;
     use crate::common::create_ctx_without_session;
     use tss_esapi::{
         constants::{tss::TPM2_PT_VENDOR_STRING_1, CapabilityType, PrimitivePropertyTag, PropertyTag},
@@ -8,6 +9,7 @@ mod test_get_capability {
     };
 
     #[test]
+    #[serial]
     fn test_get_capability() {
         let mut context = create_ctx_without_session();
         let (res, _more) = context
@@ -22,6 +24,7 @@ mod test_get_capability {
     }
 
     #[test]
+    #[serial]
     fn test_get_tpm_property() {
         let mut context = create_ctx_without_session();
 

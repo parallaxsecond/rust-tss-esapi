@@ -1,5 +1,6 @@
 // Copyright 2020 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
+use serial_test::serial;
 use tss_esapi::{
     constants::{
         tss::{

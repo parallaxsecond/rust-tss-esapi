@@ -1,6 +1,7 @@
 // Copyright 2022 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
 
+use serial_test::serial;
 mod public_rsa_test {
     use rsa::{pkcs1, traits::PublicKeyParts, BigUint};
     use std::convert::TryFrom;
