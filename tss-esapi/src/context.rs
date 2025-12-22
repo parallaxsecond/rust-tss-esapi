@@ -356,7 +356,7 @@ impl Context {
     /// # Example
     ///
     /// ```rust
-    /// # use tss_esapi::{Context, tcti_ldr::TctiNameConf, constants::PropertyTag};
+    /// # use tss_esapi::{Context, tcti_ldr::TctiNameConf, constants::{PropertyTag,PrimitivePropertyTag}};
     /// # use std::str::FromStr;
     /// # // Create context
     /// # let mut context =
@@ -364,7 +364,7 @@ impl Context {
     /// #         TctiNameConf::from_environment_variable().expect("Failed to get TCTI"),
     /// #     ).expect("Failed to create Context");
     /// let rev = context
-    ///     .get_tpm_property(PropertyTag::Revision)
+    ///     .get_tpm_property(PropertyTag::PrimitivePropertyTag(PrimitivePropertyTag::Revision))
     ///     .expect("Wrong value from TPM")
     ///     .expect("Value is not supported");
     /// ```
