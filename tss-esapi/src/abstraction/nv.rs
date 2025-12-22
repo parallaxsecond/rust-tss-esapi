@@ -53,9 +53,8 @@ fn get_nv_index_info(
         .and_then(|mut object_handle| {
             context
                 .nv_read_public(NvIndexHandle::from(object_handle))
-                .map_err(|e| {
+                .inspect_err(|_| {
                     let _ = context.tr_close(&mut object_handle);
-                    e
                 })
                 .and_then(|(nv_public, name)| {
                     context.tr_close(&mut object_handle)?;
