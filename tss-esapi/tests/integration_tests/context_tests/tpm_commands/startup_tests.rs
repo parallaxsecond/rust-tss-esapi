@@ -2,9 +2,11 @@
 // SPDX-License-Identifier: Apache-2.0
 mod test_startup {
     use crate::common::create_ctx_without_session;
+    use serial_test::serial;
     use tss_esapi::constants::StartupType;
 
     #[test]
+    #[serial]
     fn test_startup() {
         let mut context = create_ctx_without_session();
         context.startup(StartupType::Clear).unwrap();
@@ -13,8 +15,10 @@ mod test_startup {
 
 mod test_shutdown {
     use crate::common::create_ctx_without_session;
+    use serial_test::serial;
     use tss_esapi::constants::StartupType;
     #[test]
+    #[serial]
     fn test_shutdown() {
         let mut context = create_ctx_without_session();
         context.shutdown(StartupType::Clear).unwrap();

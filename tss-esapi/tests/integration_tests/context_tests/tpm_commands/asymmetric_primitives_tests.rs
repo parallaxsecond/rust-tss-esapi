@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 mod test_rsa_encrypt_decrypt {
     use crate::common::{create_ctx_with_session, encryption_decryption_key_pub};
+    use serial_test::serial;
     use std::convert::TryFrom;
     use tss_esapi::attributes::ObjectAttributesBuilder;
     use tss_esapi::{
@@ -17,6 +18,7 @@ mod test_rsa_encrypt_decrypt {
     };
 
     #[test]
+    #[serial]
     fn test_encrypt_decrypt() {
         let mut context = create_ctx_with_session();
         let mut random_digest = vec![0u8; 16];
@@ -58,6 +60,7 @@ mod test_rsa_encrypt_decrypt {
     }
 
     #[test]
+    #[serial]
     fn test_ecdh() {
         let mut context = create_ctx_with_session();
         let mut random_digest = vec![0u8; 16];

@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 mod test_random {
     use crate::common::create_ctx_without_session;
+    use serial_test::serial;
     use std::convert::TryFrom;
     use tss_esapi::{
         attributes::SessionAttributesBuilder,
@@ -11,6 +12,7 @@ mod test_random {
     };
 
     #[test]
+    #[serial]
     fn test_encrypted_get_rand() {
         let mut context = create_ctx_without_session();
         let encrypted_sess = context
@@ -38,6 +40,7 @@ mod test_random {
     }
 
     #[test]
+    #[serial]
     fn test_authenticated_get_rand() {
         let mut context = create_ctx_without_session();
         let auth_sess = context
@@ -57,12 +60,14 @@ mod test_random {
     }
 
     #[test]
+    #[serial]
     fn test_get_0_rand() {
         let mut context = create_ctx_without_session();
         let _ = context.get_random(0);
     }
 
     #[test]
+    #[serial]
     fn test_stir_random() {
         let mut context = create_ctx_without_session();
         let additional_data = SensitiveData::try_from(vec![1, 2, 3]).unwrap();

@@ -10,7 +10,7 @@ use std::convert::TryInto;
 
 #[test]
 fn test_conversions() {
-    let expected_property = PropertyTag::AlgorithmSet;
+    let expected_property = PropertyTag::PrimitivePropertyTag(PrimitivePropertyTag::AlgorithmSet);
     let expected_value = 1u32;
 
     let expected_tpms_tagged_property = TPMS_TAGGED_PROPERTY {

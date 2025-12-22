@@ -2,11 +2,13 @@
 // SPDX-License-Identifier: Apache-2.0
 mod test_create_primary {
     use crate::common::{create_ctx_with_session, decryption_key_pub};
+    use serial_test::serial;
     use tss_esapi::{
         handles::ObjectHandle, interface_types::reserved_handles::Hierarchy, structures::Auth,
     };
 
     #[test]
+    #[serial]
     fn test_create_primary() {
         let mut context = create_ctx_with_session();
         let mut random_digest = vec![0u8; 16];
@@ -30,9 +32,11 @@ mod test_create_primary {
 
 mod test_clear {
     use crate::common::create_ctx_with_session;
+    use serial_test::serial;
     use tss_esapi::handles::AuthHandle;
 
     #[test]
+    #[serial]
     fn test_clear() {
         let mut context = create_ctx_with_session();
 
@@ -42,8 +46,10 @@ mod test_clear {
 
 mod test_clear_control {
     use crate::common::create_ctx_with_session;
+    use serial_test::serial;
     use tss_esapi::handles::AuthHandle;
     #[test]
+    #[serial]
     fn test_clear_control() {
         let mut context = create_ctx_with_session();
 
@@ -57,11 +63,13 @@ mod test_clear_control {
 
 mod test_change_auth {
     use crate::common::{create_ctx_with_session, decryption_key_pub};
+    use serial_test::serial;
     use tss_esapi::{
         handles::AuthHandle, interface_types::reserved_handles::Hierarchy, structures::Auth,
     };
 
     #[test]
+    #[serial]
     fn test_object_change_auth() {
         let mut context = create_ctx_with_session();
 
@@ -107,6 +115,7 @@ mod test_change_auth {
     }
 
     #[test]
+    #[serial]
     fn test_hierarchy_change_auth() {
         let mut context = create_ctx_with_session();
 
