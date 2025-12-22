@@ -62,35 +62,31 @@ impl CreateCommandOutputHandler {
 impl TryFrom<CreateCommandOutputHandler> for CreateKeyResult {
     type Error = Error;
 
-    fn try_from(mut ffi_data_handler: CreateCommandOutputHandler) -> Result<CreateKeyResult> {
+    fn try_from(ffi_data_handler: CreateCommandOutputHandler) -> Result<CreateKeyResult> {
         // Take and free with Esys_Free; then null out the handler's fields so Drop (if any)
         // won't free them a second time.
 
-        let out_private_owned = unsafe { take_from_esys(ffi_data_handler.ffi_out_private_ptr)? };
-        ffi_data_handler.ffi_out_private_ptr = null_mut();
+        let out_private_owned_result =
+            unsafe { take_from_esys(ffi_data_handler.ffi_out_private_ptr) };
 
-        let out_public_owned = unsafe { take_from_esys(ffi_data_handler.ffi_out_public_ptr)? };
-        ffi_data_handler.ffi_out_public_ptr = null_mut();
+        let out_public_owned_result =
+            unsafe { take_from_esys(ffi_data_handler.ffi_out_public_ptr) };
 
-        let creation_data_owned =
-            unsafe { take_from_esys(ffi_data_handler.ffi_creation_data_ptr)? };
-        ffi_data_handler.ffi_creation_data_ptr = null_mut();
+        let creation_data_owned_result =
+            unsafe { take_from_esys(ffi_data_handler.ffi_creation_data_ptr) };
 
-        let creation_hash_owned =
-            unsafe { take_from_esys(ffi_data_handler.ffi_creation_hash_ptr)? };
-        ffi_data_handler.ffi_creation_hash_ptr = null_mut();
+        let creation_hash_owned_result =
+            unsafe { take_from_esys(ffi_data_handler.ffi_creation_hash_ptr) };
 
-        let creation_ticket_owned =
-            unsafe { take_from_esys(ffi_data_handler.ffi_creation_ticket_ptr)? };
-        //#[allow(unused_assignments)]
-        //ffi_data_handler.ffi_creation_ticket_ptr = null_mut();
+        let creation_ticket_owned_result =
+            unsafe { take_from_esys(ffi_data_handler.ffi_creation_ticket_ptr) };
 
         Ok(CreateKeyResult {
-            out_private: Private::try_from(out_private_owned)?,
-            out_public: Public::try_from(out_public_owned)?,
-            creation_data: CreationData::try_from(creation_data_owned)?,
-            creation_hash: Digest::try_from(creation_hash_owned)?,
-            creation_ticket: CreationTicket::try_from(creation_ticket_owned)?,
+            out_private: out_private_owned_result.and_then(Private::try_from)?,
+            out_public: out_public_owned_result.and_then(Public::try_from)?,
+            creation_data: creation_data_owned_result.and_then(CreationData::try_from)?,
+            creation_hash: creation_hash_owned_result.and_then(Digest::try_from)?,
+            creation_ticket: creation_ticket_owned_result.and_then(CreationTicket::try_from)?,
         })
     }
 }

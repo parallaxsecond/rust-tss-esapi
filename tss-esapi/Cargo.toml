@@ -10,7 +10,7 @@ categories = ["api-bindings", "external-ffi-bindings", "cryptography"]
 license = "Apache-2.0"
 repository = "https://github.com/parallaxsecond/rust-tss-esapi"
 documentation = "https://docs.rs/crate/tss-esapi"
-rust-version = "1.74.0"
+rust-version = "1.76.0"
 
 [[example]]
 name = "hmac"
@@ -64,8 +64,10 @@ strum = { version = "0.26.3", optional = true }
 strum_macros = { version = "0.26.4", optional = true }
 paste = "1.0.14"
 getrandom = "0.2.11"
+env = "*"
 
 [dev-dependencies]
+serial_test = "*"
 env_logger = "0.11.5"
 serde_json = "^1.0.108"
 sha2 = { version = "0.10.8", features = ["oid"] }

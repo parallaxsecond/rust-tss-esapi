@@ -78,6 +78,7 @@ macro_rules! test_valid_conversion {
     };
 }
 
+// no interaction with swtpm, can be parallel
 #[test]
 fn test_valid_conversions() {
     test_valid_conversion!(TSS2_BASE_RC_GENERAL_FAILURE, BaseError::GeneralFailure);
