@@ -76,7 +76,7 @@ fn test_create_ak_rsa_ecc() {
         None,
     )
     .unwrap();
-    if let Err(Error::WrapperError(WrapperErrorKind::InconsistentParams)) = ak::create_ak(
+    if let Err(Error::WrapperError(errno)) = ak::create_ak(
         &mut context,
         ek_rsa,
         HashingAlgorithm::Sha256,
@@ -85,6 +85,10 @@ fn test_create_ak_rsa_ecc() {
         None,
         None,
     ) {
+        match errno {
+            WrapperErrorKind::InconsistentParams => { },
+            _ => { panic!("unexpected error {:?}", errno) }
+        }
     } else {
         panic!(
             "Should've gotten an 'InconsistentParams' error when trying to create an a P256 AK with an SM2 signing scheme."

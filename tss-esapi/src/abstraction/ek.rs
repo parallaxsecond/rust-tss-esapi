@@ -38,6 +38,8 @@ const AUTHPOLICY_A_SHA256: [u8; 32] = [
     0x83, 0x71, 0x97, 0x67, 0x44, 0x84, 0xb3, 0xf8, 0x1a, 0x90, 0xcc, 0x8d, 0x46, 0xa5, 0xd7, 0x24,
     0xfd, 0x52, 0xd7, 0x6e, 0x06, 0x52, 0x0b, 0x64, 0xf2, 0xa1, 0xda, 0x1b, 0x33, 0x14, 0x69, 0xaa,
 ];
+
+#[allow(unused)]
 const AUTHPOLICY_B_SHA384: [u8; 48] = [
     0xb2, 0x6e, 0x7d, 0x28, 0xd1, 0x1a, 0x50, 0xbc, 0x53, 0xd8, 0x82, 0xbc, 0xf5, 0xfd, 0x3a, 0x1a,
     0x07, 0x41, 0x48, 0xbb, 0x35, 0xd3, 0xb4, 0xe4, 0xcb, 0x1c, 0x0a, 0xd9, 0xbd, 0xe4, 0x19, 0xca,
@@ -103,8 +105,8 @@ pub fn create_ek_public_from_default_template<IKC: IntoKeyCustomization>(
                     PublicKeyRsa::new_empty_with_size(RsaKeyBits::Rsa2048),
                 ),
                 RsaKeyBits::Rsa3072 | RsaKeyBits::Rsa4096 => (
-                    HashingAlgorithm::Sha384,
-                    AUTHPOLICY_B_SHA384.into(),
+                    HashingAlgorithm::Sha256,
+                    AUTHPOLICY_A_SHA256.into(),
                     SymmetricDefinitionObject::AES_256_CFB,
                     PublicKeyRsa::new_empty(),
                 ),
@@ -139,8 +141,8 @@ pub fn create_ek_public_from_default_template<IKC: IntoKeyCustomization>(
                     32,
                 ),
                 EccCurve::NistP384 => (
-                    HashingAlgorithm::Sha384,
-                    AUTHPOLICY_B_SHA384.into(),
+                    HashingAlgorithm::Sha256,
+                    AUTHPOLICY_A_SHA256.into(),
                     SymmetricDefinitionObject::AES_256_CFB,
                     0,
                 ),
