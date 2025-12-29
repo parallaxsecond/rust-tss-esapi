@@ -63,6 +63,8 @@ impl Context {
     /// #    utils::create_unrestricted_signing_rsa_public
     /// # };
     /// use tss_esapi::structures::SignatureScheme;
+    /// # #[serial_test::file_serial]
+    /// # fn main() {
     /// # let mut context =
     /// #     Context::new(
     /// #         TctiNameConf::from_environment_variable().expect("Failed to get TCTI"),
@@ -90,6 +92,7 @@ impl Context {
     ///     )
     /// })
     /// .expect("Failed to sign digest");
+    /// # }
     /// ```
     pub fn sign(
         &mut self,
