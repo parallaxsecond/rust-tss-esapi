@@ -222,6 +222,8 @@ fn checkquote_pcr_digests(
 /// #     },
 /// #     TctiNameConf,
 /// # };
+/// # #[serial_test::file_serial]
+/// # fn main() {
 /// # let mut context =
 /// #     Context::new(
 /// #         TctiNameConf::from_environment_variable().expect("Failed to get TCTI"),
@@ -293,6 +295,7 @@ fn checkquote_pcr_digests(
 ///     &qualifying_data
 /// )
 /// .unwrap();
+/// # }
 /// ```
 pub fn checkquote(
     attest: &Attest,

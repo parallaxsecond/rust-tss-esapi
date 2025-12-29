@@ -66,7 +66,7 @@ paste = "1.0.14"
 getrandom = "0.2.11"
 
 [dev-dependencies]
-serial_test = "*"
+serial_test = { version = "*", features = ["file_locks"] }
 env_logger = "0.11.5"
 serde_json = "^1.0.108"
 sha2 = { version = "0.10.8", features = ["oid"] }

@@ -58,6 +58,8 @@ impl Context {
     /// # use tss_esapi::abstraction::cipher::Cipher;
     /// # use tss_esapi::{Context, TctiNameConf};
     /// #
+    /// # #[serial_test::file_serial]
+    /// # fn main() {
     /// # let mut context = // ...
     /// #     Context::new(
     /// #         TctiNameConf::from_environment_variable().expect("Failed to get TCTI"),
@@ -294,6 +296,7 @@ impl Context {
     ///     )
     ///     .unwrap();
     /// # eprintln!("D: {:?}, P: {:?}, S: {:?}", encryption_key_out, duplicate, out_sym_seed);
+    /// # }
     /// ```
     pub fn duplicate(
         &mut self,
@@ -380,6 +383,8 @@ impl Context {
     /// # use tss_esapi::abstraction::cipher::Cipher;
     /// # use tss_esapi::{Context, TctiNameConf};
     /// #
+    /// # #[serial_test::file_serial]
+    /// # fn main() {
     /// # let mut context = // ...
     /// #     Context::new(
     /// #         TctiNameConf::from_environment_variable().expect("Failed to get TCTI"),
@@ -652,6 +657,7 @@ impl Context {
     ///  ).unwrap();
     /// #
     /// # eprintln!("P: {:?}", private);
+    /// # }
     /// ```
     pub fn import(
         &mut self,
