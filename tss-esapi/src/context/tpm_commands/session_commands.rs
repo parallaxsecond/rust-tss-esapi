@@ -29,6 +29,8 @@ impl Context {
     /// #     interface_types::algorithm::HashingAlgorithm,
     /// #     structures::SymmetricDefinition,
     /// # };
+    /// # #[serial_test::file_serial]
+    /// # fn main() {
     /// # // Create context
     /// # let mut context =
     /// #     Context::new(
@@ -47,6 +49,7 @@ impl Context {
     ///     )
     ///     .expect("Failed to create session")
     ///     .expect("Received invalid handle");
+    /// # }
     /// ```
     #[allow(clippy::too_many_arguments)]
     pub fn start_auth_session(

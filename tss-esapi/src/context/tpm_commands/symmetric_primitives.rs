@@ -46,6 +46,8 @@ impl Context {
     /// use tss_esapi::interface_types::session_handles::AuthSession;
     /// use tss_esapi::interface_types::algorithm::SymmetricMode;
     /// # use std::convert::TryFrom;
+    /// # #[serial_test::file_serial]
+    /// # fn main() {
     /// # // Create context
     /// # let mut context =
     /// #     Context::new(
@@ -180,6 +182,7 @@ impl Context {
     /// #     });
     /// #
     /// # debug_assert_eq!(data, decrypted_data);
+    /// # }
     /// ```
     pub fn encrypt_decrypt_2(
         &mut self,
@@ -235,6 +238,8 @@ impl Context {
     /// #     interface_types::{algorithm::HashingAlgorithm, reserved_handles::Hierarchy},
     /// # };
     /// # use std::convert::TryFrom;
+    /// # #[serial_test::file_serial]
+    /// # fn main() {
     /// # // Create context
     /// # let mut context =
     /// #     Context::new(
@@ -258,6 +263,7 @@ impl Context {
     /// assert_eq!(expected_hashed_data.len(), actual_hashed_data.len());
     /// assert_eq!(&expected_hashed_data[..], &actual_hashed_data[..]);
     /// assert_eq!(ticket.hierarchy(), expected_hierarchy);
+    /// # }
     /// ```
     pub fn hash(
         &mut self,
@@ -310,6 +316,8 @@ impl Context {
     /// #     Context, tcti_ldr::TctiNameConf,
     /// # };
     /// # use std::convert::TryFrom;
+    /// # #[serial_test::file_serial]
+    /// # fn main() {
     /// # // Create context
     /// # let mut context =
     /// #     Context::new(
@@ -339,7 +347,7 @@ impl Context {
     ///
     ///     ctx.hmac(key.key_handle.into(), input_data, HashingAlgorithm::Sha256)
     /// }).unwrap();
-    ///
+    /// # }
     /// ```
     ///
     /// # Errors

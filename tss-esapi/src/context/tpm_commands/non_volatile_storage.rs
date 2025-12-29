@@ -44,6 +44,8 @@ impl Context {
     ///      handles::NvIndexTpmHandle, attributes::NvIndexAttributes, structures::NvPublic,
     ///      interface_types::{algorithm::HashingAlgorithm, reserved_handles::Provision},
     /// };
+    /// # #[serial_test::file_serial]
+    /// # fn main() {
     /// # // Create context
     /// # let mut context =
     /// #     Context::new(
@@ -95,7 +97,8 @@ impl Context {
     ///
     /// # context
     /// #    .nv_undefine_space(Provision::Owner, owner_nv_index_handle)
-    /// #    .expect("Call to nv_undefine_space failed");
+    /// #         .expect("Call to nv_undefine_space failed");
+    /// # }
     /// ```
     pub fn nv_define_space(
         &mut self,
@@ -150,6 +153,8 @@ impl Context {
     /// #      interface_types::algorithm::HashingAlgorithm,
     /// # };
     /// use tss_esapi::interface_types::reserved_handles::Provision;
+    /// # #[serial_test::file_serial]
+    /// # fn main() {
     /// # // Create context
     /// # let mut context =
     /// #     Context::new(
@@ -201,6 +206,7 @@ impl Context {
     /// context
     ///    .nv_undefine_space(Provision::Owner, owner_nv_index_handle)
     ///    .expect("Call to nv_undefine_space failed");
+    /// # }
     /// ```
     pub fn nv_undefine_space(
         &mut self,
@@ -252,6 +258,8 @@ impl Context {
     /// # use std::convert::TryFrom;
     /// use tss_esapi::interface_types::reserved_handles::Provision;
     /// use tss_esapi::interface_types::session_handles::AuthSession;
+    /// # #[serial_test::file_serial]
+    /// # fn main() {
     /// # // Create context
     /// # let mut context =
     /// #     Context::new(
@@ -345,6 +353,7 @@ impl Context {
     ///             .expect("Call to nv_undefine_space_special failed");
     ///         }
     ///     );
+    /// # }
     /// ```
     pub fn nv_undefine_space_special(
         &mut self,
@@ -393,6 +402,8 @@ impl Context {
     ///       interface_types::reserved_handles::Provision,
     /// };
     ///
+    /// # #[serial_test::file_serial]
+    /// # fn main() {
     /// # // Create context
     /// # let mut context =
     /// #     Context::new(
@@ -454,6 +465,7 @@ impl Context {
     ///     .expect("Call to nv_read_public failed");
     ///
     /// assert_eq!(owner_nv_public, read_nv_public);
+    /// # }
     /// ```
     pub fn nv_read_public(&mut self, nv_index_handle: NvIndexHandle) -> Result<(NvPublic, Name)> {
         let mut nv_public_ptr = null_mut();
@@ -509,6 +521,8 @@ impl Context {
     /// };
     /// use std::convert::TryFrom;
     ///
+    /// # #[serial_test::file_serial]
+    /// # fn main() {
     /// # // Create context
     /// # let mut context =
     /// #     Context::new(
@@ -569,6 +583,7 @@ impl Context {
     ///
     /// // Process result
     /// nv_write_result.expect("Call to nv_write failed");
+    /// # }
     /// ```
     pub fn nv_write(
         &mut self,
@@ -620,6 +635,8 @@ impl Context {
     ///       interface_types::reserved_handles::{Provision, NvAuth}
     /// };
     ///
+    /// # #[serial_test::file_serial]
+    /// # fn main() {
     /// # // Create context
     /// # let mut context =
     /// #     Context::new(
@@ -677,6 +694,7 @@ impl Context {
     ///
     /// // Process result
     /// nv_increment_result.expect("Call to nv_increment failed");
+    /// # }
     /// ```
     pub fn nv_increment(
         &mut self,
@@ -729,6 +747,8 @@ impl Context {
     ///       interface_types::reserved_handles::{Provision, NvAuth}, structures::MaxNvBuffer,
     /// };
     ///
+    /// # #[serial_test::file_serial]
+    /// # fn main() {
     /// # // Create context
     /// # let mut context =
     /// #     Context::new(
@@ -785,6 +805,7 @@ impl Context {
     /// # context
     /// #    .nv_undefine_space(Provision::Owner, nv_index_handle)
     /// #    .expect("Call to nv_undefine_space failed");
+    /// # }
     /// ```
     pub fn nv_extend(
         &mut self,
@@ -840,6 +861,8 @@ impl Context {
     /// };
     /// use std::convert::TryFrom;
     ///
+    /// # #[serial_test::file_serial]
+    /// # fn main() {
     /// # // Create context
     /// # let mut context =
     /// #     Context::new(
@@ -907,6 +930,7 @@ impl Context {
     /// nv_write_result.expect("Call to nv_write failed");
     /// let read_data = nv_read_result.expect("Call to nv_read failed");
     /// assert_eq!(data, read_data);
+    /// # }
     /// ```
     pub fn nv_read(
         &mut self,

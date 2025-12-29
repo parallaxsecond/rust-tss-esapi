@@ -149,6 +149,8 @@ impl Context {
     /// #     interface_types::algorithm::HashingAlgorithm,
     /// #     structures::SymmetricDefinition,
     /// # };
+    /// # #[serial_test::file_serial]
+    /// # fn main() {
     /// # // Create context
     /// # let mut context =
     /// #     Context::new(
@@ -175,6 +177,7 @@ impl Context {
     /// # assert_eq!(auth_session, session_1);
     /// # assert_eq!(None, session_2);
     /// # assert_eq!(None, session_3);
+    /// # }
     /// ```
     pub fn set_sessions(
         &mut self,
@@ -197,6 +200,8 @@ impl Context {
     /// ```rust
     /// # use tss_esapi::{Context, tcti_ldr::TctiNameConf, interface_types::session_handles::AuthSession};
     /// # // Create context
+    /// # #[serial_test::file_serial]
+    /// # fn main() {
     /// # let mut context =
     /// #     Context::new(
     /// #         TctiNameConf::from_environment_variable().expect("Failed to get TCTI"),
@@ -210,6 +215,7 @@ impl Context {
     /// # assert_eq!(None, session_1);
     /// # assert_eq!(None, session_2);
     /// # assert_eq!(None, session_3);
+    /// # }
     /// ```
     pub fn clear_sessions(&mut self) {
         self.sessions = (None, None, None)
@@ -221,6 +227,8 @@ impl Context {
     ///
     /// ```rust
     /// # use tss_esapi::{Context, tcti_ldr::TctiNameConf, interface_types::session_handles::AuthSession};
+    /// # #[serial_test::file_serial]
+    /// # fn main() {
     /// # // Create context
     /// # let mut context =
     /// #     Context::new(
@@ -234,6 +242,7 @@ impl Context {
     /// assert_eq!(Some(AuthSession::Password), session_1);
     /// assert_eq!(None, session_2);
     /// assert_eq!(None, session_3);
+    /// # }
     /// ```
     pub fn sessions(
         &self,
@@ -358,6 +367,8 @@ impl Context {
     /// ```rust
     /// # use tss_esapi::{Context, tcti_ldr::TctiNameConf, constants::{PropertyTag,PrimitivePropertyTag}};
     /// # use std::str::FromStr;
+    /// # #[serial_test::file_serial]
+    /// # fn main() {
     /// # // Create context
     /// # let mut context =
     /// #     Context::new(
@@ -367,6 +378,7 @@ impl Context {
     ///     .get_tpm_property(PropertyTag::PrimitivePropertyTag(PrimitivePropertyTag::Revision))
     ///     .expect("Wrong value from TPM")
     ///     .expect("Value is not supported");
+    /// # }
     /// ```
     pub fn get_tpm_property(&mut self, property: PropertyTag) -> Result<Option<u32>> {
         // Return cached value if it exists
