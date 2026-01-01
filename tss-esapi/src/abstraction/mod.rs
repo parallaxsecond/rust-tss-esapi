@@ -28,6 +28,8 @@ use crate::{
 };
 
 /// KeyCustomizaion allows to adjust how a key is going to be created
+/// for an example of IntoKeyCusomization usage,
+///   see test_create_custom_ak() in tests/integration_tests/abstraction_tests/ak_tests.rs
 pub trait KeyCustomization {
     /// Alter the attributes used on key creation
     fn attributes(&self, attributes_builder: ObjectAttributesBuilder) -> ObjectAttributesBuilder {

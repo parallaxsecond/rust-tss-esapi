@@ -64,6 +64,10 @@ const AUTHPOLICY_B_SM3_256: [u8; 32] = [
 ///
 /// Source: TCG EK Credential Profile for TPM Family 2.0; Level 0 Version 2.3 Revision 2
 /// Appendix B.3.3 and B.3.4
+///
+/// for an example of IntoKeyCusomization usage,
+///   see test_create_custom_ak() in tests/integration_tests/abstraction_tests/ak_tests.rs
+///
 pub fn create_ek_public_from_default_template<IKC: IntoKeyCustomization>(
     alg: AsymmetricAlgorithmSelection,
     key_customization: IKC,
