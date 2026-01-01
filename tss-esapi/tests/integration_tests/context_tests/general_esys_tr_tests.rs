@@ -1,3 +1,4 @@
+use serial_test::serial;
 use crate::common::{create_ctx_with_session, create_ctx_without_session, decryption_key_pub};
 use tss_esapi::{
     attributes::NvIndexAttributesBuilder,
@@ -54,6 +55,7 @@ mod test_tr_from_tpm_public {
     // Need to set the shEnable in the TPMA_STARTUP in order for this to work.
     #[ignore]
     #[test]
+    #[serial]
     fn test_tr_from_tpm_public_owner_auth() {
         let mut context = create_ctx_without_session();
 
@@ -126,6 +128,7 @@ mod test_tr_from_tpm_public {
     }
 
     #[test]
+    #[serial]
     fn test_tr_from_tpm_public_password_auth() {
         let nv_index_tpm_handle = NvIndexTpmHandle::new(0x01500302).unwrap();
         remove_nv_index_handle_from_tpm(nv_index_tpm_handle, Provision::Owner);
@@ -228,6 +231,7 @@ mod test_tr_from_tpm_public {
     }
 
     #[test]
+    #[serial]
     fn read_from_retrieved_handle_using_password_authorization() {
         let nv_index_tpm_handle = NvIndexTpmHandle::new(0x01500303).unwrap();
 
@@ -381,6 +385,7 @@ mod test_tr_from_tpm_public {
 
     #[cfg(has_esys_tr_get_tpm_handle)]
     #[test]
+    #[serial]
     fn test_tr_get_tpm_handle() {
         use tss_esapi::handles::TpmHandle;
 
@@ -453,6 +458,7 @@ mod test_tr_serialize_tr_deserialize {
     use super::*;
 
     #[test]
+    #[serial]
     fn test_tr_serialize_tr_deserialize() -> Result<(), Error> {
         let persistent_addr =
             PersistentTpmHandle::new(u32::from_be_bytes([0x81, 0x00, 0x00, 0x05]))?;

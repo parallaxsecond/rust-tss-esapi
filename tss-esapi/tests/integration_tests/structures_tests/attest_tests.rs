@@ -1,5 +1,6 @@
 // Copyright 2021 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
+use serial_test::serial;
 use tss_esapi::{
     constants::{tss::TPM2_GENERATED_VALUE, AlgorithmIdentifier},
     interface_types::{algorithm::HashingAlgorithm, structure_tags::AttestationType, YesNo},
@@ -18,6 +19,7 @@ use tss_esapi::{
 use std::convert::{TryFrom, TryInto};
 
 #[test]
+#[serial]
 fn test_attest_with_certify_info_into_tpm_type_conversions() {
     let expected_certify_info_name =
         Name::try_from(vec![0xffu8; 64]).expect("Failed to create name");
@@ -56,6 +58,7 @@ fn test_attest_with_certify_info_into_tpm_type_conversions() {
 }
 
 #[test]
+#[serial]
 fn test_attest_with_quote_info_into_tpm_type_conversions() {
     let expected_pcr_selection = PcrSelectionListBuilder::new()
         .with_selection(
@@ -103,6 +106,7 @@ fn test_attest_with_quote_info_into_tpm_type_conversions() {
 }
 
 #[test]
+#[serial]
 fn test_attest_with_session_audit_info_into_tpm_type_conversions() {
     let expected_exclusive_session = YesNo::Yes;
     let expected_session_digest =
@@ -140,6 +144,7 @@ fn test_attest_with_session_audit_info_into_tpm_type_conversions() {
 }
 
 #[test]
+#[serial]
 fn test_attest_with_command_audit_info_into_tpm_type_conversions() {
     let expected_audit_counter = 1u64;
     let expected_digest_alg = HashingAlgorithm::Sha512;
@@ -192,6 +197,7 @@ fn test_attest_with_command_audit_info_into_tpm_type_conversions() {
 }
 
 #[test]
+#[serial]
 fn test_attest_with_time_info_into_tpm_type_conversions() {
     let expected_time_attest_info: TimeAttestInfo = TPMS_TIME_ATTEST_INFO {
         time: TPMS_TIME_INFO {
@@ -230,6 +236,7 @@ fn test_attest_with_time_info_into_tpm_type_conversions() {
 }
 
 #[test]
+#[serial]
 fn test_attest_with_creation_info_into_tpm_type_conversions() {
     let expected_object_name =
         Name::try_from(vec![0xf0u8; 68]).expect("Failed to create object name");
@@ -269,6 +276,7 @@ fn test_attest_with_creation_info_into_tpm_type_conversions() {
 }
 
 #[test]
+#[serial]
 fn test_attest_with_nv_creation_info_into_tpm_type_conversions() {
     let expected_index_name =
         Name::try_from(vec![0xf0u8; 68]).expect("Failed to create index name");
@@ -314,6 +322,7 @@ fn test_attest_with_nv_creation_info_into_tpm_type_conversions() {
 }
 
 #[test]
+#[serial]
 fn test_marshall_and_unmarshall() {
     let expected_index_name =
         Name::try_from(vec![0xf0u8; 68]).expect("Failed to create index name");

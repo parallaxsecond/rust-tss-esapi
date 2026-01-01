@@ -9,7 +9,7 @@
 //! type name. Unions are converted to Rust `enum`s by dropping the `TPMU` qualifier and appending
 //! `Union`.
 use crate::attributes::ObjectAttributesBuilder;
-use crate::constants::PropertyTag;
+use crate::constants::{PropertyTag,PrimitivePropertyTag};
 use crate::interface_types::{
     algorithm::{HashingAlgorithm, PublicAlgorithm},
     ecc::EccCurve,
@@ -248,10 +248,10 @@ fn tpm_int_to_string(num: u32) -> String {
 pub fn get_tpm_vendor(context: &mut Context) -> Result<String> {
     // Retrieve the TPM property values
     Ok([
-        PropertyTag::VendorString1,
-        PropertyTag::VendorString2,
-        PropertyTag::VendorString3,
-        PropertyTag::VendorString4,
+        PropertyTag::PrimitivePropertyTag(PrimitivePropertyTag::VendorString1),
+        PropertyTag::PrimitivePropertyTag(PrimitivePropertyTag::VendorString2),
+        PropertyTag::PrimitivePropertyTag(PrimitivePropertyTag::VendorString3),
+        PropertyTag::PrimitivePropertyTag(PrimitivePropertyTag::VendorString4),
     ]
     .iter()
     // Retrieve property values

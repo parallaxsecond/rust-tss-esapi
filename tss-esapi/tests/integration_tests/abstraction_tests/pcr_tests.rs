@@ -1,6 +1,7 @@
 // Copyright 2021 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
 use crate::common::create_ctx_without_session;
+use serial_test::serial;
 
 use tss_esapi::{
     interface_types::algorithm::HashingAlgorithm,
@@ -8,6 +9,7 @@ use tss_esapi::{
 };
 
 #[test]
+#[serial]
 fn test_pcr_read_all() {
     let mut context = create_ctx_without_session();
 
