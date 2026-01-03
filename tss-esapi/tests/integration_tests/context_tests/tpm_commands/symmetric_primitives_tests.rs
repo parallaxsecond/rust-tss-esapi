@@ -1,7 +1,9 @@
 // Copyright 2021 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
+
 mod test_encrypt_decrypt_2 {
     use crate::common::create_ctx_without_session;
+    use serial_test::serial;
     use std::convert::TryFrom;
     use tss_esapi::{
         attributes::ObjectAttributesBuilder,
@@ -17,6 +19,7 @@ mod test_encrypt_decrypt_2 {
         },
     };
     #[test]
+    #[serial]
     fn test_encrypt_decrypt_with_aes_128_cfb_symmetric_key() {
         let mut context = create_ctx_without_session();
 
@@ -146,6 +149,7 @@ mod test_encrypt_decrypt_2 {
 
 mod test_hash {
     use crate::common::create_ctx_without_session;
+    use serial_test::serial;
     use std::convert::TryFrom;
     use tss_esapi::{
         interface_types::{algorithm::HashingAlgorithm, reserved_handles::Hierarchy},
@@ -153,6 +157,7 @@ mod test_hash {
     };
 
     #[test]
+    #[serial]
     fn test_hash_with_sha_256() {
         let mut context = create_ctx_without_session();
         let data = "There is no spoon";
@@ -178,6 +183,7 @@ mod test_hash {
 
 mod test_hmac {
     use crate::common::create_ctx_with_session;
+    use serial_test::serial;
     use std::convert::TryFrom;
     use tss_esapi::{
         attributes::ObjectAttributesBuilder,
@@ -189,6 +195,7 @@ mod test_hmac {
     };
 
     #[test]
+    #[serial]
     fn test_hmac() {
         let mut context = create_ctx_with_session();
 

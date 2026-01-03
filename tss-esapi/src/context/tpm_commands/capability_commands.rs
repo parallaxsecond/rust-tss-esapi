@@ -28,6 +28,8 @@ impl Context {
     ///
     /// ```rust
     /// # use tss_esapi::{Context, TctiNameConf};
+    /// # #[serial_test::file_serial]
+    /// # fn main() {
     /// # // Create context
     /// # let mut context =
     /// #     Context::new(
@@ -39,6 +41,7 @@ impl Context {
     /// let (_capabilities, _more) = context
     ///     .get_capability(CapabilityType::Algorithms, 0, 80)
     ///     .expect("Failed to call get_capability");
+    /// # }
     /// ```
     pub fn get_capability(
         &mut self,

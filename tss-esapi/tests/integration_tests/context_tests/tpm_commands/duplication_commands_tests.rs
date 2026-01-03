@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 mod test_duplicate {
     use crate::common::{create_ctx_with_session, create_ctx_without_session};
+    use serial_test::serial;
     use std::convert::TryFrom;
     use std::convert::TryInto;
     use tss_esapi::attributes::{ObjectAttributesBuilder, SessionAttributesBuilder};
@@ -20,6 +21,7 @@ mod test_duplicate {
     };
 
     #[test]
+    #[serial]
     fn test_duplicate_and_import() {
         let mut context = create_ctx_with_session();
 

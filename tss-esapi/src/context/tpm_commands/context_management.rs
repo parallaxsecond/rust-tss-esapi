@@ -71,6 +71,8 @@ impl Context {
     /// # };
     /// # use std::convert::TryFrom;
     /// # use std::str::FromStr;
+    /// # #[serial_test::file_serial]
+    /// # fn main() {
     /// # // Create context
     /// # let mut context =
     /// #     Context::new(
@@ -126,6 +128,7 @@ impl Context {
     ///         ctx.flush_context(key_handle.into()).expect("Call to flush_context failed");
     ///         assert!(ctx.read_public(key_handle).is_err());
     /// })
+    /// # }
     /// ```
     pub fn flush_context(&mut self, handle: ObjectHandle) -> Result<()> {
         ReturnCode::ensure_success(
@@ -183,6 +186,8 @@ impl Context {
     /// #     tss2_esys::TPM2_HANDLE,
     /// # };
     /// # use std::{env, str::FromStr, convert::TryFrom};
+    /// # #[serial_test::file_serial]
+    /// # fn main() {
     /// # // Create context
     /// # let mut context =
     /// #     Context::new(
@@ -281,6 +286,7 @@ impl Context {
     /// #       .expect("Failed to evict persistent handle")
     /// # });
     /// # assert_ne!(retireved_persistent_handle, ObjectHandle::None);
+    /// # }
     /// ```
     ///
     /// Make persistent object transient
@@ -302,6 +308,8 @@ impl Context {
     /// #     tss2_esys::TPM2_HANDLE,
     /// # };
     /// # use std::{env, str::FromStr, convert::TryFrom};
+    /// # #[serial_test::file_serial]
+    /// # fn main() {
     /// # // Create context
     /// # let mut context =
     /// #     Context::new(
@@ -401,6 +409,7 @@ impl Context {
     ///         .expect("Failed to evict persistent handle")
     /// });
     /// # assert_ne!(retrieved_persistent_handle, ObjectHandle::None);
+    /// # }
     /// ```
     pub fn evict_control(
         &mut self,

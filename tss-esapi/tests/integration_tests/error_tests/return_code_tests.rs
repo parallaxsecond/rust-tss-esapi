@@ -9,6 +9,7 @@ mod resource_manager_tpm_tests;
 mod sapi_tests;
 mod tcti_tests;
 mod tpm_tests;
+use serial_test::serial;
 
 use tss_esapi::{
     constants::tss::{
@@ -68,6 +69,7 @@ macro_rules! test_error_trait_impl {
 }
 
 #[test]
+#[serial]
 fn test_error_trait_implementation() {
     test_error_trait_impl!(TpmResponseCode, TSS2_TPM_RC_LAYER, TPM2_RC_INITIALIZE);
     test_error_trait_impl!(
@@ -135,6 +137,7 @@ macro_rules! test_display_trait_impl {
 }
 
 #[test]
+#[serial]
 fn test_display_trait_implementation() {
     test_display_trait_impl!(
         "TSS Layer: TPM, Code: 0x00000100, Message:",

@@ -2,9 +2,11 @@
 // SPDX-License-Identifier: Apache-2.0
 mod test_create {
     use crate::common::{create_ctx_with_session, decryption_key_pub};
+    use serial_test::serial;
     use tss_esapi::{interface_types::reserved_handles::Hierarchy, structures::Auth};
 
     #[test]
+    #[serial]
     fn test_create() {
         let mut context = create_ctx_with_session();
         let mut random_digest = vec![0u8; 16];
@@ -38,9 +40,11 @@ mod test_create {
 
 mod test_load {
     use crate::common::{create_ctx_with_session, decryption_key_pub, signing_key_pub};
+    use serial_test::serial;
     use tss_esapi::{interface_types::reserved_handles::Hierarchy, structures::Auth};
 
     #[test]
+    #[serial]
     fn test_load() {
         let mut context = create_ctx_with_session();
         let mut random_digest = vec![0u8; 16];
@@ -78,6 +82,7 @@ mod test_load {
 
 mod test_load_external {
     use crate::common::create_ctx_with_session;
+    use serial_test::serial;
     use std::convert::TryInto;
     use tss_esapi::{
         attributes::ObjectAttributesBuilder,
@@ -164,6 +169,7 @@ mod test_load_external {
     }
 
     #[test]
+    #[serial]
     fn test_load_external_private_and_public_parts() {
         let mut context = create_ctx_with_session();
         let pub_key = get_ext_rsa_pub();
@@ -176,6 +182,7 @@ mod test_load_external {
     }
 
     #[test]
+    #[serial]
     fn test_load_external_only_public_part() {
         let mut context = create_ctx_with_session();
         let pub_key = get_ext_rsa_pub();
@@ -189,9 +196,11 @@ mod test_load_external {
 
 mod test_read_public {
     use crate::common::{create_ctx_with_session, signing_key_pub};
+    use serial_test::serial;
     use tss_esapi::{interface_types::reserved_handles::Hierarchy, structures::Auth};
 
     #[test]
+    #[serial]
     fn test_read_public() {
         let mut context = create_ctx_with_session();
         let mut random_digest = vec![0u8; 16];
@@ -215,10 +224,12 @@ mod test_read_public {
 
 mod test_make_credential {
     use crate::common::{create_ctx_with_session, decryption_key_pub};
+    use serial_test::serial;
     use std::convert::TryInto;
     use tss_esapi::interface_types::reserved_handles::Hierarchy;
 
     #[test]
+    #[serial]
     fn test_make_credential() {
         let mut context = create_ctx_with_session();
 
@@ -248,6 +259,7 @@ mod test_make_credential {
 
 mod test_activate_credential {
     use crate::common::{create_ctx_with_session, decryption_key_pub};
+    use serial_test::serial;
     use std::convert::{TryFrom, TryInto};
     use tss_esapi::{
         attributes::SessionAttributesBuilder,
@@ -256,6 +268,7 @@ mod test_activate_credential {
         structures::{Digest, SymmetricDefinition},
     };
     #[test]
+    #[serial]
     fn test_make_activate_credential() {
         let mut context = create_ctx_with_session();
 
@@ -333,10 +346,12 @@ mod test_activate_credential {
 
 mod test_unseal {
     use crate::common::{create_ctx_with_session, create_public_sealed_object, decryption_key_pub};
+    use serial_test::serial;
     use std::convert::TryFrom;
     use tss_esapi::{interface_types::reserved_handles::Hierarchy, structures::SensitiveData};
 
     #[test]
+    #[serial]
     fn unseal() {
         let testbytes: [u8; 5] = [0x01, 0x02, 0x03, 0x04, 0x42];
 

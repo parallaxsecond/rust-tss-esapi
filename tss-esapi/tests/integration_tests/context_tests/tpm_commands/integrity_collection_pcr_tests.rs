@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 mod test_pcr_extend_reset {
     use crate::common::create_ctx_with_session;
+    use serial_test::serial;
     use std::convert::TryFrom;
     use tss_esapi::{
         handles::PcrHandle,
@@ -9,6 +10,7 @@ mod test_pcr_extend_reset {
         structures::{Digest, DigestValues, PcrSelectionListBuilder, PcrSlot},
     };
     #[test]
+    #[serial]
     fn test_pcr_extend_reset_commands() {
         // In this test, we use PCR16. This was chosen because it's the only one that is
         // resettable and extendable from the locality in which we are running, and does not
@@ -165,6 +167,7 @@ mod test_pcr_extend_reset {
 
 mod test_pcr_read {
     use crate::common::create_ctx_without_session;
+    use serial_test::serial;
     use tss_esapi::{
         interface_types::algorithm::HashingAlgorithm,
         structures::{PcrSelectionListBuilder, PcrSlot},
@@ -172,6 +175,7 @@ mod test_pcr_read {
     };
 
     #[test]
+    #[serial]
     fn test_pcr_read_command() {
         let mut context = create_ctx_without_session();
         // Read PCR 0
@@ -229,6 +233,7 @@ mod test_pcr_read {
     }
 
     #[test]
+    #[serial]
     fn test_pcr_read_large_pcr_selections() {
         // If the pcr Selection contains more then 16 values
         // then not all can be read at once and the returned
