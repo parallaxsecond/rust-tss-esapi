@@ -1,6 +1,7 @@
 // Copyright 2020 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
 use std::convert::TryFrom;
+use serial_test::serial;
 use tss_esapi::{
     handles::{AuthHandle, NvIndexHandle, ObjectHandle, PermanentTpmHandle, TpmHandle},
     interface_types::reserved_handles::{
@@ -13,6 +14,7 @@ use tss_esapi::{
 mod test_hierarchy {
     use super::*;
     #[test]
+    #[serial]
     fn test_conversions() {
         let test_conversion =
             |hierarchy: Hierarchy, tpm_rh: TpmHandle, esys_rh: ObjectHandle, name: &str| {
@@ -61,6 +63,7 @@ mod test_hierarchy {
 mod test_enables {
     use super::*;
     #[test]
+    #[serial]
     fn test_conversions() {
         let test_conversion =
             |enables: Enables, tpm_rh: TpmHandle, esys_rh: ObjectHandle, name: &str| {
@@ -114,6 +117,7 @@ mod test_enables {
 mod test_hierarchy_auth {
     use super::*;
     #[test]
+    #[serial]
     fn test_conversions() {
         let test_conversion = |hierarchy_auth: HierarchyAuth,
                                tpm_rh: TpmHandle,
@@ -164,6 +168,7 @@ mod test_hierarchy_auth {
 mod test_platform {
     use super::*;
     #[test]
+    #[serial]
     fn test_conversions() {
         assert_eq!(AuthHandle::from(Platform::Platform), AuthHandle::Platform);
         assert_eq!(
@@ -177,6 +182,7 @@ mod test_platform {
 mod test_owner {
     use super::*;
     #[test]
+    #[serial]
     fn test_conversions() {
         assert_eq!(ObjectHandle::from(Owner::Owner), ObjectHandle::Owner);
         assert_eq!(ObjectHandle::from(Owner::Null), ObjectHandle::Null);
@@ -196,6 +202,7 @@ mod test_owner {
 mod test_endorsement {
     use super::*;
     #[test]
+    #[serial]
     fn test_conversions() {
         assert_eq!(
             ObjectHandle::from(Endorsement::Endorsement),
@@ -218,6 +225,7 @@ mod test_endorsement {
 mod test_provision {
     use super::*;
     #[test]
+    #[serial]
     fn test_conversions() {
         assert_eq!(AuthHandle::from(Provision::Owner), AuthHandle::Owner);
         assert_eq!(AuthHandle::from(Provision::Platform), AuthHandle::Platform);
@@ -237,6 +245,7 @@ mod test_provision {
 mod test_clear {
     use super::*;
     #[test]
+    #[serial]
     fn test_conversions() {
         assert_eq!(AuthHandle::from(Clear::Owner), AuthHandle::Owner);
         assert_eq!(AuthHandle::from(Clear::Platform), AuthHandle::Platform);
@@ -256,6 +265,7 @@ mod test_nv_auth {
     use super::*;
 
     #[test]
+    #[serial]
     fn test_conversions() {
         assert_eq!(AuthHandle::from(NvAuth::Platform), AuthHandle::Platform);
         assert_eq!(AuthHandle::from(NvAuth::Owner), AuthHandle::Owner);
@@ -287,6 +297,7 @@ mod test_nv_auth {
 mod test_lockout {
     use super::*;
     #[test]
+    #[serial]
     fn test_conversions() {
         assert_eq!(ObjectHandle::from(Lockout::Lockout), ObjectHandle::Lockout);
         assert_eq!(

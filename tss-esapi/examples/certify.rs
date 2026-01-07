@@ -111,10 +111,12 @@ use tss_esapi::{
     interface_types::{
         algorithm::{HashingAlgorithm, PublicAlgorithm, SignatureSchemeAlgorithm},
         ecc::EccCurve,
+        key_bits::RsaKeyBits,
         reserved_handles::Hierarchy,
         session_handles::PolicySession,
     },
     structures::{
+        //RsaScheme,  RsaExponent,
         Data, Digest, EccPoint, EccScheme, HashScheme, MaxBuffer, PublicBuilder,
         PublicEccParametersBuilder, SignatureScheme, SymmetricCipherParameters,
         SymmetricDefinition, SymmetricDefinitionObject,
@@ -124,6 +126,8 @@ use tss_esapi::{
 };
 
 use std::convert::{TryFrom, TryInto};
+use std::env;
+use std::process::exit;
 
 fn main() {
     env_logger::init();
@@ -137,13 +141,26 @@ fn main() {
         TctiNameConf::from_environment_variable()
             .expect("Failed to get TCTI / TPM2TOOLS_TCTI from environment. Try `export TCTI=device:/dev/tpmrm0`"),
     )
-    .expect("Failed to create Context");
+        .expect("Failed to create Context");
 
     let mut context_2 = Context::new(
         TctiNameConf::from_environment_variable()
             .expect("Failed to get TCTI / TPM2TOOLS_TCTI from environment. Try `export TCTI=device:/dev/tpmrm0`"),
     )
-    .expect("Failed to create Context");
+        .expect("Failed to create Context");
+
+    let mut args = env::args();
+    let _ = args.next();   // eat argv[0], cmd-name.
+
+    let selection = {
+        if let Some(arg1) = args.next() {
+            arg1.parse::<i32>().unwrap()
+        } else {
+            0  // default if no arguments.
+        }
+    };
+
+    println!("Selecting method {}", selection);
 
     // First we need the endorsement key. This is bound to the manufacturer of the TPM
     // and will serve as proof that the TPM is trustworthy.
@@ -154,29 +171,37 @@ fn main() {
     // Remember, the Hash alg in many cases has to match the key type, especially
     // with ecdsa.
 
-    // == RSA
-    // let ek_alg = AsymmetricAlgorithmSelection::Rsa(RsaKeyBits::Rsa2048);
-    // let hash_alg = HashingAlgorithm::Sha256;
-    // let sign_alg = SignatureSchemeAlgorithm::RsaPss;
-    // let sig_scheme = SignatureScheme::RsaPss {
-    //     scheme: HashScheme::new(hash_alg),
-    // };
-
-    // == ECDSA P384
-    let ek_alg = AsymmetricAlgorithmSelection::Ecc(EccCurve::NistP384);
-    let hash_alg = HashingAlgorithm::Sha384;
-    let sign_alg = SignatureSchemeAlgorithm::EcDsa;
-    let sig_scheme = SignatureScheme::EcDsa {
-        scheme: HashScheme::new(hash_alg),
+    let (ek_alg, hash_alg, sign_alg, sig_scheme) = match selection {
+        0 => {
+            // == RSA
+            let hash_alg = HashingAlgorithm::Sha256;
+            (AsymmetricAlgorithmSelection::Rsa(RsaKeyBits::Rsa2048),// ek_alg
+             hash_alg,                                              // hash_alg
+             SignatureSchemeAlgorithm::RsaPss,                      // sign_alg
+             SignatureScheme::RsaPss { scheme: HashScheme::new(hash_alg) })  // sig_scheme
+        },
+        1 => {
+            // == ECDSA P384
+            let hash_alg = HashingAlgorithm::Sha256;
+            (AsymmetricAlgorithmSelection::Ecc(EccCurve::NistP384),
+             hash_alg,
+             SignatureSchemeAlgorithm::EcDsa,
+             SignatureScheme::EcDsa { scheme: HashScheme::new(hash_alg) })
+        },
+        2 => {
+            // == ECDSA P256
+            let hash_alg = HashingAlgorithm::Sha256;
+            (AsymmetricAlgorithmSelection::Ecc(EccCurve::NistP256),
+             hash_alg,
+             SignatureSchemeAlgorithm::EcDsa,
+             SignatureScheme::EcDsa { scheme: HashScheme::new(hash_alg) })
+        },
+        _ => {
+            println!("Select 0 - RSA, 1 - P384, 2 - P256");
+            exit(1);
+        }
     };
 
-    // == ECDSA P256
-    // let ek_alg = AsymmetricAlgorithmSelection::Ecc(EccCurve::NistP256);
-    // let hash_alg = HashingAlgorithm::Sha256;
-    // let sign_alg = SignatureSchemeAlgorithm::EcDsa;
-    // let sig_scheme = SignatureScheme::EcDsa {
-    //    scheme: HashScheme::new(hash_alg),
-    // };
 
     // If you wish to see the EK cert, you can fetch it's X509 DER here.
     let ek_pubcert = retrieve_ek_pubcert(&mut context_1, ek_alg).unwrap();
