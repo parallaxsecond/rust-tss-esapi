@@ -1,6 +1,7 @@
 // Copyright 2020 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
 
+use serial_test::serial;
 use std::io::{ErrorKind, Seek, SeekFrom, Write};
 use tss_esapi::{
     abstraction::nv,
@@ -16,6 +17,7 @@ use tss_esapi::{
 use crate::common::{create_ctx_with_session, write_nv_index};
 
 #[test]
+#[serial]
 fn list() {
     let mut context = create_ctx_with_session();
 
@@ -52,6 +54,7 @@ fn list() {
 }
 
 #[test]
+#[serial]
 fn read_full() {
     let mut context = create_ctx_with_session();
 
@@ -84,6 +87,7 @@ fn read_full() {
 }
 
 #[test]
+#[serial]
 fn write() {
     let mut context = create_ctx_with_session();
 

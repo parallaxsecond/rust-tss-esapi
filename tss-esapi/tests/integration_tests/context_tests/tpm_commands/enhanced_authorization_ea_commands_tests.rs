@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 mod test_policy_signed {
     use crate::common::{create_ctx_with_session, signing_key_pub};
+    use serial_test::serial;
     use std::{convert::TryFrom, time::Duration};
     use tss_esapi::{
         attributes::SessionAttributesBuilder,
@@ -13,6 +14,7 @@ mod test_policy_signed {
         structures::{Digest, Nonce, PublicKeyRsa, RsaSignature, Signature, SymmetricDefinition},
     };
     #[test]
+    #[serial]
     fn test_policy_signed() {
         let mut context = create_ctx_with_session();
 
@@ -80,6 +82,7 @@ mod test_policy_signed {
 
 mod test_policy_secret {
     use crate::common::create_ctx_with_session;
+    use serial_test::serial;
     use std::{convert::TryFrom, time::Duration};
     use tss_esapi::{
         attributes::SessionAttributesBuilder,
@@ -89,6 +92,7 @@ mod test_policy_secret {
         structures::{Digest, Nonce, SymmetricDefinition},
     };
     #[test]
+    #[serial]
     fn test_policy_secret() {
         let mut context = create_ctx_with_session();
 
@@ -140,6 +144,7 @@ mod test_policy_secret {
 
 mod test_policy_or {
     use crate::common::{create_ctx_without_session, get_pcr_policy_digest};
+    use serial_test::serial;
     use std::convert::TryFrom;
     use tss_esapi::{
         attributes::SessionAttributesBuilder,
@@ -148,6 +153,7 @@ mod test_policy_or {
         structures::{DigestList, SymmetricDefinition},
     };
     #[test]
+    #[serial]
     fn test_policy_or() {
         let mut context = create_ctx_without_session();
         let trial_policy_auth_session = context
@@ -192,6 +198,7 @@ mod test_policy_or {
 
 mod test_policy_pcr {
     use crate::common::create_ctx_without_session;
+    use serial_test::serial;
     use std::convert::TryFrom;
     use tss_esapi::{
         attributes::SessionAttributesBuilder,
@@ -204,6 +211,7 @@ mod test_policy_pcr {
     };
 
     #[test]
+    #[serial]
     fn test_policy_pcr_sha_256() {
         let mut context = create_ctx_without_session();
         let trial_policy_auth_session = context
@@ -276,6 +284,7 @@ mod test_policy_pcr {
 
 mod test_policy_locality {
     use crate::common::create_ctx_without_session;
+    use serial_test::serial;
     use std::convert::TryFrom;
     use tss_esapi::{
         attributes::{LocalityAttributes, SessionAttributesBuilder},
@@ -284,6 +293,7 @@ mod test_policy_locality {
         structures::SymmetricDefinition,
     };
     #[test]
+    #[serial]
     fn test_policy_locality() {
         let mut context = create_ctx_without_session();
         let trial_policy_auth_session = context
@@ -320,6 +330,7 @@ mod test_policy_locality {
 
 mod test_policy_command_code {
     use crate::common::create_ctx_without_session;
+    use serial_test::serial;
     use std::convert::TryFrom;
     use tss_esapi::{
         attributes::SessionAttributesBuilder,
@@ -328,6 +339,7 @@ mod test_policy_command_code {
         structures::SymmetricDefinition,
     };
     #[test]
+    #[serial]
     fn test_policy_command_code() {
         let mut context = create_ctx_without_session();
         let trial_policy_auth_session = context
@@ -364,6 +376,7 @@ mod test_policy_command_code {
 
 mod test_policy_physical_presence {
     use crate::common::create_ctx_without_session;
+    use serial_test::serial;
     use std::convert::TryFrom;
     use tss_esapi::{
         attributes::SessionAttributesBuilder,
@@ -372,6 +385,7 @@ mod test_policy_physical_presence {
         structures::SymmetricDefinition,
     };
     #[test]
+    #[serial]
     fn test_policy_physical_presence() {
         let mut context = create_ctx_without_session();
         let trial_policy_auth_session = context
@@ -408,6 +422,7 @@ mod test_policy_physical_presence {
 
 mod test_policy_cp_hash {
     use crate::common::create_ctx_without_session;
+    use serial_test::serial;
     use std::convert::TryFrom;
     use tss_esapi::{
         attributes::SessionAttributesBuilder,
@@ -416,6 +431,7 @@ mod test_policy_cp_hash {
         structures::{Digest, SymmetricDefinition},
     };
     #[test]
+    #[serial]
     fn test_policy_cp_hash() {
         let mut context = create_ctx_without_session();
         let trial_policy_auth_session = context
@@ -458,6 +474,7 @@ mod test_policy_cp_hash {
 
 mod test_policy_name_hash {
     use crate::common::create_ctx_without_session;
+    use serial_test::serial;
     use std::convert::TryFrom;
     use tss_esapi::{
         attributes::SessionAttributesBuilder,
@@ -466,6 +483,7 @@ mod test_policy_name_hash {
         structures::{Digest, SymmetricDefinition},
     };
     #[test]
+    #[serial]
     fn test_policy_name_hash() {
         let mut context = create_ctx_without_session();
         let trial_policy_auth_session = context
@@ -508,6 +526,7 @@ mod test_policy_name_hash {
 
 mod test_policy_authorize {
     use crate::common::{create_ctx_with_session, get_pcr_policy_digest, signing_key_pub};
+    use serial_test::serial;
     use std::convert::TryFrom;
     use tss_esapi::{
         interface_types::{algorithm::HashingAlgorithm, reserved_handles::Hierarchy},
@@ -515,6 +534,7 @@ mod test_policy_authorize {
         tss2_esys::TPM2B_NONCE,
     };
     #[test]
+    #[serial]
     fn test_policy_authorize() {
         let mut context = create_ctx_with_session();
         let mut random_digest = vec![0u8; 16];
@@ -570,6 +590,7 @@ mod test_policy_authorize {
 
 mod test_policy_auth_value {
     use crate::common::create_ctx_without_session;
+    use serial_test::serial;
     use std::convert::TryFrom;
     use tss_esapi::{
         attributes::SessionAttributesBuilder,
@@ -578,6 +599,7 @@ mod test_policy_auth_value {
         structures::SymmetricDefinition,
     };
     #[test]
+    #[serial]
     fn test_policy_auth_value() {
         let mut context = create_ctx_without_session();
         let trial_policy_auth_session = context
@@ -614,6 +636,7 @@ mod test_policy_auth_value {
 
 mod test_policy_password {
     use crate::common::create_ctx_without_session;
+    use serial_test::serial;
     use std::convert::TryFrom;
     use tss_esapi::{
         attributes::SessionAttributesBuilder,
@@ -622,6 +645,7 @@ mod test_policy_password {
         structures::SymmetricDefinition,
     };
     #[test]
+    #[serial]
     fn test_policy_password() {
         let mut context = create_ctx_without_session();
         let trial_policy_auth_session = context
@@ -658,6 +682,7 @@ mod test_policy_password {
 
 mod test_policy_get_digest {
     use crate::common::create_ctx_without_session;
+    use serial_test::serial;
     use std::convert::TryFrom;
     use tss_esapi::{
         attributes::SessionAttributesBuilder,
@@ -669,6 +694,7 @@ mod test_policy_get_digest {
         structures::{MaxBuffer, PcrSelectionListBuilder, PcrSlot, SymmetricDefinition},
     };
     #[test]
+    #[serial]
     fn get_policy_digest() {
         let mut context = create_ctx_without_session();
         let trial_policy_auth_session = context
@@ -747,6 +773,7 @@ mod test_policy_get_digest {
 
 mod test_policy_nv_written {
     use crate::common::create_ctx_without_session;
+    use serial_test::serial;
     use std::convert::TryFrom;
     use tss_esapi::{
         attributes::SessionAttributesBuilder,
@@ -755,6 +782,7 @@ mod test_policy_nv_written {
         structures::SymmetricDefinition,
     };
     #[test]
+    #[serial]
     fn test_policy_nv_written() {
         let mut context = create_ctx_without_session();
         let trial_policy_auth_session = context
@@ -792,6 +820,7 @@ mod test_policy_nv_written {
 
 mod test_policy_template {
     use crate::common::create_ctx_without_session;
+    use serial_test::serial;
     use std::convert::TryFrom;
     use tss_esapi::{
         constants::SessionType,
@@ -799,6 +828,7 @@ mod test_policy_template {
         structures::{Digest, Nonce, SymmetricDefinition},
     };
     #[test]
+    #[serial]
     fn basic_policy_template_test() {
         let trial_session_nonce = Nonce::try_from(vec![
             11, 12, 13, 14, 15, 16, 17, 18, 19, 11, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30,
@@ -849,6 +879,7 @@ mod test_policy_template {
 
 mod test_policy_authorize_nv {
     use crate::common::{create_ctx_with_session, write_nv_index};
+    use serial_test::serial;
     use std::convert::TryFrom;
     use tss_esapi::{
         attributes::SessionAttributesBuilder,
@@ -863,6 +894,7 @@ mod test_policy_authorize_nv {
     };
 
     #[test]
+    #[serial]
     fn test_policy_authorize_nv() {
         let mut context = create_ctx_with_session();
         let trial_policy_auth_session = context

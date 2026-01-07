@@ -1,3 +1,4 @@
+use serial_test::serial;
 use tss_esapi::{
     abstraction::pcr::PcrData,
     interface_types::algorithm::HashingAlgorithm,

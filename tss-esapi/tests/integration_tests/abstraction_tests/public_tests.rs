@@ -1,8 +1,10 @@
 // Copyright 2022 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
 
+use serial_test::serial;
 mod public_rsa_test {
     use rsa::{pkcs1, traits::PublicKeyParts, BigUint};
+    use serial_test::serial;
     use std::convert::TryFrom;
     use tss_esapi::{
         attributes::ObjectAttributesBuilder,
@@ -69,6 +71,7 @@ mod public_rsa_test {
     }
 
     #[test]
+    #[serial]
     fn test_public_to_decoded_key_rsa() {
         let public_rsa = get_ext_rsa_pub();
         let default_exponent = BigUint::from(RSA_DEFAULT_EXP);
@@ -79,6 +82,7 @@ mod public_rsa_test {
     }
 
     #[test]
+    #[serial]
     fn test_public_to_subject_public_key_info_rsa() {
         let public_rsa = get_ext_rsa_pub();
         let key = SubjectPublicKeyInfoOwned::try_from(&public_rsa)
@@ -101,6 +105,7 @@ mod public_rsa_test {
 }
 
 mod public_ecc_test {
+    use serial_test::serial;
     use std::convert::TryFrom;
     use tss_esapi::{
         attributes::ObjectAttributesBuilder,
@@ -163,6 +168,7 @@ mod public_ecc_test {
     }
 
     #[test]
+    #[serial]
     fn test_public_to_decoded_key_ecc() {
         let public_ecc = get_ext_ecc_pub();
         let key = p256::PublicKey::try_from(&public_ecc)
@@ -173,6 +179,7 @@ mod public_ecc_test {
     }
 
     #[test]
+    #[serial]
     fn test_public_to_subject_public_key_info_ecc() {
         let public_ecc = get_ext_ecc_pub();
         let key = SubjectPublicKeyInfoOwned::try_from(&public_ecc)

@@ -1,6 +1,7 @@
 // Copyright 2022 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.
 
+use serial_test::serial;
 use std::convert::TryFrom;
 use tss_esapi::{
     constants::{
@@ -74,6 +75,7 @@ macro_rules! test_valid_conversion {
 }
 
 #[test]
+#[serial]
 fn test_valid_conversions() {
     test_valid_conversion!(TSS2_BASE_RC_GENERAL_FAILURE, BaseError::GeneralFailure);
     test_valid_conversion!(TSS2_BASE_RC_BAD_REFERENCE, BaseError::BadReference);
@@ -86,6 +88,7 @@ fn test_valid_conversions() {
 }
 
 #[test]
+#[serial]
 fn test_invalid_conversions() {
     let tss_invalid_fapi_rc = TSS2_MU_RC_LAYER | TSS2_BASE_RC_BAD_TEMPLATE;
     assert_eq!(
@@ -111,6 +114,7 @@ macro_rules! test_base_error {
 }
 
 #[test]
+#[serial]
 fn test_base_error_method() {
     test_base_error!(BaseError::GeneralFailure);
     test_base_error!(BaseError::BadReference);
