@@ -23,21 +23,23 @@ mod test_hash_sequence {
 
         let handle = context
             .hash_sequence_start(HashingAlgorithm::Sha256, None)
-            .unwrap();
+            .expect("Hash sequence started successfully");
         context
             .sequence_update(
                 handle,
-                MaxBuffer::try_from(data.as_bytes().to_vec()).unwrap(),
+                MaxBuffer::try_from(data.as_bytes().to_vec())
+                    .expect("MaxBuffer created from raw data should succeed"),
             )
-            .unwrap();
+            .expect("Hash sequence update should succeed");
         let (actual_hashed_data, ticket) = context
             .sequence_complete(
                 handle,
-                MaxBuffer::from_bytes(&[]).unwrap(),
+                MaxBuffer::from_bytes(&[])
+                    .expect("MaxBuffer created from empty buffer should succeed"),
                 expected_hierarchy,
             )
-            .unwrap();
-        let ticket = ticket.unwrap();
+            .expect("Hash sequence completed successfully");
+        let ticket = ticket.expect("HashcheckTicket should be returned");
 
         assert_eq!(expected_hashed_data.len(), actual_hashed_data.len());
         assert_eq!(&expected_hashed_data[..], &actual_hashed_data[..]);
@@ -58,23 +60,28 @@ mod test_hash_sequence {
 
         let handle = context
             .hash_sequence_start(HashingAlgorithm::Sha256, None)
-            .unwrap();
+            .expect("Hash sequence started successfully");
 
         let chunks = data.chunks_exact(MaxBuffer::MAX_SIZE);
         let last_chunk = chunks.remainder();
         for chunk in chunks {
             context
-                .sequence_update(handle, MaxBuffer::from_bytes(chunk).unwrap())
-                .unwrap();
+                .sequence_update(
+                    handle,
+                    MaxBuffer::from_bytes(chunk)
+                        .expect("MaxBuffer created from raw data chunk should succeed"),
+                )
+                .expect("Hash sequence update should succeed");
         }
         let (actual_hashed_data, ticket) = context
             .sequence_complete(
                 handle,
-                MaxBuffer::from_bytes(last_chunk).unwrap(),
+                MaxBuffer::from_bytes(last_chunk)
+                    .expect("MaxBuffer created from raw data last chunk should succeed"),
                 expected_hierarchy,
             )
-            .unwrap();
-        let ticket = ticket.unwrap();
+            .expect("Hash sequence completed successfully");
+        let ticket = ticket.expect("HashcheckTicket should be returned");
 
         assert_eq!(expected_hashed_data.len(), actual_hashed_data.len());
         assert_eq!(&expected_hashed_data[..], &actual_hashed_data[..]);
@@ -91,12 +98,8 @@ mod test_hmac_sequence {
             algorithm::{HashingAlgorithm, PublicAlgorithm},
             reserved_handles::Hierarchy,
         },
-        structures::{
-            KeyedHashScheme, MaxBuffer, PublicBuilder, PublicKeyedHashParameters,
-        },
+        structures::{KeyedHashScheme, MaxBuffer, PublicBuilder, PublicKeyedHashParameters},
     };
-
-
 
     #[test]
     fn test_hmac_sequence() {
@@ -122,28 +125,33 @@ mod test_hmac_sequence {
 
         let key = context
             .create_primary(Hierarchy::Owner, key_pub, None, None, None, None)
-            .unwrap();
+            .expect("Primary key created successfully");
 
         let data = [0xEE; 5000];
 
         let handle = context
             .hmac_sequence_start(key.key_handle.into(), HashingAlgorithm::Sha256, None)
-            .unwrap();
+            .expect("HMAC sequence started successfully");
 
         let chunks = data.chunks_exact(MaxBuffer::MAX_SIZE);
         let last_chunk = chunks.remainder();
         for chunk in chunks {
             context
-                .sequence_update(handle, MaxBuffer::from_bytes(chunk).unwrap())
-                .unwrap();
+                .sequence_update(
+                    handle,
+                    MaxBuffer::from_bytes(chunk)
+                        .expect("MaxBuffer created from raw data chunk should succeed"),
+                )
+                .expect("HMAC sequence update should succeed");
         }
         let (_actual_hashed_data, ticket) = context
             .sequence_complete(
                 handle,
-                MaxBuffer::from_bytes(last_chunk).unwrap(),
+                MaxBuffer::from_bytes(last_chunk)
+                    .expect("MaxBuffer created from raw data last chunk should succeed"),
                 Hierarchy::Null,
             )
-            .unwrap();
-        let _ticket = ticket.unwrap();
+            .expect("HMAC sequence completed successfully");
+        let _ticket = ticket.expect("HashcheckTicket should be returned");
     }
 }
