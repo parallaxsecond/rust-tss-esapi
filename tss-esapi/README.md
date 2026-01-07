@@ -1,4 +1,4 @@
-# TPM2 Software Stack Rust Wrapper 
+# TPM2 Software Stack Rust Wrapper
 
 <p align="center">
   <a href="https://crates.io/crates/tss-esapi"><img alt="Crates.io" src="https://img.shields.io/crates/v/tss-esapi"></a>
@@ -6,12 +6,12 @@
   <a href="https://codecov.io/gh/parallaxsecond/rust-tss-esapi"><img src="https://codecov.io/gh/parallaxsecond/rust-tss-esapi/branch/main/graph/badge.svg?token=5T7SVCHWFE"/></a>
 </p>
 
-This is the high-level, Rust idiomatic wrapper crate that exposes an interface 
+This is the high-level, Rust idiomatic wrapper crate that exposes an interface
 to [TSS](https://github.com/tpm2-software/tpm2-tss).
 
 This crate depends on the [`tss-esapi-sys`](../tss-esapi-sys/) crate for its
 FFI interface. By default, pre-generated bindings are used. If you'd like the
-bindings to be generated at build time, please enable either the 
+bindings to be generated at build time, please enable either the
 `generate-bindings` feature - the FFI bindings will then be generated at build
 time using the headers identified on the system.
 
@@ -31,7 +31,7 @@ The crate currently offers the following features:
 * `abstraction` (enabled by default) - provides a set of abstracted primitives
   on top of the basic Rust-native ESAPI API provided by the crate. This feature
   can be turned off to reduce the number of dependencies built.
-* `serde` - enable serde `Serialize`/`Deserialize` traits for types. 
+* `serde` - enable serde `Serialize`/`Deserialize` traits for types.
 * `rustcrypto-full` (disabled by default) - provides conversion from all
   supported elliptic curves, rsa or hashes.
   Support for individual hash, rsa or curves can be pulled individually.
@@ -44,5 +44,12 @@ The crate currently offers the following features:
 ## Cross compiling
 
 For more information on cross-compiling the `tss-esapi` crate, please see the README of the `tss-esapi-sys` crate.
+
+## Building against libtss2
+
+The [TSS](https://github.com/tpm2-software/tpm2-tss) library can be installed from Debian, RPM, or other packaging manager.
+It will install a pkg-config definition to indicate how to compile and link against the library.
+When it is installed via source, and/or if it has been edited (such as to debug things), then the version number will be marked with the git commit (and dirty flag).  The resulting version string is unfortunately not compatible with the semver parser/comparing mechanism, and it can be rejected.
+Setting the environment variable TPM2\_TSS\_VERSION\_IGNORE\]_PRERELEASE to a non-empty string will cause the build system to ignore this pre-release information.
 
 *Copyright 2021 Contributors to the Parsec project.*

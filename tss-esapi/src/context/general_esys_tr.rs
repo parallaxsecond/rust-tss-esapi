@@ -29,6 +29,8 @@ impl Context {
     /// ```rust
     /// # use tss_esapi::{Context, TctiNameConf};
     /// use tss_esapi::{handles::ObjectHandle, structures::Auth};
+    /// # #[serial_test::file_serial]
+    /// # fn main() {
     /// # // Create context
     /// # let mut context =
     /// #     Context::new(
@@ -39,6 +41,7 @@ impl Context {
     /// context
     ///     .tr_set_auth(ObjectHandle::Owner, Auth::default())
     ///     .expect("Failed to call tr_set_auth");
+    /// # }
     /// ```
     pub fn tr_set_auth(&mut self, object_handle: ObjectHandle, auth: Auth) -> Result<()> {
         let mut auth_value = auth.into();
@@ -67,6 +70,8 @@ impl Context {
     /// #     interface_types::{algorithm::HashingAlgorithm, reserved_handles::Provision},
     /// #     structures::{SymmetricDefinition, NvPublic},
     /// # };
+    /// # #[serial_test::file_serial]
+    /// # fn main() {
     /// # // Create context
     /// # let mut context =
     /// #     Context::new(
@@ -130,6 +135,7 @@ impl Context {
     /// let (_public_area, expected_name) = nv_read_public_result.expect("Call to nv_read_public failed");
     /// let actual_name = tr_get_name_result.expect("Call to tr_get_name failed");
     /// assert_eq!(expected_name, actual_name);
+    /// # }
     /// ```
     pub fn tr_get_name(&mut self, object_handle: ObjectHandle) -> Result<Name> {
         let mut name_ptr = null_mut();
@@ -162,6 +168,8 @@ impl Context {
     /// use tss_esapi::{
     ///     handles::NvIndexTpmHandle,
     /// };
+    /// # #[serial_test::file_serial]
+    /// # fn main() {
     /// # // Create context
     /// # let mut context =
     /// #     Context::new(
@@ -239,6 +247,7 @@ impl Context {
     /// # let (_, expected_name) = nv_read_public_result.expect("Call to nv_read_public failed");
     /// # let actual_name = tr_get_name_result.expect("Call to tr_get_name failed");
     /// # assert_eq!(expected_name, actual_name);
+    /// # }
     /// ```
     pub fn tr_from_tpm_public(&mut self, tpm_handle: TpmHandle) -> Result<ObjectHandle> {
         let mut object = ObjectHandle::None.into();
@@ -287,6 +296,8 @@ impl Context {
     /// #     interface_types::{algorithm::HashingAlgorithm, reserved_handles::Provision},
     /// #     structures::{SymmetricDefinition, NvPublic},
     /// # };
+    /// # #[serial_test::file_serial]
+    /// # fn main() {
     /// # // Create context
     /// # let mut context =
     /// #     Context::new(
@@ -359,6 +370,7 @@ impl Context {
     /// // Process results.
     /// tr_close_result.expect("Call to tr_close failed.");
     /// # tr_get_name_result.expect_err("Calling tr_get_name with invalid handle did not result in an error.");
+    /// # }
     /// ```
     pub fn tr_close(&mut self, object_handle: &mut ObjectHandle) -> Result<()> {
         let mut rsrc_handle = object_handle.try_into_not_none()?;
@@ -423,6 +435,8 @@ impl Context {
     /// #     },
     /// #     structures::EccScheme,
     /// # };
+    /// # #[serial_test::file_serial]
+    /// # fn main() {
     /// # let mut context =
     /// #     Context::new(
     /// #         TctiNameConf::from_environment_variable().expect("Failed to get TCTI"),
@@ -443,6 +457,7 @@ impl Context {
     ///     ).unwrap()
     ///     .key_handle;
     /// let data = context.tr_serialize(key_handle.into()).unwrap();
+    /// # }
     /// ```
     pub fn tr_serialize(&mut self, handle: ObjectHandle) -> Result<Vec<u8>> {
         let mut len = 0;
@@ -491,6 +506,8 @@ impl Context {
     /// #     },
     /// #     structures::EccScheme,
     /// # };
+    /// # #[serial_test::file_serial]
+    /// # fn main() {
     /// # let mut context =
     /// #     Context::new(
     /// #         TctiNameConf::from_environment_variable().expect("Failed to get TCTI"),
@@ -515,6 +532,7 @@ impl Context {
     /// let data = context.tr_serialize(key_handle.into()).unwrap();
     /// let new_handle = context.tr_deserialize(&data).unwrap();
     /// assert_eq!(public_key, context.read_public(new_handle.into()).unwrap());
+    /// # }
     /// ```
     pub fn tr_deserialize(&mut self, buffer: &[u8]) -> Result<ObjectHandle> {
         let mut handle = TPM2_RH_UNASSIGNED;

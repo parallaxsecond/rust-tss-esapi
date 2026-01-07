@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 mod test_quote {
+    use serial_test::serial;
     use crate::common::create_ctx_with_session;
     use std::convert::TryFrom;
     use tss_esapi::{
@@ -162,16 +163,19 @@ mod test_quote {
     }
 
     #[test]
+    #[serial]
     fn checkquote_ecc_sha1() {
         checkquote_ecc(HashingAlgorithm::Sha1);
     }
 
     #[test]
+    #[serial]
     fn checkquote_ecc_sha256() {
         checkquote_ecc(HashingAlgorithm::Sha256);
     }
 
     #[test]
+    #[serial]
     fn checkquote_ecc_sha512() {
         checkquote_ecc(HashingAlgorithm::Sha512);
     }
@@ -236,6 +240,7 @@ mod test_quote {
     }
 
     #[test]
+    #[serial]
     fn checkquote_rsa_pss_sha1() {
         checkquote_rsa(
             RsaKeyBits::Rsa1024,
@@ -245,6 +250,7 @@ mod test_quote {
     }
 
     #[test]
+    #[serial]
     fn checkquote_rsa_ssa_sha256() {
         checkquote_rsa(
             RsaKeyBits::Rsa2048,
@@ -254,6 +260,7 @@ mod test_quote {
     }
 
     #[test]
+    #[serial]
     fn checkquote_rsa_pss_sha384() {
         checkquote_rsa(
             RsaKeyBits::Rsa3072,

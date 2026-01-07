@@ -1,14 +1,13 @@
 // Copyright 2020 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
-use crate::{constants::tss::*, tss2_esys::TPM2_PT, Error, Result, WrapperErrorKind};
-use log::error;
+use crate::{constants::tss::*, tss2_esys::TPM2_PT, Error, Result};
 use num_derive::{FromPrimitive, ToPrimitive};
 use num_traits::{FromPrimitive, ToPrimitive};
 use std::convert::TryFrom;
 
 #[derive(FromPrimitive, ToPrimitive, Debug, Clone, Copy, PartialEq, Eq, Hash)]
 #[repr(u32)]
-pub enum PropertyTag {
+pub enum PrimitivePropertyTag {
     None = TPM2_PT_NONE,
     // Fixed
     FamilyIndicator = TPM2_PT_FAMILY_INDICATOR,
@@ -83,19 +82,29 @@ pub enum PropertyTag {
     AuditCounter1 = TPM2_PT_AUDIT_COUNTER_1,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum PropertyTag {
+    PrimitivePropertyTag(PrimitivePropertyTag),
+    Other(u32),
+}
+
+
 impl From<PropertyTag> for TPM2_PT {
     fn from(property_tag: PropertyTag) -> TPM2_PT {
         // The values are well defined so this cannot fail.
-        property_tag.to_u32().unwrap()
+        match property_tag {
+            PropertyTag::PrimitivePropertyTag(base) => { base.to_u32().unwrap() },
+            PropertyTag::Other(value) => { value },
+        }
     }
 }
 
 impl TryFrom<TPM2_PT> for PropertyTag {
     type Error = Error;
     fn try_from(tpm_pt: TPM2_PT) -> Result<PropertyTag> {
-        PropertyTag::from_u32(tpm_pt).ok_or_else(|| {
-            error!("value = {} did not match any PropertyTag.", tpm_pt);
-            Error::local_error(WrapperErrorKind::InvalidParam)
-        })
+        match PrimitivePropertyTag::from_u32(tpm_pt) {
+            Some(x) => { Ok(PropertyTag::PrimitivePropertyTag(x)) },
+            None    => { Ok(PropertyTag::Other(tpm_pt)) },
+        }
     }
 }

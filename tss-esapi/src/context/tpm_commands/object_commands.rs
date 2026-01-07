@@ -170,6 +170,8 @@ impl Context {
     /// #     164, 162, 189,
     /// # ];
     /// #
+    /// # #[serial_test::file_serial]
+    /// # fn main() {
     /// # // Create context
     /// # let mut context =
     /// #     Context::new(
@@ -220,6 +222,7 @@ impl Context {
     /// // Load public key into Owner hierarchy.
     /// let key_handle = context.load_external(None, public, Hierarchy::Owner)
     ///     .expect("The load_external should have returned a valid key handle.");
+    /// # }
     /// ```
     pub fn load_external(
         &mut self,

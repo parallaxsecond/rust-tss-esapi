@@ -33,6 +33,7 @@ use tss_esapi::{
     tss2_esys::TSS2_RC,
     Error, WrapperErrorKind,
 };
+use serial_test::serial;
 
 // This basically tests BaseReturnCode as well.
 
@@ -78,6 +79,7 @@ macro_rules! test_valid_conversion {
     };
 }
 
+// no interaction with swtpm, can be parallel
 #[test]
 fn test_valid_conversions() {
     test_valid_conversion!(TSS2_BASE_RC_GENERAL_FAILURE, BaseError::GeneralFailure);
