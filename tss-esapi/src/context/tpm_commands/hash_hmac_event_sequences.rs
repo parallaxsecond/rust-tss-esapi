@@ -26,8 +26,47 @@ impl Context {
     /// # Example
     ///
     /// ```rust
-    /// # Create context with session.
-    /// # let mut context = create_ctx_with_session();
+    /// # use tss_esapi::{Context, tcti_ldr::TctiNameConf,
+    /// #     attributes::{ObjectAttributesBuilder, SessionAttributesBuilder},
+    /// #     structures::{
+    /// #         Auth, MaxBuffer, Ticket, SymmetricDefinition, 
+    /// #         RsaExponent, RsaScheme, KeyedHashScheme,
+    /// #         PublicBuilder, PublicKeyedHashParameters
+    /// #     },
+    /// #     constants::{
+    /// #         tss::{TPMA_SESSION_DECRYPT, TPMA_SESSION_ENCRYPT},
+    /// #         SessionType,
+    /// #     },
+    /// #     interface_types::{
+    /// #         algorithm::{HashingAlgorithm, PublicAlgorithm, RsaSchemeAlgorithm}, 
+    /// #         key_bits::RsaKeyBits, reserved_handles::Hierarchy
+    /// #     },
+    /// #     utils::create_unrestricted_signing_rsa_public,
+    /// # };
+    /// # use std::convert::TryFrom;
+    /// # use std::str::FromStr;
+    /// # // Create context with session
+    /// # let mut context =
+    /// #     Context::new(
+    /// #         TctiNameConf::from_environment_variable().expect("Failed to get TCTI"),
+    /// #     ).expect("Failed to create Context");
+    /// # let session = context
+    /// #    .start_auth_session(
+    /// #        None,
+    /// #        None,
+    /// #        None,
+    /// #        SessionType::Hmac,
+    /// #        SymmetricDefinition::AES_256_CFB,
+    /// #        HashingAlgorithm::Sha256,
+    /// #    )
+    /// #    .expect("Failed to create session");
+    /// # let (session_attributes, session_attributes_mask) = SessionAttributesBuilder::new()
+    /// #    .with_decrypt(true)
+    /// #    .with_encrypt(true)
+    /// #    .build();
+    /// # context.tr_sess_set_attributes(session.unwrap(), session_attributes, session_attributes_mask)
+    /// #    .expect("Failed to set attributes on session");
+    /// # context.set_sessions((session, None, None));
     ///
     /// let object_attributes = ObjectAttributesBuilder::new()
     ///     .with_sign_encrypt(true)
@@ -61,13 +100,13 @@ impl Context {
     /// let last_chunk = chunks.remainder();
     /// for chunk in chunks {
     ///     context
-    ///         .sequence_update(handle, MaxBuffer::from_bytes(&chunk).unwrap())
+    ///         .sequence_update(handle, MaxBuffer::from_bytes(chunk).unwrap())
     ///         .unwrap();
     /// }
     /// let (actual_hashed_data, ticket) = context
     ///     .sequence_complete(
     ///         handle,
-    ///         MaxBuffer::from_bytes(&last_chunk).unwrap(),
+    ///         MaxBuffer::from_bytes(last_chunk).unwrap(),
     ///         Hierarchy::Null,
     ///     )
     ///    .unwrap();
@@ -117,8 +156,43 @@ impl Context {
     /// # Example
     ///
     /// ```rust
-    /// # Create context with session.
-    /// # let mut context = create_ctx_with_session();
+    /// # use tss_esapi::{Context, tcti_ldr::TctiNameConf,
+    /// #     attributes::SessionAttributesBuilder,
+    /// #     structures::{Auth, MaxBuffer, Ticket, SymmetricDefinition, RsaExponent, RsaScheme},
+    /// #     constants::{
+    /// #         tss::{TPMA_SESSION_DECRYPT, TPMA_SESSION_ENCRYPT},
+    /// #         SessionType,
+    /// #     },
+    /// #     interface_types::{
+    /// #         algorithm::{HashingAlgorithm, RsaSchemeAlgorithm}, 
+    /// #         key_bits::RsaKeyBits, reserved_handles::Hierarchy
+    /// #     },
+    /// #     utils::create_unrestricted_signing_rsa_public,
+    /// # };
+    /// # use std::convert::TryFrom;
+    /// # use std::str::FromStr;
+    /// # // Create context with session
+    /// # let mut context =
+    /// #     Context::new(
+    /// #         TctiNameConf::from_environment_variable().expect("Failed to get TCTI"),
+    /// #     ).expect("Failed to create Context");
+    /// # let session = context
+    /// #    .start_auth_session(
+    /// #        None,
+    /// #        None,
+    /// #        None,
+    /// #        SessionType::Hmac,
+    /// #        SymmetricDefinition::AES_256_CFB,
+    /// #        HashingAlgorithm::Sha256,
+    /// #    )
+    /// #    .expect("Failed to create session");
+    /// # let (session_attributes, session_attributes_mask) = SessionAttributesBuilder::new()
+    /// #    .with_decrypt(true)
+    /// #    .with_encrypt(true)
+    /// #    .build();
+    /// # context.tr_sess_set_attributes(session.unwrap(), session_attributes, session_attributes_mask)
+    /// #    .expect("Failed to set attributes on session");
+    /// # context.set_sessions((session, None, None));
     ///
     /// let data = [0xEE; 2*1025];
     ///
@@ -127,17 +201,17 @@ impl Context {
     ///     .unwrap();
     ///
     /// let chunks = data.chunks_exact(MaxBuffer::MAX_SIZE);
-    /// let last_chung = chunks.remainder();
+    /// let last_chunk = chunks.remainder();
     /// for chunk in chunks {
     ///     context
-    ///         .sequence_update(handle, MaxBuffer::from_bytes(&chunk).unwrap())
+    ///         .sequence_update(handle, MaxBuffer::from_bytes(chunk).unwrap())
     ///         .unwrap();
     /// }
     /// let (actual_hashed_data, ticket) = context
     ///      .sequence_complete(
     ///         handle,
-    ///         MaxBuffer::from_bytes(&last_chung).unwrap(),
-    ///         expected_hierarchy,
+    ///         MaxBuffer::from_bytes(last_chunk).unwrap(),
+    ///         Hierarchy::Owner,
     ///     )
     ///     .unwrap();
     /// ```
