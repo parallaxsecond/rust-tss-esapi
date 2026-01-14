@@ -13,15 +13,16 @@ use log::error;
 use std::ptr::null_mut;
 
 impl Context {
-    /// Starts HMAC sequence of large data (larger than MaxBuffer::MAX_SIZE) using the specified algorithm.
+    /// Starts HMAC sequence of large data (larger than [`MaxBuffer::MAX_SIZE`]) using the specified algorithm.
     ///
     /// # Details
     /// When the amount of data to be included in a digest cannot be sent to the TPM in one atomic HMAC
     /// command then a sequence of commands may be used to provide incremental updates to the digest.
+    ///
     /// Follow the pattern:
-    ///  - Initialize sequence with `hmac_sequence_start()`
-    ///  - Send data to calculate the hash with `sequence_update()`
-    ///  - Finish hash calculation with call to `sequence_complete()`
+    ///  - Initialize sequence with [`Context::hmac_sequence_start`]
+    ///  - Send data to calculate the hash with [`Context::sequence_update`]
+    ///  - Finish hash calculation with call to [`Context::sequence_complete`]
     ///
     /// # Example
     ///
@@ -67,7 +68,7 @@ impl Context {
     /// # context.tr_sess_set_attributes(session.unwrap(), session_attributes, session_attributes_mask)
     /// #    .expect("Failed to set attributes on session");
     /// # context.set_sessions((session, None, None));
-    ///
+    /// #
     /// let object_attributes = ObjectAttributesBuilder::new()
     ///     .with_sign_encrypt(true)
     ///     .with_sensitive_data_origin(true)
@@ -143,15 +144,16 @@ impl Context {
 
     // Missing function: MAC_Start
 
-    /// Starts hash sequence of large data (larger than MaxBuffer::MAX_SIZE) using the specified algorithm.
+    /// Starts hash sequence of large data (larger than [`MaxBuffer::MAX_SIZE`]) using the specified algorithm.
     ///
     /// # Details
     /// When the amount of data to be included in a digest cannot be sent to the TPM in one atomic hash
     /// command then a sequence of commands may be used to provide incremental updates to the digest.
+    ///
     /// Follow the pattern:
-    ///  - Initialize sequence with `hash_sequence_start()`
-    ///  - Send data to calculate the hash with `sequence_update()`
-    ///  - Finish hash calculation with call to `sequence_complete()`
+    ///  - Initialize sequence with [`Context::hmac_sequence_start`]
+    ///  - Send data to calculate the hash with [`Context::sequence_update`]
+    ///  - Finish hash calculation with call to [`Context::sequence_complete`]
     ///
     /// # Example
     ///
@@ -245,7 +247,7 @@ impl Context {
 
     /// Continues hash or HMAC sequence.
     ///
-    /// @see hash_sequence_start(), hmac_sequence_start()
+    /// See [`Context::hash_sequence_start`], [`Context::hmac_sequence_start`].
     pub fn sequence_update(
         &mut self,
         sequence_handle: ObjectHandle,
@@ -273,7 +275,7 @@ impl Context {
 
     /// Finishes hash or HMAC sequence.
     ///
-    /// @see hash_sequence_start(), hmac_sequence_start()
+    /// /// See [`Context::hash_sequence_start`], [`Context::hmac_sequence_start`].
     pub fn sequence_complete(
         &mut self,
         sequence_handle: ObjectHandle,
