@@ -30,7 +30,7 @@ impl Context {
     /// # use tss_esapi::{Context, tcti_ldr::TctiNameConf,
     /// #     attributes::{ObjectAttributesBuilder, SessionAttributesBuilder},
     /// #     structures::{
-    /// #         Auth, MaxBuffer, Ticket, SymmetricDefinition, 
+    /// #         Auth, MaxBuffer, Ticket, SymmetricDefinition,
     /// #         RsaExponent, RsaScheme, KeyedHashScheme,
     /// #         PublicBuilder, PublicKeyedHashParameters
     /// #     },
@@ -39,7 +39,7 @@ impl Context {
     /// #         SessionType,
     /// #     },
     /// #     interface_types::{
-    /// #         algorithm::{HashingAlgorithm, PublicAlgorithm, RsaSchemeAlgorithm}, 
+    /// #         algorithm::{HashingAlgorithm, PublicAlgorithm, RsaSchemeAlgorithm},
     /// #         key_bits::RsaKeyBits, reserved_handles::Hierarchy
     /// #     },
     /// #     utils::create_unrestricted_signing_rsa_public,
@@ -166,7 +166,7 @@ impl Context {
     /// #         SessionType,
     /// #     },
     /// #     interface_types::{
-    /// #         algorithm::{HashingAlgorithm, RsaSchemeAlgorithm}, 
+    /// #         algorithm::{HashingAlgorithm, RsaSchemeAlgorithm},
     /// #         key_bits::RsaKeyBits, reserved_handles::Hierarchy
     /// #     },
     /// #     utils::create_unrestricted_signing_rsa_public,
