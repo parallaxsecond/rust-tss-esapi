@@ -1,6 +1,7 @@
 // Copyright 2020 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
 
+use serial_test::serial;
 use std::convert::{TryFrom, TryInto};
 
 use tss_esapi::{
@@ -21,6 +22,7 @@ use tss_esapi::{
 use crate::common::create_ctx_without_session;
 
 #[test]
+#[serial]
 fn test_create_ak_rsa_rsa() {
     let mut context = create_ctx_without_session();
 
@@ -44,6 +46,7 @@ fn test_create_ak_rsa_rsa() {
 }
 
 #[test]
+#[serial]
 fn test_create_ak_rsa_rsa_3072() {
     let mut context = create_ctx_without_session();
 
@@ -67,6 +70,7 @@ fn test_create_ak_rsa_rsa_3072() {
 }
 
 #[test]
+#[serial]
 fn test_create_ak_rsa_ecc() {
     let mut context = create_ctx_without_session();
 
@@ -76,7 +80,7 @@ fn test_create_ak_rsa_ecc() {
         None,
     )
     .unwrap();
-    if let Err(Error::WrapperError(WrapperErrorKind::InconsistentParams)) = ak::create_ak(
+    if let Err(Error::WrapperError(errno)) = ak::create_ak(
         &mut context,
         ek_rsa,
         HashingAlgorithm::Sha256,
@@ -85,6 +89,10 @@ fn test_create_ak_rsa_ecc() {
         None,
         None,
     ) {
+        match errno {
+            WrapperErrorKind::InconsistentParams => { },
+            _ => { panic!("unexpected error {:?}", errno) }
+        }
     } else {
         panic!(
             "Should've gotten an 'InconsistentParams' error when trying to create an a P256 AK with an SM2 signing scheme."
@@ -94,6 +102,7 @@ fn test_create_ak_rsa_ecc() {
 }
 
 #[test]
+#[serial]
 fn test_create_ak_ecc() {
     let mut context = create_ctx_without_session();
 
@@ -129,6 +138,7 @@ fn test_create_ak_ecc() {
 }
 
 #[test]
+#[serial]
 fn test_create_ak_ecdaa() {
     let mut context = create_ctx_without_session();
 
@@ -153,6 +163,7 @@ fn test_create_ak_ecdaa() {
 }
 
 #[test]
+#[serial]
 fn test_create_and_use_ak() {
     let mut context = create_ctx_without_session();
 
@@ -250,6 +261,7 @@ fn test_create_and_use_ak() {
 }
 
 #[test]
+#[serial]
 fn test_create_custom_ak() {
     struct CustomizeKey;
     impl KeyCustomization for &CustomizeKey {

@@ -1,12 +1,14 @@
 // Copyright 2020 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
 
+use serial_test::serial;
 use tss_esapi::constants::CapabilityType;
 use tss_esapi::structures::CapabilityData;
 
 use crate::common::create_ctx_without_session;
 
 #[test]
+#[serial]
 fn test_algorithms() {
     let mut context = create_ctx_without_session();
 
@@ -22,6 +24,7 @@ fn test_algorithms() {
 }
 
 #[test]
+#[serial]
 fn test_handles() {
     let mut context = create_ctx_without_session();
 
@@ -37,6 +40,7 @@ fn test_handles() {
 }
 
 #[test]
+#[serial]
 fn test_command() {
     let mut context = create_ctx_without_session();
 
@@ -52,6 +56,7 @@ fn test_command() {
 }
 
 #[test]
+#[serial]
 fn test_pp_commands() {
     let mut context = create_ctx_without_session();
 
@@ -67,6 +72,7 @@ fn test_pp_commands() {
 }
 
 #[test]
+#[serial]
 fn test_audit_commands() {
     let mut context = create_ctx_without_session();
 
@@ -82,6 +88,7 @@ fn test_audit_commands() {
 }
 
 #[test]
+#[serial]
 fn test_assigned_pcr() {
     let mut context = create_ctx_without_session();
 
@@ -97,6 +104,7 @@ fn test_assigned_pcr() {
 }
 
 #[test]
+#[serial]
 fn test_tpm_properties() {
     let mut context = create_ctx_without_session();
 
@@ -112,6 +120,7 @@ fn test_tpm_properties() {
 }
 
 #[test]
+#[serial]
 fn test_pcr_properties() {
     let mut context = create_ctx_without_session();
 
@@ -127,6 +136,7 @@ fn test_pcr_properties() {
 }
 
 #[test]
+#[serial]
 fn test_ecc_curves() {
     let mut context = create_ctx_without_session();
 
@@ -144,6 +154,7 @@ fn test_ecc_curves() {
 // For these tests to work the tpm2-tss library need to have the
 // authPolicies field in the TPMU_CAPABILITIES union.
 // #[test]
+// #[serial]
 // fn test_auth_policies() {
 //     let mut context = create_ctx_without_session();
 
@@ -161,6 +172,7 @@ fn test_ecc_curves() {
 // For these tests to work the tpm2-tss library need to have the
 // actData field in the TPMU_CAPABILITIES union.
 // #[test]
+// #[serial]
 // fn test_act() {
 //     let mut context = create_ctx_without_session();
 

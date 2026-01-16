@@ -1,10 +1,12 @@
 // Copyright 2021 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
 mod test_ctx_save {
+    use serial_test::serial;
     use crate::common::{create_ctx_with_session, decryption_key_pub, signing_key_pub};
     use tss_esapi::{interface_types::reserved_handles::Hierarchy, structures::Auth};
 
     #[test]
+    #[serial]
     fn test_ctx_save() {
         let mut context = create_ctx_with_session();
         let mut random_digest = vec![0u8; 16];
@@ -26,6 +28,7 @@ mod test_ctx_save {
     }
 
     #[test]
+    #[serial]
     fn test_ctx_save_leaf() {
         let mut context = create_ctx_with_session();
         let mut random_digest = vec![0u8; 16];
@@ -64,12 +67,14 @@ mod test_ctx_save {
 }
 
 mod test_ctx_load {
+    use serial_test::serial;
     use crate::common::{create_ctx_with_session, decryption_key_pub, signing_key_pub};
     use tss_esapi::{
         handles::KeyHandle, interface_types::reserved_handles::Hierarchy, structures::Auth,
     };
 
     #[test]
+    #[serial]
     fn test_ctx_load() {
         let mut context = create_ctx_with_session();
         let mut random_digest = vec![0u8; 16];
@@ -109,10 +114,12 @@ mod test_ctx_load {
 }
 
 mod test_flush_context {
+    use serial_test::serial;
     use crate::common::{create_ctx_with_session, decryption_key_pub, signing_key_pub};
     use tss_esapi::{interface_types::reserved_handles::Hierarchy, structures::Auth};
 
     #[test]
+    #[serial]
     fn test_flush_ctx() {
         let mut context = create_ctx_with_session();
         let mut random_digest = vec![0u8; 16];
@@ -135,6 +142,7 @@ mod test_flush_context {
     }
 
     #[test]
+    #[serial]
     fn test_flush_parent_ctx() {
         let mut context = create_ctx_with_session();
         let mut random_digest = vec![0u8; 16];
@@ -173,6 +181,7 @@ mod test_flush_context {
 }
 
 mod test_evict_control {
+    use serial_test::serial;
     use crate::common::{create_ctx_without_session, decryption_key_pub};
     use std::convert::TryFrom;
     use tss_esapi::{
@@ -222,6 +231,7 @@ mod test_evict_control {
     }
 
     #[test]
+    #[serial]
     fn test_basic_evict_control() {
         // Create persistent TPM handle with
         let persistent_tpm_handle =

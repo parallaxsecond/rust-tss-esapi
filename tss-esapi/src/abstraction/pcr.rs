@@ -15,6 +15,8 @@ pub use data::PcrData;
 ///
 /// ```rust
 /// # use tss_esapi::{Context, TctiNameConf};
+/// # #[serial_test::file_serial]
+/// # fn main() {
 /// # // Create context
 /// # let mut context =
 /// #     Context::new(
@@ -57,6 +59,7 @@ pub use data::PcrData;
 ///     .expect("Failed to build PcrSelectionList");
 /// let _pcr_data = tss_esapi::abstraction::pcr::read_all(&mut context, pcr_selection_list)
 ///     .expect("pcr::read_all failed");
+/// # }
 /// ```
 pub fn read_all(
     context: &mut Context,

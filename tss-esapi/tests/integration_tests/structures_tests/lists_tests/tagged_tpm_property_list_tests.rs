@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 use std::convert::{TryFrom, TryInto};
 use tss_esapi::{
-    constants::PropertyTag,
+    constants::{PropertyTag, PrimitivePropertyTag},
     structures::{TaggedProperty, TaggedTpmPropertyList},
     tss2_esys::{TPML_TAGGED_TPM_PROPERTY, TPMS_TAGGED_PROPERTY},
     Error, WrapperErrorKind,
@@ -10,9 +10,9 @@ use tss_esapi::{
 #[test]
 fn test_valid_conversions() {
     let expected_tagged_properties: Vec<TaggedProperty> = vec![
-        TaggedProperty::new(PropertyTag::FamilyIndicator, 8u32),
-        TaggedProperty::new(PropertyTag::Level, 12u32),
-        TaggedProperty::new(PropertyTag::HrLoadedMin, 24u32),
+        TaggedProperty::new(PropertyTag::PrimitivePropertyTag(PrimitivePropertyTag::FamilyIndicator), 8u32),
+        TaggedProperty::new(PropertyTag::PrimitivePropertyTag(PrimitivePropertyTag::Level), 12u32),
+        TaggedProperty::new(PropertyTag::PrimitivePropertyTag(PrimitivePropertyTag::HrLoadedMin), 24u32),
     ];
 
     let expected_tpml_tagged_tpm_property: TPML_TAGGED_TPM_PROPERTY = expected_tagged_properties
@@ -72,7 +72,7 @@ fn test_valid_conversions() {
 fn test_invalid_conversions() {
     assert_eq!(
         Err(Error::WrapperError(WrapperErrorKind::InvalidParam)),
-        TaggedTpmPropertyList::try_from(vec![TaggedProperty::new(PropertyTag::FamilyIndicator, 8u32); TaggedTpmPropertyList::MAX_SIZE + 1]),
+        TaggedTpmPropertyList::try_from(vec![TaggedProperty::new(PropertyTag::PrimitivePropertyTag(PrimitivePropertyTag::FamilyIndicator), 8u32); TaggedTpmPropertyList::MAX_SIZE + 1]),
         "Converting a vector with to many elements into a TaggedTpmPropertyList did not produce the expected error",
     );
 
@@ -89,40 +89,40 @@ fn test_invalid_conversions() {
 #[test]
 fn test_find() {
     let tagged_tpm_property_list: TaggedTpmPropertyList = vec![
-        TaggedProperty::new(PropertyTag::FamilyIndicator, 8u32),
-        TaggedProperty::new(PropertyTag::Level, 12u32),
-        TaggedProperty::new(PropertyTag::HrLoadedMin, 24u32),
+        TaggedProperty::new(PropertyTag::PrimitivePropertyTag(PrimitivePropertyTag::FamilyIndicator), 8u32),
+        TaggedProperty::new(PropertyTag::PrimitivePropertyTag(PrimitivePropertyTag::Level), 12u32),
+        TaggedProperty::new(PropertyTag::PrimitivePropertyTag(PrimitivePropertyTag::HrLoadedMin), 24u32),
     ]
     .try_into()
     .expect("Failed to convert Vec<TaggedProoperty> into TaggedTpmPropertyList");
 
     assert_eq!(
-        &TaggedProperty::new(PropertyTag::FamilyIndicator, 8u32),
+        &TaggedProperty::new(PropertyTag::PrimitivePropertyTag(PrimitivePropertyTag::FamilyIndicator), 8u32),
         tagged_tpm_property_list
-            .find(PropertyTag::FamilyIndicator)
-            .expect("Calling find with PropertyTag::FamilyIndicator returned an unexpected 'None'"),
-        "'find(PropertyTag::FamilyIndicator)' did not return the expected TaggedProperty value",
+            .find(PropertyTag::PrimitivePropertyTag(PrimitivePropertyTag::FamilyIndicator))
+            .expect("Calling find with PropertyTag::PrimitivePropertyTag(PrimitivePropertyTag::FamilyIndicator) returned an unexpected 'None'"),
+        "'find(PropertyTag::PrimitivePropertyTag(PrimitivePropertyTag::FamilyIndicator))' did not return the expected TaggedProperty value",
     );
 
     assert_eq!(
-        &TaggedProperty::new(PropertyTag::Level, 12u32),
+        &TaggedProperty::new(PropertyTag::PrimitivePropertyTag(PrimitivePropertyTag::Level), 12u32),
         tagged_tpm_property_list
-            .find(PropertyTag::Level)
-            .expect("Calling find with PropertyTag::Level returned an unexpected 'None'"),
-        "'find(PropertyTag::Level)' did not return the expected TaggedProperty value",
+            .find(PropertyTag::PrimitivePropertyTag(PrimitivePropertyTag::Level))
+            .expect("Calling find with PropertyTag::PrimitivePropertyTag(PrimitivePropertyTag::Level) returned an unexpected 'None'"),
+        "'find(PropertyTag::PrimitivePropertyTag(PrimitivePropertyTag::Level))' did not return the expected TaggedProperty value",
     );
 
     assert_eq!(
-        &TaggedProperty::new(PropertyTag::HrLoadedMin, 24u32),
+        &TaggedProperty::new(PropertyTag::PrimitivePropertyTag(PrimitivePropertyTag::HrLoadedMin), 24u32),
         tagged_tpm_property_list
-            .find(PropertyTag::HrLoadedMin)
-            .expect("Calling find with PropertyTag::HrLoadedMin returned an unexpected 'None'"),
-        "'find(PropertyTag::HrLoadedMin)' did not return the expected TaggedProperty value",
+            .find(PropertyTag::PrimitivePropertyTag(PrimitivePropertyTag::HrLoadedMin))
+            .expect("Calling find with PropertyTag::PrimitivePropertyTag(PrimitivePropertyTag::HrLoadedMin) returned an unexpected 'None'"),
+        "'find(PropertyTag::PrimitivePropertyTag(PrimitivePropertyTag::HrLoadedMin))' did not return the expected TaggedProperty value",
     );
 
     assert!(
         tagged_tpm_property_list
-            .find(PropertyTag::AlgorithmSet)
+            .find(PropertyTag::PrimitivePropertyTag(PrimitivePropertyTag::AlgorithmSet))
             .is_none(),
         "A value that should not exist was found in the TaggedTpmPropertyList"
     );

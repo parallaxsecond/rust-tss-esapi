@@ -1,6 +1,7 @@
 // Copyright 2021 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
 mod test_quote {
+    use serial_test::serial;
     use crate::common::{create_ctx_with_session, decryption_key_pub, signing_key_pub};
     use std::convert::TryFrom;
     use tss_esapi::{
@@ -20,6 +21,7 @@ mod test_quote {
     };
 
     #[test]
+    #[serial]
     fn pcr_quote() {
         let mut context = create_ctx_with_session();
         // Quote PCR 0
@@ -69,6 +71,7 @@ mod test_quote {
     }
 
     #[test]
+    #[serial]
     fn time() {
         let mut context = create_ctx_with_session();
         // No qualifying data
@@ -110,6 +113,7 @@ mod test_quote {
     }
 
     #[test]
+    #[serial]
     fn certify() {
         let mut context = create_ctx_with_session();
         let qualifying_data = vec![0xff; 16];
@@ -171,6 +175,7 @@ mod test_quote {
     }
 
     #[test]
+    #[serial]
     fn certify_null() {
         let mut context = create_ctx_with_session();
         let qualifying_data = vec![0xff; 16];
@@ -212,6 +217,7 @@ mod test_quote {
     }
 
     #[test]
+    #[serial]
     fn certify_creation() {
         let mut context = create_ctx_with_session();
         let qualifying_data = vec![0xff; 16];

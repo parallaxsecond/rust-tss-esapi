@@ -25,6 +25,7 @@ use tss_esapi::{
     tss2_esys::TSS2_RC,
     Error, WrapperErrorKind,
 };
+use serial_test::serial;
 
 macro_rules! test_valid_conversion {
     ($tss_rc_base_error:ident, BaseError::$base_error:ident) => {
@@ -84,6 +85,7 @@ macro_rules! test_valid_conversion {
 }
 
 #[test]
+#[serial]
 fn test_valid_conversions() {
     test_valid_conversion!(TSS2_BASE_RC_GENERAL_FAILURE, BaseError::GeneralFailure);
     test_valid_conversion!(TSS2_BASE_RC_NOT_IMPLEMENTED, BaseError::NotImplemented);
@@ -119,6 +121,7 @@ fn test_valid_conversions() {
 }
 
 #[test]
+#[serial]
 fn test_invalid_conversions() {
     let tss_invalid_esapi_rc = TSS2_ESYS_RC_LAYER | TSS2_BASE_RC_BAD_TEMPLATE;
     assert_eq!(
@@ -129,6 +132,7 @@ fn test_invalid_conversions() {
 }
 
 #[test]
+#[serial]
 fn test_esapi_error_from_context_method() {
     let mut context = create_ctx_with_session();
     let random_digest = context.get_random(16).unwrap();
@@ -207,6 +211,7 @@ macro_rules! test_base_error {
 }
 
 #[test]
+#[serial]
 fn test_base_error_method() {
     test_base_error!(BaseError::GeneralFailure);
     test_base_error!(BaseError::NotImplemented);
