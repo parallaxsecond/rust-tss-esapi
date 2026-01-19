@@ -1,5 +1,6 @@
 // Copyright 2022 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
+use serial_test::serial;
 use std::{convert::TryFrom, ops::Deref};
 use tss_esapi::{
     structures::{Auth, SensitiveCreate, SensitiveCreateBuffer, SensitiveData},
@@ -14,6 +15,7 @@ use tss_esapi_sys::TPM2B_SENSITIVE_DATA;
 const SENSITIVE_CREATE_BUFFER_MAX_SIZE: usize = 324;
 
 #[test]
+#[serial]
 fn test_byte_conversions() {
     let expected_buffer = vec![0xFFu8; SENSITIVE_CREATE_BUFFER_MAX_SIZE];
     let sensitive_create_buffer_from_slice =
@@ -34,6 +36,7 @@ fn test_byte_conversions() {
 }
 
 #[test]
+#[serial]
 fn test_conversions_of_over_sized_byte_data() {
     let over_sized_buffer = vec![0xFFu8; SENSITIVE_CREATE_BUFFER_MAX_SIZE + 1];
 
@@ -55,6 +58,7 @@ fn test_conversions_of_over_sized_byte_data() {
 }
 
 #[test]
+#[serial]
 fn test_deref() {
     let expected_buffer = vec![0x0fu8; SENSITIVE_CREATE_BUFFER_MAX_SIZE];
     let sensitive_create_buffer_from_slice =
@@ -75,6 +79,7 @@ fn test_deref() {
 }
 
 #[test]
+#[serial]
 fn test_tpm_types_conversions() {
     let expected_auth = Auth::default();
     let expected_sensitive_data = SensitiveData::default();
@@ -107,6 +112,7 @@ fn test_tpm_types_conversions() {
 }
 
 #[test]
+#[serial]
 fn test_marshall_unmarshall() {
     let expected_auth =
         Auth::try_from(vec![0, 1, 2, 3, 4, 5, 6, 7, 8, 9]).expect("Failed to create auth value");
@@ -127,6 +133,7 @@ fn test_marshall_unmarshall() {
 }
 
 #[test]
+#[serial]
 fn test_conversion_from_max_size_buffer() {
     let data = vec![1u8; SensitiveData::MAX_SIZE];
     let sensitive_data = SensitiveData::try_from(data)

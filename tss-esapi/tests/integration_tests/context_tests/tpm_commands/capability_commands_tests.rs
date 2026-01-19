@@ -2,12 +2,16 @@
 // SPDX-License-Identifier: Apache-2.0
 mod test_get_capability {
     use crate::common::create_ctx_without_session;
+    use serial_test::serial;
     use tss_esapi::{
-        constants::{tss::TPM2_PT_VENDOR_STRING_1, CapabilityType, PropertyTag},
+        constants::{
+            tss::TPM2_PT_VENDOR_STRING_1, CapabilityType, PrimitivePropertyTag, PropertyTag,
+        },
         structures::CapabilityData,
     };
 
     #[test]
+    #[serial]
     fn test_get_capability() {
         let mut context = create_ctx_without_session();
         let (res, _more) = context
@@ -22,17 +26,22 @@ mod test_get_capability {
     }
 
     #[test]
+    #[serial]
     fn test_get_tpm_property() {
         let mut context = create_ctx_without_session();
 
         let rev = context
-            .get_tpm_property(PropertyTag::Revision)
+            .get_tpm_property(PropertyTag::PrimitivePropertyTag(
+                PrimitivePropertyTag::Revision,
+            ))
             .expect("Failed to call get_tpm_property")
             .expect("The TPM did not have a value for the Reveision property tag");
         assert_ne!(rev, 0);
 
         let year = context
-            .get_tpm_property(PropertyTag::Year)
+            .get_tpm_property(PropertyTag::PrimitivePropertyTag(
+                PrimitivePropertyTag::Year,
+            ))
             .expect("Failed to call get_tpm_property")
             .expect("The TPM did not have a value for the Year property tag");
         assert_ne!(year, 0);

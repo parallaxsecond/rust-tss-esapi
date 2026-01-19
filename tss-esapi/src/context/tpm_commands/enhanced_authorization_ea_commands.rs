@@ -359,6 +359,8 @@ impl Context {
     /// # use tss_esapi::abstraction::cipher::Cipher;
     /// # use tss_esapi::{Context, TctiNameConf};
     /// #
+    /// # #[serial_test::file_serial]
+    /// # fn main() {
     /// # let mut context = // ...
     /// #     Context::new(
     /// #         TctiNameConf::from_environment_variable().expect("Failed to get TCTI"),
@@ -402,7 +404,8 @@ impl Context {
     /// # /// Digest of the policy that allows duplication
     /// # let digest = context
     /// #     .policy_get_digest(policy_session)
-    /// #     .expect("Could retrieve digest");
+    /// #         .expect("Could retrieve digest");
+    /// # }
     /// ```
     pub fn policy_duplication_select(
         &mut self,
@@ -617,6 +620,8 @@ impl Context {
     /// # use tss_esapi::structures::{NvPublic, SymmetricDefinition};
     /// # use tss_esapi::{Context, TctiNameConf};
     /// #
+    /// # #[serial_test::file_serial]
+    /// # fn main() {
     /// # let mut context = // ...
     /// #     Context::new(
     /// #         TctiNameConf::from_environment_variable().expect("Failed to get TCTI"),
@@ -702,6 +707,7 @@ impl Context {
     /// # context
     /// #     .nv_undefine_space(Provision::Owner, nv_index_handle)
     /// #     .expect("Call to nv_undefine_space failed");
+    /// # }
     /// ```
     pub fn policy_authorize_nv(
         &mut self,

@@ -61,6 +61,8 @@ impl Context {
     ///     structures::{Data, SignatureScheme},
     ///     interface_types::session_handles::AuthSession,
     /// };
+    /// # #[serial_test::file_serial]
+    /// # fn main() {
     /// # let mut context =
     /// #     Context::new(
     /// #         TctiNameConf::from_environment_variable().expect("Failed to get TCTI"),
@@ -117,6 +119,7 @@ impl Context {
     ///         },
     ///     )
     ///     .expect("Failed to certify object handle");
+    /// # }
     /// ```
     pub fn certify(
         &mut self,
@@ -204,6 +207,8 @@ impl Context {
     ///     structures::{Data, SignatureScheme},
     ///     interface_types::session_handles::AuthSession,
     /// };
+    /// # #[serial_test::file_serial]
+    /// # fn main() {
     /// # let mut context =
     /// #     Context::new(
     /// #         TctiNameConf::from_environment_variable().expect("Failed to get TCTI"),
@@ -238,6 +243,7 @@ impl Context {
     ///         },
     ///     )
     ///     .expect("Failed to certify creation");
+    /// # }
     /// ```
     pub fn certify_creation(
         &mut self,
@@ -318,6 +324,8 @@ impl Context {
     ///     },
     /// };
     ///
+    /// # #[serial_test::file_serial]
+    /// # fn main() {
     /// # let mut context =
     /// #     Context::new(
     /// #         TctiNameConf::from_environment_variable().expect("Failed to get TCTI"),
@@ -384,6 +392,7 @@ impl Context {
     /// #     _ => {
     /// #         panic!("Attested did not contain the expected variant.")
     /// #     }
+    /// # }
     /// # }
     /// ```
     pub fn quote(
@@ -465,6 +474,8 @@ impl Context {
     ///     structures::{Data, SignatureScheme},
     ///     interface_types::session_handles::AuthSession,
     /// };
+    /// # #[serial_test::file_serial]
+    /// # fn main() {
     /// # let mut context =
     /// #     Context::new(
     /// #         TctiNameConf::from_environment_variable().expect("Failed to get TCTI"),
@@ -499,6 +510,7 @@ impl Context {
     ///         },
     ///     )
     ///     .expect("Failed to get tpm time");
+    /// # }
     /// ```
     pub fn get_time(
         &mut self,

@@ -1,5 +1,6 @@
 // Copyright 2023 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
+use serial_test::serial;
 use std::convert::TryFrom;
 use tss_esapi::{
     constants::tss::{
@@ -98,6 +99,7 @@ macro_rules! test_invalid_conversions {
 }
 
 #[test]
+#[serial]
 fn test_context_data_handle_valid_conversions() {
     test_valid_conversions_for_range_enum_items!(
         ContextDataHandle::Hmac,
@@ -117,6 +119,7 @@ fn test_context_data_handle_valid_conversions() {
 }
 
 #[test]
+#[serial]
 fn test_context_data_handle_invalid_conversion() {
     test_invalid_conversions!(
         ContextDataHandle,
@@ -126,6 +129,7 @@ fn test_context_data_handle_invalid_conversion() {
 }
 
 #[test]
+#[serial]
 fn test_saved_valid_conversions() {
     test_valid_conversions_for_range_enum_items!(
         Saved::Hmac,
@@ -155,6 +159,7 @@ fn test_saved_valid_conversions() {
 }
 
 #[test]
+#[serial]
 fn test_saved_invalid_conversions() {
     test_invalid_conversions!(Saved, TPM2_PERMANENT_LAST, WrapperErrorKind::InvalidParam);
     test_invalid_conversions!(Saved, TPM2_TRANSIENT_LAST, WrapperErrorKind::InvalidParam);
