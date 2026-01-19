@@ -1,11 +1,13 @@
 // Copyright 2021 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
 
+use serial_test::serial;
 use std::ops::Shl;
 
 use tss_esapi::{attributes::AlgorithmAttributes, tss2_esys::TPMA_ALGORITHM};
 
 #[test]
+#[serial]
 fn test_conversions() {
     let expected_tpma_algorithm: TPMA_ALGORITHM = 0x16;
     let expected_algorithm_attributes = AlgorithmAttributes(expected_tpma_algorithm);
@@ -24,6 +26,7 @@ fn test_conversions() {
 }
 
 #[test]
+#[serial]
 fn test_all_set() {
     let attributes = AlgorithmAttributes::from(0xFFFFFFFF);
     assert!(
@@ -45,6 +48,7 @@ fn test_all_set() {
 }
 
 #[test]
+#[serial]
 fn test_none_set() {
     let attributes = AlgorithmAttributes::from(0x0);
     assert!(!attributes.asymmetric(), "'asymmetric' is unexpectedly set");
@@ -57,6 +61,7 @@ fn test_none_set() {
 }
 
 #[test]
+#[serial]
 fn test_asymmetric_set() {
     let attributes = AlgorithmAttributes::from(1u32.shl(0));
     assert!(
@@ -72,6 +77,7 @@ fn test_asymmetric_set() {
 }
 
 #[test]
+#[serial]
 fn test_symmetric_set() {
     let attributes = AlgorithmAttributes::from(1u32.shl(1));
     assert!(!attributes.asymmetric(), "'asymmetric' is unexpectedly set");
@@ -87,6 +93,7 @@ fn test_symmetric_set() {
 }
 
 #[test]
+#[serial]
 fn test_hash_set() {
     let attributes = AlgorithmAttributes::from(1u32.shl(2));
     assert!(!attributes.asymmetric(), "'asymmetric' is unexpectedly set");
@@ -99,6 +106,7 @@ fn test_hash_set() {
 }
 
 #[test]
+#[serial]
 fn test_object_set() {
     let attributes = AlgorithmAttributes::from(1u32.shl(3));
     assert!(!attributes.asymmetric(), "'asymmetric' is unexpectedly set");
@@ -111,6 +119,7 @@ fn test_object_set() {
 }
 
 #[test]
+#[serial]
 fn test_signing_set() {
     let attributes = AlgorithmAttributes::from(1u32.shl(8));
     assert!(!attributes.asymmetric(), "'asymmetric' is unexpectedly set");
@@ -123,6 +132,7 @@ fn test_signing_set() {
 }
 
 #[test]
+#[serial]
 fn test_encrypting_set() {
     let attributes = AlgorithmAttributes::from(1u32.shl(9));
     assert!(!attributes.asymmetric(), "'asymmetric' is unexpectedly set");
@@ -138,6 +148,7 @@ fn test_encrypting_set() {
 }
 
 #[test]
+#[serial]
 fn test_method_set() {
     let attributes = AlgorithmAttributes::from(1u32.shl(10));
     assert!(!attributes.asymmetric(), "'asymmetric' is unexpectedly set");

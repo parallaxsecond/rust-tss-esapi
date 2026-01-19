@@ -1,3 +1,4 @@
+use serial_test::serial;
 use tss_esapi::{
     abstraction::pcr::PcrData,
     interface_types::algorithm::HashingAlgorithm,
@@ -7,6 +8,7 @@ use tss_esapi::{
 };
 
 #[test]
+#[serial]
 fn test_valid_to_tpml_digest_conversion() {
     let pcr_selection_list_1 = PcrSelectionListBuilder::new()
         .with_selection(
@@ -92,6 +94,7 @@ fn test_valid_to_tpml_digest_conversion() {
 }
 
 #[test]
+#[serial]
 fn test_invalid_to_tpml_digest_conversion() {
     let pcr_selection_list_1 = PcrSelectionListBuilder::new()
         .with_selection(

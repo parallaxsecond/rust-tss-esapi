@@ -1,5 +1,6 @@
 // Copyright 2020 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
+use serial_test::serial;
 use tss_esapi::{
     attributes::{NvIndexAttributes, NvIndexAttributesBuilder},
     constants::NvIndexType,
@@ -7,6 +8,7 @@ use tss_esapi::{
 };
 
 #[test]
+#[serial]
 fn test_invalid_index_type_value() {
     // 15(1111) - invalid
     let invalid_15 = NvIndexAttributes(0b0000_0000_0000_0000_0000_0000_1111_0000u32);
@@ -71,6 +73,7 @@ macro_rules! single_attribute_error {
 }
 
 #[test]
+#[serial]
 fn test_nv_index_attributes_builder_missing_read_attribute_failure() {
     // Test missing read error
 
@@ -95,6 +98,7 @@ fn test_nv_index_attributes_builder_missing_read_attribute_failure() {
 }
 
 #[test]
+#[serial]
 fn test_nv_index_attributes_builder_missing_write_attribute_failure() {
     // Test missing write error
 
@@ -119,6 +123,7 @@ fn test_nv_index_attributes_builder_missing_write_attribute_failure() {
 }
 
 #[test]
+#[serial]
 fn test_nv_index_attributes_builder_missing_no_da_attribute_with_pin_fail_index_type() {
     assert_eq!(
         Err(Error::WrapperError(WrapperErrorKind::ParamsMissing)),
@@ -129,6 +134,7 @@ fn test_nv_index_attributes_builder_missing_no_da_attribute_with_pin_fail_index_
 }
 
 #[test]
+#[serial]
 fn test_attributes_builder() {
     let mut builder = NvIndexAttributesBuilder::new();
 

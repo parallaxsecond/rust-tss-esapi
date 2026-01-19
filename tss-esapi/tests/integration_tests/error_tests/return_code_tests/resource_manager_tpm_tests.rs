@@ -7,6 +7,7 @@ use tss_esapi::{
     tss2_esys::TSS2_RC,
 };
 
+// no interaction with swtpm, can be parallel
 #[test]
 fn test_valid_tpm_resmgr_format_zero_response_code() {
     let expected_tss_rc = TSS2_RESMGR_TPM_RC_LAYER | TPM2_RC_SEQUENCE;
