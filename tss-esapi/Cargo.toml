@@ -10,7 +10,7 @@ categories = ["api-bindings", "external-ffi-bindings", "cryptography"]
 license = "Apache-2.0"
 repository = "https://github.com/parallaxsecond/rust-tss-esapi"
 documentation = "https://docs.rs/crate/tss-esapi"
-rust-version = "1.76.0"
+rust-version = "1.85.0"
 
 [[example]]
 name = "hmac"
@@ -32,50 +32,67 @@ num-derive = "0.4.2"
 num-traits = "0.2.12"
 hostname-validator = "1.1.0"
 regex = "1.3.9"
-zeroize = { version = "1.5.7", features = ["zeroize_derive"] }
+zeroize = { version = "1.8.2", features = ["zeroize_derive"] }
 tss-esapi-sys = { path = "../tss-esapi-sys", version = "0.6.0-alpha.1" }
-x509-cert = { version = "0.2.0", optional = true }
-ecdsa = { version = "0.16.9", features = [
+x509-cert = { version = "0.3.0-rc.3", optional = true }
+aes = { version = "0.9.0-rc.2", optional = true }
+byte-strings = { version = "0.3.1", optional = true }
+camellia = { version = "0.2.0-rc.0", optional = true }
+cfb-mode = { version = "0.9.0-rc.1", optional = true }
+cipher = { version = "0.5.0-rc.3", optional = true, default-features = false, features = ["zeroize"] }
+ecdsa = { version = "0.17.0-rc.11", features = [
+    "algorithm",
     "der",
     "hazmat",
-    "arithmetic",
-    "verifying",
 ], optional = true }
-elliptic-curve = { version = "0.13.8", optional = true, features = [
+elliptic-curve = { version = "0.14.0-rc.21", optional = true, features = [
     "alloc",
     "pkcs8",
 ] }
-p192 = { version = "0.13.0", optional = true }
-p224 = { version = "0.13.2", optional = true }
-p256 = { version = "0.13.2", optional = true }
-p384 = { version = "0.13.0", optional = true }
-p521 = { version = "0.13.3", optional = true }
-pkcs8 = { version = "0.10.2", optional = true }
-rsa = { version = "0.9", optional = true }
-sha1 = { version = "0.10.6", optional = true }
-sha2 = { version = "0.10.8", optional = true }
-sha3 = { version = "0.10.8", optional = true }
-sm2 = { version = "0.13.3", optional = true }
-sm3 = { version = "0.4.2", optional = true }
-digest = { version = "0.10.7", optional = true }
-signature = { version = "2.2.0", features = ["std"], optional = true }
+hmac = { version = "0.13.0-rc.2", optional = true }
+p192 = { version = "0.14.0-rc.4", optional = true }
+p224 = { version = "0.14.0-rc.4", optional = true }
+p256 = { version = "0.14.0-rc.4", optional = true }
+p384 = { version = "0.14.0-rc.4", optional = true }
+p521 = { version = "0.14.0-rc.4", optional = true }
+pkcs8 = { version = "0.11.0-rc.7", optional = true }
+rsa = { version = "0.10.0-rc.11", optional = true }
+sha1 = { version = "0.11.0-rc.3", optional = true }
+sha2 = { version = "0.11.0-rc.3", optional = true }
+sha3 = { version = "0.11.0-rc.3", optional = true }
+sm2 = { version = "0.14.0-rc.4", optional = true }
+sm3 = { version = "0.5.0-rc.3", optional = true }
+sm4 = { version = "0.6.0-rc.2", optional = true }
+digest = { version = "0.11.0-rc.4", optional = true }
+signature = { version = "3.0.0-rc.5", features = [
+    "alloc",
+    "digest",
+], optional = true }
+kbkdf = { version = "0.0.1", optional = true }
+one-step-kdf = { version = "0.1.0-rc.0", optional = true }
 cfg-if = "1.0.0"
 strum = { version = "0.26.3", optional = true }
 strum_macros = { version = "0.26.4", optional = true }
 paste = "1.0.14"
-getrandom = "0.2.11"
+getrandom = "0.4.0-rc.0"
+rand = "0.10.0-rc.1"
 
 [dev-dependencies]
+aes = "0.9.0-pre.2"
 env_logger = "0.11.5"
+hex-literal = "1"
+paste = "1.0.15"
+rsa = { version = "0.10.0-pre.3" }
 serde_json = "^1.0.108"
-sha2 = { version = "0.10.8", features = ["oid"] }
+sha2 = { version = "0.11.0-rc.3", features = ["oid"] }
 tss-esapi = { path = ".", features = [
     "integration-tests",
     "serde",
     "abstraction",
     "rustcrypto-full",
 ] }
-x509-cert = { version = "0.2.0", features = ["builder"] }
+p256 = { version = "0.14.0-rc.4", features = ["ecdh"] }
+x509-cert = { version = "0.3.0-rc.3", features = ["builder"] }
 
 [build-dependencies]
 semver = "1.0.7"
@@ -85,16 +102,25 @@ default = ["abstraction"]
 generate-bindings = ["tss-esapi-sys/generate-bindings"]
 abstraction = ["rustcrypto"]
 integration-tests = ["strum", "strum_macros"]
+
 rustcrypto = [
+    "byte-strings",
+    "cfb-mode",
+    "cipher",
+    "one-step-kdf",
     "digest",
     "ecdsa",
-    "elliptic-curve",
+    "elliptic-curve/ecdh",
+    "hmac",
+    "kbkdf",
     "pkcs8",
     "signature",
     "x509-cert",
 ]
 rustcrypto-full = [
     "rustcrypto",
+    "aes",
+    "camellia",
     "p192",
     "p224",
     "p256",
@@ -106,7 +132,10 @@ rustcrypto-full = [
     "sha3",
     "sm2",
     "sm3",
+    "sm4",
 ]
+ 
+rsa = ["dep:rsa", "kbkdf"]
 sha1 = ["dep:sha1", "rsa?/sha1"]
 sha2 = ["dep:sha2", "rsa?/sha2"]
 bundled = ["tss-esapi-sys/bundled"]

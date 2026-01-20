@@ -7,7 +7,7 @@ pub mod rsa;
 use crate::{
     attributes::ObjectAttributes,
     interface_types::algorithm::{HashingAlgorithm, PublicAlgorithm},
-    structures::{Digest, EccPoint, PublicKeyRsa, SymmetricCipherParameters},
+    structures::{Digest, EccPoint, Name, PublicKeyRsa, SymmetricCipherParameters},
     traits::{impl_mu_standard, Marshall},
     tss2_esys::{TPM2B_PUBLIC, TPMT_PUBLIC},
     Error, Result, ReturnCode, WrapperErrorKind,
@@ -584,5 +584,22 @@ impl TryFrom<Public> for TPM2B_PUBLIC {
             })?,
             publicArea: public_area,
         })
+    }
+}
+
+#[cfg(feature = "rustcrypto")]
+impl Public {
+    pub fn name(&self) -> Result<Name> {
+        #[cfg_attr(
+            not(any(feature = "sha1", feature = "sha2", feature = "sha3", feature = "sm3",)),
+            allow(unused)
+        )]
+        macro_rules! make_name {
+            ($hash: ty) => {
+                crate::structures::make_name::<$hash, _>(self)
+            };
+        }
+
+        crate::utils::match_name_hashing_algorithm!(self, make_name)
     }
 }
