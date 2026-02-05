@@ -23,6 +23,24 @@ use crate::{Context, Error, Result, WrapperErrorKind};
 use std::convert::TryFrom;
 use zeroize::Zeroize;
 
+#[cfg(feature = "rustcrypto")]
+use {
+    core::marker::PhantomData,
+    digest::{common::KeySizeUser, OutputSizeUser},
+};
+
+#[cfg(feature = "rustcrypto")]
+mod credential;
+#[cfg(feature = "rustcrypto")]
+pub mod kdf;
+#[cfg(feature = "rustcrypto")]
+mod secret_sharing;
+
+#[cfg(feature = "rustcrypto")]
+pub use self::credential::make_credential_ecc;
+#[cfg(all(feature = "rustcrypto", feature = "rsa"))]
+pub use self::credential::make_credential_rsa;
+
 /// Create the [Public] structure for a restricted decryption key.
 ///
 /// * `symmetric` - Cipher to be used for decrypting children of the key
@@ -267,4 +285,25 @@ pub fn get_tpm_vendor(context: &mut Context) -> Result<String> {
     .map(tpm_int_to_string)
     // Collect to a single string
     .collect())
+}
+// [`TpmHmac`] intends to code for the key expected for hmac
+// in the KDFa and KDFe derivations. There are no standard sizes for hmac keys really,
+// upstream RustCrypto considers it to be [BlockSize], but TPM specification
+// has a different opinion on the matter, and expect the key to the output
+// bit size of the hash algorithm used.
+//
+// See https://trustedcomputinggroup.org/wp-content/uploads/TPM-2.0-1.83-Part-1-Architecture.pdf#page=202
+// section 24.5 HMAC:
+//   bits the number of bits in the digest produced by ekNameAlg
+//
+// [BlockSize]: https://docs.rs/hmac/0.12.1/hmac/struct.HmacCore.html#impl-KeySizeUser-for-HmacCore%3CD%3E
+#[cfg(feature = "rustcrypto")]
+pub(super) struct TpmHmac<H>(PhantomData<H>);
+
+#[cfg(feature = "rustcrypto")]
+impl<H> KeySizeUser for TpmHmac<H>
+where
+    H: OutputSizeUser,
+{
+    type KeySize = H::OutputSize;
 }
