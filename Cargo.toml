@@ -1,3 +1,6 @@
 [workspace]
 resolver = "2"
 members = ["tss-esapi", "tss-esapi-sys"]
+
+[patch.crates-io]
+cfb-mode = { git = "https://github.com/RustCrypto/block-modes.git" }

@@ -13,19 +13,16 @@ use digest::{Digest, DynDigest};
 #[cfg(any(feature = "p224", feature = "p256", feature = "p384"))]
 use crate::{abstraction::public::AssociatedTpmCurve, structures::EccSignature};
 #[cfg(any(feature = "p224", feature = "p256", feature = "p384"))]
-use ecdsa::{
-    hazmat::{DigestPrimitive, VerifyPrimitive},
-    PrimeCurve, SignatureSize, VerifyingKey,
-};
+use ecdsa::{hazmat::DigestAlgorithm, PrimeCurve, SignatureSize, VerifyingKey};
 #[cfg(any(feature = "p224", feature = "p256", feature = "p384"))]
 use elliptic_curve::{
-    generic_array::ArrayLength,
+    array::ArraySize,
     point::AffinePoint,
-    sec1::{FromEncodedPoint, ModulusSize, ToEncodedPoint},
+    sec1::{FromSec1Point, ModulusSize, ToSec1Point},
     CurveArithmetic, FieldBytesSize,
 };
 #[cfg(any(feature = "p224", feature = "p256", feature = "p384"))]
-use signature::hazmat::PrehashVerifier;
+use signature::DigestVerifier;
 
 #[cfg(feature = "rsa")]
 use rsa::{pkcs1v15, pss, RsaPublicKey};
@@ -40,9 +37,9 @@ fn verify_ecdsa<C>(
     hashing_algorithm: HashingAlgorithm,
 ) -> Result<bool>
 where
-    C: PrimeCurve + CurveArithmetic + DigestPrimitive + AssociatedTpmCurve,
-    AffinePoint<C>: VerifyPrimitive<C> + FromEncodedPoint<C> + ToEncodedPoint<C>,
-    SignatureSize<C>: ArrayLength<u8>,
+    C: PrimeCurve + CurveArithmetic + DigestAlgorithm + AssociatedTpmCurve,
+    AffinePoint<C>: FromSec1Point<C> + ToSec1Point<C>,
+    SignatureSize<C>: ArraySize,
     FieldBytesSize<C>: ModulusSize,
 {
     let Ok(signature) = ecdsa::Signature::<C>::try_from(signature) else {
@@ -56,25 +53,45 @@ where
 
     match hashing_algorithm {
         #[cfg(feature = "sha1")]
-        HashingAlgorithm::Sha1 => {
-            let hash = sha1::Sha1::digest(message);
-            Ok(verifying_key.verify_prehash(&hash, &signature).is_ok())
-        }
+        HashingAlgorithm::Sha1 => Ok(verifying_key
+            .verify_digest(
+                |d: &mut sha1::Sha1| {
+                    Digest::update(d, message);
+                    Ok(())
+                },
+                &signature,
+            )
+            .is_ok()),
         #[cfg(feature = "sha2")]
-        HashingAlgorithm::Sha256 => {
-            let hash = sha2::Sha256::digest(message);
-            Ok(verifying_key.verify_prehash(&hash, &signature).is_ok())
-        }
+        HashingAlgorithm::Sha256 => Ok(verifying_key
+            .verify_digest(
+                |d: &mut sha2::Sha256| {
+                    Digest::update(d, message);
+                    Ok(())
+                },
+                &signature,
+            )
+            .is_ok()),
         #[cfg(feature = "sha2")]
-        HashingAlgorithm::Sha384 => {
-            let hash = sha2::Sha384::digest(message);
-            Ok(verifying_key.verify_prehash(&hash, &signature).is_ok())
-        }
+        HashingAlgorithm::Sha384 => Ok(verifying_key
+            .verify_digest(
+                |d: &mut sha2::Sha384| {
+                    Digest::update(d, message);
+                    Ok(())
+                },
+                &signature,
+            )
+            .is_ok()),
         #[cfg(feature = "sha2")]
-        HashingAlgorithm::Sha512 => {
-            let hash = sha2::Sha512::digest(message);
-            Ok(verifying_key.verify_prehash(&hash, &signature).is_ok())
-        }
+        HashingAlgorithm::Sha512 => Ok(verifying_key
+            .verify_digest(
+                |d: &mut sha2::Sha512| {
+                    Digest::update(d, message);
+                    Ok(())
+                },
+                &signature,
+            )
+            .is_ok()),
         _ => Err(Error::WrapperError(WrapperErrorKind::UnsupportedParam)),
     }
 }
