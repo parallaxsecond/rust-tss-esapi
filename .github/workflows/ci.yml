@@ -31,7 +31,7 @@ jobs:
       - name: Build the container
         run: docker build -t ubuntucontainer tss-esapi/tests/ --file tss-esapi/tests/Dockerfile-ubuntu --target tpm2-tools
       - name: Run the container
-        run: docker run -v $(pwd):/tmp/rust-tss-esapi -w /tmp/rust-tss-esapi/tss-esapi --env RUST_TOOLCHAIN_VERSION=1.76.0 ubuntucontainer /tmp/rust-tss-esapi/tss-esapi/tests/all-ubuntu.sh
+        run: docker run -v $(pwd):/tmp/rust-tss-esapi -w /tmp/rust-tss-esapi/tss-esapi --env RUST_TOOLCHAIN_VERSION=1.85.0 ubuntucontainer /tmp/rust-tss-esapi/tss-esapi/tests/all-ubuntu.sh
   # All in one job as I think it is a big overhead to build and run the Docker
   # container?
   tests-ubuntu:
@@ -118,7 +118,7 @@ jobs:
       - name: Build the container
         run: docker build -t ubuntucontainer tss-esapi/tests/ --file tss-esapi/tests/Dockerfile-ubuntu  --target tpm2-tss
       - name: Check Clippy lints MSRV
-        run: docker run -v $(pwd):/tmp/rust-tss-esapi -w /tmp/rust-tss-esapi/tss-esapi --env RUST_TOOLCHAIN_VERSION=1.76.0 ubuntucontainer /tmp/rust-tss-esapi/tss-esapi/tests/lint-checks.sh
+        run: docker run -v $(pwd):/tmp/rust-tss-esapi -w /tmp/rust-tss-esapi/tss-esapi --env RUST_TOOLCHAIN_VERSION=1.85.0 ubuntucontainer /tmp/rust-tss-esapi/tss-esapi/tests/lint-checks.sh
       - name: Check Clippy lints latest
         run: docker run -v $(pwd):/tmp/rust-tss-esapi -w /tmp/rust-tss-esapi/tss-esapi ubuntucontainer /tmp/rust-tss-esapi/tss-esapi/tests/lint-checks.sh
         
