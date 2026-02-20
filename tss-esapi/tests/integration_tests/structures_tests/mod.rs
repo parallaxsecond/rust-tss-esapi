@@ -9,6 +9,7 @@ mod capability_data_tests;
 mod certify_info_tests;
 mod clock_info_tests;
 mod command_audit_info_tests;
+mod creation_data_tests;
 mod creation_info_tests;
 mod lists_tests;
 mod nv_certify_info_tests;
