@@ -38,7 +38,7 @@ fn test_marshall_unmarshall() {
     };
 
     let creation_data =
-        CreationData::try_from(tpms_creation_data).expect("can't generate creation ddata");
+        CreationData::try_from(tpms_creation_data).expect("can't generate creation data");
 
     check_marshall_unmarshall(&creation_data);
 }
