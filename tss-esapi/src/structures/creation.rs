@@ -6,12 +6,13 @@ use crate::{
     constants::AlgorithmIdentifier,
     interface_types::algorithm::HashingAlgorithm,
     structures::{Data, Digest, Name, PcrSelectionList},
+    traits::impl_mu_standard,
     tss2_esys::{TPM2B_CREATION_DATA, TPMS_CREATION_DATA},
     Error, Result,
 };
 use std::convert::{TryFrom, TryInto};
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct CreationData {
     pcr_select: PcrSelectionList,
     pcr_digest: Digest,
@@ -63,3 +64,5 @@ impl From<CreationData> for TPMS_CREATION_DATA {
         }
     }
 }
+
+impl_mu_standard!(CreationData, TPMS_CREATION_DATA);
