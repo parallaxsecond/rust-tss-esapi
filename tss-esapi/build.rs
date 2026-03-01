@@ -1,8 +1,9 @@
 // Copyright 2021 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
-use semver::{Version, VersionReq};
+use semver::{Version, VersionReq, Prerelease};
 
 const TPM2_TSS_MINIMUM_VERSION: Version = Version::new(4, 1, 3);
+const TPM2_TSS_VERSION_IGNORE_PRERELEASE: &str = "TPM2_TSS_VERSION_IGNORE_PRERELEASE";
 
 fn main() {
     println!("cargo:rustc-check-cfg=cfg(hierarchy_is_esys_tr)");
@@ -20,15 +21,22 @@ fn main() {
             .expect("Failed to parse ENV variable DEP_TSS2_ESYS_VERSION as string");
 
         Version::parse(&tss_version_string)
-            .expect("Failed to parse the DEP_TSS2_ESYS_VERSION variable as a semver version")
+            .map(|mut v| {
+                if std::env::var(TPM2_TSS_VERSION_IGNORE_PRERELEASE).is_ok() {
+                    v.pre = Prerelease::EMPTY;
+                }
+                v
+            })
+            .expect("Failed to parse the DEP_TSS2_ESYS_VERSION variable {tss_version_string} as a semver version")
     };
 
     let supported_tss_version =
         VersionReq::parse("<5.0.0, >=2.3.3").expect("Failed to parse supported TSS version");
 
+    //eprintln!("tss version: {} / {:?}", supported_tss_version, tss_version);
     assert!(
         supported_tss_version.matches(&tss_version),
-        "Unsupported TSS version {tss_version}"
+        "Unsupported TSS version {tss_version}, maybe try {TPM2_TSS_VERSION_IGNORE_PRERELEASE}=true"
     );
 
     let hierarchy_is_esys_tr_req = VersionReq::parse(">=3.0.0").unwrap();

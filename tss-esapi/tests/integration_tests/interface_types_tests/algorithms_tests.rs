@@ -1,5 +1,6 @@
 // Copyright 2020 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
+use serial_test::serial;
 use std::convert::TryFrom;
 
 macro_rules! test_conversion {
@@ -78,6 +79,7 @@ mod hashing_algorithm_tests {
         interface_types::algorithm::HashingAlgorithm,
     };
     #[test]
+    #[serial]
     fn test_hashing_algorithm_conversion() {
         test_conversion!(TPM2_ALG_SHA1, HashingAlgorithm::Sha1);
         test_conversion!(TPM2_ALG_SHA256, HashingAlgorithm::Sha256);
@@ -91,6 +93,7 @@ mod hashing_algorithm_tests {
     }
 
     #[test]
+    #[serial]
     fn test_conversion_of_incorrect_algorithm() {
         test_invalid_tpm_alg_conversion!(
             TPM2_ALG_RSA,
@@ -115,6 +118,7 @@ mod keyed_hash_scheme_tests {
         interface_types::algorithm::KeyedHashSchemeAlgorithm,
     };
     #[test]
+    #[serial]
     fn test_keyed_hash_scheme_conversion() {
         test_conversion!(TPM2_ALG_HMAC, KeyedHashSchemeAlgorithm::Hmac);
         test_conversion!(TPM2_ALG_XOR, KeyedHashSchemeAlgorithm::Xor);
@@ -122,6 +126,7 @@ mod keyed_hash_scheme_tests {
     }
 
     #[test]
+    #[serial]
     fn test_conversion_of_incorrect_algorithm() {
         test_invalid_tpm_alg_conversion!(
             TPM2_ALG_RSA,
@@ -146,6 +151,7 @@ mod key_derivation_function_tests {
         interface_types::algorithm::KeyDerivationFunction,
     };
     #[test]
+    #[serial]
     fn test_key_derivation_function_conversion() {
         test_conversion!(
             TPM2_ALG_KDF1_SP800_56A,
@@ -160,6 +166,7 @@ mod key_derivation_function_tests {
     }
 
     #[test]
+    #[serial]
     fn test_conversion_of_incorrect_algorithm() {
         test_invalid_tpm_alg_conversion!(
             TPM2_ALG_RSA,
@@ -187,6 +194,7 @@ mod symmetric_algorithm_tests {
         interface_types::algorithm::SymmetricAlgorithm,
     };
     #[test]
+    #[serial]
     fn test_symmetric_algorithm_conversion() {
         test_conversion!(TPM2_ALG_TDES, SymmetricAlgorithm::Tdes);
         test_conversion!(TPM2_ALG_AES, SymmetricAlgorithm::Aes);
@@ -197,6 +205,7 @@ mod symmetric_algorithm_tests {
     }
 
     #[test]
+    #[serial]
     fn test_conversion_of_incorrect_algorithm() {
         test_invalid_tpm_alg_conversion!(
             TPM2_ALG_RSA,
@@ -224,6 +233,7 @@ mod symmetric_mode_tests {
     };
 
     #[test]
+    #[serial]
     fn test_symmetric_mode_conversion() {
         test_conversion!(TPM2_ALG_CTR, SymmetricMode::Ctr);
         test_conversion!(TPM2_ALG_OFB, SymmetricMode::Ofb);
@@ -234,6 +244,7 @@ mod symmetric_mode_tests {
     }
 
     #[test]
+    #[serial]
     fn test_conversion_of_incorrect_algorithm() {
         test_invalid_tpm_alg_conversion!(
             TPM2_ALG_RSA,
@@ -259,6 +270,7 @@ mod asymmetric_algorithm_tests {
     };
 
     #[test]
+    #[serial]
     fn test_asymmetric_algorithm_conversion() {
         test_conversion!(TPM2_ALG_RSA, AsymmetricAlgorithm::Rsa);
         test_conversion!(TPM2_ALG_ECC, AsymmetricAlgorithm::Ecc);
@@ -266,6 +278,7 @@ mod asymmetric_algorithm_tests {
     }
 
     #[test]
+    #[serial]
     fn test_conversion_of_incorrect_algorithm() {
         test_invalid_tpm_alg_conversion!(
             TPM2_ALG_AES,
@@ -294,6 +307,7 @@ mod signature_scheme_tests {
         interface_types::algorithm::{AsymmetricAlgorithm, SignatureSchemeAlgorithm},
     };
     #[test]
+    #[serial]
     fn test_signature_scheme_conversion() {
         test_conversion!(TPM2_ALG_RSASSA, SignatureSchemeAlgorithm::RsaSsa);
         test_conversion!(TPM2_ALG_RSAPSS, SignatureSchemeAlgorithm::RsaPss);
@@ -306,6 +320,7 @@ mod signature_scheme_tests {
     }
 
     #[test]
+    #[serial]
     fn test_special_conversion_into_asymmetric_algorithm() {
         assert_eq!(
             AsymmetricAlgorithm::Rsa,
@@ -356,6 +371,7 @@ mod signature_scheme_tests {
     }
 
     #[test]
+    #[serial]
     fn test_conversion_of_incorrect_algorithm() {
         test_invalid_tpm_alg_conversion!(
             TPM2_ALG_AES,
@@ -380,6 +396,7 @@ mod symmetric_object_tests {
         interface_types::algorithm::SymmetricObject,
     };
     #[test]
+    #[serial]
     fn test_symmetric_object_conversion() {
         test_conversion!(TPM2_ALG_TDES, SymmetricObject::Tdes);
         test_conversion!(TPM2_ALG_AES, SymmetricObject::Aes);
@@ -389,6 +406,7 @@ mod symmetric_object_tests {
     }
 
     #[test]
+    #[serial]
     fn test_conversion_of_incorrect_algorithm() {
         test_invalid_tpm_alg_conversion!(
             TPM2_ALG_RSA,
