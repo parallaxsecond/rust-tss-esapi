@@ -7,7 +7,7 @@ use std::{
 };
 
 use crate::{
-    constants::{tss::*, CapabilityType, PropertyTag},
+    constants::{tss::*, CapabilityType, PropertyTag, PrimitivePropertyTag},
     handles::{AuthHandle, NvIndexHandle, NvIndexTpmHandle, TpmHandle},
     interface_types::reserved_handles::NvAuth,
     structures::{CapabilityData, MaxNvBuffer, Name, NvPublic},
@@ -154,7 +154,7 @@ impl NvOpenOptions {
 /// Get the maximum buffer size for an NV space.
 pub fn max_nv_buffer_size(ctx: &mut Context) -> Result<usize> {
     Ok(ctx
-        .get_tpm_property(PropertyTag::NvBufferMax)?
+        .get_tpm_property(PropertyTag::PrimitivePropertyTag(PrimitivePropertyTag::NvBufferMax))?
         .map(usize::try_from)
         .transpose()
         .map_err(|_| {

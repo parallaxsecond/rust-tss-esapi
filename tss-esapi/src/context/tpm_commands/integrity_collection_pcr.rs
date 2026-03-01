@@ -32,6 +32,8 @@ impl Context {
     /// #     structures::{Digest, SymmetricDefinition},
     /// # };
     /// # use std::{env, str::FromStr};
+    /// # #[serial_test::file_serial]
+    /// # fn main() {
     /// # // Create context
     /// # let mut context =
     /// #     Context::new(
@@ -86,6 +88,7 @@ impl Context {
     /// context.execute_with_session(Some(pcr_session), |ctx| {
     ///     ctx.pcr_extend(PcrHandle::Pcr16, vals).expect("Call to pcr_extend failed");
     /// });
+    /// # }
     /// ```
     pub fn pcr_extend(&mut self, pcr_handle: PcrHandle, digests: DigestValues) -> Result<()> {
         ReturnCode::ensure_success(
@@ -129,6 +132,8 @@ impl Context {
     /// ```rust
     /// # use tss_esapi::{Context, TctiNameConf};
     /// # use std::{env, str::FromStr};
+    /// # #[serial_test::file_serial]
+    /// # fn main() {
     /// # // Create context
     /// # let mut context =
     /// #     Context::new(
@@ -147,6 +152,7 @@ impl Context {
     ///
     /// let (update_counter, read_pcr_list, digest_list) = context.pcr_read(pcr_selection_list)
     ///     .expect("Call to pcr_read failed");
+    /// # }
     /// ```
     pub fn pcr_read(
         &mut self,
@@ -206,6 +212,8 @@ impl Context {
     /// #     interface_types::algorithm::HashingAlgorithm,
     /// # };
     /// # use std::{env, str::FromStr};
+    /// # #[serial_test::file_serial]
+    /// # fn main() {
     /// # // Create context
     /// # let mut context =
     /// #     Context::new(
@@ -236,6 +244,7 @@ impl Context {
     /// context.execute_with_session(Some(pcr_session), |ctx| {
     ///     ctx.pcr_reset(PcrHandle::Pcr16).expect("Call to pcr_reset failed");
     /// });
+    /// # }
     /// ```
     pub fn pcr_reset(&mut self, pcr_handle: PcrHandle) -> Result<()> {
         ReturnCode::ensure_success(

@@ -1,6 +1,7 @@
 // Copyright 2022 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
 
+use serial_test::serial;
 use std::convert::TryFrom;
 use tss_esapi::{
     structures::{Sensitive, SensitiveBuffer},
@@ -10,12 +11,14 @@ use tss_esapi::{
 const SENSITIVE_BUFFER_MAX_SIZE: usize = 1416;
 
 #[test]
+#[serial]
 fn test_max_sized_data() {
     let _ = SensitiveBuffer::try_from(vec![0xffu8; SENSITIVE_BUFFER_MAX_SIZE])
         .expect("Failed to parse buffer of maximum size as SensitiveBuffer");
 }
 
 #[test]
+#[serial]
 fn test_to_large_data() {
     assert_eq!(
         SensitiveBuffer::try_from(vec![0xffu8; SENSITIVE_BUFFER_MAX_SIZE + 1])
@@ -27,6 +30,7 @@ fn test_to_large_data() {
 }
 
 #[test]
+#[serial]
 fn marshall_unmarshall() {
     crate::common::sensitives().iter().for_each(|sensitive| {
         let sensitive = sensitive.clone();

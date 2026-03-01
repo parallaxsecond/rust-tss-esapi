@@ -1,6 +1,7 @@
 // Copyright 2021 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
 mod test_start_auth_session {
+    use serial_test::serial;
     use crate::common::{create_ctx_with_session, create_ctx_without_session, decryption_key_pub};
     use std::convert::TryFrom;
     use tss_esapi::{
@@ -11,6 +12,7 @@ mod test_start_auth_session {
     };
 
     #[test]
+    #[serial]
     fn test_simple_sess() {
         let mut context = create_ctx_without_session();
         context
@@ -26,6 +28,7 @@ mod test_start_auth_session {
     }
 
     #[test]
+    #[serial]
     fn test_nonce_sess() {
         let mut context = create_ctx_without_session();
         context
@@ -49,6 +52,7 @@ mod test_start_auth_session {
     }
 
     #[test]
+    #[serial]
     fn test_bound_sess() {
         let mut context = create_ctx_with_session();
         let prim_key_handle = context
@@ -76,6 +80,7 @@ mod test_start_auth_session {
     }
 
     #[test]
+    #[serial]
     fn test_encrypted_start_sess() {
         let mut context = create_ctx_without_session();
         let encrypted_sess = context
@@ -113,6 +118,7 @@ mod test_start_auth_session {
     }
 
     #[test]
+    #[serial]
     fn test_authenticated_start_sess() {
         let mut context = create_ctx_without_session();
         let auth_sess = context
@@ -140,6 +146,7 @@ mod test_start_auth_session {
     }
 
     #[test]
+    #[serial]
     fn test_get_nonce_tpm() {
         let mut context = create_ctx_without_session();
         let session = context
@@ -165,6 +172,7 @@ mod test_start_auth_session {
 }
 
 mod test_policy_restart {
+    use serial_test::serial;
     use crate::common::{create_ctx_without_session, get_pcr_policy_digest};
     use std::convert::TryFrom;
     use tss_esapi::{
@@ -174,6 +182,7 @@ mod test_policy_restart {
         structures::{Digest, DigestList, SymmetricDefinition},
     };
     #[test]
+    #[serial]
     fn test_policy_restart() {
         let mut context = create_ctx_without_session();
 

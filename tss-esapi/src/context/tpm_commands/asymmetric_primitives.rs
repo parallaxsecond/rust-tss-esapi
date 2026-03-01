@@ -58,6 +58,8 @@ impl Context {
     /// #    },
     /// # };
     /// # use std::{env, str::FromStr, convert::TryFrom};
+    /// # #[serial_test::file_serial]
+    /// # fn main() {
     /// # // Create context
     /// # let mut context =
     /// #     Context::new(
@@ -141,6 +143,7 @@ impl Context {
     /// #     .expect("Should be possible to call rsa_decrypt using valid arguments.");
     /// # let decrypted_bytes = message_out.as_bytes();
     /// # assert_eq!(plain_text_bytes, decrypted_bytes);
+    /// # }
     /// ```
     pub fn rsa_encrypt(
         &mut self,
@@ -367,6 +370,8 @@ impl Context {
     /// #    },
     /// # };
     /// # use std::{env, str::FromStr, convert::TryFrom};
+    /// # #[serial_test::file_serial]
+    /// # fn main() {
     /// # // Create context
     /// # let mut context =
     /// #     Context::new(
@@ -442,6 +447,7 @@ impl Context {
     ///
     /// // Generate ephemeral key pair and a shared secret
     /// let (z_point, pub_point) = context.ecdh_key_gen(key_handle).unwrap();
+    /// # }
     /// ```
     pub fn ecdh_key_gen(&mut self, key_handle: KeyHandle) -> Result<(EccPoint, EccPoint)> {
         let mut z_point_ptr = null_mut();
@@ -503,6 +509,8 @@ impl Context {
     /// #    },
     /// # };
     /// # use std::{env, str::FromStr, convert::TryFrom};
+    /// # #[serial_test::file_serial]
+    /// # fn main() {
     /// # // Create context
     /// # let mut context =
     /// #     Context::new(
@@ -580,6 +588,7 @@ impl Context {
     /// let (z_point, pub_point) = context.ecdh_key_gen(key_handle).unwrap();
     /// let z_point_gen = context.ecdh_z_gen(key_handle, pub_point).unwrap();
     /// assert_eq!(z_point.x().as_bytes(), z_point_gen.x().as_bytes());
+    /// # }
     /// ```
     pub fn ecdh_z_gen(&mut self, key_handle: KeyHandle, in_point: EccPoint) -> Result<EccPoint> {
         let mut out_point_ptr = null_mut();
