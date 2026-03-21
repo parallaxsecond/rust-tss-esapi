@@ -50,6 +50,6 @@ For more information on cross-compiling the `tss-esapi` crate, please see the RE
 The [TSS](https://github.com/tpm2-software/tpm2-tss) library can be installed from Debian, RPM, or other packaging manager.
 It will install a pkg-config definition to indicate how to compile and link against the library.
 When it is installed via source, and/or if it has been edited (such as to debug things), then the version number will be marked with the git commit (and dirty flag).  The resulting version string is unfortunately not compatible with the semver parser/comparing mechanism, and it can be rejected.
-Setting the environment variable TPM2\_TSS\_VERSION\_IGNORE\_PRERELEASE to a non-empty string will cause the build system to ignore this pre-release information.
+Setting the environment variable `TPM2_TSS_VERSION_IGNORE_PRERELEASE` to a non-empty string will cause the build system to ignore this pre-release information.
 
 *Copyright 2021 Contributors to the Parsec project.*
