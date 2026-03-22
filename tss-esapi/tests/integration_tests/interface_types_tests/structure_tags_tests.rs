@@ -1,6 +1,8 @@
 // Copyright 2021 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
 
+// none of these conversions connect to the swtpm.
+
 macro_rules! test_valid_conversions {
     (AttestationType::$attestation_type_item:ident, StructureTag::$strucutre_tag_item:ident) => {
         assert_eq!(

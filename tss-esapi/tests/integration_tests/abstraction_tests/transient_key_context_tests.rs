@@ -1,5 +1,6 @@
 // Copyright 2020 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
+use serial_test::serial;
 use std::{
     convert::{TryFrom, TryInto},
     str::FromStr,
@@ -50,6 +51,7 @@ fn create_ctx() -> TransientKeyContext {
 }
 
 #[test]
+#[serial]
 fn wrong_key_sizes() {
     assert_eq!(
         TransientKeyContextBuilder::new()
@@ -98,6 +100,7 @@ fn wrong_auth_size() {
 }
 
 #[test]
+#[serial]
 fn load_bad_sized_key() {
     let mut ctx = create_ctx();
     let key_params = KeyParams::Rsa {
@@ -112,6 +115,7 @@ fn load_bad_sized_key() {
 }
 
 #[test]
+#[serial]
 fn load_with_invalid_params() {
     let pub_key = vec![
         0x96, 0xDC, 0x72, 0x77, 0x49, 0x82, 0xFD, 0x2D, 0x06, 0x65, 0x8C, 0xE5, 0x3A, 0xCD, 0xED,
@@ -141,6 +145,7 @@ fn load_with_invalid_params() {
 }
 
 #[test]
+#[serial]
 fn verify() {
     let pub_key = vec![
         0x96, 0xDC, 0x72, 0x77, 0x49, 0x82, 0xFD, 0x2D, 0x06, 0x65, 0x8C, 0xE5, 0x3A, 0xCD, 0xED,
@@ -198,6 +203,7 @@ fn verify() {
 }
 
 #[test]
+#[serial]
 fn sign_with_bad_auth() {
     let mut ctx = create_ctx();
     let key_params = KeyParams::Rsa {
@@ -220,6 +226,7 @@ fn sign_with_bad_auth() {
 }
 
 #[test]
+#[serial]
 fn sign_with_no_auth() {
     let mut ctx = create_ctx();
     let key_params = KeyParams::Rsa {
@@ -239,6 +246,7 @@ fn sign_with_no_auth() {
 }
 
 #[test]
+#[serial]
 fn encrypt_decrypt() {
     let mut ctx = create_ctx();
     let key_params = KeyParams::Rsa {
@@ -271,6 +279,7 @@ fn encrypt_decrypt() {
 }
 
 #[test]
+#[serial]
 fn two_signatures_different_digest() {
     let mut ctx = create_ctx();
     let key_params1 = KeyParams::Rsa {
@@ -319,6 +328,7 @@ fn two_signatures_different_digest() {
 }
 
 #[test]
+#[serial]
 fn verify_wrong_key() {
     let mut ctx = create_ctx();
     let key_params1 = KeyParams::Rsa {
@@ -366,6 +376,7 @@ fn verify_wrong_key() {
     }
 }
 #[test]
+#[serial]
 fn verify_wrong_digest() {
     let mut ctx = create_ctx();
     let key_params = KeyParams::Rsa {
@@ -406,6 +417,7 @@ fn verify_wrong_digest() {
 }
 
 #[test]
+#[serial]
 fn full_test() {
     let mut ctx = create_ctx();
     for _ in 0..4 {
@@ -439,6 +451,7 @@ fn full_test() {
 }
 
 #[test]
+#[serial]
 fn create_ecc_key() {
     let mut ctx = create_ctx();
     let _ = ctx
@@ -458,6 +471,7 @@ fn create_ecc_key() {
 }
 
 #[test]
+#[serial]
 fn create_ecc_key_decryption_scheme() {
     let mut ctx = create_ctx();
     let _ = ctx
@@ -477,6 +491,7 @@ fn create_ecc_key_decryption_scheme() {
 }
 
 #[test]
+#[serial]
 fn full_ecc_test() {
     let mut ctx = create_ctx();
     let key_params = KeyParams::Ecc {
@@ -513,6 +528,7 @@ fn full_ecc_test() {
 }
 
 #[test]
+#[serial]
 fn ctx_migration_test() {
     // Create two key contexts using `Context`, one for an RSA keypair,
     // one for just the public part of the key
@@ -617,6 +633,7 @@ fn ctx_migration_test() {
 }
 
 #[test]
+#[serial]
 fn activate_credential() {
     // create a Transient key context, generate a key and
     // obtain the Make Credential parameters
@@ -703,6 +720,7 @@ fn activate_credential() {
 }
 
 #[test]
+#[serial]
 fn make_cred_params_name() {
     // create a Transient key context, generate a key and
     // obtain the Make Credential parameters
@@ -735,6 +753,7 @@ fn make_cred_params_name() {
 }
 
 #[test]
+#[serial]
 fn activate_credential_wrong_key() {
     // create a Transient key context, generate two keys and
     // obtain the Make Credential parameters for the first one
@@ -835,6 +854,7 @@ fn activate_credential_wrong_key() {
 }
 
 #[test]
+#[serial]
 fn activate_credential_wrong_data() {
     let mut ctx = create_ctx();
     let params = KeyParams::Ecc {
@@ -882,6 +902,7 @@ fn activate_credential_wrong_data() {
 }
 
 #[test]
+#[serial]
 fn get_random_from_tkc() {
     // Check that we can convert a reference from TKC to Context
     let mut ctx = create_ctx();
@@ -892,6 +913,7 @@ fn get_random_from_tkc() {
 }
 
 #[test]
+#[serial]
 fn sign_csr() {
     // Check that we can convert a reference from TKC to Context
     let mut ctx = create_ctx();
@@ -917,6 +939,7 @@ fn sign_csr() {
 }
 
 #[test]
+#[serial]
 fn sign_p256_sha2_256() {
     // Check that we can convert a reference from TKC to Context
     let mut ctx = create_ctx();
@@ -948,6 +971,7 @@ fn sign_p256_sha2_256() {
 // This test is ignored for now to avoid issues with the CI.
 #[ignore]
 #[test]
+#[serial]
 fn sign_p256_sha3_256() {
     // Check that we can convert a reference from TKC to Context
     let mut ctx = create_ctx();

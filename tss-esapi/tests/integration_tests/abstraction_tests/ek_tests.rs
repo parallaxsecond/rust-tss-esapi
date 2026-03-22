@@ -1,6 +1,7 @@
 // Copyright 2020 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
 
+use serial_test::serial;
 use tss_esapi::{
     abstraction::{ek, AsymmetricAlgorithmSelection},
     constants::return_code::TpmFormatOneError,
@@ -12,6 +13,7 @@ use tss_esapi::{
 use crate::common::create_ctx_without_session;
 
 #[test]
+#[serial]
 fn test_retrieve_ek_pubcert() {
     let mut context = create_ctx_without_session();
 
@@ -40,6 +42,7 @@ fn test_retrieve_ek_pubcert() {
 }
 
 #[test]
+#[serial]
 fn test_create_ek_rsa() {
     // RSA key sizes currently supported by swtpm
     let supported_ek_sizes = vec![RsaKeyBits::Rsa2048, RsaKeyBits::Rsa3072];
@@ -57,6 +60,7 @@ fn test_create_ek_rsa() {
 }
 
 #[test]
+#[serial]
 fn test_create_ek_ecc() {
     // ECC curves currently supported by swtpm
     let supported_ek_curves = vec![EccCurve::NistP256, EccCurve::NistP384];
