@@ -2,7 +2,7 @@
 name = "tss-esapi"
 version = "8.0.0-alpha.2"
 authors = ["Parsec Project Contributors"]
-edition = "2021"
+edition = "2024"
 description = "Rust-native wrapper around TSS 2.0 Enhanced System API"
 readme = "README.md"
 keywords = ["tpm", "tss", "esys", "esapi"]

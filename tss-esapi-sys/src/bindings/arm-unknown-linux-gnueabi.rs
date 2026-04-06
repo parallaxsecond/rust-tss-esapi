@@ -507,26 +507,12 @@ pub type __pid_t = ::std::os::raw::c_int;
 pub struct __fsid_t {
     pub __val: [::std::os::raw::c_int; 2usize],
 }
-#[test]
-fn bindgen_test_layout___fsid_t() {
-    const UNINIT: ::std::mem::MaybeUninit<__fsid_t> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<__fsid_t>(),
-        8usize,
-        "Size of __fsid_t"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<__fsid_t>(),
-        4usize,
-        "Alignment of __fsid_t"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).__val) as usize - ptr as usize },
-        0usize,
-        "Offset of field: __fsid_t::__val"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of __fsid_t"][::std::mem::size_of::<__fsid_t>() - 8usize];
+    ["Alignment of __fsid_t"][::std::mem::align_of::<__fsid_t>() - 4usize];
+    ["Offset of field: __fsid_t::__val"][::std::mem::offset_of!(__fsid_t, __val) - 0usize];
+};
 pub type __clock_t = ::std::os::raw::c_long;
 pub type __rlim_t = ::std::os::raw::c_ulong;
 pub type __rlim64_t = __uint64_t;
@@ -594,41 +580,19 @@ pub struct TSS2_ABI_VERSION {
     pub tssLevel: u32,
     pub tssVersion: u32,
 }
-#[test]
-fn bindgen_test_layout_TSS2_ABI_VERSION() {
-    const UNINIT: ::std::mem::MaybeUninit<TSS2_ABI_VERSION> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<TSS2_ABI_VERSION>(),
-        16usize,
-        "Size of TSS2_ABI_VERSION"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<TSS2_ABI_VERSION>(),
-        4usize,
-        "Alignment of TSS2_ABI_VERSION"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).tssCreator) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TSS2_ABI_VERSION::tssCreator"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).tssFamily) as usize - ptr as usize },
-        4usize,
-        "Offset of field: TSS2_ABI_VERSION::tssFamily"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).tssLevel) as usize - ptr as usize },
-        8usize,
-        "Offset of field: TSS2_ABI_VERSION::tssLevel"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).tssVersion) as usize - ptr as usize },
-        12usize,
-        "Offset of field: TSS2_ABI_VERSION::tssVersion"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of TSS2_ABI_VERSION"][::std::mem::size_of::<TSS2_ABI_VERSION>() - 16usize];
+    ["Alignment of TSS2_ABI_VERSION"][::std::mem::align_of::<TSS2_ABI_VERSION>() - 4usize];
+    ["Offset of field: TSS2_ABI_VERSION::tssCreator"]
+        [::std::mem::offset_of!(TSS2_ABI_VERSION, tssCreator) - 0usize];
+    ["Offset of field: TSS2_ABI_VERSION::tssFamily"]
+        [::std::mem::offset_of!(TSS2_ABI_VERSION, tssFamily) - 4usize];
+    ["Offset of field: TSS2_ABI_VERSION::tssLevel"]
+        [::std::mem::offset_of!(TSS2_ABI_VERSION, tssLevel) - 8usize];
+    ["Offset of field: TSS2_ABI_VERSION::tssVersion"]
+        [::std::mem::offset_of!(TSS2_ABI_VERSION, tssVersion) - 12usize];
+};
 pub type TSS2_RC = u32;
 pub type TPM2_ALG_ID = UINT16;
 pub type TPM2_ECC_CURVE = UINT16;
@@ -707,26 +671,12 @@ pub type TPMI_ALG_CIPHER_MODE = TPM2_ALG_ID;
 pub struct TPMS_EMPTY {
     pub empty: [UINT8; 1usize],
 }
-#[test]
-fn bindgen_test_layout_TPMS_EMPTY() {
-    const UNINIT: ::std::mem::MaybeUninit<TPMS_EMPTY> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<TPMS_EMPTY>(),
-        1usize,
-        "Size of TPMS_EMPTY"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<TPMS_EMPTY>(),
-        1usize,
-        "Alignment of TPMS_EMPTY"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).empty) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMS_EMPTY::empty"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of TPMS_EMPTY"][::std::mem::size_of::<TPMS_EMPTY>() - 1usize];
+    ["Alignment of TPMS_EMPTY"][::std::mem::align_of::<TPMS_EMPTY>() - 1usize];
+    ["Offset of field: TPMS_EMPTY::empty"][::std::mem::offset_of!(TPMS_EMPTY, empty) - 0usize];
+};
 #[repr(C)]
 #[derive(Copy, Clone)]
 pub union TPMU_HA {
@@ -737,47 +687,17 @@ pub union TPMU_HA {
     pub sha512: [BYTE; 64usize],
     pub sm3_256: [BYTE; 32usize],
 }
-#[test]
-fn bindgen_test_layout_TPMU_HA() {
-    const UNINIT: ::std::mem::MaybeUninit<TPMU_HA> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(::std::mem::size_of::<TPMU_HA>(), 64usize, "Size of TPMU_HA");
-    assert_eq!(
-        ::std::mem::align_of::<TPMU_HA>(),
-        1usize,
-        "Alignment of TPMU_HA"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).sha) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMU_HA::sha"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).sha1) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMU_HA::sha1"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).sha256) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMU_HA::sha256"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).sha384) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMU_HA::sha384"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).sha512) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMU_HA::sha512"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).sm3_256) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMU_HA::sm3_256"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of TPMU_HA"][::std::mem::size_of::<TPMU_HA>() - 64usize];
+    ["Alignment of TPMU_HA"][::std::mem::align_of::<TPMU_HA>() - 1usize];
+    ["Offset of field: TPMU_HA::sha"][::std::mem::offset_of!(TPMU_HA, sha) - 0usize];
+    ["Offset of field: TPMU_HA::sha1"][::std::mem::offset_of!(TPMU_HA, sha1) - 0usize];
+    ["Offset of field: TPMU_HA::sha256"][::std::mem::offset_of!(TPMU_HA, sha256) - 0usize];
+    ["Offset of field: TPMU_HA::sha384"][::std::mem::offset_of!(TPMU_HA, sha384) - 0usize];
+    ["Offset of field: TPMU_HA::sha512"][::std::mem::offset_of!(TPMU_HA, sha512) - 0usize];
+    ["Offset of field: TPMU_HA::sm3_256"][::std::mem::offset_of!(TPMU_HA, sm3_256) - 0usize];
+};
 impl Default for TPMU_HA {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
@@ -793,27 +713,13 @@ pub struct TPMT_HA {
     pub hashAlg: TPMI_ALG_HASH,
     pub digest: TPMU_HA,
 }
-#[test]
-fn bindgen_test_layout_TPMT_HA() {
-    const UNINIT: ::std::mem::MaybeUninit<TPMT_HA> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(::std::mem::size_of::<TPMT_HA>(), 66usize, "Size of TPMT_HA");
-    assert_eq!(
-        ::std::mem::align_of::<TPMT_HA>(),
-        2usize,
-        "Alignment of TPMT_HA"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).hashAlg) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMT_HA::hashAlg"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).digest) as usize - ptr as usize },
-        2usize,
-        "Offset of field: TPMT_HA::digest"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of TPMT_HA"][::std::mem::size_of::<TPMT_HA>() - 66usize];
+    ["Alignment of TPMT_HA"][::std::mem::align_of::<TPMT_HA>() - 2usize];
+    ["Offset of field: TPMT_HA::hashAlg"][::std::mem::offset_of!(TPMT_HA, hashAlg) - 0usize];
+    ["Offset of field: TPMT_HA::digest"][::std::mem::offset_of!(TPMT_HA, digest) - 2usize];
+};
 impl Default for TPMT_HA {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
@@ -829,31 +735,14 @@ pub struct TPM2B_DIGEST {
     pub size: UINT16,
     pub buffer: [BYTE; 64usize],
 }
-#[test]
-fn bindgen_test_layout_TPM2B_DIGEST() {
-    const UNINIT: ::std::mem::MaybeUninit<TPM2B_DIGEST> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<TPM2B_DIGEST>(),
-        66usize,
-        "Size of TPM2B_DIGEST"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<TPM2B_DIGEST>(),
-        2usize,
-        "Alignment of TPM2B_DIGEST"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).size) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPM2B_DIGEST::size"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).buffer) as usize - ptr as usize },
-        2usize,
-        "Offset of field: TPM2B_DIGEST::buffer"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of TPM2B_DIGEST"][::std::mem::size_of::<TPM2B_DIGEST>() - 66usize];
+    ["Alignment of TPM2B_DIGEST"][::std::mem::align_of::<TPM2B_DIGEST>() - 2usize];
+    ["Offset of field: TPM2B_DIGEST::size"][::std::mem::offset_of!(TPM2B_DIGEST, size) - 0usize];
+    ["Offset of field: TPM2B_DIGEST::buffer"]
+        [::std::mem::offset_of!(TPM2B_DIGEST, buffer) - 2usize];
+};
 impl Default for TPM2B_DIGEST {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
@@ -869,31 +758,13 @@ pub struct TPM2B_DATA {
     pub size: UINT16,
     pub buffer: [BYTE; 64usize],
 }
-#[test]
-fn bindgen_test_layout_TPM2B_DATA() {
-    const UNINIT: ::std::mem::MaybeUninit<TPM2B_DATA> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<TPM2B_DATA>(),
-        66usize,
-        "Size of TPM2B_DATA"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<TPM2B_DATA>(),
-        2usize,
-        "Alignment of TPM2B_DATA"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).size) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPM2B_DATA::size"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).buffer) as usize - ptr as usize },
-        2usize,
-        "Offset of field: TPM2B_DATA::buffer"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of TPM2B_DATA"][::std::mem::size_of::<TPM2B_DATA>() - 66usize];
+    ["Alignment of TPM2B_DATA"][::std::mem::align_of::<TPM2B_DATA>() - 2usize];
+    ["Offset of field: TPM2B_DATA::size"][::std::mem::offset_of!(TPM2B_DATA, size) - 0usize];
+    ["Offset of field: TPM2B_DATA::buffer"][::std::mem::offset_of!(TPM2B_DATA, buffer) - 2usize];
+};
 impl Default for TPM2B_DATA {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
@@ -912,31 +783,13 @@ pub struct TPM2B_EVENT {
     pub size: UINT16,
     pub buffer: [BYTE; 1024usize],
 }
-#[test]
-fn bindgen_test_layout_TPM2B_EVENT() {
-    const UNINIT: ::std::mem::MaybeUninit<TPM2B_EVENT> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<TPM2B_EVENT>(),
-        1026usize,
-        "Size of TPM2B_EVENT"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<TPM2B_EVENT>(),
-        2usize,
-        "Alignment of TPM2B_EVENT"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).size) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPM2B_EVENT::size"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).buffer) as usize - ptr as usize },
-        2usize,
-        "Offset of field: TPM2B_EVENT::buffer"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of TPM2B_EVENT"][::std::mem::size_of::<TPM2B_EVENT>() - 1026usize];
+    ["Alignment of TPM2B_EVENT"][::std::mem::align_of::<TPM2B_EVENT>() - 2usize];
+    ["Offset of field: TPM2B_EVENT::size"][::std::mem::offset_of!(TPM2B_EVENT, size) - 0usize];
+    ["Offset of field: TPM2B_EVENT::buffer"][::std::mem::offset_of!(TPM2B_EVENT, buffer) - 2usize];
+};
 impl Default for TPM2B_EVENT {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
@@ -952,31 +805,15 @@ pub struct TPM2B_MAX_BUFFER {
     pub size: UINT16,
     pub buffer: [BYTE; 1024usize],
 }
-#[test]
-fn bindgen_test_layout_TPM2B_MAX_BUFFER() {
-    const UNINIT: ::std::mem::MaybeUninit<TPM2B_MAX_BUFFER> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<TPM2B_MAX_BUFFER>(),
-        1026usize,
-        "Size of TPM2B_MAX_BUFFER"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<TPM2B_MAX_BUFFER>(),
-        2usize,
-        "Alignment of TPM2B_MAX_BUFFER"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).size) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPM2B_MAX_BUFFER::size"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).buffer) as usize - ptr as usize },
-        2usize,
-        "Offset of field: TPM2B_MAX_BUFFER::buffer"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of TPM2B_MAX_BUFFER"][::std::mem::size_of::<TPM2B_MAX_BUFFER>() - 1026usize];
+    ["Alignment of TPM2B_MAX_BUFFER"][::std::mem::align_of::<TPM2B_MAX_BUFFER>() - 2usize];
+    ["Offset of field: TPM2B_MAX_BUFFER::size"]
+        [::std::mem::offset_of!(TPM2B_MAX_BUFFER, size) - 0usize];
+    ["Offset of field: TPM2B_MAX_BUFFER::buffer"]
+        [::std::mem::offset_of!(TPM2B_MAX_BUFFER, buffer) - 2usize];
+};
 impl Default for TPM2B_MAX_BUFFER {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
@@ -992,31 +829,15 @@ pub struct TPM2B_MAX_NV_BUFFER {
     pub size: UINT16,
     pub buffer: [BYTE; 2048usize],
 }
-#[test]
-fn bindgen_test_layout_TPM2B_MAX_NV_BUFFER() {
-    const UNINIT: ::std::mem::MaybeUninit<TPM2B_MAX_NV_BUFFER> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<TPM2B_MAX_NV_BUFFER>(),
-        2050usize,
-        "Size of TPM2B_MAX_NV_BUFFER"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<TPM2B_MAX_NV_BUFFER>(),
-        2usize,
-        "Alignment of TPM2B_MAX_NV_BUFFER"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).size) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPM2B_MAX_NV_BUFFER::size"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).buffer) as usize - ptr as usize },
-        2usize,
-        "Offset of field: TPM2B_MAX_NV_BUFFER::buffer"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of TPM2B_MAX_NV_BUFFER"][::std::mem::size_of::<TPM2B_MAX_NV_BUFFER>() - 2050usize];
+    ["Alignment of TPM2B_MAX_NV_BUFFER"][::std::mem::align_of::<TPM2B_MAX_NV_BUFFER>() - 2usize];
+    ["Offset of field: TPM2B_MAX_NV_BUFFER::size"]
+        [::std::mem::offset_of!(TPM2B_MAX_NV_BUFFER, size) - 0usize];
+    ["Offset of field: TPM2B_MAX_NV_BUFFER::buffer"]
+        [::std::mem::offset_of!(TPM2B_MAX_NV_BUFFER, buffer) - 2usize];
+};
 impl Default for TPM2B_MAX_NV_BUFFER {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
@@ -1033,62 +854,26 @@ pub struct TPM2B_IV {
     pub size: UINT16,
     pub buffer: [BYTE; 16usize],
 }
-#[test]
-fn bindgen_test_layout_TPM2B_IV() {
-    const UNINIT: ::std::mem::MaybeUninit<TPM2B_IV> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<TPM2B_IV>(),
-        18usize,
-        "Size of TPM2B_IV"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<TPM2B_IV>(),
-        2usize,
-        "Alignment of TPM2B_IV"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).size) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPM2B_IV::size"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).buffer) as usize - ptr as usize },
-        2usize,
-        "Offset of field: TPM2B_IV::buffer"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of TPM2B_IV"][::std::mem::size_of::<TPM2B_IV>() - 18usize];
+    ["Alignment of TPM2B_IV"][::std::mem::align_of::<TPM2B_IV>() - 2usize];
+    ["Offset of field: TPM2B_IV::size"][::std::mem::offset_of!(TPM2B_IV, size) - 0usize];
+    ["Offset of field: TPM2B_IV::buffer"][::std::mem::offset_of!(TPM2B_IV, buffer) - 2usize];
+};
 #[repr(C)]
 #[derive(Copy, Clone)]
 pub union TPMU_NAME {
     pub digest: TPMT_HA,
     pub handle: TPM2_HANDLE,
 }
-#[test]
-fn bindgen_test_layout_TPMU_NAME() {
-    const UNINIT: ::std::mem::MaybeUninit<TPMU_NAME> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<TPMU_NAME>(),
-        68usize,
-        "Size of TPMU_NAME"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<TPMU_NAME>(),
-        4usize,
-        "Alignment of TPMU_NAME"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).digest) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMU_NAME::digest"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).handle) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMU_NAME::handle"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of TPMU_NAME"][::std::mem::size_of::<TPMU_NAME>() - 68usize];
+    ["Alignment of TPMU_NAME"][::std::mem::align_of::<TPMU_NAME>() - 4usize];
+    ["Offset of field: TPMU_NAME::digest"][::std::mem::offset_of!(TPMU_NAME, digest) - 0usize];
+    ["Offset of field: TPMU_NAME::handle"][::std::mem::offset_of!(TPMU_NAME, handle) - 0usize];
+};
 impl Default for TPMU_NAME {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
@@ -1104,31 +889,13 @@ pub struct TPM2B_NAME {
     pub size: UINT16,
     pub name: [BYTE; 68usize],
 }
-#[test]
-fn bindgen_test_layout_TPM2B_NAME() {
-    const UNINIT: ::std::mem::MaybeUninit<TPM2B_NAME> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<TPM2B_NAME>(),
-        70usize,
-        "Size of TPM2B_NAME"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<TPM2B_NAME>(),
-        2usize,
-        "Alignment of TPM2B_NAME"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).size) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPM2B_NAME::size"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).name) as usize - ptr as usize },
-        2usize,
-        "Offset of field: TPM2B_NAME::name"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of TPM2B_NAME"][::std::mem::size_of::<TPM2B_NAME>() - 70usize];
+    ["Alignment of TPM2B_NAME"][::std::mem::align_of::<TPM2B_NAME>() - 2usize];
+    ["Offset of field: TPM2B_NAME::size"][::std::mem::offset_of!(TPM2B_NAME, size) - 0usize];
+    ["Offset of field: TPM2B_NAME::name"][::std::mem::offset_of!(TPM2B_NAME, name) - 2usize];
+};
 impl Default for TPM2B_NAME {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
@@ -1144,31 +911,15 @@ pub struct TPMS_PCR_SELECT {
     pub sizeofSelect: UINT8,
     pub pcrSelect: [BYTE; 4usize],
 }
-#[test]
-fn bindgen_test_layout_TPMS_PCR_SELECT() {
-    const UNINIT: ::std::mem::MaybeUninit<TPMS_PCR_SELECT> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<TPMS_PCR_SELECT>(),
-        5usize,
-        "Size of TPMS_PCR_SELECT"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<TPMS_PCR_SELECT>(),
-        1usize,
-        "Alignment of TPMS_PCR_SELECT"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).sizeofSelect) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMS_PCR_SELECT::sizeofSelect"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).pcrSelect) as usize - ptr as usize },
-        1usize,
-        "Offset of field: TPMS_PCR_SELECT::pcrSelect"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of TPMS_PCR_SELECT"][::std::mem::size_of::<TPMS_PCR_SELECT>() - 5usize];
+    ["Alignment of TPMS_PCR_SELECT"][::std::mem::align_of::<TPMS_PCR_SELECT>() - 1usize];
+    ["Offset of field: TPMS_PCR_SELECT::sizeofSelect"]
+        [::std::mem::offset_of!(TPMS_PCR_SELECT, sizeofSelect) - 0usize];
+    ["Offset of field: TPMS_PCR_SELECT::pcrSelect"]
+        [::std::mem::offset_of!(TPMS_PCR_SELECT, pcrSelect) - 1usize];
+};
 #[repr(C)]
 #[derive(Debug, Default, Copy, Clone)]
 pub struct TPMS_PCR_SELECTION {
@@ -1176,36 +927,17 @@ pub struct TPMS_PCR_SELECTION {
     pub sizeofSelect: UINT8,
     pub pcrSelect: [BYTE; 4usize],
 }
-#[test]
-fn bindgen_test_layout_TPMS_PCR_SELECTION() {
-    const UNINIT: ::std::mem::MaybeUninit<TPMS_PCR_SELECTION> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<TPMS_PCR_SELECTION>(),
-        8usize,
-        "Size of TPMS_PCR_SELECTION"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<TPMS_PCR_SELECTION>(),
-        2usize,
-        "Alignment of TPMS_PCR_SELECTION"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).hash) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMS_PCR_SELECTION::hash"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).sizeofSelect) as usize - ptr as usize },
-        2usize,
-        "Offset of field: TPMS_PCR_SELECTION::sizeofSelect"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).pcrSelect) as usize - ptr as usize },
-        3usize,
-        "Offset of field: TPMS_PCR_SELECTION::pcrSelect"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of TPMS_PCR_SELECTION"][::std::mem::size_of::<TPMS_PCR_SELECTION>() - 8usize];
+    ["Alignment of TPMS_PCR_SELECTION"][::std::mem::align_of::<TPMS_PCR_SELECTION>() - 2usize];
+    ["Offset of field: TPMS_PCR_SELECTION::hash"]
+        [::std::mem::offset_of!(TPMS_PCR_SELECTION, hash) - 0usize];
+    ["Offset of field: TPMS_PCR_SELECTION::sizeofSelect"]
+        [::std::mem::offset_of!(TPMS_PCR_SELECTION, sizeofSelect) - 2usize];
+    ["Offset of field: TPMS_PCR_SELECTION::pcrSelect"]
+        [::std::mem::offset_of!(TPMS_PCR_SELECTION, pcrSelect) - 3usize];
+};
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct TPMT_TK_CREATION {
@@ -1213,36 +945,17 @@ pub struct TPMT_TK_CREATION {
     pub hierarchy: TPMI_RH_HIERARCHY,
     pub digest: TPM2B_DIGEST,
 }
-#[test]
-fn bindgen_test_layout_TPMT_TK_CREATION() {
-    const UNINIT: ::std::mem::MaybeUninit<TPMT_TK_CREATION> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<TPMT_TK_CREATION>(),
-        76usize,
-        "Size of TPMT_TK_CREATION"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<TPMT_TK_CREATION>(),
-        4usize,
-        "Alignment of TPMT_TK_CREATION"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).tag) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMT_TK_CREATION::tag"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).hierarchy) as usize - ptr as usize },
-        4usize,
-        "Offset of field: TPMT_TK_CREATION::hierarchy"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).digest) as usize - ptr as usize },
-        8usize,
-        "Offset of field: TPMT_TK_CREATION::digest"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of TPMT_TK_CREATION"][::std::mem::size_of::<TPMT_TK_CREATION>() - 76usize];
+    ["Alignment of TPMT_TK_CREATION"][::std::mem::align_of::<TPMT_TK_CREATION>() - 4usize];
+    ["Offset of field: TPMT_TK_CREATION::tag"]
+        [::std::mem::offset_of!(TPMT_TK_CREATION, tag) - 0usize];
+    ["Offset of field: TPMT_TK_CREATION::hierarchy"]
+        [::std::mem::offset_of!(TPMT_TK_CREATION, hierarchy) - 4usize];
+    ["Offset of field: TPMT_TK_CREATION::digest"]
+        [::std::mem::offset_of!(TPMT_TK_CREATION, digest) - 8usize];
+};
 impl Default for TPMT_TK_CREATION {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
@@ -1259,36 +972,17 @@ pub struct TPMT_TK_VERIFIED {
     pub hierarchy: TPMI_RH_HIERARCHY,
     pub digest: TPM2B_DIGEST,
 }
-#[test]
-fn bindgen_test_layout_TPMT_TK_VERIFIED() {
-    const UNINIT: ::std::mem::MaybeUninit<TPMT_TK_VERIFIED> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<TPMT_TK_VERIFIED>(),
-        76usize,
-        "Size of TPMT_TK_VERIFIED"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<TPMT_TK_VERIFIED>(),
-        4usize,
-        "Alignment of TPMT_TK_VERIFIED"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).tag) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMT_TK_VERIFIED::tag"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).hierarchy) as usize - ptr as usize },
-        4usize,
-        "Offset of field: TPMT_TK_VERIFIED::hierarchy"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).digest) as usize - ptr as usize },
-        8usize,
-        "Offset of field: TPMT_TK_VERIFIED::digest"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of TPMT_TK_VERIFIED"][::std::mem::size_of::<TPMT_TK_VERIFIED>() - 76usize];
+    ["Alignment of TPMT_TK_VERIFIED"][::std::mem::align_of::<TPMT_TK_VERIFIED>() - 4usize];
+    ["Offset of field: TPMT_TK_VERIFIED::tag"]
+        [::std::mem::offset_of!(TPMT_TK_VERIFIED, tag) - 0usize];
+    ["Offset of field: TPMT_TK_VERIFIED::hierarchy"]
+        [::std::mem::offset_of!(TPMT_TK_VERIFIED, hierarchy) - 4usize];
+    ["Offset of field: TPMT_TK_VERIFIED::digest"]
+        [::std::mem::offset_of!(TPMT_TK_VERIFIED, digest) - 8usize];
+};
 impl Default for TPMT_TK_VERIFIED {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
@@ -1305,36 +999,16 @@ pub struct TPMT_TK_AUTH {
     pub hierarchy: TPMI_RH_HIERARCHY,
     pub digest: TPM2B_DIGEST,
 }
-#[test]
-fn bindgen_test_layout_TPMT_TK_AUTH() {
-    const UNINIT: ::std::mem::MaybeUninit<TPMT_TK_AUTH> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<TPMT_TK_AUTH>(),
-        76usize,
-        "Size of TPMT_TK_AUTH"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<TPMT_TK_AUTH>(),
-        4usize,
-        "Alignment of TPMT_TK_AUTH"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).tag) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMT_TK_AUTH::tag"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).hierarchy) as usize - ptr as usize },
-        4usize,
-        "Offset of field: TPMT_TK_AUTH::hierarchy"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).digest) as usize - ptr as usize },
-        8usize,
-        "Offset of field: TPMT_TK_AUTH::digest"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of TPMT_TK_AUTH"][::std::mem::size_of::<TPMT_TK_AUTH>() - 76usize];
+    ["Alignment of TPMT_TK_AUTH"][::std::mem::align_of::<TPMT_TK_AUTH>() - 4usize];
+    ["Offset of field: TPMT_TK_AUTH::tag"][::std::mem::offset_of!(TPMT_TK_AUTH, tag) - 0usize];
+    ["Offset of field: TPMT_TK_AUTH::hierarchy"]
+        [::std::mem::offset_of!(TPMT_TK_AUTH, hierarchy) - 4usize];
+    ["Offset of field: TPMT_TK_AUTH::digest"]
+        [::std::mem::offset_of!(TPMT_TK_AUTH, digest) - 8usize];
+};
 impl Default for TPMT_TK_AUTH {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
@@ -1351,36 +1025,17 @@ pub struct TPMT_TK_HASHCHECK {
     pub hierarchy: TPMI_RH_HIERARCHY,
     pub digest: TPM2B_DIGEST,
 }
-#[test]
-fn bindgen_test_layout_TPMT_TK_HASHCHECK() {
-    const UNINIT: ::std::mem::MaybeUninit<TPMT_TK_HASHCHECK> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<TPMT_TK_HASHCHECK>(),
-        76usize,
-        "Size of TPMT_TK_HASHCHECK"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<TPMT_TK_HASHCHECK>(),
-        4usize,
-        "Alignment of TPMT_TK_HASHCHECK"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).tag) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMT_TK_HASHCHECK::tag"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).hierarchy) as usize - ptr as usize },
-        4usize,
-        "Offset of field: TPMT_TK_HASHCHECK::hierarchy"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).digest) as usize - ptr as usize },
-        8usize,
-        "Offset of field: TPMT_TK_HASHCHECK::digest"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of TPMT_TK_HASHCHECK"][::std::mem::size_of::<TPMT_TK_HASHCHECK>() - 76usize];
+    ["Alignment of TPMT_TK_HASHCHECK"][::std::mem::align_of::<TPMT_TK_HASHCHECK>() - 4usize];
+    ["Offset of field: TPMT_TK_HASHCHECK::tag"]
+        [::std::mem::offset_of!(TPMT_TK_HASHCHECK, tag) - 0usize];
+    ["Offset of field: TPMT_TK_HASHCHECK::hierarchy"]
+        [::std::mem::offset_of!(TPMT_TK_HASHCHECK, hierarchy) - 4usize];
+    ["Offset of field: TPMT_TK_HASHCHECK::digest"]
+        [::std::mem::offset_of!(TPMT_TK_HASHCHECK, digest) - 8usize];
+};
 impl Default for TPMT_TK_HASHCHECK {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
@@ -1396,62 +1051,30 @@ pub struct TPMS_ALG_PROPERTY {
     pub alg: TPM2_ALG_ID,
     pub algProperties: TPMA_ALGORITHM,
 }
-#[test]
-fn bindgen_test_layout_TPMS_ALG_PROPERTY() {
-    const UNINIT: ::std::mem::MaybeUninit<TPMS_ALG_PROPERTY> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<TPMS_ALG_PROPERTY>(),
-        8usize,
-        "Size of TPMS_ALG_PROPERTY"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<TPMS_ALG_PROPERTY>(),
-        4usize,
-        "Alignment of TPMS_ALG_PROPERTY"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).alg) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMS_ALG_PROPERTY::alg"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).algProperties) as usize - ptr as usize },
-        4usize,
-        "Offset of field: TPMS_ALG_PROPERTY::algProperties"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of TPMS_ALG_PROPERTY"][::std::mem::size_of::<TPMS_ALG_PROPERTY>() - 8usize];
+    ["Alignment of TPMS_ALG_PROPERTY"][::std::mem::align_of::<TPMS_ALG_PROPERTY>() - 4usize];
+    ["Offset of field: TPMS_ALG_PROPERTY::alg"]
+        [::std::mem::offset_of!(TPMS_ALG_PROPERTY, alg) - 0usize];
+    ["Offset of field: TPMS_ALG_PROPERTY::algProperties"]
+        [::std::mem::offset_of!(TPMS_ALG_PROPERTY, algProperties) - 4usize];
+};
 #[repr(C)]
 #[derive(Debug, Default, Copy, Clone)]
 pub struct TPMS_TAGGED_PROPERTY {
     pub property: TPM2_PT,
     pub value: UINT32,
 }
-#[test]
-fn bindgen_test_layout_TPMS_TAGGED_PROPERTY() {
-    const UNINIT: ::std::mem::MaybeUninit<TPMS_TAGGED_PROPERTY> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<TPMS_TAGGED_PROPERTY>(),
-        8usize,
-        "Size of TPMS_TAGGED_PROPERTY"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<TPMS_TAGGED_PROPERTY>(),
-        4usize,
-        "Alignment of TPMS_TAGGED_PROPERTY"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).property) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMS_TAGGED_PROPERTY::property"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).value) as usize - ptr as usize },
-        4usize,
-        "Offset of field: TPMS_TAGGED_PROPERTY::value"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of TPMS_TAGGED_PROPERTY"][::std::mem::size_of::<TPMS_TAGGED_PROPERTY>() - 8usize];
+    ["Alignment of TPMS_TAGGED_PROPERTY"][::std::mem::align_of::<TPMS_TAGGED_PROPERTY>() - 4usize];
+    ["Offset of field: TPMS_TAGGED_PROPERTY::property"]
+        [::std::mem::offset_of!(TPMS_TAGGED_PROPERTY, property) - 0usize];
+    ["Offset of field: TPMS_TAGGED_PROPERTY::value"]
+        [::std::mem::offset_of!(TPMS_TAGGED_PROPERTY, value) - 4usize];
+};
 #[repr(C)]
 #[derive(Debug, Default, Copy, Clone)]
 pub struct TPMS_TAGGED_PCR_SELECT {
@@ -1459,68 +1082,33 @@ pub struct TPMS_TAGGED_PCR_SELECT {
     pub sizeofSelect: UINT8,
     pub pcrSelect: [BYTE; 4usize],
 }
-#[test]
-fn bindgen_test_layout_TPMS_TAGGED_PCR_SELECT() {
-    const UNINIT: ::std::mem::MaybeUninit<TPMS_TAGGED_PCR_SELECT> =
-        ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<TPMS_TAGGED_PCR_SELECT>(),
-        12usize,
-        "Size of TPMS_TAGGED_PCR_SELECT"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<TPMS_TAGGED_PCR_SELECT>(),
-        4usize,
-        "Alignment of TPMS_TAGGED_PCR_SELECT"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).tag) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMS_TAGGED_PCR_SELECT::tag"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).sizeofSelect) as usize - ptr as usize },
-        4usize,
-        "Offset of field: TPMS_TAGGED_PCR_SELECT::sizeofSelect"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).pcrSelect) as usize - ptr as usize },
-        5usize,
-        "Offset of field: TPMS_TAGGED_PCR_SELECT::pcrSelect"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of TPMS_TAGGED_PCR_SELECT"][::std::mem::size_of::<TPMS_TAGGED_PCR_SELECT>() - 12usize];
+    ["Alignment of TPMS_TAGGED_PCR_SELECT"]
+        [::std::mem::align_of::<TPMS_TAGGED_PCR_SELECT>() - 4usize];
+    ["Offset of field: TPMS_TAGGED_PCR_SELECT::tag"]
+        [::std::mem::offset_of!(TPMS_TAGGED_PCR_SELECT, tag) - 0usize];
+    ["Offset of field: TPMS_TAGGED_PCR_SELECT::sizeofSelect"]
+        [::std::mem::offset_of!(TPMS_TAGGED_PCR_SELECT, sizeofSelect) - 4usize];
+    ["Offset of field: TPMS_TAGGED_PCR_SELECT::pcrSelect"]
+        [::std::mem::offset_of!(TPMS_TAGGED_PCR_SELECT, pcrSelect) - 5usize];
+};
 #[repr(C)]
 #[derive(Copy, Clone)]
 pub struct TPMS_TAGGED_POLICY {
     pub handle: TPM2_HANDLE,
     pub policyHash: TPMT_HA,
 }
-#[test]
-fn bindgen_test_layout_TPMS_TAGGED_POLICY() {
-    const UNINIT: ::std::mem::MaybeUninit<TPMS_TAGGED_POLICY> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<TPMS_TAGGED_POLICY>(),
-        72usize,
-        "Size of TPMS_TAGGED_POLICY"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<TPMS_TAGGED_POLICY>(),
-        4usize,
-        "Alignment of TPMS_TAGGED_POLICY"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).handle) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMS_TAGGED_POLICY::handle"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).policyHash) as usize - ptr as usize },
-        4usize,
-        "Offset of field: TPMS_TAGGED_POLICY::policyHash"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of TPMS_TAGGED_POLICY"][::std::mem::size_of::<TPMS_TAGGED_POLICY>() - 72usize];
+    ["Alignment of TPMS_TAGGED_POLICY"][::std::mem::align_of::<TPMS_TAGGED_POLICY>() - 4usize];
+    ["Offset of field: TPMS_TAGGED_POLICY::handle"]
+        [::std::mem::offset_of!(TPMS_TAGGED_POLICY, handle) - 0usize];
+    ["Offset of field: TPMS_TAGGED_POLICY::policyHash"]
+        [::std::mem::offset_of!(TPMS_TAGGED_POLICY, policyHash) - 4usize];
+};
 impl Default for TPMS_TAGGED_POLICY {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
@@ -1537,67 +1125,31 @@ pub struct TPMS_ACT_DATA {
     pub timeout: UINT32,
     pub attributes: TPMA_ACT,
 }
-#[test]
-fn bindgen_test_layout_TPMS_ACT_DATA() {
-    const UNINIT: ::std::mem::MaybeUninit<TPMS_ACT_DATA> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<TPMS_ACT_DATA>(),
-        12usize,
-        "Size of TPMS_ACT_DATA"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<TPMS_ACT_DATA>(),
-        4usize,
-        "Alignment of TPMS_ACT_DATA"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).handle) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMS_ACT_DATA::handle"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).timeout) as usize - ptr as usize },
-        4usize,
-        "Offset of field: TPMS_ACT_DATA::timeout"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).attributes) as usize - ptr as usize },
-        8usize,
-        "Offset of field: TPMS_ACT_DATA::attributes"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of TPMS_ACT_DATA"][::std::mem::size_of::<TPMS_ACT_DATA>() - 12usize];
+    ["Alignment of TPMS_ACT_DATA"][::std::mem::align_of::<TPMS_ACT_DATA>() - 4usize];
+    ["Offset of field: TPMS_ACT_DATA::handle"]
+        [::std::mem::offset_of!(TPMS_ACT_DATA, handle) - 0usize];
+    ["Offset of field: TPMS_ACT_DATA::timeout"]
+        [::std::mem::offset_of!(TPMS_ACT_DATA, timeout) - 4usize];
+    ["Offset of field: TPMS_ACT_DATA::attributes"]
+        [::std::mem::offset_of!(TPMS_ACT_DATA, attributes) - 8usize];
+};
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct TPML_CC {
     pub count: UINT32,
     pub commandCodes: [TPM2_CC; 256usize],
 }
-#[test]
-fn bindgen_test_layout_TPML_CC() {
-    const UNINIT: ::std::mem::MaybeUninit<TPML_CC> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<TPML_CC>(),
-        1028usize,
-        "Size of TPML_CC"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<TPML_CC>(),
-        4usize,
-        "Alignment of TPML_CC"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).count) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPML_CC::count"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).commandCodes) as usize - ptr as usize },
-        4usize,
-        "Offset of field: TPML_CC::commandCodes"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of TPML_CC"][::std::mem::size_of::<TPML_CC>() - 1028usize];
+    ["Alignment of TPML_CC"][::std::mem::align_of::<TPML_CC>() - 4usize];
+    ["Offset of field: TPML_CC::count"][::std::mem::offset_of!(TPML_CC, count) - 0usize];
+    ["Offset of field: TPML_CC::commandCodes"]
+        [::std::mem::offset_of!(TPML_CC, commandCodes) - 4usize];
+};
 impl Default for TPML_CC {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
@@ -1613,31 +1165,14 @@ pub struct TPML_CCA {
     pub count: UINT32,
     pub commandAttributes: [TPMA_CC; 256usize],
 }
-#[test]
-fn bindgen_test_layout_TPML_CCA() {
-    const UNINIT: ::std::mem::MaybeUninit<TPML_CCA> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<TPML_CCA>(),
-        1028usize,
-        "Size of TPML_CCA"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<TPML_CCA>(),
-        4usize,
-        "Alignment of TPML_CCA"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).count) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPML_CCA::count"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).commandAttributes) as usize - ptr as usize },
-        4usize,
-        "Offset of field: TPML_CCA::commandAttributes"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of TPML_CCA"][::std::mem::size_of::<TPML_CCA>() - 1028usize];
+    ["Alignment of TPML_CCA"][::std::mem::align_of::<TPML_CCA>() - 4usize];
+    ["Offset of field: TPML_CCA::count"][::std::mem::offset_of!(TPML_CCA, count) - 0usize];
+    ["Offset of field: TPML_CCA::commandAttributes"]
+        [::std::mem::offset_of!(TPML_CCA, commandAttributes) - 4usize];
+};
 impl Default for TPML_CCA {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
@@ -1653,31 +1188,14 @@ pub struct TPML_ALG {
     pub count: UINT32,
     pub algorithms: [TPM2_ALG_ID; 128usize],
 }
-#[test]
-fn bindgen_test_layout_TPML_ALG() {
-    const UNINIT: ::std::mem::MaybeUninit<TPML_ALG> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<TPML_ALG>(),
-        260usize,
-        "Size of TPML_ALG"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<TPML_ALG>(),
-        4usize,
-        "Alignment of TPML_ALG"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).count) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPML_ALG::count"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).algorithms) as usize - ptr as usize },
-        4usize,
-        "Offset of field: TPML_ALG::algorithms"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of TPML_ALG"][::std::mem::size_of::<TPML_ALG>() - 260usize];
+    ["Alignment of TPML_ALG"][::std::mem::align_of::<TPML_ALG>() - 4usize];
+    ["Offset of field: TPML_ALG::count"][::std::mem::offset_of!(TPML_ALG, count) - 0usize];
+    ["Offset of field: TPML_ALG::algorithms"]
+        [::std::mem::offset_of!(TPML_ALG, algorithms) - 4usize];
+};
 impl Default for TPML_ALG {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
@@ -1693,31 +1211,13 @@ pub struct TPML_HANDLE {
     pub count: UINT32,
     pub handle: [TPM2_HANDLE; 254usize],
 }
-#[test]
-fn bindgen_test_layout_TPML_HANDLE() {
-    const UNINIT: ::std::mem::MaybeUninit<TPML_HANDLE> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<TPML_HANDLE>(),
-        1020usize,
-        "Size of TPML_HANDLE"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<TPML_HANDLE>(),
-        4usize,
-        "Alignment of TPML_HANDLE"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).count) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPML_HANDLE::count"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).handle) as usize - ptr as usize },
-        4usize,
-        "Offset of field: TPML_HANDLE::handle"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of TPML_HANDLE"][::std::mem::size_of::<TPML_HANDLE>() - 1020usize];
+    ["Alignment of TPML_HANDLE"][::std::mem::align_of::<TPML_HANDLE>() - 4usize];
+    ["Offset of field: TPML_HANDLE::count"][::std::mem::offset_of!(TPML_HANDLE, count) - 0usize];
+    ["Offset of field: TPML_HANDLE::handle"][::std::mem::offset_of!(TPML_HANDLE, handle) - 4usize];
+};
 impl Default for TPML_HANDLE {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
@@ -1733,31 +1233,14 @@ pub struct TPML_DIGEST {
     pub count: UINT32,
     pub digests: [TPM2B_DIGEST; 8usize],
 }
-#[test]
-fn bindgen_test_layout_TPML_DIGEST() {
-    const UNINIT: ::std::mem::MaybeUninit<TPML_DIGEST> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<TPML_DIGEST>(),
-        532usize,
-        "Size of TPML_DIGEST"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<TPML_DIGEST>(),
-        4usize,
-        "Alignment of TPML_DIGEST"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).count) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPML_DIGEST::count"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).digests) as usize - ptr as usize },
-        4usize,
-        "Offset of field: TPML_DIGEST::digests"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of TPML_DIGEST"][::std::mem::size_of::<TPML_DIGEST>() - 532usize];
+    ["Alignment of TPML_DIGEST"][::std::mem::align_of::<TPML_DIGEST>() - 4usize];
+    ["Offset of field: TPML_DIGEST::count"][::std::mem::offset_of!(TPML_DIGEST, count) - 0usize];
+    ["Offset of field: TPML_DIGEST::digests"]
+        [::std::mem::offset_of!(TPML_DIGEST, digests) - 4usize];
+};
 impl Default for TPML_DIGEST {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
@@ -1773,31 +1256,15 @@ pub struct TPML_DIGEST_VALUES {
     pub count: UINT32,
     pub digests: [TPMT_HA; 16usize],
 }
-#[test]
-fn bindgen_test_layout_TPML_DIGEST_VALUES() {
-    const UNINIT: ::std::mem::MaybeUninit<TPML_DIGEST_VALUES> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<TPML_DIGEST_VALUES>(),
-        1060usize,
-        "Size of TPML_DIGEST_VALUES"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<TPML_DIGEST_VALUES>(),
-        4usize,
-        "Alignment of TPML_DIGEST_VALUES"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).count) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPML_DIGEST_VALUES::count"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).digests) as usize - ptr as usize },
-        4usize,
-        "Offset of field: TPML_DIGEST_VALUES::digests"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of TPML_DIGEST_VALUES"][::std::mem::size_of::<TPML_DIGEST_VALUES>() - 1060usize];
+    ["Alignment of TPML_DIGEST_VALUES"][::std::mem::align_of::<TPML_DIGEST_VALUES>() - 4usize];
+    ["Offset of field: TPML_DIGEST_VALUES::count"]
+        [::std::mem::offset_of!(TPML_DIGEST_VALUES, count) - 0usize];
+    ["Offset of field: TPML_DIGEST_VALUES::digests"]
+        [::std::mem::offset_of!(TPML_DIGEST_VALUES, digests) - 4usize];
+};
 impl Default for TPML_DIGEST_VALUES {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
@@ -1813,62 +1280,30 @@ pub struct TPML_PCR_SELECTION {
     pub count: UINT32,
     pub pcrSelections: [TPMS_PCR_SELECTION; 16usize],
 }
-#[test]
-fn bindgen_test_layout_TPML_PCR_SELECTION() {
-    const UNINIT: ::std::mem::MaybeUninit<TPML_PCR_SELECTION> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<TPML_PCR_SELECTION>(),
-        132usize,
-        "Size of TPML_PCR_SELECTION"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<TPML_PCR_SELECTION>(),
-        4usize,
-        "Alignment of TPML_PCR_SELECTION"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).count) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPML_PCR_SELECTION::count"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).pcrSelections) as usize - ptr as usize },
-        4usize,
-        "Offset of field: TPML_PCR_SELECTION::pcrSelections"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of TPML_PCR_SELECTION"][::std::mem::size_of::<TPML_PCR_SELECTION>() - 132usize];
+    ["Alignment of TPML_PCR_SELECTION"][::std::mem::align_of::<TPML_PCR_SELECTION>() - 4usize];
+    ["Offset of field: TPML_PCR_SELECTION::count"]
+        [::std::mem::offset_of!(TPML_PCR_SELECTION, count) - 0usize];
+    ["Offset of field: TPML_PCR_SELECTION::pcrSelections"]
+        [::std::mem::offset_of!(TPML_PCR_SELECTION, pcrSelections) - 4usize];
+};
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct TPML_ALG_PROPERTY {
     pub count: UINT32,
     pub algProperties: [TPMS_ALG_PROPERTY; 127usize],
 }
-#[test]
-fn bindgen_test_layout_TPML_ALG_PROPERTY() {
-    const UNINIT: ::std::mem::MaybeUninit<TPML_ALG_PROPERTY> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<TPML_ALG_PROPERTY>(),
-        1020usize,
-        "Size of TPML_ALG_PROPERTY"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<TPML_ALG_PROPERTY>(),
-        4usize,
-        "Alignment of TPML_ALG_PROPERTY"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).count) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPML_ALG_PROPERTY::count"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).algProperties) as usize - ptr as usize },
-        4usize,
-        "Offset of field: TPML_ALG_PROPERTY::algProperties"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of TPML_ALG_PROPERTY"][::std::mem::size_of::<TPML_ALG_PROPERTY>() - 1020usize];
+    ["Alignment of TPML_ALG_PROPERTY"][::std::mem::align_of::<TPML_ALG_PROPERTY>() - 4usize];
+    ["Offset of field: TPML_ALG_PROPERTY::count"]
+        [::std::mem::offset_of!(TPML_ALG_PROPERTY, count) - 0usize];
+    ["Offset of field: TPML_ALG_PROPERTY::algProperties"]
+        [::std::mem::offset_of!(TPML_ALG_PROPERTY, algProperties) - 4usize];
+};
 impl Default for TPML_ALG_PROPERTY {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
@@ -1884,32 +1319,17 @@ pub struct TPML_TAGGED_TPM_PROPERTY {
     pub count: UINT32,
     pub tpmProperty: [TPMS_TAGGED_PROPERTY; 127usize],
 }
-#[test]
-fn bindgen_test_layout_TPML_TAGGED_TPM_PROPERTY() {
-    const UNINIT: ::std::mem::MaybeUninit<TPML_TAGGED_TPM_PROPERTY> =
-        ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<TPML_TAGGED_TPM_PROPERTY>(),
-        1020usize,
-        "Size of TPML_TAGGED_TPM_PROPERTY"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<TPML_TAGGED_TPM_PROPERTY>(),
-        4usize,
-        "Alignment of TPML_TAGGED_TPM_PROPERTY"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).count) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPML_TAGGED_TPM_PROPERTY::count"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).tpmProperty) as usize - ptr as usize },
-        4usize,
-        "Offset of field: TPML_TAGGED_TPM_PROPERTY::tpmProperty"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of TPML_TAGGED_TPM_PROPERTY"]
+        [::std::mem::size_of::<TPML_TAGGED_TPM_PROPERTY>() - 1020usize];
+    ["Alignment of TPML_TAGGED_TPM_PROPERTY"]
+        [::std::mem::align_of::<TPML_TAGGED_TPM_PROPERTY>() - 4usize];
+    ["Offset of field: TPML_TAGGED_TPM_PROPERTY::count"]
+        [::std::mem::offset_of!(TPML_TAGGED_TPM_PROPERTY, count) - 0usize];
+    ["Offset of field: TPML_TAGGED_TPM_PROPERTY::tpmProperty"]
+        [::std::mem::offset_of!(TPML_TAGGED_TPM_PROPERTY, tpmProperty) - 4usize];
+};
 impl Default for TPML_TAGGED_TPM_PROPERTY {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
@@ -1925,32 +1345,17 @@ pub struct TPML_TAGGED_PCR_PROPERTY {
     pub count: UINT32,
     pub pcrProperty: [TPMS_TAGGED_PCR_SELECT; 84usize],
 }
-#[test]
-fn bindgen_test_layout_TPML_TAGGED_PCR_PROPERTY() {
-    const UNINIT: ::std::mem::MaybeUninit<TPML_TAGGED_PCR_PROPERTY> =
-        ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<TPML_TAGGED_PCR_PROPERTY>(),
-        1012usize,
-        "Size of TPML_TAGGED_PCR_PROPERTY"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<TPML_TAGGED_PCR_PROPERTY>(),
-        4usize,
-        "Alignment of TPML_TAGGED_PCR_PROPERTY"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).count) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPML_TAGGED_PCR_PROPERTY::count"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).pcrProperty) as usize - ptr as usize },
-        4usize,
-        "Offset of field: TPML_TAGGED_PCR_PROPERTY::pcrProperty"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of TPML_TAGGED_PCR_PROPERTY"]
+        [::std::mem::size_of::<TPML_TAGGED_PCR_PROPERTY>() - 1012usize];
+    ["Alignment of TPML_TAGGED_PCR_PROPERTY"]
+        [::std::mem::align_of::<TPML_TAGGED_PCR_PROPERTY>() - 4usize];
+    ["Offset of field: TPML_TAGGED_PCR_PROPERTY::count"]
+        [::std::mem::offset_of!(TPML_TAGGED_PCR_PROPERTY, count) - 0usize];
+    ["Offset of field: TPML_TAGGED_PCR_PROPERTY::pcrProperty"]
+        [::std::mem::offset_of!(TPML_TAGGED_PCR_PROPERTY, pcrProperty) - 4usize];
+};
 impl Default for TPML_TAGGED_PCR_PROPERTY {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
@@ -1966,31 +1371,15 @@ pub struct TPML_ECC_CURVE {
     pub count: UINT32,
     pub eccCurves: [TPM2_ECC_CURVE; 508usize],
 }
-#[test]
-fn bindgen_test_layout_TPML_ECC_CURVE() {
-    const UNINIT: ::std::mem::MaybeUninit<TPML_ECC_CURVE> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<TPML_ECC_CURVE>(),
-        1020usize,
-        "Size of TPML_ECC_CURVE"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<TPML_ECC_CURVE>(),
-        4usize,
-        "Alignment of TPML_ECC_CURVE"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).count) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPML_ECC_CURVE::count"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).eccCurves) as usize - ptr as usize },
-        4usize,
-        "Offset of field: TPML_ECC_CURVE::eccCurves"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of TPML_ECC_CURVE"][::std::mem::size_of::<TPML_ECC_CURVE>() - 1020usize];
+    ["Alignment of TPML_ECC_CURVE"][::std::mem::align_of::<TPML_ECC_CURVE>() - 4usize];
+    ["Offset of field: TPML_ECC_CURVE::count"]
+        [::std::mem::offset_of!(TPML_ECC_CURVE, count) - 0usize];
+    ["Offset of field: TPML_ECC_CURVE::eccCurves"]
+        [::std::mem::offset_of!(TPML_ECC_CURVE, eccCurves) - 4usize];
+};
 impl Default for TPML_ECC_CURVE {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
@@ -2006,31 +1395,15 @@ pub struct TPML_TAGGED_POLICY {
     pub count: UINT32,
     pub policies: [TPMS_TAGGED_POLICY; 14usize],
 }
-#[test]
-fn bindgen_test_layout_TPML_TAGGED_POLICY() {
-    const UNINIT: ::std::mem::MaybeUninit<TPML_TAGGED_POLICY> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<TPML_TAGGED_POLICY>(),
-        1012usize,
-        "Size of TPML_TAGGED_POLICY"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<TPML_TAGGED_POLICY>(),
-        4usize,
-        "Alignment of TPML_TAGGED_POLICY"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).count) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPML_TAGGED_POLICY::count"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).policies) as usize - ptr as usize },
-        4usize,
-        "Offset of field: TPML_TAGGED_POLICY::policies"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of TPML_TAGGED_POLICY"][::std::mem::size_of::<TPML_TAGGED_POLICY>() - 1012usize];
+    ["Alignment of TPML_TAGGED_POLICY"][::std::mem::align_of::<TPML_TAGGED_POLICY>() - 4usize];
+    ["Offset of field: TPML_TAGGED_POLICY::count"]
+        [::std::mem::offset_of!(TPML_TAGGED_POLICY, count) - 0usize];
+    ["Offset of field: TPML_TAGGED_POLICY::policies"]
+        [::std::mem::offset_of!(TPML_TAGGED_POLICY, policies) - 4usize];
+};
 impl Default for TPML_TAGGED_POLICY {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
@@ -2046,31 +1419,15 @@ pub struct TPML_ACT_DATA {
     pub count: UINT32,
     pub actData: [TPMS_ACT_DATA; 84usize],
 }
-#[test]
-fn bindgen_test_layout_TPML_ACT_DATA() {
-    const UNINIT: ::std::mem::MaybeUninit<TPML_ACT_DATA> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<TPML_ACT_DATA>(),
-        1012usize,
-        "Size of TPML_ACT_DATA"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<TPML_ACT_DATA>(),
-        4usize,
-        "Alignment of TPML_ACT_DATA"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).count) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPML_ACT_DATA::count"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).actData) as usize - ptr as usize },
-        4usize,
-        "Offset of field: TPML_ACT_DATA::actData"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of TPML_ACT_DATA"][::std::mem::size_of::<TPML_ACT_DATA>() - 1012usize];
+    ["Alignment of TPML_ACT_DATA"][::std::mem::align_of::<TPML_ACT_DATA>() - 4usize];
+    ["Offset of field: TPML_ACT_DATA::count"]
+        [::std::mem::offset_of!(TPML_ACT_DATA, count) - 0usize];
+    ["Offset of field: TPML_ACT_DATA::actData"]
+        [::std::mem::offset_of!(TPML_ACT_DATA, actData) - 4usize];
+};
 impl Default for TPML_ACT_DATA {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
@@ -2086,31 +1443,15 @@ pub struct TPM2B_MAX_CAP_BUFFER {
     pub size: UINT16,
     pub buffer: [BYTE; 1024usize],
 }
-#[test]
-fn bindgen_test_layout_TPM2B_MAX_CAP_BUFFER() {
-    const UNINIT: ::std::mem::MaybeUninit<TPM2B_MAX_CAP_BUFFER> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<TPM2B_MAX_CAP_BUFFER>(),
-        1026usize,
-        "Size of TPM2B_MAX_CAP_BUFFER"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<TPM2B_MAX_CAP_BUFFER>(),
-        2usize,
-        "Alignment of TPM2B_MAX_CAP_BUFFER"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).size) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPM2B_MAX_CAP_BUFFER::size"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).buffer) as usize - ptr as usize },
-        2usize,
-        "Offset of field: TPM2B_MAX_CAP_BUFFER::buffer"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of TPM2B_MAX_CAP_BUFFER"][::std::mem::size_of::<TPM2B_MAX_CAP_BUFFER>() - 1026usize];
+    ["Alignment of TPM2B_MAX_CAP_BUFFER"][::std::mem::align_of::<TPM2B_MAX_CAP_BUFFER>() - 2usize];
+    ["Offset of field: TPM2B_MAX_CAP_BUFFER::size"]
+        [::std::mem::offset_of!(TPM2B_MAX_CAP_BUFFER, size) - 0usize];
+    ["Offset of field: TPM2B_MAX_CAP_BUFFER::buffer"]
+        [::std::mem::offset_of!(TPM2B_MAX_CAP_BUFFER, buffer) - 2usize];
+};
 impl Default for TPM2B_MAX_CAP_BUFFER {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
@@ -2136,81 +1477,35 @@ pub union TPMU_CAPABILITIES {
     pub actData: TPML_ACT_DATA,
     pub vendor: TPM2B_MAX_CAP_BUFFER,
 }
-#[test]
-fn bindgen_test_layout_TPMU_CAPABILITIES() {
-    const UNINIT: ::std::mem::MaybeUninit<TPMU_CAPABILITIES> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<TPMU_CAPABILITIES>(),
-        1028usize,
-        "Size of TPMU_CAPABILITIES"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<TPMU_CAPABILITIES>(),
-        4usize,
-        "Alignment of TPMU_CAPABILITIES"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).algorithms) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMU_CAPABILITIES::algorithms"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).handles) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMU_CAPABILITIES::handles"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).command) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMU_CAPABILITIES::command"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).ppCommands) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMU_CAPABILITIES::ppCommands"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).auditCommands) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMU_CAPABILITIES::auditCommands"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).assignedPCR) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMU_CAPABILITIES::assignedPCR"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).tpmProperties) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMU_CAPABILITIES::tpmProperties"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).pcrProperties) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMU_CAPABILITIES::pcrProperties"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).eccCurves) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMU_CAPABILITIES::eccCurves"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).authPolicies) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMU_CAPABILITIES::authPolicies"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).actData) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMU_CAPABILITIES::actData"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).vendor) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMU_CAPABILITIES::vendor"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of TPMU_CAPABILITIES"][::std::mem::size_of::<TPMU_CAPABILITIES>() - 1028usize];
+    ["Alignment of TPMU_CAPABILITIES"][::std::mem::align_of::<TPMU_CAPABILITIES>() - 4usize];
+    ["Offset of field: TPMU_CAPABILITIES::algorithms"]
+        [::std::mem::offset_of!(TPMU_CAPABILITIES, algorithms) - 0usize];
+    ["Offset of field: TPMU_CAPABILITIES::handles"]
+        [::std::mem::offset_of!(TPMU_CAPABILITIES, handles) - 0usize];
+    ["Offset of field: TPMU_CAPABILITIES::command"]
+        [::std::mem::offset_of!(TPMU_CAPABILITIES, command) - 0usize];
+    ["Offset of field: TPMU_CAPABILITIES::ppCommands"]
+        [::std::mem::offset_of!(TPMU_CAPABILITIES, ppCommands) - 0usize];
+    ["Offset of field: TPMU_CAPABILITIES::auditCommands"]
+        [::std::mem::offset_of!(TPMU_CAPABILITIES, auditCommands) - 0usize];
+    ["Offset of field: TPMU_CAPABILITIES::assignedPCR"]
+        [::std::mem::offset_of!(TPMU_CAPABILITIES, assignedPCR) - 0usize];
+    ["Offset of field: TPMU_CAPABILITIES::tpmProperties"]
+        [::std::mem::offset_of!(TPMU_CAPABILITIES, tpmProperties) - 0usize];
+    ["Offset of field: TPMU_CAPABILITIES::pcrProperties"]
+        [::std::mem::offset_of!(TPMU_CAPABILITIES, pcrProperties) - 0usize];
+    ["Offset of field: TPMU_CAPABILITIES::eccCurves"]
+        [::std::mem::offset_of!(TPMU_CAPABILITIES, eccCurves) - 0usize];
+    ["Offset of field: TPMU_CAPABILITIES::authPolicies"]
+        [::std::mem::offset_of!(TPMU_CAPABILITIES, authPolicies) - 0usize];
+    ["Offset of field: TPMU_CAPABILITIES::actData"]
+        [::std::mem::offset_of!(TPMU_CAPABILITIES, actData) - 0usize];
+    ["Offset of field: TPMU_CAPABILITIES::vendor"]
+        [::std::mem::offset_of!(TPMU_CAPABILITIES, vendor) - 0usize];
+};
 impl Default for TPMU_CAPABILITIES {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
@@ -2226,31 +1521,15 @@ pub struct TPMS_CAPABILITY_DATA {
     pub capability: TPM2_CAP,
     pub data: TPMU_CAPABILITIES,
 }
-#[test]
-fn bindgen_test_layout_TPMS_CAPABILITY_DATA() {
-    const UNINIT: ::std::mem::MaybeUninit<TPMS_CAPABILITY_DATA> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<TPMS_CAPABILITY_DATA>(),
-        1032usize,
-        "Size of TPMS_CAPABILITY_DATA"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<TPMS_CAPABILITY_DATA>(),
-        4usize,
-        "Alignment of TPMS_CAPABILITY_DATA"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).capability) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMS_CAPABILITY_DATA::capability"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).data) as usize - ptr as usize },
-        4usize,
-        "Offset of field: TPMS_CAPABILITY_DATA::data"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of TPMS_CAPABILITY_DATA"][::std::mem::size_of::<TPMS_CAPABILITY_DATA>() - 1032usize];
+    ["Alignment of TPMS_CAPABILITY_DATA"][::std::mem::align_of::<TPMS_CAPABILITY_DATA>() - 4usize];
+    ["Offset of field: TPMS_CAPABILITY_DATA::capability"]
+        [::std::mem::offset_of!(TPMS_CAPABILITY_DATA, capability) - 0usize];
+    ["Offset of field: TPMS_CAPABILITY_DATA::data"]
+        [::std::mem::offset_of!(TPMS_CAPABILITY_DATA, data) - 4usize];
+};
 impl Default for TPMS_CAPABILITY_DATA {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
@@ -2268,135 +1547,65 @@ pub struct TPMS_CLOCK_INFO {
     pub restartCount: UINT32,
     pub safe: TPMI_YES_NO,
 }
-#[test]
-fn bindgen_test_layout_TPMS_CLOCK_INFO() {
-    const UNINIT: ::std::mem::MaybeUninit<TPMS_CLOCK_INFO> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<TPMS_CLOCK_INFO>(),
-        24usize,
-        "Size of TPMS_CLOCK_INFO"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<TPMS_CLOCK_INFO>(),
-        8usize,
-        "Alignment of TPMS_CLOCK_INFO"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).clock) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMS_CLOCK_INFO::clock"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).resetCount) as usize - ptr as usize },
-        8usize,
-        "Offset of field: TPMS_CLOCK_INFO::resetCount"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).restartCount) as usize - ptr as usize },
-        12usize,
-        "Offset of field: TPMS_CLOCK_INFO::restartCount"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).safe) as usize - ptr as usize },
-        16usize,
-        "Offset of field: TPMS_CLOCK_INFO::safe"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of TPMS_CLOCK_INFO"][::std::mem::size_of::<TPMS_CLOCK_INFO>() - 24usize];
+    ["Alignment of TPMS_CLOCK_INFO"][::std::mem::align_of::<TPMS_CLOCK_INFO>() - 8usize];
+    ["Offset of field: TPMS_CLOCK_INFO::clock"]
+        [::std::mem::offset_of!(TPMS_CLOCK_INFO, clock) - 0usize];
+    ["Offset of field: TPMS_CLOCK_INFO::resetCount"]
+        [::std::mem::offset_of!(TPMS_CLOCK_INFO, resetCount) - 8usize];
+    ["Offset of field: TPMS_CLOCK_INFO::restartCount"]
+        [::std::mem::offset_of!(TPMS_CLOCK_INFO, restartCount) - 12usize];
+    ["Offset of field: TPMS_CLOCK_INFO::safe"]
+        [::std::mem::offset_of!(TPMS_CLOCK_INFO, safe) - 16usize];
+};
 #[repr(C)]
 #[derive(Debug, Default, Copy, Clone)]
 pub struct TPMS_TIME_INFO {
     pub time: UINT64,
     pub clockInfo: TPMS_CLOCK_INFO,
 }
-#[test]
-fn bindgen_test_layout_TPMS_TIME_INFO() {
-    const UNINIT: ::std::mem::MaybeUninit<TPMS_TIME_INFO> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<TPMS_TIME_INFO>(),
-        32usize,
-        "Size of TPMS_TIME_INFO"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<TPMS_TIME_INFO>(),
-        8usize,
-        "Alignment of TPMS_TIME_INFO"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).time) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMS_TIME_INFO::time"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).clockInfo) as usize - ptr as usize },
-        8usize,
-        "Offset of field: TPMS_TIME_INFO::clockInfo"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of TPMS_TIME_INFO"][::std::mem::size_of::<TPMS_TIME_INFO>() - 32usize];
+    ["Alignment of TPMS_TIME_INFO"][::std::mem::align_of::<TPMS_TIME_INFO>() - 8usize];
+    ["Offset of field: TPMS_TIME_INFO::time"]
+        [::std::mem::offset_of!(TPMS_TIME_INFO, time) - 0usize];
+    ["Offset of field: TPMS_TIME_INFO::clockInfo"]
+        [::std::mem::offset_of!(TPMS_TIME_INFO, clockInfo) - 8usize];
+};
 #[repr(C)]
 #[derive(Debug, Default, Copy, Clone)]
 pub struct TPMS_TIME_ATTEST_INFO {
     pub time: TPMS_TIME_INFO,
     pub firmwareVersion: UINT64,
 }
-#[test]
-fn bindgen_test_layout_TPMS_TIME_ATTEST_INFO() {
-    const UNINIT: ::std::mem::MaybeUninit<TPMS_TIME_ATTEST_INFO> =
-        ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<TPMS_TIME_ATTEST_INFO>(),
-        40usize,
-        "Size of TPMS_TIME_ATTEST_INFO"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<TPMS_TIME_ATTEST_INFO>(),
-        8usize,
-        "Alignment of TPMS_TIME_ATTEST_INFO"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).time) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMS_TIME_ATTEST_INFO::time"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).firmwareVersion) as usize - ptr as usize },
-        32usize,
-        "Offset of field: TPMS_TIME_ATTEST_INFO::firmwareVersion"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of TPMS_TIME_ATTEST_INFO"][::std::mem::size_of::<TPMS_TIME_ATTEST_INFO>() - 40usize];
+    ["Alignment of TPMS_TIME_ATTEST_INFO"]
+        [::std::mem::align_of::<TPMS_TIME_ATTEST_INFO>() - 8usize];
+    ["Offset of field: TPMS_TIME_ATTEST_INFO::time"]
+        [::std::mem::offset_of!(TPMS_TIME_ATTEST_INFO, time) - 0usize];
+    ["Offset of field: TPMS_TIME_ATTEST_INFO::firmwareVersion"]
+        [::std::mem::offset_of!(TPMS_TIME_ATTEST_INFO, firmwareVersion) - 32usize];
+};
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct TPMS_CERTIFY_INFO {
     pub name: TPM2B_NAME,
     pub qualifiedName: TPM2B_NAME,
 }
-#[test]
-fn bindgen_test_layout_TPMS_CERTIFY_INFO() {
-    const UNINIT: ::std::mem::MaybeUninit<TPMS_CERTIFY_INFO> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<TPMS_CERTIFY_INFO>(),
-        140usize,
-        "Size of TPMS_CERTIFY_INFO"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<TPMS_CERTIFY_INFO>(),
-        2usize,
-        "Alignment of TPMS_CERTIFY_INFO"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).name) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMS_CERTIFY_INFO::name"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).qualifiedName) as usize - ptr as usize },
-        70usize,
-        "Offset of field: TPMS_CERTIFY_INFO::qualifiedName"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of TPMS_CERTIFY_INFO"][::std::mem::size_of::<TPMS_CERTIFY_INFO>() - 140usize];
+    ["Alignment of TPMS_CERTIFY_INFO"][::std::mem::align_of::<TPMS_CERTIFY_INFO>() - 2usize];
+    ["Offset of field: TPMS_CERTIFY_INFO::name"]
+        [::std::mem::offset_of!(TPMS_CERTIFY_INFO, name) - 0usize];
+    ["Offset of field: TPMS_CERTIFY_INFO::qualifiedName"]
+        [::std::mem::offset_of!(TPMS_CERTIFY_INFO, qualifiedName) - 70usize];
+};
 impl Default for TPMS_CERTIFY_INFO {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
@@ -2412,31 +1621,15 @@ pub struct TPMS_QUOTE_INFO {
     pub pcrSelect: TPML_PCR_SELECTION,
     pub pcrDigest: TPM2B_DIGEST,
 }
-#[test]
-fn bindgen_test_layout_TPMS_QUOTE_INFO() {
-    const UNINIT: ::std::mem::MaybeUninit<TPMS_QUOTE_INFO> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<TPMS_QUOTE_INFO>(),
-        200usize,
-        "Size of TPMS_QUOTE_INFO"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<TPMS_QUOTE_INFO>(),
-        4usize,
-        "Alignment of TPMS_QUOTE_INFO"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).pcrSelect) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMS_QUOTE_INFO::pcrSelect"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).pcrDigest) as usize - ptr as usize },
-        132usize,
-        "Offset of field: TPMS_QUOTE_INFO::pcrDigest"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of TPMS_QUOTE_INFO"][::std::mem::size_of::<TPMS_QUOTE_INFO>() - 200usize];
+    ["Alignment of TPMS_QUOTE_INFO"][::std::mem::align_of::<TPMS_QUOTE_INFO>() - 4usize];
+    ["Offset of field: TPMS_QUOTE_INFO::pcrSelect"]
+        [::std::mem::offset_of!(TPMS_QUOTE_INFO, pcrSelect) - 0usize];
+    ["Offset of field: TPMS_QUOTE_INFO::pcrDigest"]
+        [::std::mem::offset_of!(TPMS_QUOTE_INFO, pcrDigest) - 132usize];
+};
 impl Default for TPMS_QUOTE_INFO {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
@@ -2454,42 +1647,21 @@ pub struct TPMS_COMMAND_AUDIT_INFO {
     pub auditDigest: TPM2B_DIGEST,
     pub commandDigest: TPM2B_DIGEST,
 }
-#[test]
-fn bindgen_test_layout_TPMS_COMMAND_AUDIT_INFO() {
-    const UNINIT: ::std::mem::MaybeUninit<TPMS_COMMAND_AUDIT_INFO> =
-        ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<TPMS_COMMAND_AUDIT_INFO>(),
-        144usize,
-        "Size of TPMS_COMMAND_AUDIT_INFO"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<TPMS_COMMAND_AUDIT_INFO>(),
-        8usize,
-        "Alignment of TPMS_COMMAND_AUDIT_INFO"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).auditCounter) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMS_COMMAND_AUDIT_INFO::auditCounter"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).digestAlg) as usize - ptr as usize },
-        8usize,
-        "Offset of field: TPMS_COMMAND_AUDIT_INFO::digestAlg"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).auditDigest) as usize - ptr as usize },
-        10usize,
-        "Offset of field: TPMS_COMMAND_AUDIT_INFO::auditDigest"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).commandDigest) as usize - ptr as usize },
-        76usize,
-        "Offset of field: TPMS_COMMAND_AUDIT_INFO::commandDigest"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of TPMS_COMMAND_AUDIT_INFO"]
+        [::std::mem::size_of::<TPMS_COMMAND_AUDIT_INFO>() - 144usize];
+    ["Alignment of TPMS_COMMAND_AUDIT_INFO"]
+        [::std::mem::align_of::<TPMS_COMMAND_AUDIT_INFO>() - 8usize];
+    ["Offset of field: TPMS_COMMAND_AUDIT_INFO::auditCounter"]
+        [::std::mem::offset_of!(TPMS_COMMAND_AUDIT_INFO, auditCounter) - 0usize];
+    ["Offset of field: TPMS_COMMAND_AUDIT_INFO::digestAlg"]
+        [::std::mem::offset_of!(TPMS_COMMAND_AUDIT_INFO, digestAlg) - 8usize];
+    ["Offset of field: TPMS_COMMAND_AUDIT_INFO::auditDigest"]
+        [::std::mem::offset_of!(TPMS_COMMAND_AUDIT_INFO, auditDigest) - 10usize];
+    ["Offset of field: TPMS_COMMAND_AUDIT_INFO::commandDigest"]
+        [::std::mem::offset_of!(TPMS_COMMAND_AUDIT_INFO, commandDigest) - 76usize];
+};
 impl Default for TPMS_COMMAND_AUDIT_INFO {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
@@ -2505,32 +1677,16 @@ pub struct TPMS_SESSION_AUDIT_INFO {
     pub exclusiveSession: TPMI_YES_NO,
     pub sessionDigest: TPM2B_DIGEST,
 }
-#[test]
-fn bindgen_test_layout_TPMS_SESSION_AUDIT_INFO() {
-    const UNINIT: ::std::mem::MaybeUninit<TPMS_SESSION_AUDIT_INFO> =
-        ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<TPMS_SESSION_AUDIT_INFO>(),
-        68usize,
-        "Size of TPMS_SESSION_AUDIT_INFO"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<TPMS_SESSION_AUDIT_INFO>(),
-        2usize,
-        "Alignment of TPMS_SESSION_AUDIT_INFO"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).exclusiveSession) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMS_SESSION_AUDIT_INFO::exclusiveSession"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).sessionDigest) as usize - ptr as usize },
-        2usize,
-        "Offset of field: TPMS_SESSION_AUDIT_INFO::sessionDigest"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of TPMS_SESSION_AUDIT_INFO"][::std::mem::size_of::<TPMS_SESSION_AUDIT_INFO>() - 68usize];
+    ["Alignment of TPMS_SESSION_AUDIT_INFO"]
+        [::std::mem::align_of::<TPMS_SESSION_AUDIT_INFO>() - 2usize];
+    ["Offset of field: TPMS_SESSION_AUDIT_INFO::exclusiveSession"]
+        [::std::mem::offset_of!(TPMS_SESSION_AUDIT_INFO, exclusiveSession) - 0usize];
+    ["Offset of field: TPMS_SESSION_AUDIT_INFO::sessionDigest"]
+        [::std::mem::offset_of!(TPMS_SESSION_AUDIT_INFO, sessionDigest) - 2usize];
+};
 impl Default for TPMS_SESSION_AUDIT_INFO {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
@@ -2546,31 +1702,15 @@ pub struct TPMS_CREATION_INFO {
     pub objectName: TPM2B_NAME,
     pub creationHash: TPM2B_DIGEST,
 }
-#[test]
-fn bindgen_test_layout_TPMS_CREATION_INFO() {
-    const UNINIT: ::std::mem::MaybeUninit<TPMS_CREATION_INFO> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<TPMS_CREATION_INFO>(),
-        136usize,
-        "Size of TPMS_CREATION_INFO"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<TPMS_CREATION_INFO>(),
-        2usize,
-        "Alignment of TPMS_CREATION_INFO"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).objectName) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMS_CREATION_INFO::objectName"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).creationHash) as usize - ptr as usize },
-        70usize,
-        "Offset of field: TPMS_CREATION_INFO::creationHash"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of TPMS_CREATION_INFO"][::std::mem::size_of::<TPMS_CREATION_INFO>() - 136usize];
+    ["Alignment of TPMS_CREATION_INFO"][::std::mem::align_of::<TPMS_CREATION_INFO>() - 2usize];
+    ["Offset of field: TPMS_CREATION_INFO::objectName"]
+        [::std::mem::offset_of!(TPMS_CREATION_INFO, objectName) - 0usize];
+    ["Offset of field: TPMS_CREATION_INFO::creationHash"]
+        [::std::mem::offset_of!(TPMS_CREATION_INFO, creationHash) - 70usize];
+};
 impl Default for TPMS_CREATION_INFO {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
@@ -2587,36 +1727,17 @@ pub struct TPMS_NV_CERTIFY_INFO {
     pub offset: UINT16,
     pub nvContents: TPM2B_MAX_NV_BUFFER,
 }
-#[test]
-fn bindgen_test_layout_TPMS_NV_CERTIFY_INFO() {
-    const UNINIT: ::std::mem::MaybeUninit<TPMS_NV_CERTIFY_INFO> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<TPMS_NV_CERTIFY_INFO>(),
-        2122usize,
-        "Size of TPMS_NV_CERTIFY_INFO"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<TPMS_NV_CERTIFY_INFO>(),
-        2usize,
-        "Alignment of TPMS_NV_CERTIFY_INFO"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).indexName) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMS_NV_CERTIFY_INFO::indexName"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).offset) as usize - ptr as usize },
-        70usize,
-        "Offset of field: TPMS_NV_CERTIFY_INFO::offset"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).nvContents) as usize - ptr as usize },
-        72usize,
-        "Offset of field: TPMS_NV_CERTIFY_INFO::nvContents"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of TPMS_NV_CERTIFY_INFO"][::std::mem::size_of::<TPMS_NV_CERTIFY_INFO>() - 2122usize];
+    ["Alignment of TPMS_NV_CERTIFY_INFO"][::std::mem::align_of::<TPMS_NV_CERTIFY_INFO>() - 2usize];
+    ["Offset of field: TPMS_NV_CERTIFY_INFO::indexName"]
+        [::std::mem::offset_of!(TPMS_NV_CERTIFY_INFO, indexName) - 0usize];
+    ["Offset of field: TPMS_NV_CERTIFY_INFO::offset"]
+        [::std::mem::offset_of!(TPMS_NV_CERTIFY_INFO, offset) - 70usize];
+    ["Offset of field: TPMS_NV_CERTIFY_INFO::nvContents"]
+        [::std::mem::offset_of!(TPMS_NV_CERTIFY_INFO, nvContents) - 72usize];
+};
 impl Default for TPMS_NV_CERTIFY_INFO {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
@@ -2632,32 +1753,17 @@ pub struct TPMS_NV_DIGEST_CERTIFY_INFO {
     pub indexName: TPM2B_NAME,
     pub nvDigest: TPM2B_DIGEST,
 }
-#[test]
-fn bindgen_test_layout_TPMS_NV_DIGEST_CERTIFY_INFO() {
-    const UNINIT: ::std::mem::MaybeUninit<TPMS_NV_DIGEST_CERTIFY_INFO> =
-        ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<TPMS_NV_DIGEST_CERTIFY_INFO>(),
-        136usize,
-        "Size of TPMS_NV_DIGEST_CERTIFY_INFO"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<TPMS_NV_DIGEST_CERTIFY_INFO>(),
-        2usize,
-        "Alignment of TPMS_NV_DIGEST_CERTIFY_INFO"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).indexName) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMS_NV_DIGEST_CERTIFY_INFO::indexName"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).nvDigest) as usize - ptr as usize },
-        70usize,
-        "Offset of field: TPMS_NV_DIGEST_CERTIFY_INFO::nvDigest"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of TPMS_NV_DIGEST_CERTIFY_INFO"]
+        [::std::mem::size_of::<TPMS_NV_DIGEST_CERTIFY_INFO>() - 136usize];
+    ["Alignment of TPMS_NV_DIGEST_CERTIFY_INFO"]
+        [::std::mem::align_of::<TPMS_NV_DIGEST_CERTIFY_INFO>() - 2usize];
+    ["Offset of field: TPMS_NV_DIGEST_CERTIFY_INFO::indexName"]
+        [::std::mem::offset_of!(TPMS_NV_DIGEST_CERTIFY_INFO, indexName) - 0usize];
+    ["Offset of field: TPMS_NV_DIGEST_CERTIFY_INFO::nvDigest"]
+        [::std::mem::offset_of!(TPMS_NV_DIGEST_CERTIFY_INFO, nvDigest) - 70usize];
+};
 impl Default for TPMS_NV_DIGEST_CERTIFY_INFO {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
@@ -2679,56 +1785,22 @@ pub union TPMU_ATTEST {
     pub time: TPMS_TIME_ATTEST_INFO,
     pub nv: TPMS_NV_CERTIFY_INFO,
 }
-#[test]
-fn bindgen_test_layout_TPMU_ATTEST() {
-    const UNINIT: ::std::mem::MaybeUninit<TPMU_ATTEST> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<TPMU_ATTEST>(),
-        2128usize,
-        "Size of TPMU_ATTEST"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<TPMU_ATTEST>(),
-        8usize,
-        "Alignment of TPMU_ATTEST"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).certify) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMU_ATTEST::certify"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).creation) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMU_ATTEST::creation"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).quote) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMU_ATTEST::quote"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).commandAudit) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMU_ATTEST::commandAudit"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).sessionAudit) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMU_ATTEST::sessionAudit"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).time) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMU_ATTEST::time"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).nv) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMU_ATTEST::nv"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of TPMU_ATTEST"][::std::mem::size_of::<TPMU_ATTEST>() - 2128usize];
+    ["Alignment of TPMU_ATTEST"][::std::mem::align_of::<TPMU_ATTEST>() - 8usize];
+    ["Offset of field: TPMU_ATTEST::certify"]
+        [::std::mem::offset_of!(TPMU_ATTEST, certify) - 0usize];
+    ["Offset of field: TPMU_ATTEST::creation"]
+        [::std::mem::offset_of!(TPMU_ATTEST, creation) - 0usize];
+    ["Offset of field: TPMU_ATTEST::quote"][::std::mem::offset_of!(TPMU_ATTEST, quote) - 0usize];
+    ["Offset of field: TPMU_ATTEST::commandAudit"]
+        [::std::mem::offset_of!(TPMU_ATTEST, commandAudit) - 0usize];
+    ["Offset of field: TPMU_ATTEST::sessionAudit"]
+        [::std::mem::offset_of!(TPMU_ATTEST, sessionAudit) - 0usize];
+    ["Offset of field: TPMU_ATTEST::time"][::std::mem::offset_of!(TPMU_ATTEST, time) - 0usize];
+    ["Offset of field: TPMU_ATTEST::nv"][::std::mem::offset_of!(TPMU_ATTEST, nv) - 0usize];
+};
 impl Default for TPMU_ATTEST {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
@@ -2749,56 +1821,23 @@ pub struct TPMS_ATTEST {
     pub firmwareVersion: UINT64,
     pub attested: TPMU_ATTEST,
 }
-#[test]
-fn bindgen_test_layout_TPMS_ATTEST() {
-    const UNINIT: ::std::mem::MaybeUninit<TPMS_ATTEST> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<TPMS_ATTEST>(),
-        2304usize,
-        "Size of TPMS_ATTEST"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<TPMS_ATTEST>(),
-        8usize,
-        "Alignment of TPMS_ATTEST"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).magic) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMS_ATTEST::magic"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).type_) as usize - ptr as usize },
-        4usize,
-        "Offset of field: TPMS_ATTEST::type_"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).qualifiedSigner) as usize - ptr as usize },
-        6usize,
-        "Offset of field: TPMS_ATTEST::qualifiedSigner"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).extraData) as usize - ptr as usize },
-        76usize,
-        "Offset of field: TPMS_ATTEST::extraData"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).clockInfo) as usize - ptr as usize },
-        144usize,
-        "Offset of field: TPMS_ATTEST::clockInfo"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).firmwareVersion) as usize - ptr as usize },
-        168usize,
-        "Offset of field: TPMS_ATTEST::firmwareVersion"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).attested) as usize - ptr as usize },
-        176usize,
-        "Offset of field: TPMS_ATTEST::attested"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of TPMS_ATTEST"][::std::mem::size_of::<TPMS_ATTEST>() - 2304usize];
+    ["Alignment of TPMS_ATTEST"][::std::mem::align_of::<TPMS_ATTEST>() - 8usize];
+    ["Offset of field: TPMS_ATTEST::magic"][::std::mem::offset_of!(TPMS_ATTEST, magic) - 0usize];
+    ["Offset of field: TPMS_ATTEST::type_"][::std::mem::offset_of!(TPMS_ATTEST, type_) - 4usize];
+    ["Offset of field: TPMS_ATTEST::qualifiedSigner"]
+        [::std::mem::offset_of!(TPMS_ATTEST, qualifiedSigner) - 6usize];
+    ["Offset of field: TPMS_ATTEST::extraData"]
+        [::std::mem::offset_of!(TPMS_ATTEST, extraData) - 76usize];
+    ["Offset of field: TPMS_ATTEST::clockInfo"]
+        [::std::mem::offset_of!(TPMS_ATTEST, clockInfo) - 144usize];
+    ["Offset of field: TPMS_ATTEST::firmwareVersion"]
+        [::std::mem::offset_of!(TPMS_ATTEST, firmwareVersion) - 168usize];
+    ["Offset of field: TPMS_ATTEST::attested"]
+        [::std::mem::offset_of!(TPMS_ATTEST, attested) - 176usize];
+};
 impl Default for TPMS_ATTEST {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
@@ -2814,31 +1853,14 @@ pub struct TPM2B_ATTEST {
     pub size: UINT16,
     pub attestationData: [BYTE; 2304usize],
 }
-#[test]
-fn bindgen_test_layout_TPM2B_ATTEST() {
-    const UNINIT: ::std::mem::MaybeUninit<TPM2B_ATTEST> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<TPM2B_ATTEST>(),
-        2306usize,
-        "Size of TPM2B_ATTEST"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<TPM2B_ATTEST>(),
-        2usize,
-        "Alignment of TPM2B_ATTEST"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).size) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPM2B_ATTEST::size"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).attestationData) as usize - ptr as usize },
-        2usize,
-        "Offset of field: TPM2B_ATTEST::attestationData"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of TPM2B_ATTEST"][::std::mem::size_of::<TPM2B_ATTEST>() - 2306usize];
+    ["Alignment of TPM2B_ATTEST"][::std::mem::align_of::<TPM2B_ATTEST>() - 2usize];
+    ["Offset of field: TPM2B_ATTEST::size"][::std::mem::offset_of!(TPM2B_ATTEST, size) - 0usize];
+    ["Offset of field: TPM2B_ATTEST::attestationData"]
+        [::std::mem::offset_of!(TPM2B_ATTEST, attestationData) - 2usize];
+};
 impl Default for TPM2B_ATTEST {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
@@ -2856,41 +1878,19 @@ pub struct TPMS_AUTH_COMMAND {
     pub sessionAttributes: TPMA_SESSION,
     pub hmac: TPM2B_AUTH,
 }
-#[test]
-fn bindgen_test_layout_TPMS_AUTH_COMMAND() {
-    const UNINIT: ::std::mem::MaybeUninit<TPMS_AUTH_COMMAND> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<TPMS_AUTH_COMMAND>(),
-        140usize,
-        "Size of TPMS_AUTH_COMMAND"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<TPMS_AUTH_COMMAND>(),
-        4usize,
-        "Alignment of TPMS_AUTH_COMMAND"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).sessionHandle) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMS_AUTH_COMMAND::sessionHandle"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).nonce) as usize - ptr as usize },
-        4usize,
-        "Offset of field: TPMS_AUTH_COMMAND::nonce"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).sessionAttributes) as usize - ptr as usize },
-        70usize,
-        "Offset of field: TPMS_AUTH_COMMAND::sessionAttributes"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).hmac) as usize - ptr as usize },
-        72usize,
-        "Offset of field: TPMS_AUTH_COMMAND::hmac"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of TPMS_AUTH_COMMAND"][::std::mem::size_of::<TPMS_AUTH_COMMAND>() - 140usize];
+    ["Alignment of TPMS_AUTH_COMMAND"][::std::mem::align_of::<TPMS_AUTH_COMMAND>() - 4usize];
+    ["Offset of field: TPMS_AUTH_COMMAND::sessionHandle"]
+        [::std::mem::offset_of!(TPMS_AUTH_COMMAND, sessionHandle) - 0usize];
+    ["Offset of field: TPMS_AUTH_COMMAND::nonce"]
+        [::std::mem::offset_of!(TPMS_AUTH_COMMAND, nonce) - 4usize];
+    ["Offset of field: TPMS_AUTH_COMMAND::sessionAttributes"]
+        [::std::mem::offset_of!(TPMS_AUTH_COMMAND, sessionAttributes) - 70usize];
+    ["Offset of field: TPMS_AUTH_COMMAND::hmac"]
+        [::std::mem::offset_of!(TPMS_AUTH_COMMAND, hmac) - 72usize];
+};
 impl Default for TPMS_AUTH_COMMAND {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
@@ -2907,36 +1907,17 @@ pub struct TPMS_AUTH_RESPONSE {
     pub sessionAttributes: TPMA_SESSION,
     pub hmac: TPM2B_AUTH,
 }
-#[test]
-fn bindgen_test_layout_TPMS_AUTH_RESPONSE() {
-    const UNINIT: ::std::mem::MaybeUninit<TPMS_AUTH_RESPONSE> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<TPMS_AUTH_RESPONSE>(),
-        134usize,
-        "Size of TPMS_AUTH_RESPONSE"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<TPMS_AUTH_RESPONSE>(),
-        2usize,
-        "Alignment of TPMS_AUTH_RESPONSE"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).nonce) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMS_AUTH_RESPONSE::nonce"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).sessionAttributes) as usize - ptr as usize },
-        66usize,
-        "Offset of field: TPMS_AUTH_RESPONSE::sessionAttributes"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).hmac) as usize - ptr as usize },
-        68usize,
-        "Offset of field: TPMS_AUTH_RESPONSE::hmac"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of TPMS_AUTH_RESPONSE"][::std::mem::size_of::<TPMS_AUTH_RESPONSE>() - 134usize];
+    ["Alignment of TPMS_AUTH_RESPONSE"][::std::mem::align_of::<TPMS_AUTH_RESPONSE>() - 2usize];
+    ["Offset of field: TPMS_AUTH_RESPONSE::nonce"]
+        [::std::mem::offset_of!(TPMS_AUTH_RESPONSE, nonce) - 0usize];
+    ["Offset of field: TPMS_AUTH_RESPONSE::sessionAttributes"]
+        [::std::mem::offset_of!(TPMS_AUTH_RESPONSE, sessionAttributes) - 66usize];
+    ["Offset of field: TPMS_AUTH_RESPONSE::hmac"]
+        [::std::mem::offset_of!(TPMS_AUTH_RESPONSE, hmac) - 68usize];
+};
 impl Default for TPMS_AUTH_RESPONSE {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
@@ -2959,51 +1940,23 @@ pub union TPMU_SYM_KEY_BITS {
     pub exclusiveOr: TPMI_ALG_HASH,
     pub null: TPMS_EMPTY,
 }
-#[test]
-fn bindgen_test_layout_TPMU_SYM_KEY_BITS() {
-    const UNINIT: ::std::mem::MaybeUninit<TPMU_SYM_KEY_BITS> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<TPMU_SYM_KEY_BITS>(),
-        2usize,
-        "Size of TPMU_SYM_KEY_BITS"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<TPMU_SYM_KEY_BITS>(),
-        2usize,
-        "Alignment of TPMU_SYM_KEY_BITS"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).aes) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMU_SYM_KEY_BITS::aes"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).sm4) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMU_SYM_KEY_BITS::sm4"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).camellia) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMU_SYM_KEY_BITS::camellia"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).sym) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMU_SYM_KEY_BITS::sym"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).exclusiveOr) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMU_SYM_KEY_BITS::exclusiveOr"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).null) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMU_SYM_KEY_BITS::null"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of TPMU_SYM_KEY_BITS"][::std::mem::size_of::<TPMU_SYM_KEY_BITS>() - 2usize];
+    ["Alignment of TPMU_SYM_KEY_BITS"][::std::mem::align_of::<TPMU_SYM_KEY_BITS>() - 2usize];
+    ["Offset of field: TPMU_SYM_KEY_BITS::aes"]
+        [::std::mem::offset_of!(TPMU_SYM_KEY_BITS, aes) - 0usize];
+    ["Offset of field: TPMU_SYM_KEY_BITS::sm4"]
+        [::std::mem::offset_of!(TPMU_SYM_KEY_BITS, sm4) - 0usize];
+    ["Offset of field: TPMU_SYM_KEY_BITS::camellia"]
+        [::std::mem::offset_of!(TPMU_SYM_KEY_BITS, camellia) - 0usize];
+    ["Offset of field: TPMU_SYM_KEY_BITS::sym"]
+        [::std::mem::offset_of!(TPMU_SYM_KEY_BITS, sym) - 0usize];
+    ["Offset of field: TPMU_SYM_KEY_BITS::exclusiveOr"]
+        [::std::mem::offset_of!(TPMU_SYM_KEY_BITS, exclusiveOr) - 0usize];
+    ["Offset of field: TPMU_SYM_KEY_BITS::null"]
+        [::std::mem::offset_of!(TPMU_SYM_KEY_BITS, null) - 0usize];
+};
 impl Default for TPMU_SYM_KEY_BITS {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
@@ -3023,51 +1976,19 @@ pub union TPMU_SYM_MODE {
     pub exclusiveOr: TPMS_EMPTY,
     pub null: TPMS_EMPTY,
 }
-#[test]
-fn bindgen_test_layout_TPMU_SYM_MODE() {
-    const UNINIT: ::std::mem::MaybeUninit<TPMU_SYM_MODE> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<TPMU_SYM_MODE>(),
-        2usize,
-        "Size of TPMU_SYM_MODE"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<TPMU_SYM_MODE>(),
-        2usize,
-        "Alignment of TPMU_SYM_MODE"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).aes) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMU_SYM_MODE::aes"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).sm4) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMU_SYM_MODE::sm4"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).camellia) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMU_SYM_MODE::camellia"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).sym) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMU_SYM_MODE::sym"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).exclusiveOr) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMU_SYM_MODE::exclusiveOr"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).null) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMU_SYM_MODE::null"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of TPMU_SYM_MODE"][::std::mem::size_of::<TPMU_SYM_MODE>() - 2usize];
+    ["Alignment of TPMU_SYM_MODE"][::std::mem::align_of::<TPMU_SYM_MODE>() - 2usize];
+    ["Offset of field: TPMU_SYM_MODE::aes"][::std::mem::offset_of!(TPMU_SYM_MODE, aes) - 0usize];
+    ["Offset of field: TPMU_SYM_MODE::sm4"][::std::mem::offset_of!(TPMU_SYM_MODE, sm4) - 0usize];
+    ["Offset of field: TPMU_SYM_MODE::camellia"]
+        [::std::mem::offset_of!(TPMU_SYM_MODE, camellia) - 0usize];
+    ["Offset of field: TPMU_SYM_MODE::sym"][::std::mem::offset_of!(TPMU_SYM_MODE, sym) - 0usize];
+    ["Offset of field: TPMU_SYM_MODE::exclusiveOr"]
+        [::std::mem::offset_of!(TPMU_SYM_MODE, exclusiveOr) - 0usize];
+    ["Offset of field: TPMU_SYM_MODE::null"][::std::mem::offset_of!(TPMU_SYM_MODE, null) - 0usize];
+};
 impl Default for TPMU_SYM_MODE {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
@@ -3084,36 +2005,16 @@ pub struct TPMT_SYM_DEF {
     pub keyBits: TPMU_SYM_KEY_BITS,
     pub mode: TPMU_SYM_MODE,
 }
-#[test]
-fn bindgen_test_layout_TPMT_SYM_DEF() {
-    const UNINIT: ::std::mem::MaybeUninit<TPMT_SYM_DEF> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<TPMT_SYM_DEF>(),
-        6usize,
-        "Size of TPMT_SYM_DEF"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<TPMT_SYM_DEF>(),
-        2usize,
-        "Alignment of TPMT_SYM_DEF"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).algorithm) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMT_SYM_DEF::algorithm"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).keyBits) as usize - ptr as usize },
-        2usize,
-        "Offset of field: TPMT_SYM_DEF::keyBits"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).mode) as usize - ptr as usize },
-        4usize,
-        "Offset of field: TPMT_SYM_DEF::mode"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of TPMT_SYM_DEF"][::std::mem::size_of::<TPMT_SYM_DEF>() - 6usize];
+    ["Alignment of TPMT_SYM_DEF"][::std::mem::align_of::<TPMT_SYM_DEF>() - 2usize];
+    ["Offset of field: TPMT_SYM_DEF::algorithm"]
+        [::std::mem::offset_of!(TPMT_SYM_DEF, algorithm) - 0usize];
+    ["Offset of field: TPMT_SYM_DEF::keyBits"]
+        [::std::mem::offset_of!(TPMT_SYM_DEF, keyBits) - 2usize];
+    ["Offset of field: TPMT_SYM_DEF::mode"][::std::mem::offset_of!(TPMT_SYM_DEF, mode) - 4usize];
+};
 impl Default for TPMT_SYM_DEF {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
@@ -3130,36 +2031,17 @@ pub struct TPMT_SYM_DEF_OBJECT {
     pub keyBits: TPMU_SYM_KEY_BITS,
     pub mode: TPMU_SYM_MODE,
 }
-#[test]
-fn bindgen_test_layout_TPMT_SYM_DEF_OBJECT() {
-    const UNINIT: ::std::mem::MaybeUninit<TPMT_SYM_DEF_OBJECT> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<TPMT_SYM_DEF_OBJECT>(),
-        6usize,
-        "Size of TPMT_SYM_DEF_OBJECT"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<TPMT_SYM_DEF_OBJECT>(),
-        2usize,
-        "Alignment of TPMT_SYM_DEF_OBJECT"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).algorithm) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMT_SYM_DEF_OBJECT::algorithm"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).keyBits) as usize - ptr as usize },
-        2usize,
-        "Offset of field: TPMT_SYM_DEF_OBJECT::keyBits"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).mode) as usize - ptr as usize },
-        4usize,
-        "Offset of field: TPMT_SYM_DEF_OBJECT::mode"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of TPMT_SYM_DEF_OBJECT"][::std::mem::size_of::<TPMT_SYM_DEF_OBJECT>() - 6usize];
+    ["Alignment of TPMT_SYM_DEF_OBJECT"][::std::mem::align_of::<TPMT_SYM_DEF_OBJECT>() - 2usize];
+    ["Offset of field: TPMT_SYM_DEF_OBJECT::algorithm"]
+        [::std::mem::offset_of!(TPMT_SYM_DEF_OBJECT, algorithm) - 0usize];
+    ["Offset of field: TPMT_SYM_DEF_OBJECT::keyBits"]
+        [::std::mem::offset_of!(TPMT_SYM_DEF_OBJECT, keyBits) - 2usize];
+    ["Offset of field: TPMT_SYM_DEF_OBJECT::mode"]
+        [::std::mem::offset_of!(TPMT_SYM_DEF_OBJECT, mode) - 4usize];
+};
 impl Default for TPMT_SYM_DEF_OBJECT {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
@@ -3175,56 +2057,26 @@ pub struct TPM2B_SYM_KEY {
     pub size: UINT16,
     pub buffer: [BYTE; 32usize],
 }
-#[test]
-fn bindgen_test_layout_TPM2B_SYM_KEY() {
-    const UNINIT: ::std::mem::MaybeUninit<TPM2B_SYM_KEY> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<TPM2B_SYM_KEY>(),
-        34usize,
-        "Size of TPM2B_SYM_KEY"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<TPM2B_SYM_KEY>(),
-        2usize,
-        "Alignment of TPM2B_SYM_KEY"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).size) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPM2B_SYM_KEY::size"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).buffer) as usize - ptr as usize },
-        2usize,
-        "Offset of field: TPM2B_SYM_KEY::buffer"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of TPM2B_SYM_KEY"][::std::mem::size_of::<TPM2B_SYM_KEY>() - 34usize];
+    ["Alignment of TPM2B_SYM_KEY"][::std::mem::align_of::<TPM2B_SYM_KEY>() - 2usize];
+    ["Offset of field: TPM2B_SYM_KEY::size"][::std::mem::offset_of!(TPM2B_SYM_KEY, size) - 0usize];
+    ["Offset of field: TPM2B_SYM_KEY::buffer"]
+        [::std::mem::offset_of!(TPM2B_SYM_KEY, buffer) - 2usize];
+};
 #[repr(C)]
 #[derive(Copy, Clone)]
 pub struct TPMS_SYMCIPHER_PARMS {
     pub sym: TPMT_SYM_DEF_OBJECT,
 }
-#[test]
-fn bindgen_test_layout_TPMS_SYMCIPHER_PARMS() {
-    const UNINIT: ::std::mem::MaybeUninit<TPMS_SYMCIPHER_PARMS> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<TPMS_SYMCIPHER_PARMS>(),
-        6usize,
-        "Size of TPMS_SYMCIPHER_PARMS"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<TPMS_SYMCIPHER_PARMS>(),
-        2usize,
-        "Alignment of TPMS_SYMCIPHER_PARMS"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).sym) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMS_SYMCIPHER_PARMS::sym"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of TPMS_SYMCIPHER_PARMS"][::std::mem::size_of::<TPMS_SYMCIPHER_PARMS>() - 6usize];
+    ["Alignment of TPMS_SYMCIPHER_PARMS"][::std::mem::align_of::<TPMS_SYMCIPHER_PARMS>() - 2usize];
+    ["Offset of field: TPMS_SYMCIPHER_PARMS::sym"]
+        [::std::mem::offset_of!(TPMS_SYMCIPHER_PARMS, sym) - 0usize];
+};
 impl Default for TPMS_SYMCIPHER_PARMS {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
@@ -3240,93 +2092,41 @@ pub struct TPM2B_LABEL {
     pub size: UINT16,
     pub buffer: [BYTE; 32usize],
 }
-#[test]
-fn bindgen_test_layout_TPM2B_LABEL() {
-    const UNINIT: ::std::mem::MaybeUninit<TPM2B_LABEL> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<TPM2B_LABEL>(),
-        34usize,
-        "Size of TPM2B_LABEL"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<TPM2B_LABEL>(),
-        2usize,
-        "Alignment of TPM2B_LABEL"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).size) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPM2B_LABEL::size"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).buffer) as usize - ptr as usize },
-        2usize,
-        "Offset of field: TPM2B_LABEL::buffer"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of TPM2B_LABEL"][::std::mem::size_of::<TPM2B_LABEL>() - 34usize];
+    ["Alignment of TPM2B_LABEL"][::std::mem::align_of::<TPM2B_LABEL>() - 2usize];
+    ["Offset of field: TPM2B_LABEL::size"][::std::mem::offset_of!(TPM2B_LABEL, size) - 0usize];
+    ["Offset of field: TPM2B_LABEL::buffer"][::std::mem::offset_of!(TPM2B_LABEL, buffer) - 2usize];
+};
 #[repr(C)]
 #[derive(Debug, Default, Copy, Clone)]
 pub struct TPMS_DERIVE {
     pub label: TPM2B_LABEL,
     pub context: TPM2B_LABEL,
 }
-#[test]
-fn bindgen_test_layout_TPMS_DERIVE() {
-    const UNINIT: ::std::mem::MaybeUninit<TPMS_DERIVE> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<TPMS_DERIVE>(),
-        68usize,
-        "Size of TPMS_DERIVE"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<TPMS_DERIVE>(),
-        2usize,
-        "Alignment of TPMS_DERIVE"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).label) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMS_DERIVE::label"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).context) as usize - ptr as usize },
-        34usize,
-        "Offset of field: TPMS_DERIVE::context"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of TPMS_DERIVE"][::std::mem::size_of::<TPMS_DERIVE>() - 68usize];
+    ["Alignment of TPMS_DERIVE"][::std::mem::align_of::<TPMS_DERIVE>() - 2usize];
+    ["Offset of field: TPMS_DERIVE::label"][::std::mem::offset_of!(TPMS_DERIVE, label) - 0usize];
+    ["Offset of field: TPMS_DERIVE::context"]
+        [::std::mem::offset_of!(TPMS_DERIVE, context) - 34usize];
+};
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct TPM2B_DERIVE {
     pub size: UINT16,
     pub buffer: [BYTE; 68usize],
 }
-#[test]
-fn bindgen_test_layout_TPM2B_DERIVE() {
-    const UNINIT: ::std::mem::MaybeUninit<TPM2B_DERIVE> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<TPM2B_DERIVE>(),
-        70usize,
-        "Size of TPM2B_DERIVE"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<TPM2B_DERIVE>(),
-        2usize,
-        "Alignment of TPM2B_DERIVE"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).size) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPM2B_DERIVE::size"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).buffer) as usize - ptr as usize },
-        2usize,
-        "Offset of field: TPM2B_DERIVE::buffer"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of TPM2B_DERIVE"][::std::mem::size_of::<TPM2B_DERIVE>() - 70usize];
+    ["Alignment of TPM2B_DERIVE"][::std::mem::align_of::<TPM2B_DERIVE>() - 2usize];
+    ["Offset of field: TPM2B_DERIVE::size"][::std::mem::offset_of!(TPM2B_DERIVE, size) - 0usize];
+    ["Offset of field: TPM2B_DERIVE::buffer"]
+        [::std::mem::offset_of!(TPM2B_DERIVE, buffer) - 2usize];
+};
 impl Default for TPM2B_DERIVE {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
@@ -3342,32 +2142,16 @@ pub union TPMU_SENSITIVE_CREATE {
     pub create: [BYTE; 256usize],
     pub derive: TPMS_DERIVE,
 }
-#[test]
-fn bindgen_test_layout_TPMU_SENSITIVE_CREATE() {
-    const UNINIT: ::std::mem::MaybeUninit<TPMU_SENSITIVE_CREATE> =
-        ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<TPMU_SENSITIVE_CREATE>(),
-        256usize,
-        "Size of TPMU_SENSITIVE_CREATE"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<TPMU_SENSITIVE_CREATE>(),
-        2usize,
-        "Alignment of TPMU_SENSITIVE_CREATE"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).create) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMU_SENSITIVE_CREATE::create"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).derive) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMU_SENSITIVE_CREATE::derive"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of TPMU_SENSITIVE_CREATE"][::std::mem::size_of::<TPMU_SENSITIVE_CREATE>() - 256usize];
+    ["Alignment of TPMU_SENSITIVE_CREATE"]
+        [::std::mem::align_of::<TPMU_SENSITIVE_CREATE>() - 2usize];
+    ["Offset of field: TPMU_SENSITIVE_CREATE::create"]
+        [::std::mem::offset_of!(TPMU_SENSITIVE_CREATE, create) - 0usize];
+    ["Offset of field: TPMU_SENSITIVE_CREATE::derive"]
+        [::std::mem::offset_of!(TPMU_SENSITIVE_CREATE, derive) - 0usize];
+};
 impl Default for TPMU_SENSITIVE_CREATE {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
@@ -3383,31 +2167,15 @@ pub struct TPM2B_SENSITIVE_DATA {
     pub size: UINT16,
     pub buffer: [BYTE; 256usize],
 }
-#[test]
-fn bindgen_test_layout_TPM2B_SENSITIVE_DATA() {
-    const UNINIT: ::std::mem::MaybeUninit<TPM2B_SENSITIVE_DATA> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<TPM2B_SENSITIVE_DATA>(),
-        258usize,
-        "Size of TPM2B_SENSITIVE_DATA"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<TPM2B_SENSITIVE_DATA>(),
-        2usize,
-        "Alignment of TPM2B_SENSITIVE_DATA"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).size) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPM2B_SENSITIVE_DATA::size"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).buffer) as usize - ptr as usize },
-        2usize,
-        "Offset of field: TPM2B_SENSITIVE_DATA::buffer"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of TPM2B_SENSITIVE_DATA"][::std::mem::size_of::<TPM2B_SENSITIVE_DATA>() - 258usize];
+    ["Alignment of TPM2B_SENSITIVE_DATA"][::std::mem::align_of::<TPM2B_SENSITIVE_DATA>() - 2usize];
+    ["Offset of field: TPM2B_SENSITIVE_DATA::size"]
+        [::std::mem::offset_of!(TPM2B_SENSITIVE_DATA, size) - 0usize];
+    ["Offset of field: TPM2B_SENSITIVE_DATA::buffer"]
+        [::std::mem::offset_of!(TPM2B_SENSITIVE_DATA, buffer) - 2usize];
+};
 impl Default for TPM2B_SENSITIVE_DATA {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
@@ -3423,32 +2191,16 @@ pub struct TPMS_SENSITIVE_CREATE {
     pub userAuth: TPM2B_AUTH,
     pub data: TPM2B_SENSITIVE_DATA,
 }
-#[test]
-fn bindgen_test_layout_TPMS_SENSITIVE_CREATE() {
-    const UNINIT: ::std::mem::MaybeUninit<TPMS_SENSITIVE_CREATE> =
-        ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<TPMS_SENSITIVE_CREATE>(),
-        324usize,
-        "Size of TPMS_SENSITIVE_CREATE"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<TPMS_SENSITIVE_CREATE>(),
-        2usize,
-        "Alignment of TPMS_SENSITIVE_CREATE"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).userAuth) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMS_SENSITIVE_CREATE::userAuth"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).data) as usize - ptr as usize },
-        66usize,
-        "Offset of field: TPMS_SENSITIVE_CREATE::data"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of TPMS_SENSITIVE_CREATE"][::std::mem::size_of::<TPMS_SENSITIVE_CREATE>() - 324usize];
+    ["Alignment of TPMS_SENSITIVE_CREATE"]
+        [::std::mem::align_of::<TPMS_SENSITIVE_CREATE>() - 2usize];
+    ["Offset of field: TPMS_SENSITIVE_CREATE::userAuth"]
+        [::std::mem::offset_of!(TPMS_SENSITIVE_CREATE, userAuth) - 0usize];
+    ["Offset of field: TPMS_SENSITIVE_CREATE::data"]
+        [::std::mem::offset_of!(TPMS_SENSITIVE_CREATE, data) - 66usize];
+};
 impl Default for TPMS_SENSITIVE_CREATE {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
@@ -3464,32 +2216,16 @@ pub struct TPM2B_SENSITIVE_CREATE {
     pub size: UINT16,
     pub sensitive: TPMS_SENSITIVE_CREATE,
 }
-#[test]
-fn bindgen_test_layout_TPM2B_SENSITIVE_CREATE() {
-    const UNINIT: ::std::mem::MaybeUninit<TPM2B_SENSITIVE_CREATE> =
-        ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<TPM2B_SENSITIVE_CREATE>(),
-        326usize,
-        "Size of TPM2B_SENSITIVE_CREATE"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<TPM2B_SENSITIVE_CREATE>(),
-        2usize,
-        "Alignment of TPM2B_SENSITIVE_CREATE"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).size) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPM2B_SENSITIVE_CREATE::size"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).sensitive) as usize - ptr as usize },
-        2usize,
-        "Offset of field: TPM2B_SENSITIVE_CREATE::sensitive"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of TPM2B_SENSITIVE_CREATE"][::std::mem::size_of::<TPM2B_SENSITIVE_CREATE>() - 326usize];
+    ["Alignment of TPM2B_SENSITIVE_CREATE"]
+        [::std::mem::align_of::<TPM2B_SENSITIVE_CREATE>() - 2usize];
+    ["Offset of field: TPM2B_SENSITIVE_CREATE::size"]
+        [::std::mem::offset_of!(TPM2B_SENSITIVE_CREATE, size) - 0usize];
+    ["Offset of field: TPM2B_SENSITIVE_CREATE::sensitive"]
+        [::std::mem::offset_of!(TPM2B_SENSITIVE_CREATE, sensitive) - 2usize];
+};
 impl Default for TPM2B_SENSITIVE_CREATE {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
@@ -3504,57 +2240,28 @@ impl Default for TPM2B_SENSITIVE_CREATE {
 pub struct TPMS_SCHEME_HASH {
     pub hashAlg: TPMI_ALG_HASH,
 }
-#[test]
-fn bindgen_test_layout_TPMS_SCHEME_HASH() {
-    const UNINIT: ::std::mem::MaybeUninit<TPMS_SCHEME_HASH> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<TPMS_SCHEME_HASH>(),
-        2usize,
-        "Size of TPMS_SCHEME_HASH"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<TPMS_SCHEME_HASH>(),
-        2usize,
-        "Alignment of TPMS_SCHEME_HASH"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).hashAlg) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMS_SCHEME_HASH::hashAlg"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of TPMS_SCHEME_HASH"][::std::mem::size_of::<TPMS_SCHEME_HASH>() - 2usize];
+    ["Alignment of TPMS_SCHEME_HASH"][::std::mem::align_of::<TPMS_SCHEME_HASH>() - 2usize];
+    ["Offset of field: TPMS_SCHEME_HASH::hashAlg"]
+        [::std::mem::offset_of!(TPMS_SCHEME_HASH, hashAlg) - 0usize];
+};
 #[repr(C)]
 #[derive(Debug, Default, Copy, Clone)]
 pub struct TPMS_SCHEME_ECDAA {
     pub hashAlg: TPMI_ALG_HASH,
     pub count: UINT16,
 }
-#[test]
-fn bindgen_test_layout_TPMS_SCHEME_ECDAA() {
-    const UNINIT: ::std::mem::MaybeUninit<TPMS_SCHEME_ECDAA> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<TPMS_SCHEME_ECDAA>(),
-        4usize,
-        "Size of TPMS_SCHEME_ECDAA"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<TPMS_SCHEME_ECDAA>(),
-        2usize,
-        "Alignment of TPMS_SCHEME_ECDAA"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).hashAlg) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMS_SCHEME_ECDAA::hashAlg"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).count) as usize - ptr as usize },
-        2usize,
-        "Offset of field: TPMS_SCHEME_ECDAA::count"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of TPMS_SCHEME_ECDAA"][::std::mem::size_of::<TPMS_SCHEME_ECDAA>() - 4usize];
+    ["Alignment of TPMS_SCHEME_ECDAA"][::std::mem::align_of::<TPMS_SCHEME_ECDAA>() - 2usize];
+    ["Offset of field: TPMS_SCHEME_ECDAA::hashAlg"]
+        [::std::mem::offset_of!(TPMS_SCHEME_ECDAA, hashAlg) - 0usize];
+    ["Offset of field: TPMS_SCHEME_ECDAA::count"]
+        [::std::mem::offset_of!(TPMS_SCHEME_ECDAA, count) - 2usize];
+};
 pub type TPMI_ALG_KEYEDHASH_SCHEME = TPM2_ALG_ID;
 pub type TPMS_SCHEME_HMAC = TPMS_SCHEME_HASH;
 #[repr(C)]
@@ -3563,31 +2270,15 @@ pub struct TPMS_SCHEME_XOR {
     pub hashAlg: TPMI_ALG_HASH,
     pub kdf: TPMI_ALG_KDF,
 }
-#[test]
-fn bindgen_test_layout_TPMS_SCHEME_XOR() {
-    const UNINIT: ::std::mem::MaybeUninit<TPMS_SCHEME_XOR> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<TPMS_SCHEME_XOR>(),
-        4usize,
-        "Size of TPMS_SCHEME_XOR"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<TPMS_SCHEME_XOR>(),
-        2usize,
-        "Alignment of TPMS_SCHEME_XOR"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).hashAlg) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMS_SCHEME_XOR::hashAlg"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).kdf) as usize - ptr as usize },
-        2usize,
-        "Offset of field: TPMS_SCHEME_XOR::kdf"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of TPMS_SCHEME_XOR"][::std::mem::size_of::<TPMS_SCHEME_XOR>() - 4usize];
+    ["Alignment of TPMS_SCHEME_XOR"][::std::mem::align_of::<TPMS_SCHEME_XOR>() - 2usize];
+    ["Offset of field: TPMS_SCHEME_XOR::hashAlg"]
+        [::std::mem::offset_of!(TPMS_SCHEME_XOR, hashAlg) - 0usize];
+    ["Offset of field: TPMS_SCHEME_XOR::kdf"]
+        [::std::mem::offset_of!(TPMS_SCHEME_XOR, kdf) - 2usize];
+};
 #[repr(C)]
 #[derive(Copy, Clone)]
 pub union TPMU_SCHEME_KEYEDHASH {
@@ -3595,37 +2286,18 @@ pub union TPMU_SCHEME_KEYEDHASH {
     pub exclusiveOr: TPMS_SCHEME_XOR,
     pub null: TPMS_EMPTY,
 }
-#[test]
-fn bindgen_test_layout_TPMU_SCHEME_KEYEDHASH() {
-    const UNINIT: ::std::mem::MaybeUninit<TPMU_SCHEME_KEYEDHASH> =
-        ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<TPMU_SCHEME_KEYEDHASH>(),
-        4usize,
-        "Size of TPMU_SCHEME_KEYEDHASH"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<TPMU_SCHEME_KEYEDHASH>(),
-        2usize,
-        "Alignment of TPMU_SCHEME_KEYEDHASH"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).hmac) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMU_SCHEME_KEYEDHASH::hmac"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).exclusiveOr) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMU_SCHEME_KEYEDHASH::exclusiveOr"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).null) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMU_SCHEME_KEYEDHASH::null"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of TPMU_SCHEME_KEYEDHASH"][::std::mem::size_of::<TPMU_SCHEME_KEYEDHASH>() - 4usize];
+    ["Alignment of TPMU_SCHEME_KEYEDHASH"]
+        [::std::mem::align_of::<TPMU_SCHEME_KEYEDHASH>() - 2usize];
+    ["Offset of field: TPMU_SCHEME_KEYEDHASH::hmac"]
+        [::std::mem::offset_of!(TPMU_SCHEME_KEYEDHASH, hmac) - 0usize];
+    ["Offset of field: TPMU_SCHEME_KEYEDHASH::exclusiveOr"]
+        [::std::mem::offset_of!(TPMU_SCHEME_KEYEDHASH, exclusiveOr) - 0usize];
+    ["Offset of field: TPMU_SCHEME_KEYEDHASH::null"]
+        [::std::mem::offset_of!(TPMU_SCHEME_KEYEDHASH, null) - 0usize];
+};
 impl Default for TPMU_SCHEME_KEYEDHASH {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
@@ -3641,32 +2313,16 @@ pub struct TPMT_KEYEDHASH_SCHEME {
     pub scheme: TPMI_ALG_KEYEDHASH_SCHEME,
     pub details: TPMU_SCHEME_KEYEDHASH,
 }
-#[test]
-fn bindgen_test_layout_TPMT_KEYEDHASH_SCHEME() {
-    const UNINIT: ::std::mem::MaybeUninit<TPMT_KEYEDHASH_SCHEME> =
-        ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<TPMT_KEYEDHASH_SCHEME>(),
-        6usize,
-        "Size of TPMT_KEYEDHASH_SCHEME"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<TPMT_KEYEDHASH_SCHEME>(),
-        2usize,
-        "Alignment of TPMT_KEYEDHASH_SCHEME"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).scheme) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMT_KEYEDHASH_SCHEME::scheme"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).details) as usize - ptr as usize },
-        2usize,
-        "Offset of field: TPMT_KEYEDHASH_SCHEME::details"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of TPMT_KEYEDHASH_SCHEME"][::std::mem::size_of::<TPMT_KEYEDHASH_SCHEME>() - 6usize];
+    ["Alignment of TPMT_KEYEDHASH_SCHEME"]
+        [::std::mem::align_of::<TPMT_KEYEDHASH_SCHEME>() - 2usize];
+    ["Offset of field: TPMT_KEYEDHASH_SCHEME::scheme"]
+        [::std::mem::offset_of!(TPMT_KEYEDHASH_SCHEME, scheme) - 0usize];
+    ["Offset of field: TPMT_KEYEDHASH_SCHEME::details"]
+        [::std::mem::offset_of!(TPMT_KEYEDHASH_SCHEME, details) - 2usize];
+};
 impl Default for TPMT_KEYEDHASH_SCHEME {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
@@ -3695,66 +2351,29 @@ pub union TPMU_SIG_SCHEME {
     pub any: TPMS_SCHEME_HASH,
     pub null: TPMS_EMPTY,
 }
-#[test]
-fn bindgen_test_layout_TPMU_SIG_SCHEME() {
-    const UNINIT: ::std::mem::MaybeUninit<TPMU_SIG_SCHEME> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<TPMU_SIG_SCHEME>(),
-        4usize,
-        "Size of TPMU_SIG_SCHEME"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<TPMU_SIG_SCHEME>(),
-        2usize,
-        "Alignment of TPMU_SIG_SCHEME"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).rsassa) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMU_SIG_SCHEME::rsassa"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).rsapss) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMU_SIG_SCHEME::rsapss"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).ecdsa) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMU_SIG_SCHEME::ecdsa"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).ecdaa) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMU_SIG_SCHEME::ecdaa"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).sm2) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMU_SIG_SCHEME::sm2"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).ecschnorr) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMU_SIG_SCHEME::ecschnorr"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).hmac) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMU_SIG_SCHEME::hmac"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).any) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMU_SIG_SCHEME::any"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).null) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMU_SIG_SCHEME::null"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of TPMU_SIG_SCHEME"][::std::mem::size_of::<TPMU_SIG_SCHEME>() - 4usize];
+    ["Alignment of TPMU_SIG_SCHEME"][::std::mem::align_of::<TPMU_SIG_SCHEME>() - 2usize];
+    ["Offset of field: TPMU_SIG_SCHEME::rsassa"]
+        [::std::mem::offset_of!(TPMU_SIG_SCHEME, rsassa) - 0usize];
+    ["Offset of field: TPMU_SIG_SCHEME::rsapss"]
+        [::std::mem::offset_of!(TPMU_SIG_SCHEME, rsapss) - 0usize];
+    ["Offset of field: TPMU_SIG_SCHEME::ecdsa"]
+        [::std::mem::offset_of!(TPMU_SIG_SCHEME, ecdsa) - 0usize];
+    ["Offset of field: TPMU_SIG_SCHEME::ecdaa"]
+        [::std::mem::offset_of!(TPMU_SIG_SCHEME, ecdaa) - 0usize];
+    ["Offset of field: TPMU_SIG_SCHEME::sm2"]
+        [::std::mem::offset_of!(TPMU_SIG_SCHEME, sm2) - 0usize];
+    ["Offset of field: TPMU_SIG_SCHEME::ecschnorr"]
+        [::std::mem::offset_of!(TPMU_SIG_SCHEME, ecschnorr) - 0usize];
+    ["Offset of field: TPMU_SIG_SCHEME::hmac"]
+        [::std::mem::offset_of!(TPMU_SIG_SCHEME, hmac) - 0usize];
+    ["Offset of field: TPMU_SIG_SCHEME::any"]
+        [::std::mem::offset_of!(TPMU_SIG_SCHEME, any) - 0usize];
+    ["Offset of field: TPMU_SIG_SCHEME::null"]
+        [::std::mem::offset_of!(TPMU_SIG_SCHEME, null) - 0usize];
+};
 impl Default for TPMU_SIG_SCHEME {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
@@ -3770,31 +2389,15 @@ pub struct TPMT_SIG_SCHEME {
     pub scheme: TPMI_ALG_SIG_SCHEME,
     pub details: TPMU_SIG_SCHEME,
 }
-#[test]
-fn bindgen_test_layout_TPMT_SIG_SCHEME() {
-    const UNINIT: ::std::mem::MaybeUninit<TPMT_SIG_SCHEME> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<TPMT_SIG_SCHEME>(),
-        6usize,
-        "Size of TPMT_SIG_SCHEME"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<TPMT_SIG_SCHEME>(),
-        2usize,
-        "Alignment of TPMT_SIG_SCHEME"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).scheme) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMT_SIG_SCHEME::scheme"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).details) as usize - ptr as usize },
-        2usize,
-        "Offset of field: TPMT_SIG_SCHEME::details"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of TPMT_SIG_SCHEME"][::std::mem::size_of::<TPMT_SIG_SCHEME>() - 6usize];
+    ["Alignment of TPMT_SIG_SCHEME"][::std::mem::align_of::<TPMT_SIG_SCHEME>() - 2usize];
+    ["Offset of field: TPMT_SIG_SCHEME::scheme"]
+        [::std::mem::offset_of!(TPMT_SIG_SCHEME, scheme) - 0usize];
+    ["Offset of field: TPMT_SIG_SCHEME::details"]
+        [::std::mem::offset_of!(TPMT_SIG_SCHEME, details) - 2usize];
+};
 impl Default for TPMT_SIG_SCHEME {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
@@ -3821,46 +2424,21 @@ pub union TPMU_KDF_SCHEME {
     pub kdf1_sp800_108: TPMS_SCHEME_KDF1_SP800_108,
     pub null: TPMS_EMPTY,
 }
-#[test]
-fn bindgen_test_layout_TPMU_KDF_SCHEME() {
-    const UNINIT: ::std::mem::MaybeUninit<TPMU_KDF_SCHEME> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<TPMU_KDF_SCHEME>(),
-        2usize,
-        "Size of TPMU_KDF_SCHEME"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<TPMU_KDF_SCHEME>(),
-        2usize,
-        "Alignment of TPMU_KDF_SCHEME"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).mgf1) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMU_KDF_SCHEME::mgf1"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).kdf1_sp800_56a) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMU_KDF_SCHEME::kdf1_sp800_56a"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).kdf2) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMU_KDF_SCHEME::kdf2"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).kdf1_sp800_108) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMU_KDF_SCHEME::kdf1_sp800_108"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).null) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMU_KDF_SCHEME::null"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of TPMU_KDF_SCHEME"][::std::mem::size_of::<TPMU_KDF_SCHEME>() - 2usize];
+    ["Alignment of TPMU_KDF_SCHEME"][::std::mem::align_of::<TPMU_KDF_SCHEME>() - 2usize];
+    ["Offset of field: TPMU_KDF_SCHEME::mgf1"]
+        [::std::mem::offset_of!(TPMU_KDF_SCHEME, mgf1) - 0usize];
+    ["Offset of field: TPMU_KDF_SCHEME::kdf1_sp800_56a"]
+        [::std::mem::offset_of!(TPMU_KDF_SCHEME, kdf1_sp800_56a) - 0usize];
+    ["Offset of field: TPMU_KDF_SCHEME::kdf2"]
+        [::std::mem::offset_of!(TPMU_KDF_SCHEME, kdf2) - 0usize];
+    ["Offset of field: TPMU_KDF_SCHEME::kdf1_sp800_108"]
+        [::std::mem::offset_of!(TPMU_KDF_SCHEME, kdf1_sp800_108) - 0usize];
+    ["Offset of field: TPMU_KDF_SCHEME::null"]
+        [::std::mem::offset_of!(TPMU_KDF_SCHEME, null) - 0usize];
+};
 impl Default for TPMU_KDF_SCHEME {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
@@ -3876,31 +2454,15 @@ pub struct TPMT_KDF_SCHEME {
     pub scheme: TPMI_ALG_KDF,
     pub details: TPMU_KDF_SCHEME,
 }
-#[test]
-fn bindgen_test_layout_TPMT_KDF_SCHEME() {
-    const UNINIT: ::std::mem::MaybeUninit<TPMT_KDF_SCHEME> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<TPMT_KDF_SCHEME>(),
-        4usize,
-        "Size of TPMT_KDF_SCHEME"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<TPMT_KDF_SCHEME>(),
-        2usize,
-        "Alignment of TPMT_KDF_SCHEME"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).scheme) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMT_KDF_SCHEME::scheme"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).details) as usize - ptr as usize },
-        2usize,
-        "Offset of field: TPMT_KDF_SCHEME::details"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of TPMT_KDF_SCHEME"][::std::mem::size_of::<TPMT_KDF_SCHEME>() - 4usize];
+    ["Alignment of TPMT_KDF_SCHEME"][::std::mem::align_of::<TPMT_KDF_SCHEME>() - 2usize];
+    ["Offset of field: TPMT_KDF_SCHEME::scheme"]
+        [::std::mem::offset_of!(TPMT_KDF_SCHEME, scheme) - 0usize];
+    ["Offset of field: TPMT_KDF_SCHEME::details"]
+        [::std::mem::offset_of!(TPMT_KDF_SCHEME, details) - 2usize];
+};
 impl Default for TPMT_KDF_SCHEME {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
@@ -3927,81 +2489,35 @@ pub union TPMU_ASYM_SCHEME {
     pub anySig: TPMS_SCHEME_HASH,
     pub null: TPMS_EMPTY,
 }
-#[test]
-fn bindgen_test_layout_TPMU_ASYM_SCHEME() {
-    const UNINIT: ::std::mem::MaybeUninit<TPMU_ASYM_SCHEME> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<TPMU_ASYM_SCHEME>(),
-        4usize,
-        "Size of TPMU_ASYM_SCHEME"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<TPMU_ASYM_SCHEME>(),
-        2usize,
-        "Alignment of TPMU_ASYM_SCHEME"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).ecdh) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMU_ASYM_SCHEME::ecdh"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).ecmqv) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMU_ASYM_SCHEME::ecmqv"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).rsassa) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMU_ASYM_SCHEME::rsassa"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).rsapss) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMU_ASYM_SCHEME::rsapss"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).ecdsa) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMU_ASYM_SCHEME::ecdsa"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).ecdaa) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMU_ASYM_SCHEME::ecdaa"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).sm2) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMU_ASYM_SCHEME::sm2"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).ecschnorr) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMU_ASYM_SCHEME::ecschnorr"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).rsaes) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMU_ASYM_SCHEME::rsaes"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).oaep) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMU_ASYM_SCHEME::oaep"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).anySig) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMU_ASYM_SCHEME::anySig"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).null) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMU_ASYM_SCHEME::null"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of TPMU_ASYM_SCHEME"][::std::mem::size_of::<TPMU_ASYM_SCHEME>() - 4usize];
+    ["Alignment of TPMU_ASYM_SCHEME"][::std::mem::align_of::<TPMU_ASYM_SCHEME>() - 2usize];
+    ["Offset of field: TPMU_ASYM_SCHEME::ecdh"]
+        [::std::mem::offset_of!(TPMU_ASYM_SCHEME, ecdh) - 0usize];
+    ["Offset of field: TPMU_ASYM_SCHEME::ecmqv"]
+        [::std::mem::offset_of!(TPMU_ASYM_SCHEME, ecmqv) - 0usize];
+    ["Offset of field: TPMU_ASYM_SCHEME::rsassa"]
+        [::std::mem::offset_of!(TPMU_ASYM_SCHEME, rsassa) - 0usize];
+    ["Offset of field: TPMU_ASYM_SCHEME::rsapss"]
+        [::std::mem::offset_of!(TPMU_ASYM_SCHEME, rsapss) - 0usize];
+    ["Offset of field: TPMU_ASYM_SCHEME::ecdsa"]
+        [::std::mem::offset_of!(TPMU_ASYM_SCHEME, ecdsa) - 0usize];
+    ["Offset of field: TPMU_ASYM_SCHEME::ecdaa"]
+        [::std::mem::offset_of!(TPMU_ASYM_SCHEME, ecdaa) - 0usize];
+    ["Offset of field: TPMU_ASYM_SCHEME::sm2"]
+        [::std::mem::offset_of!(TPMU_ASYM_SCHEME, sm2) - 0usize];
+    ["Offset of field: TPMU_ASYM_SCHEME::ecschnorr"]
+        [::std::mem::offset_of!(TPMU_ASYM_SCHEME, ecschnorr) - 0usize];
+    ["Offset of field: TPMU_ASYM_SCHEME::rsaes"]
+        [::std::mem::offset_of!(TPMU_ASYM_SCHEME, rsaes) - 0usize];
+    ["Offset of field: TPMU_ASYM_SCHEME::oaep"]
+        [::std::mem::offset_of!(TPMU_ASYM_SCHEME, oaep) - 0usize];
+    ["Offset of field: TPMU_ASYM_SCHEME::anySig"]
+        [::std::mem::offset_of!(TPMU_ASYM_SCHEME, anySig) - 0usize];
+    ["Offset of field: TPMU_ASYM_SCHEME::null"]
+        [::std::mem::offset_of!(TPMU_ASYM_SCHEME, null) - 0usize];
+};
 impl Default for TPMU_ASYM_SCHEME {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
@@ -4017,31 +2533,15 @@ pub struct TPMT_ASYM_SCHEME {
     pub scheme: TPMI_ALG_ASYM_SCHEME,
     pub details: TPMU_ASYM_SCHEME,
 }
-#[test]
-fn bindgen_test_layout_TPMT_ASYM_SCHEME() {
-    const UNINIT: ::std::mem::MaybeUninit<TPMT_ASYM_SCHEME> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<TPMT_ASYM_SCHEME>(),
-        6usize,
-        "Size of TPMT_ASYM_SCHEME"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<TPMT_ASYM_SCHEME>(),
-        2usize,
-        "Alignment of TPMT_ASYM_SCHEME"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).scheme) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMT_ASYM_SCHEME::scheme"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).details) as usize - ptr as usize },
-        2usize,
-        "Offset of field: TPMT_ASYM_SCHEME::details"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of TPMT_ASYM_SCHEME"][::std::mem::size_of::<TPMT_ASYM_SCHEME>() - 6usize];
+    ["Alignment of TPMT_ASYM_SCHEME"][::std::mem::align_of::<TPMT_ASYM_SCHEME>() - 2usize];
+    ["Offset of field: TPMT_ASYM_SCHEME::scheme"]
+        [::std::mem::offset_of!(TPMT_ASYM_SCHEME, scheme) - 0usize];
+    ["Offset of field: TPMT_ASYM_SCHEME::details"]
+        [::std::mem::offset_of!(TPMT_ASYM_SCHEME, details) - 2usize];
+};
 impl Default for TPMT_ASYM_SCHEME {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
@@ -4058,31 +2558,15 @@ pub struct TPMT_RSA_SCHEME {
     pub scheme: TPMI_ALG_RSA_SCHEME,
     pub details: TPMU_ASYM_SCHEME,
 }
-#[test]
-fn bindgen_test_layout_TPMT_RSA_SCHEME() {
-    const UNINIT: ::std::mem::MaybeUninit<TPMT_RSA_SCHEME> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<TPMT_RSA_SCHEME>(),
-        6usize,
-        "Size of TPMT_RSA_SCHEME"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<TPMT_RSA_SCHEME>(),
-        2usize,
-        "Alignment of TPMT_RSA_SCHEME"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).scheme) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMT_RSA_SCHEME::scheme"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).details) as usize - ptr as usize },
-        2usize,
-        "Offset of field: TPMT_RSA_SCHEME::details"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of TPMT_RSA_SCHEME"][::std::mem::size_of::<TPMT_RSA_SCHEME>() - 6usize];
+    ["Alignment of TPMT_RSA_SCHEME"][::std::mem::align_of::<TPMT_RSA_SCHEME>() - 2usize];
+    ["Offset of field: TPMT_RSA_SCHEME::scheme"]
+        [::std::mem::offset_of!(TPMT_RSA_SCHEME, scheme) - 0usize];
+    ["Offset of field: TPMT_RSA_SCHEME::details"]
+        [::std::mem::offset_of!(TPMT_RSA_SCHEME, details) - 2usize];
+};
 impl Default for TPMT_RSA_SCHEME {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
@@ -4099,31 +2583,15 @@ pub struct TPMT_RSA_DECRYPT {
     pub scheme: TPMI_ALG_RSA_DECRYPT,
     pub details: TPMU_ASYM_SCHEME,
 }
-#[test]
-fn bindgen_test_layout_TPMT_RSA_DECRYPT() {
-    const UNINIT: ::std::mem::MaybeUninit<TPMT_RSA_DECRYPT> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<TPMT_RSA_DECRYPT>(),
-        6usize,
-        "Size of TPMT_RSA_DECRYPT"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<TPMT_RSA_DECRYPT>(),
-        2usize,
-        "Alignment of TPMT_RSA_DECRYPT"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).scheme) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMT_RSA_DECRYPT::scheme"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).details) as usize - ptr as usize },
-        2usize,
-        "Offset of field: TPMT_RSA_DECRYPT::details"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of TPMT_RSA_DECRYPT"][::std::mem::size_of::<TPMT_RSA_DECRYPT>() - 6usize];
+    ["Alignment of TPMT_RSA_DECRYPT"][::std::mem::align_of::<TPMT_RSA_DECRYPT>() - 2usize];
+    ["Offset of field: TPMT_RSA_DECRYPT::scheme"]
+        [::std::mem::offset_of!(TPMT_RSA_DECRYPT, scheme) - 0usize];
+    ["Offset of field: TPMT_RSA_DECRYPT::details"]
+        [::std::mem::offset_of!(TPMT_RSA_DECRYPT, details) - 2usize];
+};
 impl Default for TPMT_RSA_DECRYPT {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
@@ -4139,31 +2607,15 @@ pub struct TPM2B_PUBLIC_KEY_RSA {
     pub size: UINT16,
     pub buffer: [BYTE; 512usize],
 }
-#[test]
-fn bindgen_test_layout_TPM2B_PUBLIC_KEY_RSA() {
-    const UNINIT: ::std::mem::MaybeUninit<TPM2B_PUBLIC_KEY_RSA> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<TPM2B_PUBLIC_KEY_RSA>(),
-        514usize,
-        "Size of TPM2B_PUBLIC_KEY_RSA"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<TPM2B_PUBLIC_KEY_RSA>(),
-        2usize,
-        "Alignment of TPM2B_PUBLIC_KEY_RSA"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).size) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPM2B_PUBLIC_KEY_RSA::size"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).buffer) as usize - ptr as usize },
-        2usize,
-        "Offset of field: TPM2B_PUBLIC_KEY_RSA::buffer"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of TPM2B_PUBLIC_KEY_RSA"][::std::mem::size_of::<TPM2B_PUBLIC_KEY_RSA>() - 514usize];
+    ["Alignment of TPM2B_PUBLIC_KEY_RSA"][::std::mem::align_of::<TPM2B_PUBLIC_KEY_RSA>() - 2usize];
+    ["Offset of field: TPM2B_PUBLIC_KEY_RSA::size"]
+        [::std::mem::offset_of!(TPM2B_PUBLIC_KEY_RSA, size) - 0usize];
+    ["Offset of field: TPM2B_PUBLIC_KEY_RSA::buffer"]
+        [::std::mem::offset_of!(TPM2B_PUBLIC_KEY_RSA, buffer) - 2usize];
+};
 impl Default for TPM2B_PUBLIC_KEY_RSA {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
@@ -4180,32 +2632,16 @@ pub struct TPM2B_PRIVATE_KEY_RSA {
     pub size: UINT16,
     pub buffer: [BYTE; 1280usize],
 }
-#[test]
-fn bindgen_test_layout_TPM2B_PRIVATE_KEY_RSA() {
-    const UNINIT: ::std::mem::MaybeUninit<TPM2B_PRIVATE_KEY_RSA> =
-        ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<TPM2B_PRIVATE_KEY_RSA>(),
-        1282usize,
-        "Size of TPM2B_PRIVATE_KEY_RSA"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<TPM2B_PRIVATE_KEY_RSA>(),
-        2usize,
-        "Alignment of TPM2B_PRIVATE_KEY_RSA"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).size) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPM2B_PRIVATE_KEY_RSA::size"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).buffer) as usize - ptr as usize },
-        2usize,
-        "Offset of field: TPM2B_PRIVATE_KEY_RSA::buffer"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of TPM2B_PRIVATE_KEY_RSA"][::std::mem::size_of::<TPM2B_PRIVATE_KEY_RSA>() - 1282usize];
+    ["Alignment of TPM2B_PRIVATE_KEY_RSA"]
+        [::std::mem::align_of::<TPM2B_PRIVATE_KEY_RSA>() - 2usize];
+    ["Offset of field: TPM2B_PRIVATE_KEY_RSA::size"]
+        [::std::mem::offset_of!(TPM2B_PRIVATE_KEY_RSA, size) - 0usize];
+    ["Offset of field: TPM2B_PRIVATE_KEY_RSA::buffer"]
+        [::std::mem::offset_of!(TPM2B_PRIVATE_KEY_RSA, buffer) - 2usize];
+};
 impl Default for TPM2B_PRIVATE_KEY_RSA {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
@@ -4221,31 +2657,15 @@ pub struct TPM2B_ECC_PARAMETER {
     pub size: UINT16,
     pub buffer: [BYTE; 128usize],
 }
-#[test]
-fn bindgen_test_layout_TPM2B_ECC_PARAMETER() {
-    const UNINIT: ::std::mem::MaybeUninit<TPM2B_ECC_PARAMETER> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<TPM2B_ECC_PARAMETER>(),
-        130usize,
-        "Size of TPM2B_ECC_PARAMETER"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<TPM2B_ECC_PARAMETER>(),
-        2usize,
-        "Alignment of TPM2B_ECC_PARAMETER"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).size) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPM2B_ECC_PARAMETER::size"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).buffer) as usize - ptr as usize },
-        2usize,
-        "Offset of field: TPM2B_ECC_PARAMETER::buffer"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of TPM2B_ECC_PARAMETER"][::std::mem::size_of::<TPM2B_ECC_PARAMETER>() - 130usize];
+    ["Alignment of TPM2B_ECC_PARAMETER"][::std::mem::align_of::<TPM2B_ECC_PARAMETER>() - 2usize];
+    ["Offset of field: TPM2B_ECC_PARAMETER::size"]
+        [::std::mem::offset_of!(TPM2B_ECC_PARAMETER, size) - 0usize];
+    ["Offset of field: TPM2B_ECC_PARAMETER::buffer"]
+        [::std::mem::offset_of!(TPM2B_ECC_PARAMETER, buffer) - 2usize];
+};
 impl Default for TPM2B_ECC_PARAMETER {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
@@ -4261,31 +2681,13 @@ pub struct TPMS_ECC_POINT {
     pub x: TPM2B_ECC_PARAMETER,
     pub y: TPM2B_ECC_PARAMETER,
 }
-#[test]
-fn bindgen_test_layout_TPMS_ECC_POINT() {
-    const UNINIT: ::std::mem::MaybeUninit<TPMS_ECC_POINT> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<TPMS_ECC_POINT>(),
-        260usize,
-        "Size of TPMS_ECC_POINT"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<TPMS_ECC_POINT>(),
-        2usize,
-        "Alignment of TPMS_ECC_POINT"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).x) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMS_ECC_POINT::x"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).y) as usize - ptr as usize },
-        130usize,
-        "Offset of field: TPMS_ECC_POINT::y"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of TPMS_ECC_POINT"][::std::mem::size_of::<TPMS_ECC_POINT>() - 260usize];
+    ["Alignment of TPMS_ECC_POINT"][::std::mem::align_of::<TPMS_ECC_POINT>() - 2usize];
+    ["Offset of field: TPMS_ECC_POINT::x"][::std::mem::offset_of!(TPMS_ECC_POINT, x) - 0usize];
+    ["Offset of field: TPMS_ECC_POINT::y"][::std::mem::offset_of!(TPMS_ECC_POINT, y) - 130usize];
+};
 impl Default for TPMS_ECC_POINT {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
@@ -4301,31 +2703,15 @@ pub struct TPM2B_ECC_POINT {
     pub size: UINT16,
     pub point: TPMS_ECC_POINT,
 }
-#[test]
-fn bindgen_test_layout_TPM2B_ECC_POINT() {
-    const UNINIT: ::std::mem::MaybeUninit<TPM2B_ECC_POINT> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<TPM2B_ECC_POINT>(),
-        262usize,
-        "Size of TPM2B_ECC_POINT"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<TPM2B_ECC_POINT>(),
-        2usize,
-        "Alignment of TPM2B_ECC_POINT"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).size) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPM2B_ECC_POINT::size"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).point) as usize - ptr as usize },
-        2usize,
-        "Offset of field: TPM2B_ECC_POINT::point"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of TPM2B_ECC_POINT"][::std::mem::size_of::<TPM2B_ECC_POINT>() - 262usize];
+    ["Alignment of TPM2B_ECC_POINT"][::std::mem::align_of::<TPM2B_ECC_POINT>() - 2usize];
+    ["Offset of field: TPM2B_ECC_POINT::size"]
+        [::std::mem::offset_of!(TPM2B_ECC_POINT, size) - 0usize];
+    ["Offset of field: TPM2B_ECC_POINT::point"]
+        [::std::mem::offset_of!(TPM2B_ECC_POINT, point) - 2usize];
+};
 impl Default for TPM2B_ECC_POINT {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
@@ -4343,31 +2729,15 @@ pub struct TPMT_ECC_SCHEME {
     pub scheme: TPMI_ALG_ECC_SCHEME,
     pub details: TPMU_ASYM_SCHEME,
 }
-#[test]
-fn bindgen_test_layout_TPMT_ECC_SCHEME() {
-    const UNINIT: ::std::mem::MaybeUninit<TPMT_ECC_SCHEME> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<TPMT_ECC_SCHEME>(),
-        6usize,
-        "Size of TPMT_ECC_SCHEME"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<TPMT_ECC_SCHEME>(),
-        2usize,
-        "Alignment of TPMT_ECC_SCHEME"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).scheme) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMT_ECC_SCHEME::scheme"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).details) as usize - ptr as usize },
-        2usize,
-        "Offset of field: TPMT_ECC_SCHEME::details"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of TPMT_ECC_SCHEME"][::std::mem::size_of::<TPMT_ECC_SCHEME>() - 6usize];
+    ["Alignment of TPMT_ECC_SCHEME"][::std::mem::align_of::<TPMT_ECC_SCHEME>() - 2usize];
+    ["Offset of field: TPMT_ECC_SCHEME::scheme"]
+        [::std::mem::offset_of!(TPMT_ECC_SCHEME, scheme) - 0usize];
+    ["Offset of field: TPMT_ECC_SCHEME::details"]
+        [::std::mem::offset_of!(TPMT_ECC_SCHEME, details) - 2usize];
+};
 impl Default for TPMT_ECC_SCHEME {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
@@ -4392,77 +2762,35 @@ pub struct TPMS_ALGORITHM_DETAIL_ECC {
     pub n: TPM2B_ECC_PARAMETER,
     pub h: TPM2B_ECC_PARAMETER,
 }
-#[test]
-fn bindgen_test_layout_TPMS_ALGORITHM_DETAIL_ECC() {
-    const UNINIT: ::std::mem::MaybeUninit<TPMS_ALGORITHM_DETAIL_ECC> =
-        ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<TPMS_ALGORITHM_DETAIL_ECC>(),
-        924usize,
-        "Size of TPMS_ALGORITHM_DETAIL_ECC"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<TPMS_ALGORITHM_DETAIL_ECC>(),
-        2usize,
-        "Alignment of TPMS_ALGORITHM_DETAIL_ECC"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).curveID) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMS_ALGORITHM_DETAIL_ECC::curveID"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).keySize) as usize - ptr as usize },
-        2usize,
-        "Offset of field: TPMS_ALGORITHM_DETAIL_ECC::keySize"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).kdf) as usize - ptr as usize },
-        4usize,
-        "Offset of field: TPMS_ALGORITHM_DETAIL_ECC::kdf"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).sign) as usize - ptr as usize },
-        8usize,
-        "Offset of field: TPMS_ALGORITHM_DETAIL_ECC::sign"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).p) as usize - ptr as usize },
-        14usize,
-        "Offset of field: TPMS_ALGORITHM_DETAIL_ECC::p"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).a) as usize - ptr as usize },
-        144usize,
-        "Offset of field: TPMS_ALGORITHM_DETAIL_ECC::a"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).b) as usize - ptr as usize },
-        274usize,
-        "Offset of field: TPMS_ALGORITHM_DETAIL_ECC::b"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).gX) as usize - ptr as usize },
-        404usize,
-        "Offset of field: TPMS_ALGORITHM_DETAIL_ECC::gX"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).gY) as usize - ptr as usize },
-        534usize,
-        "Offset of field: TPMS_ALGORITHM_DETAIL_ECC::gY"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).n) as usize - ptr as usize },
-        664usize,
-        "Offset of field: TPMS_ALGORITHM_DETAIL_ECC::n"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).h) as usize - ptr as usize },
-        794usize,
-        "Offset of field: TPMS_ALGORITHM_DETAIL_ECC::h"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of TPMS_ALGORITHM_DETAIL_ECC"]
+        [::std::mem::size_of::<TPMS_ALGORITHM_DETAIL_ECC>() - 924usize];
+    ["Alignment of TPMS_ALGORITHM_DETAIL_ECC"]
+        [::std::mem::align_of::<TPMS_ALGORITHM_DETAIL_ECC>() - 2usize];
+    ["Offset of field: TPMS_ALGORITHM_DETAIL_ECC::curveID"]
+        [::std::mem::offset_of!(TPMS_ALGORITHM_DETAIL_ECC, curveID) - 0usize];
+    ["Offset of field: TPMS_ALGORITHM_DETAIL_ECC::keySize"]
+        [::std::mem::offset_of!(TPMS_ALGORITHM_DETAIL_ECC, keySize) - 2usize];
+    ["Offset of field: TPMS_ALGORITHM_DETAIL_ECC::kdf"]
+        [::std::mem::offset_of!(TPMS_ALGORITHM_DETAIL_ECC, kdf) - 4usize];
+    ["Offset of field: TPMS_ALGORITHM_DETAIL_ECC::sign"]
+        [::std::mem::offset_of!(TPMS_ALGORITHM_DETAIL_ECC, sign) - 8usize];
+    ["Offset of field: TPMS_ALGORITHM_DETAIL_ECC::p"]
+        [::std::mem::offset_of!(TPMS_ALGORITHM_DETAIL_ECC, p) - 14usize];
+    ["Offset of field: TPMS_ALGORITHM_DETAIL_ECC::a"]
+        [::std::mem::offset_of!(TPMS_ALGORITHM_DETAIL_ECC, a) - 144usize];
+    ["Offset of field: TPMS_ALGORITHM_DETAIL_ECC::b"]
+        [::std::mem::offset_of!(TPMS_ALGORITHM_DETAIL_ECC, b) - 274usize];
+    ["Offset of field: TPMS_ALGORITHM_DETAIL_ECC::gX"]
+        [::std::mem::offset_of!(TPMS_ALGORITHM_DETAIL_ECC, gX) - 404usize];
+    ["Offset of field: TPMS_ALGORITHM_DETAIL_ECC::gY"]
+        [::std::mem::offset_of!(TPMS_ALGORITHM_DETAIL_ECC, gY) - 534usize];
+    ["Offset of field: TPMS_ALGORITHM_DETAIL_ECC::n"]
+        [::std::mem::offset_of!(TPMS_ALGORITHM_DETAIL_ECC, n) - 664usize];
+    ["Offset of field: TPMS_ALGORITHM_DETAIL_ECC::h"]
+        [::std::mem::offset_of!(TPMS_ALGORITHM_DETAIL_ECC, h) - 794usize];
+};
 impl Default for TPMS_ALGORITHM_DETAIL_ECC {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
@@ -4478,31 +2806,15 @@ pub struct TPMS_SIGNATURE_RSA {
     pub hash: TPMI_ALG_HASH,
     pub sig: TPM2B_PUBLIC_KEY_RSA,
 }
-#[test]
-fn bindgen_test_layout_TPMS_SIGNATURE_RSA() {
-    const UNINIT: ::std::mem::MaybeUninit<TPMS_SIGNATURE_RSA> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<TPMS_SIGNATURE_RSA>(),
-        516usize,
-        "Size of TPMS_SIGNATURE_RSA"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<TPMS_SIGNATURE_RSA>(),
-        2usize,
-        "Alignment of TPMS_SIGNATURE_RSA"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).hash) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMS_SIGNATURE_RSA::hash"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).sig) as usize - ptr as usize },
-        2usize,
-        "Offset of field: TPMS_SIGNATURE_RSA::sig"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of TPMS_SIGNATURE_RSA"][::std::mem::size_of::<TPMS_SIGNATURE_RSA>() - 516usize];
+    ["Alignment of TPMS_SIGNATURE_RSA"][::std::mem::align_of::<TPMS_SIGNATURE_RSA>() - 2usize];
+    ["Offset of field: TPMS_SIGNATURE_RSA::hash"]
+        [::std::mem::offset_of!(TPMS_SIGNATURE_RSA, hash) - 0usize];
+    ["Offset of field: TPMS_SIGNATURE_RSA::sig"]
+        [::std::mem::offset_of!(TPMS_SIGNATURE_RSA, sig) - 2usize];
+};
 impl Default for TPMS_SIGNATURE_RSA {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
@@ -4521,36 +2833,17 @@ pub struct TPMS_SIGNATURE_ECC {
     pub signatureR: TPM2B_ECC_PARAMETER,
     pub signatureS: TPM2B_ECC_PARAMETER,
 }
-#[test]
-fn bindgen_test_layout_TPMS_SIGNATURE_ECC() {
-    const UNINIT: ::std::mem::MaybeUninit<TPMS_SIGNATURE_ECC> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<TPMS_SIGNATURE_ECC>(),
-        262usize,
-        "Size of TPMS_SIGNATURE_ECC"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<TPMS_SIGNATURE_ECC>(),
-        2usize,
-        "Alignment of TPMS_SIGNATURE_ECC"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).hash) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMS_SIGNATURE_ECC::hash"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).signatureR) as usize - ptr as usize },
-        2usize,
-        "Offset of field: TPMS_SIGNATURE_ECC::signatureR"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).signatureS) as usize - ptr as usize },
-        132usize,
-        "Offset of field: TPMS_SIGNATURE_ECC::signatureS"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of TPMS_SIGNATURE_ECC"][::std::mem::size_of::<TPMS_SIGNATURE_ECC>() - 262usize];
+    ["Alignment of TPMS_SIGNATURE_ECC"][::std::mem::align_of::<TPMS_SIGNATURE_ECC>() - 2usize];
+    ["Offset of field: TPMS_SIGNATURE_ECC::hash"]
+        [::std::mem::offset_of!(TPMS_SIGNATURE_ECC, hash) - 0usize];
+    ["Offset of field: TPMS_SIGNATURE_ECC::signatureR"]
+        [::std::mem::offset_of!(TPMS_SIGNATURE_ECC, signatureR) - 2usize];
+    ["Offset of field: TPMS_SIGNATURE_ECC::signatureS"]
+        [::std::mem::offset_of!(TPMS_SIGNATURE_ECC, signatureS) - 132usize];
+};
 impl Default for TPMS_SIGNATURE_ECC {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
@@ -4577,66 +2870,27 @@ pub union TPMU_SIGNATURE {
     pub any: TPMS_SCHEME_HASH,
     pub null: TPMS_EMPTY,
 }
-#[test]
-fn bindgen_test_layout_TPMU_SIGNATURE() {
-    const UNINIT: ::std::mem::MaybeUninit<TPMU_SIGNATURE> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<TPMU_SIGNATURE>(),
-        516usize,
-        "Size of TPMU_SIGNATURE"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<TPMU_SIGNATURE>(),
-        2usize,
-        "Alignment of TPMU_SIGNATURE"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).rsassa) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMU_SIGNATURE::rsassa"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).rsapss) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMU_SIGNATURE::rsapss"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).ecdsa) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMU_SIGNATURE::ecdsa"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).ecdaa) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMU_SIGNATURE::ecdaa"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).sm2) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMU_SIGNATURE::sm2"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).ecschnorr) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMU_SIGNATURE::ecschnorr"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).hmac) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMU_SIGNATURE::hmac"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).any) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMU_SIGNATURE::any"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).null) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMU_SIGNATURE::null"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of TPMU_SIGNATURE"][::std::mem::size_of::<TPMU_SIGNATURE>() - 516usize];
+    ["Alignment of TPMU_SIGNATURE"][::std::mem::align_of::<TPMU_SIGNATURE>() - 2usize];
+    ["Offset of field: TPMU_SIGNATURE::rsassa"]
+        [::std::mem::offset_of!(TPMU_SIGNATURE, rsassa) - 0usize];
+    ["Offset of field: TPMU_SIGNATURE::rsapss"]
+        [::std::mem::offset_of!(TPMU_SIGNATURE, rsapss) - 0usize];
+    ["Offset of field: TPMU_SIGNATURE::ecdsa"]
+        [::std::mem::offset_of!(TPMU_SIGNATURE, ecdsa) - 0usize];
+    ["Offset of field: TPMU_SIGNATURE::ecdaa"]
+        [::std::mem::offset_of!(TPMU_SIGNATURE, ecdaa) - 0usize];
+    ["Offset of field: TPMU_SIGNATURE::sm2"][::std::mem::offset_of!(TPMU_SIGNATURE, sm2) - 0usize];
+    ["Offset of field: TPMU_SIGNATURE::ecschnorr"]
+        [::std::mem::offset_of!(TPMU_SIGNATURE, ecschnorr) - 0usize];
+    ["Offset of field: TPMU_SIGNATURE::hmac"]
+        [::std::mem::offset_of!(TPMU_SIGNATURE, hmac) - 0usize];
+    ["Offset of field: TPMU_SIGNATURE::any"][::std::mem::offset_of!(TPMU_SIGNATURE, any) - 0usize];
+    ["Offset of field: TPMU_SIGNATURE::null"]
+        [::std::mem::offset_of!(TPMU_SIGNATURE, null) - 0usize];
+};
 impl Default for TPMU_SIGNATURE {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
@@ -4652,31 +2906,15 @@ pub struct TPMT_SIGNATURE {
     pub sigAlg: TPMI_ALG_SIG_SCHEME,
     pub signature: TPMU_SIGNATURE,
 }
-#[test]
-fn bindgen_test_layout_TPMT_SIGNATURE() {
-    const UNINIT: ::std::mem::MaybeUninit<TPMT_SIGNATURE> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<TPMT_SIGNATURE>(),
-        518usize,
-        "Size of TPMT_SIGNATURE"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<TPMT_SIGNATURE>(),
-        2usize,
-        "Alignment of TPMT_SIGNATURE"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).sigAlg) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMT_SIGNATURE::sigAlg"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).signature) as usize - ptr as usize },
-        2usize,
-        "Offset of field: TPMT_SIGNATURE::signature"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of TPMT_SIGNATURE"][::std::mem::size_of::<TPMT_SIGNATURE>() - 518usize];
+    ["Alignment of TPMT_SIGNATURE"][::std::mem::align_of::<TPMT_SIGNATURE>() - 2usize];
+    ["Offset of field: TPMT_SIGNATURE::sigAlg"]
+        [::std::mem::offset_of!(TPMT_SIGNATURE, sigAlg) - 0usize];
+    ["Offset of field: TPMT_SIGNATURE::signature"]
+        [::std::mem::offset_of!(TPMT_SIGNATURE, signature) - 2usize];
+};
 impl Default for TPMT_SIGNATURE {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
@@ -4694,42 +2932,20 @@ pub union TPMU_ENCRYPTED_SECRET {
     pub symmetric: [BYTE; 66usize],
     pub keyedHash: [BYTE; 66usize],
 }
-#[test]
-fn bindgen_test_layout_TPMU_ENCRYPTED_SECRET() {
-    const UNINIT: ::std::mem::MaybeUninit<TPMU_ENCRYPTED_SECRET> =
-        ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<TPMU_ENCRYPTED_SECRET>(),
-        512usize,
-        "Size of TPMU_ENCRYPTED_SECRET"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<TPMU_ENCRYPTED_SECRET>(),
-        1usize,
-        "Alignment of TPMU_ENCRYPTED_SECRET"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).ecc) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMU_ENCRYPTED_SECRET::ecc"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).rsa) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMU_ENCRYPTED_SECRET::rsa"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).symmetric) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMU_ENCRYPTED_SECRET::symmetric"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).keyedHash) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMU_ENCRYPTED_SECRET::keyedHash"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of TPMU_ENCRYPTED_SECRET"][::std::mem::size_of::<TPMU_ENCRYPTED_SECRET>() - 512usize];
+    ["Alignment of TPMU_ENCRYPTED_SECRET"]
+        [::std::mem::align_of::<TPMU_ENCRYPTED_SECRET>() - 1usize];
+    ["Offset of field: TPMU_ENCRYPTED_SECRET::ecc"]
+        [::std::mem::offset_of!(TPMU_ENCRYPTED_SECRET, ecc) - 0usize];
+    ["Offset of field: TPMU_ENCRYPTED_SECRET::rsa"]
+        [::std::mem::offset_of!(TPMU_ENCRYPTED_SECRET, rsa) - 0usize];
+    ["Offset of field: TPMU_ENCRYPTED_SECRET::symmetric"]
+        [::std::mem::offset_of!(TPMU_ENCRYPTED_SECRET, symmetric) - 0usize];
+    ["Offset of field: TPMU_ENCRYPTED_SECRET::keyedHash"]
+        [::std::mem::offset_of!(TPMU_ENCRYPTED_SECRET, keyedHash) - 0usize];
+};
 impl Default for TPMU_ENCRYPTED_SECRET {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
@@ -4745,32 +2961,16 @@ pub struct TPM2B_ENCRYPTED_SECRET {
     pub size: UINT16,
     pub secret: [BYTE; 512usize],
 }
-#[test]
-fn bindgen_test_layout_TPM2B_ENCRYPTED_SECRET() {
-    const UNINIT: ::std::mem::MaybeUninit<TPM2B_ENCRYPTED_SECRET> =
-        ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<TPM2B_ENCRYPTED_SECRET>(),
-        514usize,
-        "Size of TPM2B_ENCRYPTED_SECRET"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<TPM2B_ENCRYPTED_SECRET>(),
-        2usize,
-        "Alignment of TPM2B_ENCRYPTED_SECRET"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).size) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPM2B_ENCRYPTED_SECRET::size"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).secret) as usize - ptr as usize },
-        2usize,
-        "Offset of field: TPM2B_ENCRYPTED_SECRET::secret"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of TPM2B_ENCRYPTED_SECRET"][::std::mem::size_of::<TPM2B_ENCRYPTED_SECRET>() - 514usize];
+    ["Alignment of TPM2B_ENCRYPTED_SECRET"]
+        [::std::mem::align_of::<TPM2B_ENCRYPTED_SECRET>() - 2usize];
+    ["Offset of field: TPM2B_ENCRYPTED_SECRET::size"]
+        [::std::mem::offset_of!(TPM2B_ENCRYPTED_SECRET, size) - 0usize];
+    ["Offset of field: TPM2B_ENCRYPTED_SECRET::secret"]
+        [::std::mem::offset_of!(TPM2B_ENCRYPTED_SECRET, secret) - 2usize];
+};
 impl Default for TPM2B_ENCRYPTED_SECRET {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
@@ -4790,46 +2990,18 @@ pub union TPMU_PUBLIC_ID {
     pub ecc: TPMS_ECC_POINT,
     pub derive: TPMS_DERIVE,
 }
-#[test]
-fn bindgen_test_layout_TPMU_PUBLIC_ID() {
-    const UNINIT: ::std::mem::MaybeUninit<TPMU_PUBLIC_ID> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<TPMU_PUBLIC_ID>(),
-        514usize,
-        "Size of TPMU_PUBLIC_ID"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<TPMU_PUBLIC_ID>(),
-        2usize,
-        "Alignment of TPMU_PUBLIC_ID"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).keyedHash) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMU_PUBLIC_ID::keyedHash"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).sym) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMU_PUBLIC_ID::sym"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).rsa) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMU_PUBLIC_ID::rsa"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).ecc) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMU_PUBLIC_ID::ecc"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).derive) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMU_PUBLIC_ID::derive"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of TPMU_PUBLIC_ID"][::std::mem::size_of::<TPMU_PUBLIC_ID>() - 514usize];
+    ["Alignment of TPMU_PUBLIC_ID"][::std::mem::align_of::<TPMU_PUBLIC_ID>() - 2usize];
+    ["Offset of field: TPMU_PUBLIC_ID::keyedHash"]
+        [::std::mem::offset_of!(TPMU_PUBLIC_ID, keyedHash) - 0usize];
+    ["Offset of field: TPMU_PUBLIC_ID::sym"][::std::mem::offset_of!(TPMU_PUBLIC_ID, sym) - 0usize];
+    ["Offset of field: TPMU_PUBLIC_ID::rsa"][::std::mem::offset_of!(TPMU_PUBLIC_ID, rsa) - 0usize];
+    ["Offset of field: TPMU_PUBLIC_ID::ecc"][::std::mem::offset_of!(TPMU_PUBLIC_ID, ecc) - 0usize];
+    ["Offset of field: TPMU_PUBLIC_ID::derive"]
+        [::std::mem::offset_of!(TPMU_PUBLIC_ID, derive) - 0usize];
+};
 impl Default for TPMU_PUBLIC_ID {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
@@ -4844,26 +3016,13 @@ impl Default for TPMU_PUBLIC_ID {
 pub struct TPMS_KEYEDHASH_PARMS {
     pub scheme: TPMT_KEYEDHASH_SCHEME,
 }
-#[test]
-fn bindgen_test_layout_TPMS_KEYEDHASH_PARMS() {
-    const UNINIT: ::std::mem::MaybeUninit<TPMS_KEYEDHASH_PARMS> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<TPMS_KEYEDHASH_PARMS>(),
-        6usize,
-        "Size of TPMS_KEYEDHASH_PARMS"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<TPMS_KEYEDHASH_PARMS>(),
-        2usize,
-        "Alignment of TPMS_KEYEDHASH_PARMS"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).scheme) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMS_KEYEDHASH_PARMS::scheme"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of TPMS_KEYEDHASH_PARMS"][::std::mem::size_of::<TPMS_KEYEDHASH_PARMS>() - 6usize];
+    ["Alignment of TPMS_KEYEDHASH_PARMS"][::std::mem::align_of::<TPMS_KEYEDHASH_PARMS>() - 2usize];
+    ["Offset of field: TPMS_KEYEDHASH_PARMS::scheme"]
+        [::std::mem::offset_of!(TPMS_KEYEDHASH_PARMS, scheme) - 0usize];
+};
 impl Default for TPMS_KEYEDHASH_PARMS {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
@@ -4879,31 +3038,15 @@ pub struct TPMS_ASYM_PARMS {
     pub symmetric: TPMT_SYM_DEF_OBJECT,
     pub scheme: TPMT_ASYM_SCHEME,
 }
-#[test]
-fn bindgen_test_layout_TPMS_ASYM_PARMS() {
-    const UNINIT: ::std::mem::MaybeUninit<TPMS_ASYM_PARMS> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<TPMS_ASYM_PARMS>(),
-        12usize,
-        "Size of TPMS_ASYM_PARMS"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<TPMS_ASYM_PARMS>(),
-        2usize,
-        "Alignment of TPMS_ASYM_PARMS"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).symmetric) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMS_ASYM_PARMS::symmetric"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).scheme) as usize - ptr as usize },
-        6usize,
-        "Offset of field: TPMS_ASYM_PARMS::scheme"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of TPMS_ASYM_PARMS"][::std::mem::size_of::<TPMS_ASYM_PARMS>() - 12usize];
+    ["Alignment of TPMS_ASYM_PARMS"][::std::mem::align_of::<TPMS_ASYM_PARMS>() - 2usize];
+    ["Offset of field: TPMS_ASYM_PARMS::symmetric"]
+        [::std::mem::offset_of!(TPMS_ASYM_PARMS, symmetric) - 0usize];
+    ["Offset of field: TPMS_ASYM_PARMS::scheme"]
+        [::std::mem::offset_of!(TPMS_ASYM_PARMS, scheme) - 6usize];
+};
 impl Default for TPMS_ASYM_PARMS {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
@@ -4921,41 +3064,19 @@ pub struct TPMS_RSA_PARMS {
     pub keyBits: TPMI_RSA_KEY_BITS,
     pub exponent: UINT32,
 }
-#[test]
-fn bindgen_test_layout_TPMS_RSA_PARMS() {
-    const UNINIT: ::std::mem::MaybeUninit<TPMS_RSA_PARMS> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<TPMS_RSA_PARMS>(),
-        20usize,
-        "Size of TPMS_RSA_PARMS"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<TPMS_RSA_PARMS>(),
-        4usize,
-        "Alignment of TPMS_RSA_PARMS"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).symmetric) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMS_RSA_PARMS::symmetric"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).scheme) as usize - ptr as usize },
-        6usize,
-        "Offset of field: TPMS_RSA_PARMS::scheme"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).keyBits) as usize - ptr as usize },
-        12usize,
-        "Offset of field: TPMS_RSA_PARMS::keyBits"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).exponent) as usize - ptr as usize },
-        16usize,
-        "Offset of field: TPMS_RSA_PARMS::exponent"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of TPMS_RSA_PARMS"][::std::mem::size_of::<TPMS_RSA_PARMS>() - 20usize];
+    ["Alignment of TPMS_RSA_PARMS"][::std::mem::align_of::<TPMS_RSA_PARMS>() - 4usize];
+    ["Offset of field: TPMS_RSA_PARMS::symmetric"]
+        [::std::mem::offset_of!(TPMS_RSA_PARMS, symmetric) - 0usize];
+    ["Offset of field: TPMS_RSA_PARMS::scheme"]
+        [::std::mem::offset_of!(TPMS_RSA_PARMS, scheme) - 6usize];
+    ["Offset of field: TPMS_RSA_PARMS::keyBits"]
+        [::std::mem::offset_of!(TPMS_RSA_PARMS, keyBits) - 12usize];
+    ["Offset of field: TPMS_RSA_PARMS::exponent"]
+        [::std::mem::offset_of!(TPMS_RSA_PARMS, exponent) - 16usize];
+};
 impl Default for TPMS_RSA_PARMS {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
@@ -4973,41 +3094,18 @@ pub struct TPMS_ECC_PARMS {
     pub curveID: TPMI_ECC_CURVE,
     pub kdf: TPMT_KDF_SCHEME,
 }
-#[test]
-fn bindgen_test_layout_TPMS_ECC_PARMS() {
-    const UNINIT: ::std::mem::MaybeUninit<TPMS_ECC_PARMS> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<TPMS_ECC_PARMS>(),
-        18usize,
-        "Size of TPMS_ECC_PARMS"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<TPMS_ECC_PARMS>(),
-        2usize,
-        "Alignment of TPMS_ECC_PARMS"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).symmetric) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMS_ECC_PARMS::symmetric"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).scheme) as usize - ptr as usize },
-        6usize,
-        "Offset of field: TPMS_ECC_PARMS::scheme"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).curveID) as usize - ptr as usize },
-        12usize,
-        "Offset of field: TPMS_ECC_PARMS::curveID"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).kdf) as usize - ptr as usize },
-        14usize,
-        "Offset of field: TPMS_ECC_PARMS::kdf"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of TPMS_ECC_PARMS"][::std::mem::size_of::<TPMS_ECC_PARMS>() - 18usize];
+    ["Alignment of TPMS_ECC_PARMS"][::std::mem::align_of::<TPMS_ECC_PARMS>() - 2usize];
+    ["Offset of field: TPMS_ECC_PARMS::symmetric"]
+        [::std::mem::offset_of!(TPMS_ECC_PARMS, symmetric) - 0usize];
+    ["Offset of field: TPMS_ECC_PARMS::scheme"]
+        [::std::mem::offset_of!(TPMS_ECC_PARMS, scheme) - 6usize];
+    ["Offset of field: TPMS_ECC_PARMS::curveID"]
+        [::std::mem::offset_of!(TPMS_ECC_PARMS, curveID) - 12usize];
+    ["Offset of field: TPMS_ECC_PARMS::kdf"][::std::mem::offset_of!(TPMS_ECC_PARMS, kdf) - 14usize];
+};
 impl Default for TPMS_ECC_PARMS {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
@@ -5026,46 +3124,21 @@ pub union TPMU_PUBLIC_PARMS {
     pub eccDetail: TPMS_ECC_PARMS,
     pub asymDetail: TPMS_ASYM_PARMS,
 }
-#[test]
-fn bindgen_test_layout_TPMU_PUBLIC_PARMS() {
-    const UNINIT: ::std::mem::MaybeUninit<TPMU_PUBLIC_PARMS> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<TPMU_PUBLIC_PARMS>(),
-        20usize,
-        "Size of TPMU_PUBLIC_PARMS"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<TPMU_PUBLIC_PARMS>(),
-        4usize,
-        "Alignment of TPMU_PUBLIC_PARMS"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).keyedHashDetail) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMU_PUBLIC_PARMS::keyedHashDetail"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).symDetail) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMU_PUBLIC_PARMS::symDetail"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).rsaDetail) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMU_PUBLIC_PARMS::rsaDetail"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).eccDetail) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMU_PUBLIC_PARMS::eccDetail"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).asymDetail) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMU_PUBLIC_PARMS::asymDetail"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of TPMU_PUBLIC_PARMS"][::std::mem::size_of::<TPMU_PUBLIC_PARMS>() - 20usize];
+    ["Alignment of TPMU_PUBLIC_PARMS"][::std::mem::align_of::<TPMU_PUBLIC_PARMS>() - 4usize];
+    ["Offset of field: TPMU_PUBLIC_PARMS::keyedHashDetail"]
+        [::std::mem::offset_of!(TPMU_PUBLIC_PARMS, keyedHashDetail) - 0usize];
+    ["Offset of field: TPMU_PUBLIC_PARMS::symDetail"]
+        [::std::mem::offset_of!(TPMU_PUBLIC_PARMS, symDetail) - 0usize];
+    ["Offset of field: TPMU_PUBLIC_PARMS::rsaDetail"]
+        [::std::mem::offset_of!(TPMU_PUBLIC_PARMS, rsaDetail) - 0usize];
+    ["Offset of field: TPMU_PUBLIC_PARMS::eccDetail"]
+        [::std::mem::offset_of!(TPMU_PUBLIC_PARMS, eccDetail) - 0usize];
+    ["Offset of field: TPMU_PUBLIC_PARMS::asymDetail"]
+        [::std::mem::offset_of!(TPMU_PUBLIC_PARMS, asymDetail) - 0usize];
+};
 impl Default for TPMU_PUBLIC_PARMS {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
@@ -5081,31 +3154,15 @@ pub struct TPMT_PUBLIC_PARMS {
     pub type_: TPMI_ALG_PUBLIC,
     pub parameters: TPMU_PUBLIC_PARMS,
 }
-#[test]
-fn bindgen_test_layout_TPMT_PUBLIC_PARMS() {
-    const UNINIT: ::std::mem::MaybeUninit<TPMT_PUBLIC_PARMS> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<TPMT_PUBLIC_PARMS>(),
-        24usize,
-        "Size of TPMT_PUBLIC_PARMS"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<TPMT_PUBLIC_PARMS>(),
-        4usize,
-        "Alignment of TPMT_PUBLIC_PARMS"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).type_) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMT_PUBLIC_PARMS::type_"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).parameters) as usize - ptr as usize },
-        4usize,
-        "Offset of field: TPMT_PUBLIC_PARMS::parameters"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of TPMT_PUBLIC_PARMS"][::std::mem::size_of::<TPMT_PUBLIC_PARMS>() - 24usize];
+    ["Alignment of TPMT_PUBLIC_PARMS"][::std::mem::align_of::<TPMT_PUBLIC_PARMS>() - 4usize];
+    ["Offset of field: TPMT_PUBLIC_PARMS::type_"]
+        [::std::mem::offset_of!(TPMT_PUBLIC_PARMS, type_) - 0usize];
+    ["Offset of field: TPMT_PUBLIC_PARMS::parameters"]
+        [::std::mem::offset_of!(TPMT_PUBLIC_PARMS, parameters) - 4usize];
+};
 impl Default for TPMT_PUBLIC_PARMS {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
@@ -5125,51 +3182,21 @@ pub struct TPMT_PUBLIC {
     pub parameters: TPMU_PUBLIC_PARMS,
     pub unique: TPMU_PUBLIC_ID,
 }
-#[test]
-fn bindgen_test_layout_TPMT_PUBLIC() {
-    const UNINIT: ::std::mem::MaybeUninit<TPMT_PUBLIC> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<TPMT_PUBLIC>(),
-        612usize,
-        "Size of TPMT_PUBLIC"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<TPMT_PUBLIC>(),
-        4usize,
-        "Alignment of TPMT_PUBLIC"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).type_) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMT_PUBLIC::type_"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).nameAlg) as usize - ptr as usize },
-        2usize,
-        "Offset of field: TPMT_PUBLIC::nameAlg"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).objectAttributes) as usize - ptr as usize },
-        4usize,
-        "Offset of field: TPMT_PUBLIC::objectAttributes"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).authPolicy) as usize - ptr as usize },
-        8usize,
-        "Offset of field: TPMT_PUBLIC::authPolicy"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).parameters) as usize - ptr as usize },
-        76usize,
-        "Offset of field: TPMT_PUBLIC::parameters"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).unique) as usize - ptr as usize },
-        96usize,
-        "Offset of field: TPMT_PUBLIC::unique"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of TPMT_PUBLIC"][::std::mem::size_of::<TPMT_PUBLIC>() - 612usize];
+    ["Alignment of TPMT_PUBLIC"][::std::mem::align_of::<TPMT_PUBLIC>() - 4usize];
+    ["Offset of field: TPMT_PUBLIC::type_"][::std::mem::offset_of!(TPMT_PUBLIC, type_) - 0usize];
+    ["Offset of field: TPMT_PUBLIC::nameAlg"]
+        [::std::mem::offset_of!(TPMT_PUBLIC, nameAlg) - 2usize];
+    ["Offset of field: TPMT_PUBLIC::objectAttributes"]
+        [::std::mem::offset_of!(TPMT_PUBLIC, objectAttributes) - 4usize];
+    ["Offset of field: TPMT_PUBLIC::authPolicy"]
+        [::std::mem::offset_of!(TPMT_PUBLIC, authPolicy) - 8usize];
+    ["Offset of field: TPMT_PUBLIC::parameters"]
+        [::std::mem::offset_of!(TPMT_PUBLIC, parameters) - 76usize];
+    ["Offset of field: TPMT_PUBLIC::unique"][::std::mem::offset_of!(TPMT_PUBLIC, unique) - 96usize];
+};
 impl Default for TPMT_PUBLIC {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
@@ -5185,31 +3212,14 @@ pub struct TPM2B_PUBLIC {
     pub size: UINT16,
     pub publicArea: TPMT_PUBLIC,
 }
-#[test]
-fn bindgen_test_layout_TPM2B_PUBLIC() {
-    const UNINIT: ::std::mem::MaybeUninit<TPM2B_PUBLIC> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<TPM2B_PUBLIC>(),
-        616usize,
-        "Size of TPM2B_PUBLIC"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<TPM2B_PUBLIC>(),
-        4usize,
-        "Alignment of TPM2B_PUBLIC"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).size) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPM2B_PUBLIC::size"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).publicArea) as usize - ptr as usize },
-        4usize,
-        "Offset of field: TPM2B_PUBLIC::publicArea"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of TPM2B_PUBLIC"][::std::mem::size_of::<TPM2B_PUBLIC>() - 616usize];
+    ["Alignment of TPM2B_PUBLIC"][::std::mem::align_of::<TPM2B_PUBLIC>() - 4usize];
+    ["Offset of field: TPM2B_PUBLIC::size"][::std::mem::offset_of!(TPM2B_PUBLIC, size) - 0usize];
+    ["Offset of field: TPM2B_PUBLIC::publicArea"]
+        [::std::mem::offset_of!(TPM2B_PUBLIC, publicArea) - 4usize];
+};
 impl Default for TPM2B_PUBLIC {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
@@ -5225,31 +3235,15 @@ pub struct TPM2B_TEMPLATE {
     pub size: UINT16,
     pub buffer: [BYTE; 612usize],
 }
-#[test]
-fn bindgen_test_layout_TPM2B_TEMPLATE() {
-    const UNINIT: ::std::mem::MaybeUninit<TPM2B_TEMPLATE> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<TPM2B_TEMPLATE>(),
-        614usize,
-        "Size of TPM2B_TEMPLATE"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<TPM2B_TEMPLATE>(),
-        2usize,
-        "Alignment of TPM2B_TEMPLATE"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).size) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPM2B_TEMPLATE::size"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).buffer) as usize - ptr as usize },
-        2usize,
-        "Offset of field: TPM2B_TEMPLATE::buffer"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of TPM2B_TEMPLATE"][::std::mem::size_of::<TPM2B_TEMPLATE>() - 614usize];
+    ["Alignment of TPM2B_TEMPLATE"][::std::mem::align_of::<TPM2B_TEMPLATE>() - 2usize];
+    ["Offset of field: TPM2B_TEMPLATE::size"]
+        [::std::mem::offset_of!(TPM2B_TEMPLATE, size) - 0usize];
+    ["Offset of field: TPM2B_TEMPLATE::buffer"]
+        [::std::mem::offset_of!(TPM2B_TEMPLATE, buffer) - 2usize];
+};
 impl Default for TPM2B_TEMPLATE {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
@@ -5265,32 +3259,17 @@ pub struct TPM2B_PRIVATE_VENDOR_SPECIFIC {
     pub size: UINT16,
     pub buffer: [BYTE; 1280usize],
 }
-#[test]
-fn bindgen_test_layout_TPM2B_PRIVATE_VENDOR_SPECIFIC() {
-    const UNINIT: ::std::mem::MaybeUninit<TPM2B_PRIVATE_VENDOR_SPECIFIC> =
-        ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<TPM2B_PRIVATE_VENDOR_SPECIFIC>(),
-        1282usize,
-        "Size of TPM2B_PRIVATE_VENDOR_SPECIFIC"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<TPM2B_PRIVATE_VENDOR_SPECIFIC>(),
-        2usize,
-        "Alignment of TPM2B_PRIVATE_VENDOR_SPECIFIC"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).size) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPM2B_PRIVATE_VENDOR_SPECIFIC::size"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).buffer) as usize - ptr as usize },
-        2usize,
-        "Offset of field: TPM2B_PRIVATE_VENDOR_SPECIFIC::buffer"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of TPM2B_PRIVATE_VENDOR_SPECIFIC"]
+        [::std::mem::size_of::<TPM2B_PRIVATE_VENDOR_SPECIFIC>() - 1282usize];
+    ["Alignment of TPM2B_PRIVATE_VENDOR_SPECIFIC"]
+        [::std::mem::align_of::<TPM2B_PRIVATE_VENDOR_SPECIFIC>() - 2usize];
+    ["Offset of field: TPM2B_PRIVATE_VENDOR_SPECIFIC::size"]
+        [::std::mem::offset_of!(TPM2B_PRIVATE_VENDOR_SPECIFIC, size) - 0usize];
+    ["Offset of field: TPM2B_PRIVATE_VENDOR_SPECIFIC::buffer"]
+        [::std::mem::offset_of!(TPM2B_PRIVATE_VENDOR_SPECIFIC, buffer) - 2usize];
+};
 impl Default for TPM2B_PRIVATE_VENDOR_SPECIFIC {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
@@ -5309,47 +3288,23 @@ pub union TPMU_SENSITIVE_COMPOSITE {
     pub sym: TPM2B_SYM_KEY,
     pub any: TPM2B_PRIVATE_VENDOR_SPECIFIC,
 }
-#[test]
-fn bindgen_test_layout_TPMU_SENSITIVE_COMPOSITE() {
-    const UNINIT: ::std::mem::MaybeUninit<TPMU_SENSITIVE_COMPOSITE> =
-        ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<TPMU_SENSITIVE_COMPOSITE>(),
-        1282usize,
-        "Size of TPMU_SENSITIVE_COMPOSITE"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<TPMU_SENSITIVE_COMPOSITE>(),
-        2usize,
-        "Alignment of TPMU_SENSITIVE_COMPOSITE"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).rsa) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMU_SENSITIVE_COMPOSITE::rsa"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).ecc) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMU_SENSITIVE_COMPOSITE::ecc"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).bits) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMU_SENSITIVE_COMPOSITE::bits"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).sym) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMU_SENSITIVE_COMPOSITE::sym"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).any) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMU_SENSITIVE_COMPOSITE::any"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of TPMU_SENSITIVE_COMPOSITE"]
+        [::std::mem::size_of::<TPMU_SENSITIVE_COMPOSITE>() - 1282usize];
+    ["Alignment of TPMU_SENSITIVE_COMPOSITE"]
+        [::std::mem::align_of::<TPMU_SENSITIVE_COMPOSITE>() - 2usize];
+    ["Offset of field: TPMU_SENSITIVE_COMPOSITE::rsa"]
+        [::std::mem::offset_of!(TPMU_SENSITIVE_COMPOSITE, rsa) - 0usize];
+    ["Offset of field: TPMU_SENSITIVE_COMPOSITE::ecc"]
+        [::std::mem::offset_of!(TPMU_SENSITIVE_COMPOSITE, ecc) - 0usize];
+    ["Offset of field: TPMU_SENSITIVE_COMPOSITE::bits"]
+        [::std::mem::offset_of!(TPMU_SENSITIVE_COMPOSITE, bits) - 0usize];
+    ["Offset of field: TPMU_SENSITIVE_COMPOSITE::sym"]
+        [::std::mem::offset_of!(TPMU_SENSITIVE_COMPOSITE, sym) - 0usize];
+    ["Offset of field: TPMU_SENSITIVE_COMPOSITE::any"]
+        [::std::mem::offset_of!(TPMU_SENSITIVE_COMPOSITE, any) - 0usize];
+};
 impl Default for TPMU_SENSITIVE_COMPOSITE {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
@@ -5367,41 +3322,19 @@ pub struct TPMT_SENSITIVE {
     pub seedValue: TPM2B_DIGEST,
     pub sensitive: TPMU_SENSITIVE_COMPOSITE,
 }
-#[test]
-fn bindgen_test_layout_TPMT_SENSITIVE() {
-    const UNINIT: ::std::mem::MaybeUninit<TPMT_SENSITIVE> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<TPMT_SENSITIVE>(),
-        1416usize,
-        "Size of TPMT_SENSITIVE"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<TPMT_SENSITIVE>(),
-        2usize,
-        "Alignment of TPMT_SENSITIVE"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).sensitiveType) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMT_SENSITIVE::sensitiveType"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).authValue) as usize - ptr as usize },
-        2usize,
-        "Offset of field: TPMT_SENSITIVE::authValue"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).seedValue) as usize - ptr as usize },
-        68usize,
-        "Offset of field: TPMT_SENSITIVE::seedValue"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).sensitive) as usize - ptr as usize },
-        134usize,
-        "Offset of field: TPMT_SENSITIVE::sensitive"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of TPMT_SENSITIVE"][::std::mem::size_of::<TPMT_SENSITIVE>() - 1416usize];
+    ["Alignment of TPMT_SENSITIVE"][::std::mem::align_of::<TPMT_SENSITIVE>() - 2usize];
+    ["Offset of field: TPMT_SENSITIVE::sensitiveType"]
+        [::std::mem::offset_of!(TPMT_SENSITIVE, sensitiveType) - 0usize];
+    ["Offset of field: TPMT_SENSITIVE::authValue"]
+        [::std::mem::offset_of!(TPMT_SENSITIVE, authValue) - 2usize];
+    ["Offset of field: TPMT_SENSITIVE::seedValue"]
+        [::std::mem::offset_of!(TPMT_SENSITIVE, seedValue) - 68usize];
+    ["Offset of field: TPMT_SENSITIVE::sensitive"]
+        [::std::mem::offset_of!(TPMT_SENSITIVE, sensitive) - 134usize];
+};
 impl Default for TPMT_SENSITIVE {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
@@ -5417,31 +3350,15 @@ pub struct TPM2B_SENSITIVE {
     pub size: UINT16,
     pub sensitiveArea: TPMT_SENSITIVE,
 }
-#[test]
-fn bindgen_test_layout_TPM2B_SENSITIVE() {
-    const UNINIT: ::std::mem::MaybeUninit<TPM2B_SENSITIVE> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<TPM2B_SENSITIVE>(),
-        1418usize,
-        "Size of TPM2B_SENSITIVE"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<TPM2B_SENSITIVE>(),
-        2usize,
-        "Alignment of TPM2B_SENSITIVE"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).size) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPM2B_SENSITIVE::size"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).sensitiveArea) as usize - ptr as usize },
-        2usize,
-        "Offset of field: TPM2B_SENSITIVE::sensitiveArea"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of TPM2B_SENSITIVE"][::std::mem::size_of::<TPM2B_SENSITIVE>() - 1418usize];
+    ["Alignment of TPM2B_SENSITIVE"][::std::mem::align_of::<TPM2B_SENSITIVE>() - 2usize];
+    ["Offset of field: TPM2B_SENSITIVE::size"]
+        [::std::mem::offset_of!(TPM2B_SENSITIVE, size) - 0usize];
+    ["Offset of field: TPM2B_SENSITIVE::sensitiveArea"]
+        [::std::mem::offset_of!(TPM2B_SENSITIVE, sensitiveArea) - 2usize];
+};
 impl Default for TPM2B_SENSITIVE {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
@@ -5458,36 +3375,17 @@ pub struct _PRIVATE {
     pub integrityInner: TPM2B_DIGEST,
     pub sensitive: TPM2B_SENSITIVE,
 }
-#[test]
-fn bindgen_test_layout__PRIVATE() {
-    const UNINIT: ::std::mem::MaybeUninit<_PRIVATE> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<_PRIVATE>(),
-        1550usize,
-        "Size of _PRIVATE"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<_PRIVATE>(),
-        2usize,
-        "Alignment of _PRIVATE"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).integrityOuter) as usize - ptr as usize },
-        0usize,
-        "Offset of field: _PRIVATE::integrityOuter"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).integrityInner) as usize - ptr as usize },
-        66usize,
-        "Offset of field: _PRIVATE::integrityInner"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).sensitive) as usize - ptr as usize },
-        132usize,
-        "Offset of field: _PRIVATE::sensitive"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of _PRIVATE"][::std::mem::size_of::<_PRIVATE>() - 1550usize];
+    ["Alignment of _PRIVATE"][::std::mem::align_of::<_PRIVATE>() - 2usize];
+    ["Offset of field: _PRIVATE::integrityOuter"]
+        [::std::mem::offset_of!(_PRIVATE, integrityOuter) - 0usize];
+    ["Offset of field: _PRIVATE::integrityInner"]
+        [::std::mem::offset_of!(_PRIVATE, integrityInner) - 66usize];
+    ["Offset of field: _PRIVATE::sensitive"]
+        [::std::mem::offset_of!(_PRIVATE, sensitive) - 132usize];
+};
 impl Default for _PRIVATE {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
@@ -5503,31 +3401,14 @@ pub struct TPM2B_PRIVATE {
     pub size: UINT16,
     pub buffer: [BYTE; 1550usize],
 }
-#[test]
-fn bindgen_test_layout_TPM2B_PRIVATE() {
-    const UNINIT: ::std::mem::MaybeUninit<TPM2B_PRIVATE> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<TPM2B_PRIVATE>(),
-        1552usize,
-        "Size of TPM2B_PRIVATE"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<TPM2B_PRIVATE>(),
-        2usize,
-        "Alignment of TPM2B_PRIVATE"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).size) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPM2B_PRIVATE::size"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).buffer) as usize - ptr as usize },
-        2usize,
-        "Offset of field: TPM2B_PRIVATE::buffer"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of TPM2B_PRIVATE"][::std::mem::size_of::<TPM2B_PRIVATE>() - 1552usize];
+    ["Alignment of TPM2B_PRIVATE"][::std::mem::align_of::<TPM2B_PRIVATE>() - 2usize];
+    ["Offset of field: TPM2B_PRIVATE::size"][::std::mem::offset_of!(TPM2B_PRIVATE, size) - 0usize];
+    ["Offset of field: TPM2B_PRIVATE::buffer"]
+        [::std::mem::offset_of!(TPM2B_PRIVATE, buffer) - 2usize];
+};
 impl Default for TPM2B_PRIVATE {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
@@ -5543,31 +3424,15 @@ pub struct TPMS_ID_OBJECT {
     pub integrityHMAC: TPM2B_DIGEST,
     pub encIdentity: TPM2B_DIGEST,
 }
-#[test]
-fn bindgen_test_layout_TPMS_ID_OBJECT() {
-    const UNINIT: ::std::mem::MaybeUninit<TPMS_ID_OBJECT> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<TPMS_ID_OBJECT>(),
-        132usize,
-        "Size of TPMS_ID_OBJECT"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<TPMS_ID_OBJECT>(),
-        2usize,
-        "Alignment of TPMS_ID_OBJECT"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).integrityHMAC) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMS_ID_OBJECT::integrityHMAC"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).encIdentity) as usize - ptr as usize },
-        66usize,
-        "Offset of field: TPMS_ID_OBJECT::encIdentity"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of TPMS_ID_OBJECT"][::std::mem::size_of::<TPMS_ID_OBJECT>() - 132usize];
+    ["Alignment of TPMS_ID_OBJECT"][::std::mem::align_of::<TPMS_ID_OBJECT>() - 2usize];
+    ["Offset of field: TPMS_ID_OBJECT::integrityHMAC"]
+        [::std::mem::offset_of!(TPMS_ID_OBJECT, integrityHMAC) - 0usize];
+    ["Offset of field: TPMS_ID_OBJECT::encIdentity"]
+        [::std::mem::offset_of!(TPMS_ID_OBJECT, encIdentity) - 66usize];
+};
 impl Default for TPMS_ID_OBJECT {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
@@ -5583,31 +3448,15 @@ pub struct TPM2B_ID_OBJECT {
     pub size: UINT16,
     pub credential: [BYTE; 132usize],
 }
-#[test]
-fn bindgen_test_layout_TPM2B_ID_OBJECT() {
-    const UNINIT: ::std::mem::MaybeUninit<TPM2B_ID_OBJECT> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<TPM2B_ID_OBJECT>(),
-        134usize,
-        "Size of TPM2B_ID_OBJECT"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<TPM2B_ID_OBJECT>(),
-        2usize,
-        "Alignment of TPM2B_ID_OBJECT"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).size) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPM2B_ID_OBJECT::size"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).credential) as usize - ptr as usize },
-        2usize,
-        "Offset of field: TPM2B_ID_OBJECT::credential"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of TPM2B_ID_OBJECT"][::std::mem::size_of::<TPM2B_ID_OBJECT>() - 134usize];
+    ["Alignment of TPM2B_ID_OBJECT"][::std::mem::align_of::<TPM2B_ID_OBJECT>() - 2usize];
+    ["Offset of field: TPM2B_ID_OBJECT::size"]
+        [::std::mem::offset_of!(TPM2B_ID_OBJECT, size) - 0usize];
+    ["Offset of field: TPM2B_ID_OBJECT::credential"]
+        [::std::mem::offset_of!(TPM2B_ID_OBJECT, credential) - 2usize];
+};
 impl Default for TPM2B_ID_OBJECT {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
@@ -5625,32 +3474,17 @@ pub struct TPMS_NV_PIN_COUNTER_PARAMETERS {
     pub pinCount: UINT32,
     pub pinLimit: UINT32,
 }
-#[test]
-fn bindgen_test_layout_TPMS_NV_PIN_COUNTER_PARAMETERS() {
-    const UNINIT: ::std::mem::MaybeUninit<TPMS_NV_PIN_COUNTER_PARAMETERS> =
-        ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<TPMS_NV_PIN_COUNTER_PARAMETERS>(),
-        8usize,
-        "Size of TPMS_NV_PIN_COUNTER_PARAMETERS"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<TPMS_NV_PIN_COUNTER_PARAMETERS>(),
-        4usize,
-        "Alignment of TPMS_NV_PIN_COUNTER_PARAMETERS"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).pinCount) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMS_NV_PIN_COUNTER_PARAMETERS::pinCount"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).pinLimit) as usize - ptr as usize },
-        4usize,
-        "Offset of field: TPMS_NV_PIN_COUNTER_PARAMETERS::pinLimit"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of TPMS_NV_PIN_COUNTER_PARAMETERS"]
+        [::std::mem::size_of::<TPMS_NV_PIN_COUNTER_PARAMETERS>() - 8usize];
+    ["Alignment of TPMS_NV_PIN_COUNTER_PARAMETERS"]
+        [::std::mem::align_of::<TPMS_NV_PIN_COUNTER_PARAMETERS>() - 4usize];
+    ["Offset of field: TPMS_NV_PIN_COUNTER_PARAMETERS::pinCount"]
+        [::std::mem::offset_of!(TPMS_NV_PIN_COUNTER_PARAMETERS, pinCount) - 0usize];
+    ["Offset of field: TPMS_NV_PIN_COUNTER_PARAMETERS::pinLimit"]
+        [::std::mem::offset_of!(TPMS_NV_PIN_COUNTER_PARAMETERS, pinLimit) - 4usize];
+};
 pub type TPMA_NV = u32;
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
@@ -5661,46 +3495,21 @@ pub struct TPMS_NV_PUBLIC {
     pub authPolicy: TPM2B_DIGEST,
     pub dataSize: UINT16,
 }
-#[test]
-fn bindgen_test_layout_TPMS_NV_PUBLIC() {
-    const UNINIT: ::std::mem::MaybeUninit<TPMS_NV_PUBLIC> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<TPMS_NV_PUBLIC>(),
-        80usize,
-        "Size of TPMS_NV_PUBLIC"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<TPMS_NV_PUBLIC>(),
-        4usize,
-        "Alignment of TPMS_NV_PUBLIC"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).nvIndex) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMS_NV_PUBLIC::nvIndex"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).nameAlg) as usize - ptr as usize },
-        4usize,
-        "Offset of field: TPMS_NV_PUBLIC::nameAlg"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).attributes) as usize - ptr as usize },
-        8usize,
-        "Offset of field: TPMS_NV_PUBLIC::attributes"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).authPolicy) as usize - ptr as usize },
-        12usize,
-        "Offset of field: TPMS_NV_PUBLIC::authPolicy"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).dataSize) as usize - ptr as usize },
-        78usize,
-        "Offset of field: TPMS_NV_PUBLIC::dataSize"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of TPMS_NV_PUBLIC"][::std::mem::size_of::<TPMS_NV_PUBLIC>() - 80usize];
+    ["Alignment of TPMS_NV_PUBLIC"][::std::mem::align_of::<TPMS_NV_PUBLIC>() - 4usize];
+    ["Offset of field: TPMS_NV_PUBLIC::nvIndex"]
+        [::std::mem::offset_of!(TPMS_NV_PUBLIC, nvIndex) - 0usize];
+    ["Offset of field: TPMS_NV_PUBLIC::nameAlg"]
+        [::std::mem::offset_of!(TPMS_NV_PUBLIC, nameAlg) - 4usize];
+    ["Offset of field: TPMS_NV_PUBLIC::attributes"]
+        [::std::mem::offset_of!(TPMS_NV_PUBLIC, attributes) - 8usize];
+    ["Offset of field: TPMS_NV_PUBLIC::authPolicy"]
+        [::std::mem::offset_of!(TPMS_NV_PUBLIC, authPolicy) - 12usize];
+    ["Offset of field: TPMS_NV_PUBLIC::dataSize"]
+        [::std::mem::offset_of!(TPMS_NV_PUBLIC, dataSize) - 78usize];
+};
 impl Default for TPMS_NV_PUBLIC {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
@@ -5716,31 +3525,15 @@ pub struct TPM2B_NV_PUBLIC {
     pub size: UINT16,
     pub nvPublic: TPMS_NV_PUBLIC,
 }
-#[test]
-fn bindgen_test_layout_TPM2B_NV_PUBLIC() {
-    const UNINIT: ::std::mem::MaybeUninit<TPM2B_NV_PUBLIC> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<TPM2B_NV_PUBLIC>(),
-        84usize,
-        "Size of TPM2B_NV_PUBLIC"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<TPM2B_NV_PUBLIC>(),
-        4usize,
-        "Alignment of TPM2B_NV_PUBLIC"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).size) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPM2B_NV_PUBLIC::size"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).nvPublic) as usize - ptr as usize },
-        4usize,
-        "Offset of field: TPM2B_NV_PUBLIC::nvPublic"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of TPM2B_NV_PUBLIC"][::std::mem::size_of::<TPM2B_NV_PUBLIC>() - 84usize];
+    ["Alignment of TPM2B_NV_PUBLIC"][::std::mem::align_of::<TPM2B_NV_PUBLIC>() - 4usize];
+    ["Offset of field: TPM2B_NV_PUBLIC::size"]
+        [::std::mem::offset_of!(TPM2B_NV_PUBLIC, size) - 0usize];
+    ["Offset of field: TPM2B_NV_PUBLIC::nvPublic"]
+        [::std::mem::offset_of!(TPM2B_NV_PUBLIC, nvPublic) - 4usize];
+};
 impl Default for TPM2B_NV_PUBLIC {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
@@ -5756,32 +3549,17 @@ pub struct TPM2B_CONTEXT_SENSITIVE {
     pub size: UINT16,
     pub buffer: [BYTE; 5120usize],
 }
-#[test]
-fn bindgen_test_layout_TPM2B_CONTEXT_SENSITIVE() {
-    const UNINIT: ::std::mem::MaybeUninit<TPM2B_CONTEXT_SENSITIVE> =
-        ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<TPM2B_CONTEXT_SENSITIVE>(),
-        5122usize,
-        "Size of TPM2B_CONTEXT_SENSITIVE"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<TPM2B_CONTEXT_SENSITIVE>(),
-        2usize,
-        "Alignment of TPM2B_CONTEXT_SENSITIVE"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).size) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPM2B_CONTEXT_SENSITIVE::size"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).buffer) as usize - ptr as usize },
-        2usize,
-        "Offset of field: TPM2B_CONTEXT_SENSITIVE::buffer"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of TPM2B_CONTEXT_SENSITIVE"]
+        [::std::mem::size_of::<TPM2B_CONTEXT_SENSITIVE>() - 5122usize];
+    ["Alignment of TPM2B_CONTEXT_SENSITIVE"]
+        [::std::mem::align_of::<TPM2B_CONTEXT_SENSITIVE>() - 2usize];
+    ["Offset of field: TPM2B_CONTEXT_SENSITIVE::size"]
+        [::std::mem::offset_of!(TPM2B_CONTEXT_SENSITIVE, size) - 0usize];
+    ["Offset of field: TPM2B_CONTEXT_SENSITIVE::buffer"]
+        [::std::mem::offset_of!(TPM2B_CONTEXT_SENSITIVE, buffer) - 2usize];
+};
 impl Default for TPM2B_CONTEXT_SENSITIVE {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
@@ -5797,31 +3575,15 @@ pub struct TPMS_CONTEXT_DATA {
     pub integrity: TPM2B_DIGEST,
     pub encrypted: TPM2B_CONTEXT_SENSITIVE,
 }
-#[test]
-fn bindgen_test_layout_TPMS_CONTEXT_DATA() {
-    const UNINIT: ::std::mem::MaybeUninit<TPMS_CONTEXT_DATA> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<TPMS_CONTEXT_DATA>(),
-        5188usize,
-        "Size of TPMS_CONTEXT_DATA"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<TPMS_CONTEXT_DATA>(),
-        2usize,
-        "Alignment of TPMS_CONTEXT_DATA"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).integrity) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMS_CONTEXT_DATA::integrity"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).encrypted) as usize - ptr as usize },
-        66usize,
-        "Offset of field: TPMS_CONTEXT_DATA::encrypted"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of TPMS_CONTEXT_DATA"][::std::mem::size_of::<TPMS_CONTEXT_DATA>() - 5188usize];
+    ["Alignment of TPMS_CONTEXT_DATA"][::std::mem::align_of::<TPMS_CONTEXT_DATA>() - 2usize];
+    ["Offset of field: TPMS_CONTEXT_DATA::integrity"]
+        [::std::mem::offset_of!(TPMS_CONTEXT_DATA, integrity) - 0usize];
+    ["Offset of field: TPMS_CONTEXT_DATA::encrypted"]
+        [::std::mem::offset_of!(TPMS_CONTEXT_DATA, encrypted) - 66usize];
+};
 impl Default for TPMS_CONTEXT_DATA {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
@@ -5837,31 +3599,15 @@ pub struct TPM2B_CONTEXT_DATA {
     pub size: UINT16,
     pub buffer: [BYTE; 5188usize],
 }
-#[test]
-fn bindgen_test_layout_TPM2B_CONTEXT_DATA() {
-    const UNINIT: ::std::mem::MaybeUninit<TPM2B_CONTEXT_DATA> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<TPM2B_CONTEXT_DATA>(),
-        5190usize,
-        "Size of TPM2B_CONTEXT_DATA"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<TPM2B_CONTEXT_DATA>(),
-        2usize,
-        "Alignment of TPM2B_CONTEXT_DATA"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).size) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPM2B_CONTEXT_DATA::size"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).buffer) as usize - ptr as usize },
-        2usize,
-        "Offset of field: TPM2B_CONTEXT_DATA::buffer"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of TPM2B_CONTEXT_DATA"][::std::mem::size_of::<TPM2B_CONTEXT_DATA>() - 5190usize];
+    ["Alignment of TPM2B_CONTEXT_DATA"][::std::mem::align_of::<TPM2B_CONTEXT_DATA>() - 2usize];
+    ["Offset of field: TPM2B_CONTEXT_DATA::size"]
+        [::std::mem::offset_of!(TPM2B_CONTEXT_DATA, size) - 0usize];
+    ["Offset of field: TPM2B_CONTEXT_DATA::buffer"]
+        [::std::mem::offset_of!(TPM2B_CONTEXT_DATA, buffer) - 2usize];
+};
 impl Default for TPM2B_CONTEXT_DATA {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
@@ -5879,41 +3625,19 @@ pub struct TPMS_CONTEXT {
     pub hierarchy: TPMI_RH_HIERARCHY,
     pub contextBlob: TPM2B_CONTEXT_DATA,
 }
-#[test]
-fn bindgen_test_layout_TPMS_CONTEXT() {
-    const UNINIT: ::std::mem::MaybeUninit<TPMS_CONTEXT> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<TPMS_CONTEXT>(),
-        5208usize,
-        "Size of TPMS_CONTEXT"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<TPMS_CONTEXT>(),
-        8usize,
-        "Alignment of TPMS_CONTEXT"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).sequence) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMS_CONTEXT::sequence"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).savedHandle) as usize - ptr as usize },
-        8usize,
-        "Offset of field: TPMS_CONTEXT::savedHandle"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).hierarchy) as usize - ptr as usize },
-        12usize,
-        "Offset of field: TPMS_CONTEXT::hierarchy"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).contextBlob) as usize - ptr as usize },
-        16usize,
-        "Offset of field: TPMS_CONTEXT::contextBlob"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of TPMS_CONTEXT"][::std::mem::size_of::<TPMS_CONTEXT>() - 5208usize];
+    ["Alignment of TPMS_CONTEXT"][::std::mem::align_of::<TPMS_CONTEXT>() - 8usize];
+    ["Offset of field: TPMS_CONTEXT::sequence"]
+        [::std::mem::offset_of!(TPMS_CONTEXT, sequence) - 0usize];
+    ["Offset of field: TPMS_CONTEXT::savedHandle"]
+        [::std::mem::offset_of!(TPMS_CONTEXT, savedHandle) - 8usize];
+    ["Offset of field: TPMS_CONTEXT::hierarchy"]
+        [::std::mem::offset_of!(TPMS_CONTEXT, hierarchy) - 12usize];
+    ["Offset of field: TPMS_CONTEXT::contextBlob"]
+        [::std::mem::offset_of!(TPMS_CONTEXT, contextBlob) - 16usize];
+};
 impl Default for TPMS_CONTEXT {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
@@ -5934,56 +3658,25 @@ pub struct TPMS_CREATION_DATA {
     pub parentQualifiedName: TPM2B_NAME,
     pub outsideInfo: TPM2B_DATA,
 }
-#[test]
-fn bindgen_test_layout_TPMS_CREATION_DATA() {
-    const UNINIT: ::std::mem::MaybeUninit<TPMS_CREATION_DATA> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<TPMS_CREATION_DATA>(),
-        408usize,
-        "Size of TPMS_CREATION_DATA"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<TPMS_CREATION_DATA>(),
-        4usize,
-        "Alignment of TPMS_CREATION_DATA"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).pcrSelect) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMS_CREATION_DATA::pcrSelect"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).pcrDigest) as usize - ptr as usize },
-        132usize,
-        "Offset of field: TPMS_CREATION_DATA::pcrDigest"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).locality) as usize - ptr as usize },
-        198usize,
-        "Offset of field: TPMS_CREATION_DATA::locality"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).parentNameAlg) as usize - ptr as usize },
-        200usize,
-        "Offset of field: TPMS_CREATION_DATA::parentNameAlg"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).parentName) as usize - ptr as usize },
-        202usize,
-        "Offset of field: TPMS_CREATION_DATA::parentName"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).parentQualifiedName) as usize - ptr as usize },
-        272usize,
-        "Offset of field: TPMS_CREATION_DATA::parentQualifiedName"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).outsideInfo) as usize - ptr as usize },
-        342usize,
-        "Offset of field: TPMS_CREATION_DATA::outsideInfo"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of TPMS_CREATION_DATA"][::std::mem::size_of::<TPMS_CREATION_DATA>() - 408usize];
+    ["Alignment of TPMS_CREATION_DATA"][::std::mem::align_of::<TPMS_CREATION_DATA>() - 4usize];
+    ["Offset of field: TPMS_CREATION_DATA::pcrSelect"]
+        [::std::mem::offset_of!(TPMS_CREATION_DATA, pcrSelect) - 0usize];
+    ["Offset of field: TPMS_CREATION_DATA::pcrDigest"]
+        [::std::mem::offset_of!(TPMS_CREATION_DATA, pcrDigest) - 132usize];
+    ["Offset of field: TPMS_CREATION_DATA::locality"]
+        [::std::mem::offset_of!(TPMS_CREATION_DATA, locality) - 198usize];
+    ["Offset of field: TPMS_CREATION_DATA::parentNameAlg"]
+        [::std::mem::offset_of!(TPMS_CREATION_DATA, parentNameAlg) - 200usize];
+    ["Offset of field: TPMS_CREATION_DATA::parentName"]
+        [::std::mem::offset_of!(TPMS_CREATION_DATA, parentName) - 202usize];
+    ["Offset of field: TPMS_CREATION_DATA::parentQualifiedName"]
+        [::std::mem::offset_of!(TPMS_CREATION_DATA, parentQualifiedName) - 272usize];
+    ["Offset of field: TPMS_CREATION_DATA::outsideInfo"]
+        [::std::mem::offset_of!(TPMS_CREATION_DATA, outsideInfo) - 342usize];
+};
 impl Default for TPMS_CREATION_DATA {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
@@ -5999,31 +3692,15 @@ pub struct TPM2B_CREATION_DATA {
     pub size: UINT16,
     pub creationData: TPMS_CREATION_DATA,
 }
-#[test]
-fn bindgen_test_layout_TPM2B_CREATION_DATA() {
-    const UNINIT: ::std::mem::MaybeUninit<TPM2B_CREATION_DATA> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<TPM2B_CREATION_DATA>(),
-        412usize,
-        "Size of TPM2B_CREATION_DATA"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<TPM2B_CREATION_DATA>(),
-        4usize,
-        "Alignment of TPM2B_CREATION_DATA"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).size) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPM2B_CREATION_DATA::size"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).creationData) as usize - ptr as usize },
-        4usize,
-        "Offset of field: TPM2B_CREATION_DATA::creationData"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of TPM2B_CREATION_DATA"][::std::mem::size_of::<TPM2B_CREATION_DATA>() - 412usize];
+    ["Alignment of TPM2B_CREATION_DATA"][::std::mem::align_of::<TPM2B_CREATION_DATA>() - 4usize];
+    ["Offset of field: TPM2B_CREATION_DATA::size"]
+        [::std::mem::offset_of!(TPM2B_CREATION_DATA, size) - 0usize];
+    ["Offset of field: TPM2B_CREATION_DATA::creationData"]
+        [::std::mem::offset_of!(TPM2B_CREATION_DATA, creationData) - 4usize];
+};
 impl Default for TPM2B_CREATION_DATA {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
@@ -6041,62 +3718,29 @@ pub struct TPMS_AC_OUTPUT {
     pub tag: TPM_AT,
     pub data: UINT32,
 }
-#[test]
-fn bindgen_test_layout_TPMS_AC_OUTPUT() {
-    const UNINIT: ::std::mem::MaybeUninit<TPMS_AC_OUTPUT> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<TPMS_AC_OUTPUT>(),
-        8usize,
-        "Size of TPMS_AC_OUTPUT"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<TPMS_AC_OUTPUT>(),
-        4usize,
-        "Alignment of TPMS_AC_OUTPUT"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).tag) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPMS_AC_OUTPUT::tag"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).data) as usize - ptr as usize },
-        4usize,
-        "Offset of field: TPMS_AC_OUTPUT::data"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of TPMS_AC_OUTPUT"][::std::mem::size_of::<TPMS_AC_OUTPUT>() - 8usize];
+    ["Alignment of TPMS_AC_OUTPUT"][::std::mem::align_of::<TPMS_AC_OUTPUT>() - 4usize];
+    ["Offset of field: TPMS_AC_OUTPUT::tag"][::std::mem::offset_of!(TPMS_AC_OUTPUT, tag) - 0usize];
+    ["Offset of field: TPMS_AC_OUTPUT::data"]
+        [::std::mem::offset_of!(TPMS_AC_OUTPUT, data) - 4usize];
+};
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct TPML_AC_CAPABILITIES {
     pub count: UINT32,
     pub acCapabilities: [TPMS_AC_OUTPUT; 128usize],
 }
-#[test]
-fn bindgen_test_layout_TPML_AC_CAPABILITIES() {
-    const UNINIT: ::std::mem::MaybeUninit<TPML_AC_CAPABILITIES> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<TPML_AC_CAPABILITIES>(),
-        1028usize,
-        "Size of TPML_AC_CAPABILITIES"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<TPML_AC_CAPABILITIES>(),
-        4usize,
-        "Alignment of TPML_AC_CAPABILITIES"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).count) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPML_AC_CAPABILITIES::count"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).acCapabilities) as usize - ptr as usize },
-        4usize,
-        "Offset of field: TPML_AC_CAPABILITIES::acCapabilities"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of TPML_AC_CAPABILITIES"][::std::mem::size_of::<TPML_AC_CAPABILITIES>() - 1028usize];
+    ["Alignment of TPML_AC_CAPABILITIES"][::std::mem::align_of::<TPML_AC_CAPABILITIES>() - 4usize];
+    ["Offset of field: TPML_AC_CAPABILITIES::count"]
+        [::std::mem::offset_of!(TPML_AC_CAPABILITIES, count) - 0usize];
+    ["Offset of field: TPML_AC_CAPABILITIES::acCapabilities"]
+        [::std::mem::offset_of!(TPML_AC_CAPABILITIES, acCapabilities) - 4usize];
+};
 impl Default for TPML_AC_CAPABILITIES {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
@@ -6112,32 +3756,17 @@ pub struct TPML_INTEL_PTT_PROPERTY {
     pub count: UINT32,
     pub property: [UINT32; 256usize],
 }
-#[test]
-fn bindgen_test_layout_TPML_INTEL_PTT_PROPERTY() {
-    const UNINIT: ::std::mem::MaybeUninit<TPML_INTEL_PTT_PROPERTY> =
-        ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<TPML_INTEL_PTT_PROPERTY>(),
-        1028usize,
-        "Size of TPML_INTEL_PTT_PROPERTY"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<TPML_INTEL_PTT_PROPERTY>(),
-        4usize,
-        "Alignment of TPML_INTEL_PTT_PROPERTY"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).count) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TPML_INTEL_PTT_PROPERTY::count"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).property) as usize - ptr as usize },
-        4usize,
-        "Offset of field: TPML_INTEL_PTT_PROPERTY::property"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of TPML_INTEL_PTT_PROPERTY"]
+        [::std::mem::size_of::<TPML_INTEL_PTT_PROPERTY>() - 1028usize];
+    ["Alignment of TPML_INTEL_PTT_PROPERTY"]
+        [::std::mem::align_of::<TPML_INTEL_PTT_PROPERTY>() - 4usize];
+    ["Offset of field: TPML_INTEL_PTT_PROPERTY::count"]
+        [::std::mem::offset_of!(TPML_INTEL_PTT_PROPERTY, count) - 0usize];
+    ["Offset of field: TPML_INTEL_PTT_PROPERTY::property"]
+        [::std::mem::offset_of!(TPML_INTEL_PTT_PROPERTY, property) - 4usize];
+};
 impl Default for TPML_INTEL_PTT_PROPERTY {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
@@ -6155,33 +3784,15 @@ pub struct pollfd {
     pub events: ::std::os::raw::c_short,
     pub revents: ::std::os::raw::c_short,
 }
-#[test]
-fn bindgen_test_layout_pollfd() {
-    const UNINIT: ::std::mem::MaybeUninit<pollfd> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(::std::mem::size_of::<pollfd>(), 8usize, "Size of pollfd");
-    assert_eq!(
-        ::std::mem::align_of::<pollfd>(),
-        4usize,
-        "Alignment of pollfd"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).fd) as usize - ptr as usize },
-        0usize,
-        "Offset of field: pollfd::fd"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).events) as usize - ptr as usize },
-        4usize,
-        "Offset of field: pollfd::events"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).revents) as usize - ptr as usize },
-        6usize,
-        "Offset of field: pollfd::revents"
-    );
-}
-extern "C" {
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of pollfd"][::std::mem::size_of::<pollfd>() - 8usize];
+    ["Alignment of pollfd"][::std::mem::align_of::<pollfd>() - 4usize];
+    ["Offset of field: pollfd::fd"][::std::mem::offset_of!(pollfd, fd) - 0usize];
+    ["Offset of field: pollfd::events"][::std::mem::offset_of!(pollfd, events) - 4usize];
+    ["Offset of field: pollfd::revents"][::std::mem::offset_of!(pollfd, revents) - 6usize];
+};
+unsafe extern "C" {
     pub fn poll(
         __fds: *mut pollfd,
         __nfds: nfds_t,
@@ -6250,94 +3861,46 @@ pub struct TSS2_TCTI_CONTEXT_COMMON_V1 {
     pub getPollHandles: TSS2_TCTI_GET_POLL_HANDLES_FCN,
     pub setLocality: TSS2_TCTI_SET_LOCALITY_FCN,
 }
-#[test]
-fn bindgen_test_layout_TSS2_TCTI_CONTEXT_COMMON_V1() {
-    const UNINIT: ::std::mem::MaybeUninit<TSS2_TCTI_CONTEXT_COMMON_V1> =
-        ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<TSS2_TCTI_CONTEXT_COMMON_V1>(),
-        40usize,
-        "Size of TSS2_TCTI_CONTEXT_COMMON_V1"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<TSS2_TCTI_CONTEXT_COMMON_V1>(),
-        8usize,
-        "Alignment of TSS2_TCTI_CONTEXT_COMMON_V1"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).magic) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TSS2_TCTI_CONTEXT_COMMON_V1::magic"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).version) as usize - ptr as usize },
-        8usize,
-        "Offset of field: TSS2_TCTI_CONTEXT_COMMON_V1::version"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).transmit) as usize - ptr as usize },
-        12usize,
-        "Offset of field: TSS2_TCTI_CONTEXT_COMMON_V1::transmit"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).receive) as usize - ptr as usize },
-        16usize,
-        "Offset of field: TSS2_TCTI_CONTEXT_COMMON_V1::receive"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).finalize) as usize - ptr as usize },
-        20usize,
-        "Offset of field: TSS2_TCTI_CONTEXT_COMMON_V1::finalize"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).cancel) as usize - ptr as usize },
-        24usize,
-        "Offset of field: TSS2_TCTI_CONTEXT_COMMON_V1::cancel"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).getPollHandles) as usize - ptr as usize },
-        28usize,
-        "Offset of field: TSS2_TCTI_CONTEXT_COMMON_V1::getPollHandles"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).setLocality) as usize - ptr as usize },
-        32usize,
-        "Offset of field: TSS2_TCTI_CONTEXT_COMMON_V1::setLocality"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of TSS2_TCTI_CONTEXT_COMMON_V1"]
+        [::std::mem::size_of::<TSS2_TCTI_CONTEXT_COMMON_V1>() - 40usize];
+    ["Alignment of TSS2_TCTI_CONTEXT_COMMON_V1"]
+        [::std::mem::align_of::<TSS2_TCTI_CONTEXT_COMMON_V1>() - 8usize];
+    ["Offset of field: TSS2_TCTI_CONTEXT_COMMON_V1::magic"]
+        [::std::mem::offset_of!(TSS2_TCTI_CONTEXT_COMMON_V1, magic) - 0usize];
+    ["Offset of field: TSS2_TCTI_CONTEXT_COMMON_V1::version"]
+        [::std::mem::offset_of!(TSS2_TCTI_CONTEXT_COMMON_V1, version) - 8usize];
+    ["Offset of field: TSS2_TCTI_CONTEXT_COMMON_V1::transmit"]
+        [::std::mem::offset_of!(TSS2_TCTI_CONTEXT_COMMON_V1, transmit) - 12usize];
+    ["Offset of field: TSS2_TCTI_CONTEXT_COMMON_V1::receive"]
+        [::std::mem::offset_of!(TSS2_TCTI_CONTEXT_COMMON_V1, receive) - 16usize];
+    ["Offset of field: TSS2_TCTI_CONTEXT_COMMON_V1::finalize"]
+        [::std::mem::offset_of!(TSS2_TCTI_CONTEXT_COMMON_V1, finalize) - 20usize];
+    ["Offset of field: TSS2_TCTI_CONTEXT_COMMON_V1::cancel"]
+        [::std::mem::offset_of!(TSS2_TCTI_CONTEXT_COMMON_V1, cancel) - 24usize];
+    ["Offset of field: TSS2_TCTI_CONTEXT_COMMON_V1::getPollHandles"]
+        [::std::mem::offset_of!(TSS2_TCTI_CONTEXT_COMMON_V1, getPollHandles) - 28usize];
+    ["Offset of field: TSS2_TCTI_CONTEXT_COMMON_V1::setLocality"]
+        [::std::mem::offset_of!(TSS2_TCTI_CONTEXT_COMMON_V1, setLocality) - 32usize];
+};
 #[repr(C)]
 #[derive(Debug, Default, Copy, Clone)]
 pub struct TSS2_TCTI_CONTEXT_COMMON_V2 {
     pub v1: TSS2_TCTI_CONTEXT_COMMON_V1,
     pub makeSticky: TSS2_TCTI_MAKE_STICKY_FCN,
 }
-#[test]
-fn bindgen_test_layout_TSS2_TCTI_CONTEXT_COMMON_V2() {
-    const UNINIT: ::std::mem::MaybeUninit<TSS2_TCTI_CONTEXT_COMMON_V2> =
-        ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<TSS2_TCTI_CONTEXT_COMMON_V2>(),
-        48usize,
-        "Size of TSS2_TCTI_CONTEXT_COMMON_V2"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<TSS2_TCTI_CONTEXT_COMMON_V2>(),
-        8usize,
-        "Alignment of TSS2_TCTI_CONTEXT_COMMON_V2"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).v1) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TSS2_TCTI_CONTEXT_COMMON_V2::v1"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).makeSticky) as usize - ptr as usize },
-        40usize,
-        "Offset of field: TSS2_TCTI_CONTEXT_COMMON_V2::makeSticky"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of TSS2_TCTI_CONTEXT_COMMON_V2"]
+        [::std::mem::size_of::<TSS2_TCTI_CONTEXT_COMMON_V2>() - 48usize];
+    ["Alignment of TSS2_TCTI_CONTEXT_COMMON_V2"]
+        [::std::mem::align_of::<TSS2_TCTI_CONTEXT_COMMON_V2>() - 8usize];
+    ["Offset of field: TSS2_TCTI_CONTEXT_COMMON_V2::v1"]
+        [::std::mem::offset_of!(TSS2_TCTI_CONTEXT_COMMON_V2, v1) - 0usize];
+    ["Offset of field: TSS2_TCTI_CONTEXT_COMMON_V2::makeSticky"]
+        [::std::mem::offset_of!(TSS2_TCTI_CONTEXT_COMMON_V2, makeSticky) - 40usize];
+};
 pub type TSS2_TCTI_CONTEXT_COMMON_CURRENT = TSS2_TCTI_CONTEXT_COMMON_V2;
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
@@ -6348,46 +3911,21 @@ pub struct TSS2_TCTI_INFO {
     pub config_help: *const ::std::os::raw::c_char,
     pub init: TSS2_TCTI_INIT_FUNC,
 }
-#[test]
-fn bindgen_test_layout_TSS2_TCTI_INFO() {
-    const UNINIT: ::std::mem::MaybeUninit<TSS2_TCTI_INFO> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<TSS2_TCTI_INFO>(),
-        20usize,
-        "Size of TSS2_TCTI_INFO"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<TSS2_TCTI_INFO>(),
-        4usize,
-        "Alignment of TSS2_TCTI_INFO"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).version) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TSS2_TCTI_INFO::version"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).name) as usize - ptr as usize },
-        4usize,
-        "Offset of field: TSS2_TCTI_INFO::name"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).description) as usize - ptr as usize },
-        8usize,
-        "Offset of field: TSS2_TCTI_INFO::description"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).config_help) as usize - ptr as usize },
-        12usize,
-        "Offset of field: TSS2_TCTI_INFO::config_help"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).init) as usize - ptr as usize },
-        16usize,
-        "Offset of field: TSS2_TCTI_INFO::init"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of TSS2_TCTI_INFO"][::std::mem::size_of::<TSS2_TCTI_INFO>() - 20usize];
+    ["Alignment of TSS2_TCTI_INFO"][::std::mem::align_of::<TSS2_TCTI_INFO>() - 4usize];
+    ["Offset of field: TSS2_TCTI_INFO::version"]
+        [::std::mem::offset_of!(TSS2_TCTI_INFO, version) - 0usize];
+    ["Offset of field: TSS2_TCTI_INFO::name"]
+        [::std::mem::offset_of!(TSS2_TCTI_INFO, name) - 4usize];
+    ["Offset of field: TSS2_TCTI_INFO::description"]
+        [::std::mem::offset_of!(TSS2_TCTI_INFO, description) - 8usize];
+    ["Offset of field: TSS2_TCTI_INFO::config_help"]
+        [::std::mem::offset_of!(TSS2_TCTI_INFO, config_help) - 12usize];
+    ["Offset of field: TSS2_TCTI_INFO::init"]
+        [::std::mem::offset_of!(TSS2_TCTI_INFO, init) - 16usize];
+};
 impl Default for TSS2_TCTI_INFO {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
@@ -6411,32 +3949,16 @@ pub struct TSS2L_SYS_AUTH_COMMAND {
     pub count: u16,
     pub auths: [TPMS_AUTH_COMMAND; 3usize],
 }
-#[test]
-fn bindgen_test_layout_TSS2L_SYS_AUTH_COMMAND() {
-    const UNINIT: ::std::mem::MaybeUninit<TSS2L_SYS_AUTH_COMMAND> =
-        ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<TSS2L_SYS_AUTH_COMMAND>(),
-        424usize,
-        "Size of TSS2L_SYS_AUTH_COMMAND"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<TSS2L_SYS_AUTH_COMMAND>(),
-        4usize,
-        "Alignment of TSS2L_SYS_AUTH_COMMAND"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).count) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TSS2L_SYS_AUTH_COMMAND::count"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).auths) as usize - ptr as usize },
-        4usize,
-        "Offset of field: TSS2L_SYS_AUTH_COMMAND::auths"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of TSS2L_SYS_AUTH_COMMAND"][::std::mem::size_of::<TSS2L_SYS_AUTH_COMMAND>() - 424usize];
+    ["Alignment of TSS2L_SYS_AUTH_COMMAND"]
+        [::std::mem::align_of::<TSS2L_SYS_AUTH_COMMAND>() - 4usize];
+    ["Offset of field: TSS2L_SYS_AUTH_COMMAND::count"]
+        [::std::mem::offset_of!(TSS2L_SYS_AUTH_COMMAND, count) - 0usize];
+    ["Offset of field: TSS2L_SYS_AUTH_COMMAND::auths"]
+        [::std::mem::offset_of!(TSS2L_SYS_AUTH_COMMAND, auths) - 4usize];
+};
 impl Default for TSS2L_SYS_AUTH_COMMAND {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
@@ -6452,32 +3974,17 @@ pub struct TSS2L_SYS_AUTH_RESPONSE {
     pub count: u16,
     pub auths: [TPMS_AUTH_RESPONSE; 3usize],
 }
-#[test]
-fn bindgen_test_layout_TSS2L_SYS_AUTH_RESPONSE() {
-    const UNINIT: ::std::mem::MaybeUninit<TSS2L_SYS_AUTH_RESPONSE> =
-        ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<TSS2L_SYS_AUTH_RESPONSE>(),
-        404usize,
-        "Size of TSS2L_SYS_AUTH_RESPONSE"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<TSS2L_SYS_AUTH_RESPONSE>(),
-        2usize,
-        "Alignment of TSS2L_SYS_AUTH_RESPONSE"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).count) as usize - ptr as usize },
-        0usize,
-        "Offset of field: TSS2L_SYS_AUTH_RESPONSE::count"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).auths) as usize - ptr as usize },
-        2usize,
-        "Offset of field: TSS2L_SYS_AUTH_RESPONSE::auths"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of TSS2L_SYS_AUTH_RESPONSE"]
+        [::std::mem::size_of::<TSS2L_SYS_AUTH_RESPONSE>() - 404usize];
+    ["Alignment of TSS2L_SYS_AUTH_RESPONSE"]
+        [::std::mem::align_of::<TSS2L_SYS_AUTH_RESPONSE>() - 2usize];
+    ["Offset of field: TSS2L_SYS_AUTH_RESPONSE::count"]
+        [::std::mem::offset_of!(TSS2L_SYS_AUTH_RESPONSE, count) - 0usize];
+    ["Offset of field: TSS2L_SYS_AUTH_RESPONSE::auths"]
+        [::std::mem::offset_of!(TSS2L_SYS_AUTH_RESPONSE, auths) - 2usize];
+};
 impl Default for TSS2L_SYS_AUTH_RESPONSE {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
@@ -6487,10 +3994,10 @@ impl Default for TSS2L_SYS_AUTH_RESPONSE {
         }
     }
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_GetContextSize(maxCommandResponseSize: size_t) -> size_t;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_Initialize(
         sysContext: *mut TSS2_SYS_CONTEXT,
         contextSize: size_t,
@@ -6498,106 +4005,106 @@ extern "C" {
         abiVersion: *mut TSS2_ABI_VERSION,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_Finalize(sysContext: *mut TSS2_SYS_CONTEXT);
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_GetTctiContext(
         sysContext: *mut TSS2_SYS_CONTEXT,
         tctiContext: *mut *mut TSS2_TCTI_CONTEXT,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_GetDecryptParam(
         sysContext: *mut TSS2_SYS_CONTEXT,
         decryptParamSize: *mut size_t,
         decryptParamBuffer: *mut *const u8,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_SetDecryptParam(
         sysContext: *mut TSS2_SYS_CONTEXT,
         decryptParamSize: size_t,
         decryptParamBuffer: *const u8,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_GetCpBuffer(
         sysContext: *mut TSS2_SYS_CONTEXT,
         cpBufferUsedSize: *mut size_t,
         cpBuffer: *mut *const u8,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_SetCmdAuths(
         sysContext: *mut TSS2_SYS_CONTEXT,
         cmdAuthsArray: *const TSS2L_SYS_AUTH_COMMAND,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_ExecuteAsync(sysContext: *mut TSS2_SYS_CONTEXT) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_ExecuteFinish(sysContext: *mut TSS2_SYS_CONTEXT, timeout: i32) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_Execute(sysContext: *mut TSS2_SYS_CONTEXT) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_GetCommandCode(
         sysContext: *mut TSS2_SYS_CONTEXT,
         commandCode: *mut UINT8,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_GetRspAuths(
         sysContext: *mut TSS2_SYS_CONTEXT,
         rspAuthsArray: *mut TSS2L_SYS_AUTH_RESPONSE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_GetEncryptParam(
         sysContext: *mut TSS2_SYS_CONTEXT,
         encryptParamSize: *mut size_t,
         encryptParamBuffer: *mut *const u8,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_SetEncryptParam(
         sysContext: *mut TSS2_SYS_CONTEXT,
         encryptParamSize: size_t,
         encryptParamBuffer: *const u8,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_GetRpBuffer(
         sysContext: *mut TSS2_SYS_CONTEXT,
         rpBufferUsedSize: *mut size_t,
         rpBuffer: *mut *const u8,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_Startup_Prepare(
         sysContext: *mut TSS2_SYS_CONTEXT,
         startupType: TPM2_SU,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_Startup_Complete(sysContext: *mut TSS2_SYS_CONTEXT) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_Startup(sysContext: *mut TSS2_SYS_CONTEXT, startupType: TPM2_SU) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_Shutdown_Prepare(
         sysContext: *mut TSS2_SYS_CONTEXT,
         shutdownType: TPM2_SU,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_Shutdown_Complete(sysContext: *mut TSS2_SYS_CONTEXT) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_Shutdown(
         sysContext: *mut TSS2_SYS_CONTEXT,
         cmdAuthsArray: *const TSS2L_SYS_AUTH_COMMAND,
@@ -6605,16 +4112,16 @@ extern "C" {
         rspAuthsArray: *mut TSS2L_SYS_AUTH_RESPONSE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_SelfTest_Prepare(
         sysContext: *mut TSS2_SYS_CONTEXT,
         fullTest: TPMI_YES_NO,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_SelfTest_Complete(sysContext: *mut TSS2_SYS_CONTEXT) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_SelfTest(
         sysContext: *mut TSS2_SYS_CONTEXT,
         cmdAuthsArray: *const TSS2L_SYS_AUTH_COMMAND,
@@ -6622,19 +4129,19 @@ extern "C" {
         rspAuthsArray: *mut TSS2L_SYS_AUTH_RESPONSE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_IncrementalSelfTest_Prepare(
         sysContext: *mut TSS2_SYS_CONTEXT,
         toTest: *const TPML_ALG,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_IncrementalSelfTest_Complete(
         sysContext: *mut TSS2_SYS_CONTEXT,
         toDoList: *mut TPML_ALG,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_IncrementalSelfTest(
         sysContext: *mut TSS2_SYS_CONTEXT,
         cmdAuthsArray: *const TSS2L_SYS_AUTH_COMMAND,
@@ -6643,17 +4150,17 @@ extern "C" {
         rspAuthsArray: *mut TSS2L_SYS_AUTH_RESPONSE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_GetTestResult_Prepare(sysContext: *mut TSS2_SYS_CONTEXT) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_GetTestResult_Complete(
         sysContext: *mut TSS2_SYS_CONTEXT,
         outData: *mut TPM2B_MAX_BUFFER,
         testResult: *mut TPM2_RC,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_GetTestResult(
         sysContext: *mut TSS2_SYS_CONTEXT,
         cmdAuthsArray: *const TSS2L_SYS_AUTH_COMMAND,
@@ -6662,7 +4169,7 @@ extern "C" {
         rspAuthsArray: *mut TSS2L_SYS_AUTH_RESPONSE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_StartAuthSession_Prepare(
         sysContext: *mut TSS2_SYS_CONTEXT,
         tpmKey: TPMI_DH_OBJECT,
@@ -6674,14 +4181,14 @@ extern "C" {
         authHash: TPMI_ALG_HASH,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_StartAuthSession_Complete(
         sysContext: *mut TSS2_SYS_CONTEXT,
         sessionHandle: *mut TPMI_SH_AUTH_SESSION,
         nonceTPM: *mut TPM2B_NONCE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_StartAuthSession(
         sysContext: *mut TSS2_SYS_CONTEXT,
         tpmKey: TPMI_DH_OBJECT,
@@ -6697,16 +4204,16 @@ extern "C" {
         rspAuthsArray: *mut TSS2L_SYS_AUTH_RESPONSE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_PolicyRestart_Prepare(
         sysContext: *mut TSS2_SYS_CONTEXT,
         sessionHandle: TPMI_SH_POLICY,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_PolicyRestart_Complete(sysContext: *mut TSS2_SYS_CONTEXT) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_PolicyRestart(
         sysContext: *mut TSS2_SYS_CONTEXT,
         sessionHandle: TPMI_SH_POLICY,
@@ -6714,7 +4221,7 @@ extern "C" {
         rspAuthsArray: *mut TSS2L_SYS_AUTH_RESPONSE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_Create_Prepare(
         sysContext: *mut TSS2_SYS_CONTEXT,
         parentHandle: TPMI_DH_OBJECT,
@@ -6724,7 +4231,7 @@ extern "C" {
         creationPCR: *const TPML_PCR_SELECTION,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_Create_Complete(
         sysContext: *mut TSS2_SYS_CONTEXT,
         outPrivate: *mut TPM2B_PRIVATE,
@@ -6734,7 +4241,7 @@ extern "C" {
         creationTicket: *mut TPMT_TK_CREATION,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_Create(
         sysContext: *mut TSS2_SYS_CONTEXT,
         parentHandle: TPMI_DH_OBJECT,
@@ -6751,7 +4258,7 @@ extern "C" {
         rspAuthsArray: *mut TSS2L_SYS_AUTH_RESPONSE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_Load_Prepare(
         sysContext: *mut TSS2_SYS_CONTEXT,
         parentHandle: TPMI_DH_OBJECT,
@@ -6759,14 +4266,14 @@ extern "C" {
         inPublic: *const TPM2B_PUBLIC,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_Load_Complete(
         sysContext: *mut TSS2_SYS_CONTEXT,
         objectHandle: *mut TPM2_HANDLE,
         name: *mut TPM2B_NAME,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_Load(
         sysContext: *mut TSS2_SYS_CONTEXT,
         parentHandle: TPMI_DH_OBJECT,
@@ -6778,7 +4285,7 @@ extern "C" {
         rspAuthsArray: *mut TSS2L_SYS_AUTH_RESPONSE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_LoadExternal_Prepare(
         sysContext: *mut TSS2_SYS_CONTEXT,
         inPrivate: *const TPM2B_SENSITIVE,
@@ -6786,14 +4293,14 @@ extern "C" {
         hierarchy: TPMI_RH_HIERARCHY,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_LoadExternal_Complete(
         sysContext: *mut TSS2_SYS_CONTEXT,
         objectHandle: *mut TPM2_HANDLE,
         name: *mut TPM2B_NAME,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_LoadExternal(
         sysContext: *mut TSS2_SYS_CONTEXT,
         cmdAuthsArray: *const TSS2L_SYS_AUTH_COMMAND,
@@ -6805,13 +4312,13 @@ extern "C" {
         rspAuthsArray: *mut TSS2L_SYS_AUTH_RESPONSE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_ReadPublic_Prepare(
         sysContext: *mut TSS2_SYS_CONTEXT,
         objectHandle: TPMI_DH_OBJECT,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_ReadPublic_Complete(
         sysContext: *mut TSS2_SYS_CONTEXT,
         outPublic: *mut TPM2B_PUBLIC,
@@ -6819,7 +4326,7 @@ extern "C" {
         qualifiedName: *mut TPM2B_NAME,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_ReadPublic(
         sysContext: *mut TSS2_SYS_CONTEXT,
         objectHandle: TPMI_DH_OBJECT,
@@ -6830,7 +4337,7 @@ extern "C" {
         rspAuthsArray: *mut TSS2L_SYS_AUTH_RESPONSE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_ActivateCredential_Prepare(
         sysContext: *mut TSS2_SYS_CONTEXT,
         activateHandle: TPMI_DH_OBJECT,
@@ -6839,13 +4346,13 @@ extern "C" {
         secret: *const TPM2B_ENCRYPTED_SECRET,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_ActivateCredential_Complete(
         sysContext: *mut TSS2_SYS_CONTEXT,
         certInfo: *mut TPM2B_DIGEST,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_ActivateCredential(
         sysContext: *mut TSS2_SYS_CONTEXT,
         activateHandle: TPMI_DH_OBJECT,
@@ -6857,7 +4364,7 @@ extern "C" {
         rspAuthsArray: *mut TSS2L_SYS_AUTH_RESPONSE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_MakeCredential_Prepare(
         sysContext: *mut TSS2_SYS_CONTEXT,
         handle: TPMI_DH_OBJECT,
@@ -6865,14 +4372,14 @@ extern "C" {
         objectName: *const TPM2B_NAME,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_MakeCredential_Complete(
         sysContext: *mut TSS2_SYS_CONTEXT,
         credentialBlob: *mut TPM2B_ID_OBJECT,
         secret: *mut TPM2B_ENCRYPTED_SECRET,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_MakeCredential(
         sysContext: *mut TSS2_SYS_CONTEXT,
         handle: TPMI_DH_OBJECT,
@@ -6884,19 +4391,19 @@ extern "C" {
         rspAuthsArray: *mut TSS2L_SYS_AUTH_RESPONSE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_Unseal_Prepare(
         sysContext: *mut TSS2_SYS_CONTEXT,
         itemHandle: TPMI_DH_OBJECT,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_Unseal_Complete(
         sysContext: *mut TSS2_SYS_CONTEXT,
         outData: *mut TPM2B_SENSITIVE_DATA,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_Unseal(
         sysContext: *mut TSS2_SYS_CONTEXT,
         itemHandle: TPMI_DH_OBJECT,
@@ -6905,7 +4412,7 @@ extern "C" {
         rspAuthsArray: *mut TSS2L_SYS_AUTH_RESPONSE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_ObjectChangeAuth_Prepare(
         sysContext: *mut TSS2_SYS_CONTEXT,
         objectHandle: TPMI_DH_OBJECT,
@@ -6913,13 +4420,13 @@ extern "C" {
         newAuth: *const TPM2B_AUTH,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_ObjectChangeAuth_Complete(
         sysContext: *mut TSS2_SYS_CONTEXT,
         outPrivate: *mut TPM2B_PRIVATE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_ObjectChangeAuth(
         sysContext: *mut TSS2_SYS_CONTEXT,
         objectHandle: TPMI_DH_OBJECT,
@@ -6930,7 +4437,7 @@ extern "C" {
         rspAuthsArray: *mut TSS2L_SYS_AUTH_RESPONSE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_Duplicate_Prepare(
         sysContext: *mut TSS2_SYS_CONTEXT,
         objectHandle: TPMI_DH_OBJECT,
@@ -6939,7 +4446,7 @@ extern "C" {
         symmetricAlg: *const TPMT_SYM_DEF_OBJECT,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_Duplicate_Complete(
         sysContext: *mut TSS2_SYS_CONTEXT,
         encryptionKeyOut: *mut TPM2B_DATA,
@@ -6947,7 +4454,7 @@ extern "C" {
         outSymSeed: *mut TPM2B_ENCRYPTED_SECRET,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_Duplicate(
         sysContext: *mut TSS2_SYS_CONTEXT,
         objectHandle: TPMI_DH_OBJECT,
@@ -6961,7 +4468,7 @@ extern "C" {
         rspAuthsArray: *mut TSS2L_SYS_AUTH_RESPONSE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_Rewrap_Prepare(
         sysContext: *mut TSS2_SYS_CONTEXT,
         oldParent: TPMI_DH_OBJECT,
@@ -6971,14 +4478,14 @@ extern "C" {
         inSymSeed: *const TPM2B_ENCRYPTED_SECRET,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_Rewrap_Complete(
         sysContext: *mut TSS2_SYS_CONTEXT,
         outDuplicate: *mut TPM2B_PRIVATE,
         outSymSeed: *mut TPM2B_ENCRYPTED_SECRET,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_Rewrap(
         sysContext: *mut TSS2_SYS_CONTEXT,
         oldParent: TPMI_DH_OBJECT,
@@ -6992,7 +4499,7 @@ extern "C" {
         rspAuthsArray: *mut TSS2L_SYS_AUTH_RESPONSE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_Import_Prepare(
         sysContext: *mut TSS2_SYS_CONTEXT,
         parentHandle: TPMI_DH_OBJECT,
@@ -7003,13 +4510,13 @@ extern "C" {
         symmetricAlg: *const TPMT_SYM_DEF_OBJECT,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_Import_Complete(
         sysContext: *mut TSS2_SYS_CONTEXT,
         outPrivate: *mut TPM2B_PRIVATE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_Import(
         sysContext: *mut TSS2_SYS_CONTEXT,
         parentHandle: TPMI_DH_OBJECT,
@@ -7023,7 +4530,7 @@ extern "C" {
         rspAuthsArray: *mut TSS2L_SYS_AUTH_RESPONSE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_RSA_Encrypt_Prepare(
         sysContext: *mut TSS2_SYS_CONTEXT,
         keyHandle: TPMI_DH_OBJECT,
@@ -7032,13 +4539,13 @@ extern "C" {
         label: *const TPM2B_DATA,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_RSA_Encrypt_Complete(
         sysContext: *mut TSS2_SYS_CONTEXT,
         outData: *mut TPM2B_PUBLIC_KEY_RSA,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_RSA_Encrypt(
         sysContext: *mut TSS2_SYS_CONTEXT,
         keyHandle: TPMI_DH_OBJECT,
@@ -7050,7 +4557,7 @@ extern "C" {
         rspAuthsArray: *mut TSS2L_SYS_AUTH_RESPONSE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_RSA_Decrypt_Prepare(
         sysContext: *mut TSS2_SYS_CONTEXT,
         keyHandle: TPMI_DH_OBJECT,
@@ -7059,13 +4566,13 @@ extern "C" {
         label: *const TPM2B_DATA,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_RSA_Decrypt_Complete(
         sysContext: *mut TSS2_SYS_CONTEXT,
         message: *mut TPM2B_PUBLIC_KEY_RSA,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_RSA_Decrypt(
         sysContext: *mut TSS2_SYS_CONTEXT,
         keyHandle: TPMI_DH_OBJECT,
@@ -7077,20 +4584,20 @@ extern "C" {
         rspAuthsArray: *mut TSS2L_SYS_AUTH_RESPONSE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_ECDH_KeyGen_Prepare(
         sysContext: *mut TSS2_SYS_CONTEXT,
         keyHandle: TPMI_DH_OBJECT,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_ECDH_KeyGen_Complete(
         sysContext: *mut TSS2_SYS_CONTEXT,
         zPoint: *mut TPM2B_ECC_POINT,
         pubPoint: *mut TPM2B_ECC_POINT,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_ECDH_KeyGen(
         sysContext: *mut TSS2_SYS_CONTEXT,
         keyHandle: TPMI_DH_OBJECT,
@@ -7100,20 +4607,20 @@ extern "C" {
         rspAuthsArray: *mut TSS2L_SYS_AUTH_RESPONSE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_ECDH_ZGen_Prepare(
         sysContext: *mut TSS2_SYS_CONTEXT,
         keyHandle: TPMI_DH_OBJECT,
         inPoint: *const TPM2B_ECC_POINT,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_ECDH_ZGen_Complete(
         sysContext: *mut TSS2_SYS_CONTEXT,
         outPoint: *mut TPM2B_ECC_POINT,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_ECDH_ZGen(
         sysContext: *mut TSS2_SYS_CONTEXT,
         keyHandle: TPMI_DH_OBJECT,
@@ -7123,19 +4630,19 @@ extern "C" {
         rspAuthsArray: *mut TSS2L_SYS_AUTH_RESPONSE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_ECC_Parameters_Prepare(
         sysContext: *mut TSS2_SYS_CONTEXT,
         curveID: TPMI_ECC_CURVE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_ECC_Parameters_Complete(
         sysContext: *mut TSS2_SYS_CONTEXT,
         parameters: *mut TPMS_ALGORITHM_DETAIL_ECC,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_ECC_Parameters(
         sysContext: *mut TSS2_SYS_CONTEXT,
         cmdAuthsArray: *const TSS2L_SYS_AUTH_COMMAND,
@@ -7144,7 +4651,7 @@ extern "C" {
         rspAuthsArray: *mut TSS2L_SYS_AUTH_RESPONSE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_ZGen_2Phase_Prepare(
         sysContext: *mut TSS2_SYS_CONTEXT,
         keyA: TPMI_DH_OBJECT,
@@ -7154,14 +4661,14 @@ extern "C" {
         counter: UINT16,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_ZGen_2Phase_Complete(
         sysContext: *mut TSS2_SYS_CONTEXT,
         outZ1: *mut TPM2B_ECC_POINT,
         outZ2: *mut TPM2B_ECC_POINT,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_ZGen_2Phase(
         sysContext: *mut TSS2_SYS_CONTEXT,
         keyA: TPMI_DH_OBJECT,
@@ -7175,7 +4682,7 @@ extern "C" {
         rspAuthsArray: *mut TSS2L_SYS_AUTH_RESPONSE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_EncryptDecrypt_Prepare(
         sysContext: *mut TSS2_SYS_CONTEXT,
         keyHandle: TPMI_DH_OBJECT,
@@ -7185,14 +4692,14 @@ extern "C" {
         inData: *const TPM2B_MAX_BUFFER,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_EncryptDecrypt_Complete(
         sysContext: *mut TSS2_SYS_CONTEXT,
         outData: *mut TPM2B_MAX_BUFFER,
         ivOut: *mut TPM2B_IV,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_EncryptDecrypt(
         sysContext: *mut TSS2_SYS_CONTEXT,
         keyHandle: TPMI_DH_OBJECT,
@@ -7206,7 +4713,7 @@ extern "C" {
         rspAuthsArray: *mut TSS2L_SYS_AUTH_RESPONSE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_EncryptDecrypt2_Prepare(
         sysContext: *mut TSS2_SYS_CONTEXT,
         keyHandle: TPMI_DH_OBJECT,
@@ -7216,14 +4723,14 @@ extern "C" {
         ivIn: *const TPM2B_IV,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_EncryptDecrypt2_Complete(
         sysContext: *mut TSS2_SYS_CONTEXT,
         outData: *mut TPM2B_MAX_BUFFER,
         ivOut: *mut TPM2B_IV,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_EncryptDecrypt2(
         sysContext: *mut TSS2_SYS_CONTEXT,
         keyHandle: TPMI_DH_OBJECT,
@@ -7237,7 +4744,7 @@ extern "C" {
         rspAuthsArray: *mut TSS2L_SYS_AUTH_RESPONSE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_Hash_Prepare(
         sysContext: *mut TSS2_SYS_CONTEXT,
         data: *const TPM2B_MAX_BUFFER,
@@ -7245,14 +4752,14 @@ extern "C" {
         hierarchy: TPMI_RH_HIERARCHY,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_Hash_Complete(
         sysContext: *mut TSS2_SYS_CONTEXT,
         outHash: *mut TPM2B_DIGEST,
         validation: *mut TPMT_TK_HASHCHECK,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_Hash(
         sysContext: *mut TSS2_SYS_CONTEXT,
         cmdAuthsArray: *const TSS2L_SYS_AUTH_COMMAND,
@@ -7264,7 +4771,7 @@ extern "C" {
         rspAuthsArray: *mut TSS2L_SYS_AUTH_RESPONSE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_HMAC_Prepare(
         sysContext: *mut TSS2_SYS_CONTEXT,
         handle: TPMI_DH_OBJECT,
@@ -7272,13 +4779,13 @@ extern "C" {
         hashAlg: TPMI_ALG_HASH,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_HMAC_Complete(
         sysContext: *mut TSS2_SYS_CONTEXT,
         outHMAC: *mut TPM2B_DIGEST,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_HMAC(
         sysContext: *mut TSS2_SYS_CONTEXT,
         handle: TPMI_DH_OBJECT,
@@ -7289,7 +4796,7 @@ extern "C" {
         rspAuthsArray: *mut TSS2L_SYS_AUTH_RESPONSE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_MAC_Prepare(
         sysContext: *mut TSS2_SYS_CONTEXT,
         handle: TPMI_DH_OBJECT,
@@ -7297,13 +4804,13 @@ extern "C" {
         inScheme: TPMI_ALG_MAC_SCHEME,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_MAC_Complete(
         sysContext: *mut TSS2_SYS_CONTEXT,
         outMAC: *mut TPM2B_DIGEST,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_MAC(
         sysContext: *mut TSS2_SYS_CONTEXT,
         handle: TPMI_DH_OBJECT,
@@ -7314,19 +4821,19 @@ extern "C" {
         rspAuths: *mut TSS2L_SYS_AUTH_RESPONSE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_GetRandom_Prepare(
         sysContext: *mut TSS2_SYS_CONTEXT,
         bytesRequested: UINT16,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_GetRandom_Complete(
         sysContext: *mut TSS2_SYS_CONTEXT,
         randomBytes: *mut TPM2B_DIGEST,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_GetRandom(
         sysContext: *mut TSS2_SYS_CONTEXT,
         cmdAuthsArray: *const TSS2L_SYS_AUTH_COMMAND,
@@ -7335,16 +4842,16 @@ extern "C" {
         rspAuthsArray: *mut TSS2L_SYS_AUTH_RESPONSE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_StirRandom_Prepare(
         sysContext: *mut TSS2_SYS_CONTEXT,
         inData: *const TPM2B_SENSITIVE_DATA,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_StirRandom_Complete(sysContext: *mut TSS2_SYS_CONTEXT) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_StirRandom(
         sysContext: *mut TSS2_SYS_CONTEXT,
         cmdAuthsArray: *const TSS2L_SYS_AUTH_COMMAND,
@@ -7352,7 +4859,7 @@ extern "C" {
         rspAuthsArray: *mut TSS2L_SYS_AUTH_RESPONSE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_HMAC_Start_Prepare(
         sysContext: *mut TSS2_SYS_CONTEXT,
         handle: TPMI_DH_OBJECT,
@@ -7360,13 +4867,13 @@ extern "C" {
         hashAlg: TPMI_ALG_HASH,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_HMAC_Start_Complete(
         sysContext: *mut TSS2_SYS_CONTEXT,
         sequenceHandle: *mut TPMI_DH_OBJECT,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_HMAC_Start(
         sysContext: *mut TSS2_SYS_CONTEXT,
         handle: TPMI_DH_OBJECT,
@@ -7377,7 +4884,7 @@ extern "C" {
         rspAuthsArray: *mut TSS2L_SYS_AUTH_RESPONSE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_MAC_Start_Prepare(
         sysContext: *mut TSS2_SYS_CONTEXT,
         handle: TPMI_DH_OBJECT,
@@ -7385,13 +4892,13 @@ extern "C" {
         inScheme: TPMI_ALG_MAC_SCHEME,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_MAC_Start_Complete(
         sysContext: *mut TSS2_SYS_CONTEXT,
         sequenceHandle: *mut TPMI_DH_OBJECT,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_MAC_Start(
         sysContext: *mut TSS2_SYS_CONTEXT,
         handle: TPMI_DH_OBJECT,
@@ -7402,20 +4909,20 @@ extern "C" {
         rspAuthsArray: *mut TSS2L_SYS_AUTH_RESPONSE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_HashSequenceStart_Prepare(
         sysContext: *mut TSS2_SYS_CONTEXT,
         auth: *const TPM2B_AUTH,
         hashAlg: TPMI_ALG_HASH,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_HashSequenceStart_Complete(
         sysContext: *mut TSS2_SYS_CONTEXT,
         sequenceHandle: *mut TPMI_DH_OBJECT,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_HashSequenceStart(
         sysContext: *mut TSS2_SYS_CONTEXT,
         cmdAuthsArray: *const TSS2L_SYS_AUTH_COMMAND,
@@ -7425,17 +4932,17 @@ extern "C" {
         rspAuthsArray: *mut TSS2L_SYS_AUTH_RESPONSE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_SequenceUpdate_Prepare(
         sysContext: *mut TSS2_SYS_CONTEXT,
         sequenceHandle: TPMI_DH_OBJECT,
         buffer: *const TPM2B_MAX_BUFFER,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_SequenceUpdate_Complete(sysContext: *mut TSS2_SYS_CONTEXT) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_SequenceUpdate(
         sysContext: *mut TSS2_SYS_CONTEXT,
         sequenceHandle: TPMI_DH_OBJECT,
@@ -7444,7 +4951,7 @@ extern "C" {
         rspAuthsArray: *mut TSS2L_SYS_AUTH_RESPONSE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_SequenceComplete_Prepare(
         sysContext: *mut TSS2_SYS_CONTEXT,
         sequenceHandle: TPMI_DH_OBJECT,
@@ -7452,14 +4959,14 @@ extern "C" {
         hierarchy: TPMI_RH_HIERARCHY,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_SequenceComplete_Complete(
         sysContext: *mut TSS2_SYS_CONTEXT,
         result: *mut TPM2B_DIGEST,
         validation: *mut TPMT_TK_HASHCHECK,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_SequenceComplete(
         sysContext: *mut TSS2_SYS_CONTEXT,
         sequenceHandle: TPMI_DH_OBJECT,
@@ -7471,7 +4978,7 @@ extern "C" {
         rspAuthsArray: *mut TSS2L_SYS_AUTH_RESPONSE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_EventSequenceComplete_Prepare(
         sysContext: *mut TSS2_SYS_CONTEXT,
         pcrHandle: TPMI_DH_PCR,
@@ -7479,13 +4986,13 @@ extern "C" {
         buffer: *const TPM2B_MAX_BUFFER,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_EventSequenceComplete_Complete(
         sysContext: *mut TSS2_SYS_CONTEXT,
         results: *mut TPML_DIGEST_VALUES,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_EventSequenceComplete(
         sysContext: *mut TSS2_SYS_CONTEXT,
         pcrHandle: TPMI_DH_PCR,
@@ -7496,7 +5003,7 @@ extern "C" {
         rspAuthsArray: *mut TSS2L_SYS_AUTH_RESPONSE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_Certify_Prepare(
         sysContext: *mut TSS2_SYS_CONTEXT,
         objectHandle: TPMI_DH_OBJECT,
@@ -7505,14 +5012,14 @@ extern "C" {
         inScheme: *const TPMT_SIG_SCHEME,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_Certify_Complete(
         sysContext: *mut TSS2_SYS_CONTEXT,
         certifyInfo: *mut TPM2B_ATTEST,
         signature: *mut TPMT_SIGNATURE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_Certify(
         sysContext: *mut TSS2_SYS_CONTEXT,
         objectHandle: TPMI_DH_OBJECT,
@@ -7525,7 +5032,7 @@ extern "C" {
         rspAuthsArray: *mut TSS2L_SYS_AUTH_RESPONSE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_CertifyX509_Prepare(
         sysContext: *mut TSS2_SYS_CONTEXT,
         objectHandle: TPMI_DH_OBJECT,
@@ -7535,7 +5042,7 @@ extern "C" {
         partialCertificate: *const TPM2B_MAX_BUFFER,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_CertifyX509_Complete(
         sysContext: *mut TSS2_SYS_CONTEXT,
         addedToCertificate: *mut TPM2B_MAX_BUFFER,
@@ -7543,7 +5050,7 @@ extern "C" {
         signature: *mut TPMT_SIGNATURE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_CertifyX509(
         sysContext: *mut TSS2_SYS_CONTEXT,
         objectHandle: TPMI_DH_OBJECT,
@@ -7558,7 +5065,7 @@ extern "C" {
         rspAuthsArray: *mut TSS2L_SYS_AUTH_RESPONSE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_CertifyCreation_Prepare(
         sysContext: *mut TSS2_SYS_CONTEXT,
         signHandle: TPMI_DH_OBJECT,
@@ -7569,14 +5076,14 @@ extern "C" {
         creationTicket: *const TPMT_TK_CREATION,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_CertifyCreation_Complete(
         sysContext: *mut TSS2_SYS_CONTEXT,
         certifyInfo: *mut TPM2B_ATTEST,
         signature: *mut TPMT_SIGNATURE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_CertifyCreation(
         sysContext: *mut TSS2_SYS_CONTEXT,
         signHandle: TPMI_DH_OBJECT,
@@ -7591,7 +5098,7 @@ extern "C" {
         rspAuthsArray: *mut TSS2L_SYS_AUTH_RESPONSE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_Quote_Prepare(
         sysContext: *mut TSS2_SYS_CONTEXT,
         signHandle: TPMI_DH_OBJECT,
@@ -7600,14 +5107,14 @@ extern "C" {
         PCRselect: *const TPML_PCR_SELECTION,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_Quote_Complete(
         sysContext: *mut TSS2_SYS_CONTEXT,
         quoted: *mut TPM2B_ATTEST,
         signature: *mut TPMT_SIGNATURE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_Quote(
         sysContext: *mut TSS2_SYS_CONTEXT,
         signHandle: TPMI_DH_OBJECT,
@@ -7620,7 +5127,7 @@ extern "C" {
         rspAuthsArray: *mut TSS2L_SYS_AUTH_RESPONSE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_GetSessionAuditDigest_Prepare(
         sysContext: *mut TSS2_SYS_CONTEXT,
         privacyAdminHandle: TPMI_RH_ENDORSEMENT,
@@ -7630,14 +5137,14 @@ extern "C" {
         inScheme: *const TPMT_SIG_SCHEME,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_GetSessionAuditDigest_Complete(
         sysContext: *mut TSS2_SYS_CONTEXT,
         auditInfo: *mut TPM2B_ATTEST,
         signature: *mut TPMT_SIGNATURE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_GetSessionAuditDigest(
         sysContext: *mut TSS2_SYS_CONTEXT,
         privacyAdminHandle: TPMI_RH_ENDORSEMENT,
@@ -7651,7 +5158,7 @@ extern "C" {
         rspAuthsArray: *mut TSS2L_SYS_AUTH_RESPONSE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_GetCommandAuditDigest_Prepare(
         sysContext: *mut TSS2_SYS_CONTEXT,
         privacyHandle: TPMI_RH_ENDORSEMENT,
@@ -7660,14 +5167,14 @@ extern "C" {
         inScheme: *const TPMT_SIG_SCHEME,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_GetCommandAuditDigest_Complete(
         sysContext: *mut TSS2_SYS_CONTEXT,
         auditInfo: *mut TPM2B_ATTEST,
         signature: *mut TPMT_SIGNATURE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_GetCommandAuditDigest(
         sysContext: *mut TSS2_SYS_CONTEXT,
         privacyHandle: TPMI_RH_ENDORSEMENT,
@@ -7680,7 +5187,7 @@ extern "C" {
         rspAuthsArray: *mut TSS2L_SYS_AUTH_RESPONSE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_GetTime_Prepare(
         sysContext: *mut TSS2_SYS_CONTEXT,
         privacyAdminHandle: TPMI_RH_ENDORSEMENT,
@@ -7689,14 +5196,14 @@ extern "C" {
         inScheme: *const TPMT_SIG_SCHEME,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_GetTime_Complete(
         sysContext: *mut TSS2_SYS_CONTEXT,
         timeInfo: *mut TPM2B_ATTEST,
         signature: *mut TPMT_SIGNATURE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_GetTime(
         sysContext: *mut TSS2_SYS_CONTEXT,
         privacyAdminHandle: TPMI_RH_ENDORSEMENT,
@@ -7709,7 +5216,7 @@ extern "C" {
         rspAuthsArray: *mut TSS2L_SYS_AUTH_RESPONSE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_Commit_Prepare(
         sysContext: *mut TSS2_SYS_CONTEXT,
         signHandle: TPMI_DH_OBJECT,
@@ -7718,7 +5225,7 @@ extern "C" {
         y2: *const TPM2B_ECC_PARAMETER,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_Commit_Complete(
         sysContext: *mut TSS2_SYS_CONTEXT,
         K: *mut TPM2B_ECC_POINT,
@@ -7727,7 +5234,7 @@ extern "C" {
         counter: *mut UINT16,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_Commit(
         sysContext: *mut TSS2_SYS_CONTEXT,
         signHandle: TPMI_DH_OBJECT,
@@ -7742,20 +5249,20 @@ extern "C" {
         rspAuthsArray: *mut TSS2L_SYS_AUTH_RESPONSE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_EC_Ephemeral_Prepare(
         sysContext: *mut TSS2_SYS_CONTEXT,
         curveID: TPMI_ECC_CURVE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_EC_Ephemeral_Complete(
         sysContext: *mut TSS2_SYS_CONTEXT,
         Q: *mut TPM2B_ECC_POINT,
         counter: *mut UINT16,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_EC_Ephemeral(
         sysContext: *mut TSS2_SYS_CONTEXT,
         cmdAuthsArray: *const TSS2L_SYS_AUTH_COMMAND,
@@ -7765,7 +5272,7 @@ extern "C" {
         rspAuthsArray: *mut TSS2L_SYS_AUTH_RESPONSE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_VerifySignature_Prepare(
         sysContext: *mut TSS2_SYS_CONTEXT,
         keyHandle: TPMI_DH_OBJECT,
@@ -7773,13 +5280,13 @@ extern "C" {
         signature: *const TPMT_SIGNATURE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_VerifySignature_Complete(
         sysContext: *mut TSS2_SYS_CONTEXT,
         validation: *mut TPMT_TK_VERIFIED,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_VerifySignature(
         sysContext: *mut TSS2_SYS_CONTEXT,
         keyHandle: TPMI_DH_OBJECT,
@@ -7790,7 +5297,7 @@ extern "C" {
         rspAuthsArray: *mut TSS2L_SYS_AUTH_RESPONSE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_Sign_Prepare(
         sysContext: *mut TSS2_SYS_CONTEXT,
         keyHandle: TPMI_DH_OBJECT,
@@ -7799,13 +5306,13 @@ extern "C" {
         validation: *const TPMT_TK_HASHCHECK,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_Sign_Complete(
         sysContext: *mut TSS2_SYS_CONTEXT,
         signature: *mut TPMT_SIGNATURE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_Sign(
         sysContext: *mut TSS2_SYS_CONTEXT,
         keyHandle: TPMI_DH_OBJECT,
@@ -7817,7 +5324,7 @@ extern "C" {
         rspAuthsArray: *mut TSS2L_SYS_AUTH_RESPONSE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_SetCommandCodeAuditStatus_Prepare(
         sysContext: *mut TSS2_SYS_CONTEXT,
         auth: TPMI_RH_PROVISION,
@@ -7826,12 +5333,12 @@ extern "C" {
         clearList: *const TPML_CC,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_SetCommandCodeAuditStatus_Complete(
         sysContext: *mut TSS2_SYS_CONTEXT,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_SetCommandCodeAuditStatus(
         sysContext: *mut TSS2_SYS_CONTEXT,
         auth: TPMI_RH_PROVISION,
@@ -7842,17 +5349,17 @@ extern "C" {
         rspAuthsArray: *mut TSS2L_SYS_AUTH_RESPONSE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_PCR_Extend_Prepare(
         sysContext: *mut TSS2_SYS_CONTEXT,
         pcrHandle: TPMI_DH_PCR,
         digests: *const TPML_DIGEST_VALUES,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_PCR_Extend_Complete(sysContext: *mut TSS2_SYS_CONTEXT) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_PCR_Extend(
         sysContext: *mut TSS2_SYS_CONTEXT,
         pcrHandle: TPMI_DH_PCR,
@@ -7861,20 +5368,20 @@ extern "C" {
         rspAuthsArray: *mut TSS2L_SYS_AUTH_RESPONSE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_PCR_Event_Prepare(
         sysContext: *mut TSS2_SYS_CONTEXT,
         pcrHandle: TPMI_DH_PCR,
         eventData: *const TPM2B_EVENT,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_PCR_Event_Complete(
         sysContext: *mut TSS2_SYS_CONTEXT,
         digests: *mut TPML_DIGEST_VALUES,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_PCR_Event(
         sysContext: *mut TSS2_SYS_CONTEXT,
         pcrHandle: TPMI_DH_PCR,
@@ -7884,13 +5391,13 @@ extern "C" {
         rspAuthsArray: *mut TSS2L_SYS_AUTH_RESPONSE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_PCR_Read_Prepare(
         sysContext: *mut TSS2_SYS_CONTEXT,
         pcrSelectionIn: *const TPML_PCR_SELECTION,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_PCR_Read_Complete(
         sysContext: *mut TSS2_SYS_CONTEXT,
         pcrUpdateCounter: *mut UINT32,
@@ -7898,7 +5405,7 @@ extern "C" {
         pcrValues: *mut TPML_DIGEST,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_PCR_Read(
         sysContext: *mut TSS2_SYS_CONTEXT,
         cmdAuthsArray: *const TSS2L_SYS_AUTH_COMMAND,
@@ -7909,14 +5416,14 @@ extern "C" {
         rspAuthsArray: *mut TSS2L_SYS_AUTH_RESPONSE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_PCR_Allocate_Prepare(
         sysContext: *mut TSS2_SYS_CONTEXT,
         authHandle: TPMI_RH_PLATFORM,
         pcrAllocation: *const TPML_PCR_SELECTION,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_PCR_Allocate_Complete(
         sysContext: *mut TSS2_SYS_CONTEXT,
         allocationSuccess: *mut TPMI_YES_NO,
@@ -7925,7 +5432,7 @@ extern "C" {
         sizeAvailable: *mut UINT32,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_PCR_Allocate(
         sysContext: *mut TSS2_SYS_CONTEXT,
         authHandle: TPMI_RH_PLATFORM,
@@ -7938,7 +5445,7 @@ extern "C" {
         rspAuthsArray: *mut TSS2L_SYS_AUTH_RESPONSE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_PCR_SetAuthPolicy_Prepare(
         sysContext: *mut TSS2_SYS_CONTEXT,
         authHandle: TPMI_RH_PLATFORM,
@@ -7947,10 +5454,10 @@ extern "C" {
         pcrNum: TPMI_DH_PCR,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_PCR_SetAuthPolicy_Complete(sysContext: *mut TSS2_SYS_CONTEXT) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_PCR_SetAuthPolicy(
         sysContext: *mut TSS2_SYS_CONTEXT,
         authHandle: TPMI_RH_PLATFORM,
@@ -7961,17 +5468,17 @@ extern "C" {
         rspAuthsArray: *mut TSS2L_SYS_AUTH_RESPONSE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_PCR_SetAuthValue_Prepare(
         sysContext: *mut TSS2_SYS_CONTEXT,
         pcrHandle: TPMI_DH_PCR,
         auth: *const TPM2B_DIGEST,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_PCR_SetAuthValue_Complete(sysContext: *mut TSS2_SYS_CONTEXT) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_PCR_SetAuthValue(
         sysContext: *mut TSS2_SYS_CONTEXT,
         pcrHandle: TPMI_DH_PCR,
@@ -7980,16 +5487,16 @@ extern "C" {
         rspAuthsArray: *mut TSS2L_SYS_AUTH_RESPONSE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_PCR_Reset_Prepare(
         sysContext: *mut TSS2_SYS_CONTEXT,
         pcrHandle: TPMI_DH_PCR,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_PCR_Reset_Complete(sysContext: *mut TSS2_SYS_CONTEXT) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_PCR_Reset(
         sysContext: *mut TSS2_SYS_CONTEXT,
         pcrHandle: TPMI_DH_PCR,
@@ -7997,7 +5504,7 @@ extern "C" {
         rspAuthsArray: *mut TSS2L_SYS_AUTH_RESPONSE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_PolicySigned_Prepare(
         sysContext: *mut TSS2_SYS_CONTEXT,
         authObject: TPMI_DH_OBJECT,
@@ -8009,14 +5516,14 @@ extern "C" {
         auth: *const TPMT_SIGNATURE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_PolicySigned_Complete(
         sysContext: *mut TSS2_SYS_CONTEXT,
         timeout: *mut TPM2B_TIMEOUT,
         policyTicket: *mut TPMT_TK_AUTH,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_PolicySigned(
         sysContext: *mut TSS2_SYS_CONTEXT,
         authObject: TPMI_DH_OBJECT,
@@ -8032,7 +5539,7 @@ extern "C" {
         rspAuthsArray: *mut TSS2L_SYS_AUTH_RESPONSE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_PolicySecret_Prepare(
         sysContext: *mut TSS2_SYS_CONTEXT,
         authHandle: TPMI_DH_ENTITY,
@@ -8043,14 +5550,14 @@ extern "C" {
         expiration: INT32,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_PolicySecret_Complete(
         sysContext: *mut TSS2_SYS_CONTEXT,
         timeout: *mut TPM2B_TIMEOUT,
         policyTicket: *mut TPMT_TK_AUTH,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_PolicySecret(
         sysContext: *mut TSS2_SYS_CONTEXT,
         authHandle: TPMI_DH_ENTITY,
@@ -8065,7 +5572,7 @@ extern "C" {
         rspAuthsArray: *mut TSS2L_SYS_AUTH_RESPONSE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_PolicyTicket_Prepare(
         sysContext: *mut TSS2_SYS_CONTEXT,
         policySession: TPMI_SH_POLICY,
@@ -8076,10 +5583,10 @@ extern "C" {
         ticket: *const TPMT_TK_AUTH,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_PolicyTicket_Complete(sysContext: *mut TSS2_SYS_CONTEXT) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_PolicyTicket(
         sysContext: *mut TSS2_SYS_CONTEXT,
         policySession: TPMI_SH_POLICY,
@@ -8092,17 +5599,17 @@ extern "C" {
         rspAuthsArray: *mut TSS2L_SYS_AUTH_RESPONSE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_PolicyOR_Prepare(
         sysContext: *mut TSS2_SYS_CONTEXT,
         policySession: TPMI_SH_POLICY,
         pHashList: *const TPML_DIGEST,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_PolicyOR_Complete(sysContext: *mut TSS2_SYS_CONTEXT) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_PolicyOR(
         sysContext: *mut TSS2_SYS_CONTEXT,
         policySession: TPMI_SH_POLICY,
@@ -8111,7 +5618,7 @@ extern "C" {
         rspAuthsArray: *mut TSS2L_SYS_AUTH_RESPONSE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_PolicyPCR_Prepare(
         sysContext: *mut TSS2_SYS_CONTEXT,
         policySession: TPMI_SH_POLICY,
@@ -8119,10 +5626,10 @@ extern "C" {
         pcrs: *const TPML_PCR_SELECTION,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_PolicyPCR_Complete(sysContext: *mut TSS2_SYS_CONTEXT) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_PolicyPCR(
         sysContext: *mut TSS2_SYS_CONTEXT,
         policySession: TPMI_SH_POLICY,
@@ -8132,17 +5639,17 @@ extern "C" {
         rspAuthsArray: *mut TSS2L_SYS_AUTH_RESPONSE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_PolicyLocality_Prepare(
         sysContext: *mut TSS2_SYS_CONTEXT,
         policySession: TPMI_SH_POLICY,
         locality: TPMA_LOCALITY,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_PolicyLocality_Complete(sysContext: *mut TSS2_SYS_CONTEXT) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_PolicyLocality(
         sysContext: *mut TSS2_SYS_CONTEXT,
         policySession: TPMI_SH_POLICY,
@@ -8151,7 +5658,7 @@ extern "C" {
         rspAuthsArray: *mut TSS2L_SYS_AUTH_RESPONSE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_PolicyNV_Prepare(
         sysContext: *mut TSS2_SYS_CONTEXT,
         authHandle: TPMI_RH_NV_AUTH,
@@ -8162,10 +5669,10 @@ extern "C" {
         operation: TPM2_EO,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_PolicyNV_Complete(sysContext: *mut TSS2_SYS_CONTEXT) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_PolicyNV(
         sysContext: *mut TSS2_SYS_CONTEXT,
         authHandle: TPMI_RH_NV_AUTH,
@@ -8178,7 +5685,7 @@ extern "C" {
         rspAuthsArray: *mut TSS2L_SYS_AUTH_RESPONSE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_PolicyCounterTimer_Prepare(
         sysContext: *mut TSS2_SYS_CONTEXT,
         policySession: TPMI_SH_POLICY,
@@ -8187,10 +5694,10 @@ extern "C" {
         operation: TPM2_EO,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_PolicyCounterTimer_Complete(sysContext: *mut TSS2_SYS_CONTEXT) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_PolicyCounterTimer(
         sysContext: *mut TSS2_SYS_CONTEXT,
         policySession: TPMI_SH_POLICY,
@@ -8201,17 +5708,17 @@ extern "C" {
         rspAuthsArray: *mut TSS2L_SYS_AUTH_RESPONSE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_PolicyCommandCode_Prepare(
         sysContext: *mut TSS2_SYS_CONTEXT,
         policySession: TPMI_SH_POLICY,
         code: TPM2_CC,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_PolicyCommandCode_Complete(sysContext: *mut TSS2_SYS_CONTEXT) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_PolicyCommandCode(
         sysContext: *mut TSS2_SYS_CONTEXT,
         policySession: TPMI_SH_POLICY,
@@ -8220,16 +5727,16 @@ extern "C" {
         rspAuthsArray: *mut TSS2L_SYS_AUTH_RESPONSE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_PolicyPhysicalPresence_Prepare(
         sysContext: *mut TSS2_SYS_CONTEXT,
         policySession: TPMI_SH_POLICY,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_PolicyPhysicalPresence_Complete(sysContext: *mut TSS2_SYS_CONTEXT) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_PolicyPhysicalPresence(
         sysContext: *mut TSS2_SYS_CONTEXT,
         policySession: TPMI_SH_POLICY,
@@ -8237,17 +5744,17 @@ extern "C" {
         rspAuthsArray: *mut TSS2L_SYS_AUTH_RESPONSE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_PolicyCpHash_Prepare(
         sysContext: *mut TSS2_SYS_CONTEXT,
         policySession: TPMI_SH_POLICY,
         cpHashA: *const TPM2B_DIGEST,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_PolicyCpHash_Complete(sysContext: *mut TSS2_SYS_CONTEXT) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_PolicyCpHash(
         sysContext: *mut TSS2_SYS_CONTEXT,
         policySession: TPMI_SH_POLICY,
@@ -8256,17 +5763,17 @@ extern "C" {
         rspAuthsArray: *mut TSS2L_SYS_AUTH_RESPONSE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_PolicyNameHash_Prepare(
         sysContext: *mut TSS2_SYS_CONTEXT,
         policySession: TPMI_SH_POLICY,
         nameHash: *const TPM2B_DIGEST,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_PolicyNameHash_Complete(sysContext: *mut TSS2_SYS_CONTEXT) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_PolicyNameHash(
         sysContext: *mut TSS2_SYS_CONTEXT,
         policySession: TPMI_SH_POLICY,
@@ -8275,7 +5782,7 @@ extern "C" {
         rspAuthsArray: *mut TSS2L_SYS_AUTH_RESPONSE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_PolicyDuplicationSelect_Prepare(
         sysContext: *mut TSS2_SYS_CONTEXT,
         policySession: TPMI_SH_POLICY,
@@ -8284,10 +5791,10 @@ extern "C" {
         includeObject: TPMI_YES_NO,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_PolicyDuplicationSelect_Complete(sysContext: *mut TSS2_SYS_CONTEXT) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_PolicyDuplicationSelect(
         sysContext: *mut TSS2_SYS_CONTEXT,
         policySession: TPMI_SH_POLICY,
@@ -8298,7 +5805,7 @@ extern "C" {
         rspAuthsArray: *mut TSS2L_SYS_AUTH_RESPONSE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_PolicyAuthorize_Prepare(
         sysContext: *mut TSS2_SYS_CONTEXT,
         policySession: TPMI_SH_POLICY,
@@ -8308,10 +5815,10 @@ extern "C" {
         checkTicket: *const TPMT_TK_VERIFIED,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_PolicyAuthorize_Complete(sysContext: *mut TSS2_SYS_CONTEXT) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_PolicyAuthorize(
         sysContext: *mut TSS2_SYS_CONTEXT,
         policySession: TPMI_SH_POLICY,
@@ -8323,16 +5830,16 @@ extern "C" {
         rspAuthsArray: *mut TSS2L_SYS_AUTH_RESPONSE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_PolicyAuthValue_Prepare(
         sysContext: *mut TSS2_SYS_CONTEXT,
         policySession: TPMI_SH_POLICY,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_PolicyAuthValue_Complete(sysContext: *mut TSS2_SYS_CONTEXT) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_PolicyAuthValue(
         sysContext: *mut TSS2_SYS_CONTEXT,
         policySession: TPMI_SH_POLICY,
@@ -8340,16 +5847,16 @@ extern "C" {
         rspAuthsArray: *mut TSS2L_SYS_AUTH_RESPONSE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_PolicyPassword_Prepare(
         sysContext: *mut TSS2_SYS_CONTEXT,
         policySession: TPMI_SH_POLICY,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_PolicyPassword_Complete(sysContext: *mut TSS2_SYS_CONTEXT) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_PolicyPassword(
         sysContext: *mut TSS2_SYS_CONTEXT,
         policySession: TPMI_SH_POLICY,
@@ -8357,19 +5864,19 @@ extern "C" {
         rspAuthsArray: *mut TSS2L_SYS_AUTH_RESPONSE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_PolicyGetDigest_Prepare(
         sysContext: *mut TSS2_SYS_CONTEXT,
         policySession: TPMI_SH_POLICY,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_PolicyGetDigest_Complete(
         sysContext: *mut TSS2_SYS_CONTEXT,
         policyDigest: *mut TPM2B_DIGEST,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_PolicyGetDigest(
         sysContext: *mut TSS2_SYS_CONTEXT,
         policySession: TPMI_SH_POLICY,
@@ -8378,17 +5885,17 @@ extern "C" {
         rspAuthsArray: *mut TSS2L_SYS_AUTH_RESPONSE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_PolicyNvWritten_Prepare(
         sysContext: *mut TSS2_SYS_CONTEXT,
         policySession: TPMI_SH_POLICY,
         writtenSet: TPMI_YES_NO,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_PolicyNvWritten_Complete(sysContext: *mut TSS2_SYS_CONTEXT) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_PolicyNvWritten(
         sysContext: *mut TSS2_SYS_CONTEXT,
         policySession: TPMI_SH_POLICY,
@@ -8397,7 +5904,7 @@ extern "C" {
         rspAuthsArray: *mut TSS2L_SYS_AUTH_RESPONSE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_CreatePrimary_Prepare(
         sysContext: *mut TSS2_SYS_CONTEXT,
         primaryHandle: TPMI_RH_HIERARCHY,
@@ -8407,7 +5914,7 @@ extern "C" {
         creationPCR: *const TPML_PCR_SELECTION,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_CreatePrimary_Complete(
         sysContext: *mut TSS2_SYS_CONTEXT,
         objectHandle: *mut TPM2_HANDLE,
@@ -8418,7 +5925,7 @@ extern "C" {
         name: *mut TPM2B_NAME,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_CreatePrimary(
         sysContext: *mut TSS2_SYS_CONTEXT,
         primaryHandle: TPMI_RH_HIERARCHY,
@@ -8436,7 +5943,7 @@ extern "C" {
         rspAuthsArray: *mut TSS2L_SYS_AUTH_RESPONSE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_HierarchyControl_Prepare(
         sysContext: *mut TSS2_SYS_CONTEXT,
         authHandle: TPMI_RH_HIERARCHY,
@@ -8444,10 +5951,10 @@ extern "C" {
         state: TPMI_YES_NO,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_HierarchyControl_Complete(sysContext: *mut TSS2_SYS_CONTEXT) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_HierarchyControl(
         sysContext: *mut TSS2_SYS_CONTEXT,
         authHandle: TPMI_RH_HIERARCHY,
@@ -8457,7 +5964,7 @@ extern "C" {
         rspAuthsArray: *mut TSS2L_SYS_AUTH_RESPONSE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_SetPrimaryPolicy_Prepare(
         sysContext: *mut TSS2_SYS_CONTEXT,
         authHandle: TPMI_RH_HIERARCHY_AUTH,
@@ -8465,10 +5972,10 @@ extern "C" {
         hashAlg: TPMI_ALG_HASH,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_SetPrimaryPolicy_Complete(sysContext: *mut TSS2_SYS_CONTEXT) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_SetPrimaryPolicy(
         sysContext: *mut TSS2_SYS_CONTEXT,
         authHandle: TPMI_RH_HIERARCHY_AUTH,
@@ -8478,16 +5985,16 @@ extern "C" {
         rspAuthsArray: *mut TSS2L_SYS_AUTH_RESPONSE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_ChangePPS_Prepare(
         sysContext: *mut TSS2_SYS_CONTEXT,
         authHandle: TPMI_RH_PLATFORM,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_ChangePPS_Complete(sysContext: *mut TSS2_SYS_CONTEXT) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_ChangePPS(
         sysContext: *mut TSS2_SYS_CONTEXT,
         authHandle: TPMI_RH_PLATFORM,
@@ -8495,16 +6002,16 @@ extern "C" {
         rspAuthsArray: *mut TSS2L_SYS_AUTH_RESPONSE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_ChangeEPS_Prepare(
         sysContext: *mut TSS2_SYS_CONTEXT,
         authHandle: TPMI_RH_PLATFORM,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_ChangeEPS_Complete(sysContext: *mut TSS2_SYS_CONTEXT) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_ChangeEPS(
         sysContext: *mut TSS2_SYS_CONTEXT,
         authHandle: TPMI_RH_PLATFORM,
@@ -8512,16 +6019,16 @@ extern "C" {
         rspAuthsArray: *mut TSS2L_SYS_AUTH_RESPONSE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_Clear_Prepare(
         sysContext: *mut TSS2_SYS_CONTEXT,
         authHandle: TPMI_RH_CLEAR,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_Clear_Complete(sysContext: *mut TSS2_SYS_CONTEXT) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_Clear(
         sysContext: *mut TSS2_SYS_CONTEXT,
         authHandle: TPMI_RH_CLEAR,
@@ -8529,17 +6036,17 @@ extern "C" {
         rspAuthsArray: *mut TSS2L_SYS_AUTH_RESPONSE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_ClearControl_Prepare(
         sysContext: *mut TSS2_SYS_CONTEXT,
         auth: TPMI_RH_CLEAR,
         disable: TPMI_YES_NO,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_ClearControl_Complete(sysContext: *mut TSS2_SYS_CONTEXT) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_ClearControl(
         sysContext: *mut TSS2_SYS_CONTEXT,
         auth: TPMI_RH_CLEAR,
@@ -8548,17 +6055,17 @@ extern "C" {
         rspAuthsArray: *mut TSS2L_SYS_AUTH_RESPONSE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_HierarchyChangeAuth_Prepare(
         sysContext: *mut TSS2_SYS_CONTEXT,
         authHandle: TPMI_RH_HIERARCHY_AUTH,
         newAuth: *const TPM2B_AUTH,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_HierarchyChangeAuth_Complete(sysContext: *mut TSS2_SYS_CONTEXT) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_HierarchyChangeAuth(
         sysContext: *mut TSS2_SYS_CONTEXT,
         authHandle: TPMI_RH_HIERARCHY_AUTH,
@@ -8567,18 +6074,18 @@ extern "C" {
         rspAuthsArray: *mut TSS2L_SYS_AUTH_RESPONSE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_DictionaryAttackLockReset_Prepare(
         sysContext: *mut TSS2_SYS_CONTEXT,
         lockHandle: TPMI_RH_LOCKOUT,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_DictionaryAttackLockReset_Complete(
         sysContext: *mut TSS2_SYS_CONTEXT,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_DictionaryAttackLockReset(
         sysContext: *mut TSS2_SYS_CONTEXT,
         lockHandle: TPMI_RH_LOCKOUT,
@@ -8586,7 +6093,7 @@ extern "C" {
         rspAuthsArray: *mut TSS2L_SYS_AUTH_RESPONSE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_DictionaryAttackParameters_Prepare(
         sysContext: *mut TSS2_SYS_CONTEXT,
         lockHandle: TPMI_RH_LOCKOUT,
@@ -8595,12 +6102,12 @@ extern "C" {
         lockoutRecovery: UINT32,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_DictionaryAttackParameters_Complete(
         sysContext: *mut TSS2_SYS_CONTEXT,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_DictionaryAttackParameters(
         sysContext: *mut TSS2_SYS_CONTEXT,
         lockHandle: TPMI_RH_LOCKOUT,
@@ -8611,7 +6118,7 @@ extern "C" {
         rspAuthsArray: *mut TSS2L_SYS_AUTH_RESPONSE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_PP_Commands_Prepare(
         sysContext: *mut TSS2_SYS_CONTEXT,
         auth: TPMI_RH_PLATFORM,
@@ -8619,10 +6126,10 @@ extern "C" {
         clearList: *const TPML_CC,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_PP_Commands_Complete(sysContext: *mut TSS2_SYS_CONTEXT) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_PP_Commands(
         sysContext: *mut TSS2_SYS_CONTEXT,
         auth: TPMI_RH_PLATFORM,
@@ -8632,17 +6139,17 @@ extern "C" {
         rspAuthsArray: *mut TSS2L_SYS_AUTH_RESPONSE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_SetAlgorithmSet_Prepare(
         sysContext: *mut TSS2_SYS_CONTEXT,
         authHandle: TPMI_RH_PLATFORM,
         algorithmSet: UINT32,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_SetAlgorithmSet_Complete(sysContext: *mut TSS2_SYS_CONTEXT) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_SetAlgorithmSet(
         sysContext: *mut TSS2_SYS_CONTEXT,
         authHandle: TPMI_RH_PLATFORM,
@@ -8651,7 +6158,7 @@ extern "C" {
         rspAuthsArray: *mut TSS2L_SYS_AUTH_RESPONSE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_FieldUpgradeStart_Prepare(
         sysContext: *mut TSS2_SYS_CONTEXT,
         authorization: TPMI_RH_PLATFORM,
@@ -8660,10 +6167,10 @@ extern "C" {
         manifestSignature: *const TPMT_SIGNATURE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_FieldUpgradeStart_Complete(sysContext: *mut TSS2_SYS_CONTEXT) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_FieldUpgradeStart(
         sysContext: *mut TSS2_SYS_CONTEXT,
         authorization: TPMI_RH_PLATFORM,
@@ -8674,20 +6181,20 @@ extern "C" {
         rspAuthsArray: *mut TSS2L_SYS_AUTH_RESPONSE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_FieldUpgradeData_Prepare(
         sysContext: *mut TSS2_SYS_CONTEXT,
         fuData: *const TPM2B_MAX_BUFFER,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_FieldUpgradeData_Complete(
         sysContext: *mut TSS2_SYS_CONTEXT,
         nextDigest: *mut TPMT_HA,
         firstDigest: *mut TPMT_HA,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_FieldUpgradeData(
         sysContext: *mut TSS2_SYS_CONTEXT,
         cmdAuthsArray: *const TSS2L_SYS_AUTH_COMMAND,
@@ -8697,19 +6204,19 @@ extern "C" {
         rspAuthsArray: *mut TSS2L_SYS_AUTH_RESPONSE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_FirmwareRead_Prepare(
         sysContext: *mut TSS2_SYS_CONTEXT,
         sequenceNumber: UINT32,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_FirmwareRead_Complete(
         sysContext: *mut TSS2_SYS_CONTEXT,
         fuData: *mut TPM2B_MAX_BUFFER,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_FirmwareRead(
         sysContext: *mut TSS2_SYS_CONTEXT,
         cmdAuthsArray: *const TSS2L_SYS_AUTH_COMMAND,
@@ -8718,60 +6225,60 @@ extern "C" {
         rspAuthsArray: *mut TSS2L_SYS_AUTH_RESPONSE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_ContextSave_Prepare(
         sysContext: *mut TSS2_SYS_CONTEXT,
         saveHandle: TPMI_DH_CONTEXT,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_ContextSave_Complete(
         sysContext: *mut TSS2_SYS_CONTEXT,
         context: *mut TPMS_CONTEXT,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_ContextSave(
         sysContext: *mut TSS2_SYS_CONTEXT,
         saveHandle: TPMI_DH_CONTEXT,
         context: *mut TPMS_CONTEXT,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_ContextLoad_Prepare(
         sysContext: *mut TSS2_SYS_CONTEXT,
         context: *const TPMS_CONTEXT,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_ContextLoad_Complete(
         sysContext: *mut TSS2_SYS_CONTEXT,
         loadedHandle: *mut TPMI_DH_CONTEXT,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_ContextLoad(
         sysContext: *mut TSS2_SYS_CONTEXT,
         context: *const TPMS_CONTEXT,
         loadedHandle: *mut TPMI_DH_CONTEXT,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_FlushContext_Prepare(
         sysContext: *mut TSS2_SYS_CONTEXT,
         flushHandle: TPMI_DH_CONTEXT,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_FlushContext_Complete(sysContext: *mut TSS2_SYS_CONTEXT) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_FlushContext(
         sysContext: *mut TSS2_SYS_CONTEXT,
         flushHandle: TPMI_DH_CONTEXT,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_EvictControl_Prepare(
         sysContext: *mut TSS2_SYS_CONTEXT,
         auth: TPMI_RH_PROVISION,
@@ -8779,10 +6286,10 @@ extern "C" {
         persistentHandle: TPMI_DH_PERSISTENT,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_EvictControl_Complete(sysContext: *mut TSS2_SYS_CONTEXT) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_EvictControl(
         sysContext: *mut TSS2_SYS_CONTEXT,
         auth: TPMI_RH_PROVISION,
@@ -8792,16 +6299,16 @@ extern "C" {
         rspAuthsArray: *mut TSS2L_SYS_AUTH_RESPONSE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_ReadClock_Prepare(sysContext: *mut TSS2_SYS_CONTEXT) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_ReadClock_Complete(
         sysContext: *mut TSS2_SYS_CONTEXT,
         currentTime: *mut TPMS_TIME_INFO,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_ReadClock(
         sysContext: *mut TSS2_SYS_CONTEXT,
         cmdAuthsArray: *const TSS2L_SYS_AUTH_COMMAND,
@@ -8809,17 +6316,17 @@ extern "C" {
         rspAuthsArray: *mut TSS2L_SYS_AUTH_RESPONSE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_ClockSet_Prepare(
         sysContext: *mut TSS2_SYS_CONTEXT,
         auth: TPMI_RH_PROVISION,
         newTime: UINT64,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_ClockSet_Complete(sysContext: *mut TSS2_SYS_CONTEXT) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_ClockSet(
         sysContext: *mut TSS2_SYS_CONTEXT,
         auth: TPMI_RH_PROVISION,
@@ -8828,17 +6335,17 @@ extern "C" {
         rspAuthsArray: *mut TSS2L_SYS_AUTH_RESPONSE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_ClockRateAdjust_Prepare(
         sysContext: *mut TSS2_SYS_CONTEXT,
         auth: TPMI_RH_PROVISION,
         rateAdjust: TPM2_CLOCK_ADJUST,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_ClockRateAdjust_Complete(sysContext: *mut TSS2_SYS_CONTEXT) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_ClockRateAdjust(
         sysContext: *mut TSS2_SYS_CONTEXT,
         auth: TPMI_RH_PROVISION,
@@ -8847,7 +6354,7 @@ extern "C" {
         rspAuthsArray: *mut TSS2L_SYS_AUTH_RESPONSE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_GetCapability_Prepare(
         sysContext: *mut TSS2_SYS_CONTEXT,
         capability: TPM2_CAP,
@@ -8855,14 +6362,14 @@ extern "C" {
         propertyCount: UINT32,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_GetCapability_Complete(
         sysContext: *mut TSS2_SYS_CONTEXT,
         moreData: *mut TPMI_YES_NO,
         capabilityData: *mut TPMS_CAPABILITY_DATA,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_GetCapability(
         sysContext: *mut TSS2_SYS_CONTEXT,
         cmdAuthsArray: *const TSS2L_SYS_AUTH_COMMAND,
@@ -8874,16 +6381,16 @@ extern "C" {
         rspAuthsArray: *mut TSS2L_SYS_AUTH_RESPONSE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_TestParms_Prepare(
         sysContext: *mut TSS2_SYS_CONTEXT,
         parameters: *const TPMT_PUBLIC_PARMS,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_TestParms_Complete(sysContext: *mut TSS2_SYS_CONTEXT) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_TestParms(
         sysContext: *mut TSS2_SYS_CONTEXT,
         cmdAuthsArray: *const TSS2L_SYS_AUTH_COMMAND,
@@ -8891,7 +6398,7 @@ extern "C" {
         rspAuthsArray: *mut TSS2L_SYS_AUTH_RESPONSE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_NV_DefineSpace_Prepare(
         sysContext: *mut TSS2_SYS_CONTEXT,
         authHandle: TPMI_RH_PROVISION,
@@ -8899,10 +6406,10 @@ extern "C" {
         publicInfo: *const TPM2B_NV_PUBLIC,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_NV_DefineSpace_Complete(sysContext: *mut TSS2_SYS_CONTEXT) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_NV_DefineSpace(
         sysContext: *mut TSS2_SYS_CONTEXT,
         authHandle: TPMI_RH_PROVISION,
@@ -8912,17 +6419,17 @@ extern "C" {
         rspAuthsArray: *mut TSS2L_SYS_AUTH_RESPONSE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_NV_UndefineSpace_Prepare(
         sysContext: *mut TSS2_SYS_CONTEXT,
         authHandle: TPMI_RH_PROVISION,
         nvIndex: TPMI_RH_NV_INDEX,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_NV_UndefineSpace_Complete(sysContext: *mut TSS2_SYS_CONTEXT) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_NV_UndefineSpace(
         sysContext: *mut TSS2_SYS_CONTEXT,
         authHandle: TPMI_RH_PROVISION,
@@ -8931,17 +6438,17 @@ extern "C" {
         rspAuthsArray: *mut TSS2L_SYS_AUTH_RESPONSE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_NV_UndefineSpaceSpecial_Prepare(
         sysContext: *mut TSS2_SYS_CONTEXT,
         nvIndex: TPMI_RH_NV_INDEX,
         platform: TPMI_RH_PLATFORM,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_NV_UndefineSpaceSpecial_Complete(sysContext: *mut TSS2_SYS_CONTEXT) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_NV_UndefineSpaceSpecial(
         sysContext: *mut TSS2_SYS_CONTEXT,
         nvIndex: TPMI_RH_NV_INDEX,
@@ -8950,20 +6457,20 @@ extern "C" {
         rspAuthsArray: *mut TSS2L_SYS_AUTH_RESPONSE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_NV_ReadPublic_Prepare(
         sysContext: *mut TSS2_SYS_CONTEXT,
         nvIndex: TPMI_RH_NV_INDEX,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_NV_ReadPublic_Complete(
         sysContext: *mut TSS2_SYS_CONTEXT,
         nvPublic: *mut TPM2B_NV_PUBLIC,
         nvName: *mut TPM2B_NAME,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_NV_ReadPublic(
         sysContext: *mut TSS2_SYS_CONTEXT,
         nvIndex: TPMI_RH_NV_INDEX,
@@ -8973,7 +6480,7 @@ extern "C" {
         rspAuthsArray: *mut TSS2L_SYS_AUTH_RESPONSE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_NV_Write_Prepare(
         sysContext: *mut TSS2_SYS_CONTEXT,
         authHandle: TPMI_RH_NV_AUTH,
@@ -8982,10 +6489,10 @@ extern "C" {
         offset: UINT16,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_NV_Write_Complete(sysContext: *mut TSS2_SYS_CONTEXT) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_NV_Write(
         sysContext: *mut TSS2_SYS_CONTEXT,
         authHandle: TPMI_RH_NV_AUTH,
@@ -8996,17 +6503,17 @@ extern "C" {
         rspAuthsArray: *mut TSS2L_SYS_AUTH_RESPONSE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_NV_Increment_Prepare(
         sysContext: *mut TSS2_SYS_CONTEXT,
         authHandle: TPMI_RH_NV_AUTH,
         nvIndex: TPMI_RH_NV_INDEX,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_NV_Increment_Complete(sysContext: *mut TSS2_SYS_CONTEXT) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_NV_Increment(
         sysContext: *mut TSS2_SYS_CONTEXT,
         authHandle: TPMI_RH_NV_AUTH,
@@ -9015,7 +6522,7 @@ extern "C" {
         rspAuthsArray: *mut TSS2L_SYS_AUTH_RESPONSE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_NV_Extend_Prepare(
         sysContext: *mut TSS2_SYS_CONTEXT,
         authHandle: TPMI_RH_NV_AUTH,
@@ -9023,10 +6530,10 @@ extern "C" {
         data: *const TPM2B_MAX_NV_BUFFER,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_NV_Extend_Complete(sysContext: *mut TSS2_SYS_CONTEXT) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_NV_Extend(
         sysContext: *mut TSS2_SYS_CONTEXT,
         authHandle: TPMI_RH_NV_AUTH,
@@ -9036,7 +6543,7 @@ extern "C" {
         rspAuthsArray: *mut TSS2L_SYS_AUTH_RESPONSE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_NV_SetBits_Prepare(
         sysContext: *mut TSS2_SYS_CONTEXT,
         authHandle: TPMI_RH_NV_AUTH,
@@ -9044,10 +6551,10 @@ extern "C" {
         bits: UINT64,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_NV_SetBits_Complete(sysContext: *mut TSS2_SYS_CONTEXT) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_NV_SetBits(
         sysContext: *mut TSS2_SYS_CONTEXT,
         authHandle: TPMI_RH_NV_AUTH,
@@ -9057,17 +6564,17 @@ extern "C" {
         rspAuthsArray: *mut TSS2L_SYS_AUTH_RESPONSE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_NV_WriteLock_Prepare(
         sysContext: *mut TSS2_SYS_CONTEXT,
         authHandle: TPMI_RH_NV_AUTH,
         nvIndex: TPMI_RH_NV_INDEX,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_NV_WriteLock_Complete(sysContext: *mut TSS2_SYS_CONTEXT) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_NV_WriteLock(
         sysContext: *mut TSS2_SYS_CONTEXT,
         authHandle: TPMI_RH_NV_AUTH,
@@ -9076,16 +6583,16 @@ extern "C" {
         rspAuthsArray: *mut TSS2L_SYS_AUTH_RESPONSE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_NV_GlobalWriteLock_Prepare(
         sysContext: *mut TSS2_SYS_CONTEXT,
         authHandle: TPMI_RH_PROVISION,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_NV_GlobalWriteLock_Complete(sysContext: *mut TSS2_SYS_CONTEXT) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_NV_GlobalWriteLock(
         sysContext: *mut TSS2_SYS_CONTEXT,
         authHandle: TPMI_RH_PROVISION,
@@ -9093,7 +6600,7 @@ extern "C" {
         rspAuthsArray: *mut TSS2L_SYS_AUTH_RESPONSE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_NV_Read_Prepare(
         sysContext: *mut TSS2_SYS_CONTEXT,
         authHandle: TPMI_RH_NV_AUTH,
@@ -9102,13 +6609,13 @@ extern "C" {
         offset: UINT16,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_NV_Read_Complete(
         sysContext: *mut TSS2_SYS_CONTEXT,
         data: *mut TPM2B_MAX_NV_BUFFER,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_NV_Read(
         sysContext: *mut TSS2_SYS_CONTEXT,
         authHandle: TPMI_RH_NV_AUTH,
@@ -9120,17 +6627,17 @@ extern "C" {
         rspAuthsArray: *mut TSS2L_SYS_AUTH_RESPONSE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_NV_ReadLock_Prepare(
         sysContext: *mut TSS2_SYS_CONTEXT,
         authHandle: TPMI_RH_NV_AUTH,
         nvIndex: TPMI_RH_NV_INDEX,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_NV_ReadLock_Complete(sysContext: *mut TSS2_SYS_CONTEXT) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_NV_ReadLock(
         sysContext: *mut TSS2_SYS_CONTEXT,
         authHandle: TPMI_RH_NV_AUTH,
@@ -9139,17 +6646,17 @@ extern "C" {
         rspAuthsArray: *mut TSS2L_SYS_AUTH_RESPONSE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_NV_ChangeAuth_Prepare(
         sysContext: *mut TSS2_SYS_CONTEXT,
         nvIndex: TPMI_RH_NV_INDEX,
         newAuth: *const TPM2B_AUTH,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_NV_ChangeAuth_Complete(sysContext: *mut TSS2_SYS_CONTEXT) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_NV_ChangeAuth(
         sysContext: *mut TSS2_SYS_CONTEXT,
         nvIndex: TPMI_RH_NV_INDEX,
@@ -9158,7 +6665,7 @@ extern "C" {
         rspAuthsArray: *mut TSS2L_SYS_AUTH_RESPONSE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_NV_Certify_Prepare(
         sysContext: *mut TSS2_SYS_CONTEXT,
         signHandle: TPMI_DH_OBJECT,
@@ -9170,14 +6677,14 @@ extern "C" {
         offset: UINT16,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_NV_Certify_Complete(
         sysContext: *mut TSS2_SYS_CONTEXT,
         certifyInfo: *mut TPM2B_ATTEST,
         signature: *mut TPMT_SIGNATURE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_NV_Certify(
         sysContext: *mut TSS2_SYS_CONTEXT,
         signHandle: TPMI_DH_OBJECT,
@@ -9193,19 +6700,19 @@ extern "C" {
         rspAuthsArray: *mut TSS2L_SYS_AUTH_RESPONSE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_Vendor_TCG_Test_Prepare(
         sysContext: *mut TSS2_SYS_CONTEXT,
         inputData: *const TPM2B_DATA,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_Vendor_TCG_Test_Complete(
         sysContext: *mut TSS2_SYS_CONTEXT,
         outputData: *mut TPM2B_DATA,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_Vendor_TCG_Test(
         sysContext: *mut TSS2_SYS_CONTEXT,
         cmdAuthsArray: *const TSS2L_SYS_AUTH_COMMAND,
@@ -9214,7 +6721,7 @@ extern "C" {
         rspAuthsArray: *mut TSS2L_SYS_AUTH_RESPONSE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_AC_GetCapability_Prepare(
         sysContext: *mut TSS2_SYS_CONTEXT,
         ac: TPMI_RH_AC,
@@ -9222,14 +6729,14 @@ extern "C" {
         count: UINT32,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_AC_GetCapability_Complete(
         sysContext: *mut TSS2_SYS_CONTEXT,
         moreData: *mut TPMI_YES_NO,
         capabilityData: *mut TPML_AC_CAPABILITIES,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_AC_GetCapability(
         sysContext: *mut TSS2_SYS_CONTEXT,
         ac: TPMI_RH_AC,
@@ -9241,7 +6748,7 @@ extern "C" {
         rspAuthsArray: *mut TSS2L_SYS_AUTH_RESPONSE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_AC_Send_Prepare(
         sysContext: *mut TSS2_SYS_CONTEXT,
         sendObject: TPMI_DH_OBJECT,
@@ -9250,13 +6757,13 @@ extern "C" {
         acDataIn: *mut TPM2B_MAX_BUFFER,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_AC_Send_Complete(
         sysContext: *mut TSS2_SYS_CONTEXT,
         acDataOut: *mut TPMS_AC_OUTPUT,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_AC_Send(
         sysContext: *mut TSS2_SYS_CONTEXT,
         sendObject: TPMI_DH_OBJECT,
@@ -9268,7 +6775,7 @@ extern "C" {
         rspAuthsArray: *mut TSS2L_SYS_AUTH_RESPONSE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_Policy_AC_SendSelect_Prepare(
         sysContext: *mut TSS2_SYS_CONTEXT,
         policySession: TPMI_SH_POLICY,
@@ -9278,10 +6785,10 @@ extern "C" {
         includeObject: TPMI_YES_NO,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_Policy_AC_SendSelect_Complete(sysContext: *mut TSS2_SYS_CONTEXT) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_Policy_AC_SendSelect(
         sysContext: *mut TSS2_SYS_CONTEXT,
         policySession: TPMI_SH_POLICY,
@@ -9293,17 +6800,17 @@ extern "C" {
         rspAuthsArray: *mut TSS2L_SYS_AUTH_RESPONSE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_ACT_SetTimeout_Prepare(
         sysContext: *mut TSS2_SYS_CONTEXT,
         actHandle: TPMI_RH_ACT,
         startTimeout: UINT32,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_ACT_SetTimeout_Complete(sysContext: *mut TSS2_SYS_CONTEXT) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_ACT_SetTimeout(
         sysContext: *mut TSS2_SYS_CONTEXT,
         actHandle: TPMI_RH_ACT,
@@ -9312,17 +6819,17 @@ extern "C" {
         rspAuthsArray: *mut TSS2L_SYS_AUTH_RESPONSE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_PolicyTemplate_Prepare(
         sysContext: *mut TSS2_SYS_CONTEXT,
         policySession: TPMI_SH_POLICY,
         templateHash: *const TPM2B_DIGEST,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_PolicyTemplate_Complete(sysContext: *mut TSS2_SYS_CONTEXT) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_PolicyTemplate(
         sysContext: *mut TSS2_SYS_CONTEXT,
         policySession: TPMI_SH_POLICY,
@@ -9331,7 +6838,7 @@ extern "C" {
         rspAuthsArray: *mut TSS2L_SYS_AUTH_RESPONSE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_CreateLoaded_Prepare(
         sysContext: *mut TSS2_SYS_CONTEXT,
         parentHandle: TPMI_RH_HIERARCHY,
@@ -9339,7 +6846,7 @@ extern "C" {
         inPublic: *const TPM2B_TEMPLATE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_CreateLoaded_Complete(
         sysContext: *mut TSS2_SYS_CONTEXT,
         objectHandle: *mut TPM2_HANDLE,
@@ -9348,7 +6855,7 @@ extern "C" {
         name: *mut TPM2B_NAME,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_CreateLoaded(
         sysContext: *mut TSS2_SYS_CONTEXT,
         parentHandle: TPMI_RH_HIERARCHY,
@@ -9362,7 +6869,7 @@ extern "C" {
         rspAuthsArray: *mut TSS2L_SYS_AUTH_RESPONSE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_PolicyAuthorizeNV_Prepare(
         sysContext: *mut TSS2_SYS_CONTEXT,
         authHandle: TPMI_RH_NV_AUTH,
@@ -9370,10 +6877,10 @@ extern "C" {
         policySession: TPMI_SH_POLICY,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_PolicyAuthorizeNV_Complete(sysContext: *mut TSS2_SYS_CONTEXT) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Sys_PolicyAuthorizeNV(
         sysContext: *mut TSS2_SYS_CONTEXT,
         authHandle: TPMI_RH_NV_AUTH,
@@ -9555,107 +7062,46 @@ pub struct ESYS_CRYPTO_CALLBACKS {
     pub init: ESYS_CRYPTO_INIT_FNP,
     pub userdata: *mut ::std::os::raw::c_void,
 }
-#[test]
-fn bindgen_test_layout_ESYS_CRYPTO_CALLBACKS() {
-    const UNINIT: ::std::mem::MaybeUninit<ESYS_CRYPTO_CALLBACKS> =
-        ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<ESYS_CRYPTO_CALLBACKS>(),
-        68usize,
-        "Size of ESYS_CRYPTO_CALLBACKS"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<ESYS_CRYPTO_CALLBACKS>(),
-        4usize,
-        "Alignment of ESYS_CRYPTO_CALLBACKS"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).rsa_pk_encrypt) as usize - ptr as usize },
-        0usize,
-        "Offset of field: ESYS_CRYPTO_CALLBACKS::rsa_pk_encrypt"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).hash_start) as usize - ptr as usize },
-        4usize,
-        "Offset of field: ESYS_CRYPTO_CALLBACKS::hash_start"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).hash_update) as usize - ptr as usize },
-        8usize,
-        "Offset of field: ESYS_CRYPTO_CALLBACKS::hash_update"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).hash_finish) as usize - ptr as usize },
-        12usize,
-        "Offset of field: ESYS_CRYPTO_CALLBACKS::hash_finish"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).hash_abort) as usize - ptr as usize },
-        16usize,
-        "Offset of field: ESYS_CRYPTO_CALLBACKS::hash_abort"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).hmac_start) as usize - ptr as usize },
-        20usize,
-        "Offset of field: ESYS_CRYPTO_CALLBACKS::hmac_start"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).hmac_update) as usize - ptr as usize },
-        24usize,
-        "Offset of field: ESYS_CRYPTO_CALLBACKS::hmac_update"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).hmac_finish) as usize - ptr as usize },
-        28usize,
-        "Offset of field: ESYS_CRYPTO_CALLBACKS::hmac_finish"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).hmac_abort) as usize - ptr as usize },
-        32usize,
-        "Offset of field: ESYS_CRYPTO_CALLBACKS::hmac_abort"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).get_random2b) as usize - ptr as usize },
-        36usize,
-        "Offset of field: ESYS_CRYPTO_CALLBACKS::get_random2b"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).get_ecdh_point) as usize - ptr as usize },
-        40usize,
-        "Offset of field: ESYS_CRYPTO_CALLBACKS::get_ecdh_point"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).aes_encrypt) as usize - ptr as usize },
-        44usize,
-        "Offset of field: ESYS_CRYPTO_CALLBACKS::aes_encrypt"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).aes_decrypt) as usize - ptr as usize },
-        48usize,
-        "Offset of field: ESYS_CRYPTO_CALLBACKS::aes_decrypt"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).sm4_encrypt) as usize - ptr as usize },
-        52usize,
-        "Offset of field: ESYS_CRYPTO_CALLBACKS::sm4_encrypt"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).sm4_decrypt) as usize - ptr as usize },
-        56usize,
-        "Offset of field: ESYS_CRYPTO_CALLBACKS::sm4_decrypt"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).init) as usize - ptr as usize },
-        60usize,
-        "Offset of field: ESYS_CRYPTO_CALLBACKS::init"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).userdata) as usize - ptr as usize },
-        64usize,
-        "Offset of field: ESYS_CRYPTO_CALLBACKS::userdata"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of ESYS_CRYPTO_CALLBACKS"][::std::mem::size_of::<ESYS_CRYPTO_CALLBACKS>() - 68usize];
+    ["Alignment of ESYS_CRYPTO_CALLBACKS"]
+        [::std::mem::align_of::<ESYS_CRYPTO_CALLBACKS>() - 4usize];
+    ["Offset of field: ESYS_CRYPTO_CALLBACKS::rsa_pk_encrypt"]
+        [::std::mem::offset_of!(ESYS_CRYPTO_CALLBACKS, rsa_pk_encrypt) - 0usize];
+    ["Offset of field: ESYS_CRYPTO_CALLBACKS::hash_start"]
+        [::std::mem::offset_of!(ESYS_CRYPTO_CALLBACKS, hash_start) - 4usize];
+    ["Offset of field: ESYS_CRYPTO_CALLBACKS::hash_update"]
+        [::std::mem::offset_of!(ESYS_CRYPTO_CALLBACKS, hash_update) - 8usize];
+    ["Offset of field: ESYS_CRYPTO_CALLBACKS::hash_finish"]
+        [::std::mem::offset_of!(ESYS_CRYPTO_CALLBACKS, hash_finish) - 12usize];
+    ["Offset of field: ESYS_CRYPTO_CALLBACKS::hash_abort"]
+        [::std::mem::offset_of!(ESYS_CRYPTO_CALLBACKS, hash_abort) - 16usize];
+    ["Offset of field: ESYS_CRYPTO_CALLBACKS::hmac_start"]
+        [::std::mem::offset_of!(ESYS_CRYPTO_CALLBACKS, hmac_start) - 20usize];
+    ["Offset of field: ESYS_CRYPTO_CALLBACKS::hmac_update"]
+        [::std::mem::offset_of!(ESYS_CRYPTO_CALLBACKS, hmac_update) - 24usize];
+    ["Offset of field: ESYS_CRYPTO_CALLBACKS::hmac_finish"]
+        [::std::mem::offset_of!(ESYS_CRYPTO_CALLBACKS, hmac_finish) - 28usize];
+    ["Offset of field: ESYS_CRYPTO_CALLBACKS::hmac_abort"]
+        [::std::mem::offset_of!(ESYS_CRYPTO_CALLBACKS, hmac_abort) - 32usize];
+    ["Offset of field: ESYS_CRYPTO_CALLBACKS::get_random2b"]
+        [::std::mem::offset_of!(ESYS_CRYPTO_CALLBACKS, get_random2b) - 36usize];
+    ["Offset of field: ESYS_CRYPTO_CALLBACKS::get_ecdh_point"]
+        [::std::mem::offset_of!(ESYS_CRYPTO_CALLBACKS, get_ecdh_point) - 40usize];
+    ["Offset of field: ESYS_CRYPTO_CALLBACKS::aes_encrypt"]
+        [::std::mem::offset_of!(ESYS_CRYPTO_CALLBACKS, aes_encrypt) - 44usize];
+    ["Offset of field: ESYS_CRYPTO_CALLBACKS::aes_decrypt"]
+        [::std::mem::offset_of!(ESYS_CRYPTO_CALLBACKS, aes_decrypt) - 48usize];
+    ["Offset of field: ESYS_CRYPTO_CALLBACKS::sm4_encrypt"]
+        [::std::mem::offset_of!(ESYS_CRYPTO_CALLBACKS, sm4_encrypt) - 52usize];
+    ["Offset of field: ESYS_CRYPTO_CALLBACKS::sm4_decrypt"]
+        [::std::mem::offset_of!(ESYS_CRYPTO_CALLBACKS, sm4_decrypt) - 56usize];
+    ["Offset of field: ESYS_CRYPTO_CALLBACKS::init"]
+        [::std::mem::offset_of!(ESYS_CRYPTO_CALLBACKS, init) - 60usize];
+    ["Offset of field: ESYS_CRYPTO_CALLBACKS::userdata"]
+        [::std::mem::offset_of!(ESYS_CRYPTO_CALLBACKS, userdata) - 64usize];
+};
 impl Default for ESYS_CRYPTO_CALLBACKS {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
@@ -9665,33 +7111,33 @@ impl Default for ESYS_CRYPTO_CALLBACKS {
         }
     }
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_Initialize(
         esys_context: *mut *mut ESYS_CONTEXT,
         tcti: *mut TSS2_TCTI_CONTEXT,
         abiVersion: *mut TSS2_ABI_VERSION,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_Finalize(context: *mut *mut ESYS_CONTEXT);
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_GetTcti(
         esys_context: *mut ESYS_CONTEXT,
         tcti: *mut *mut TSS2_TCTI_CONTEXT,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_GetPollHandles(
         esys_context: *mut ESYS_CONTEXT,
         handles: *mut *mut TSS2_TCTI_POLL_HANDLE,
         count: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_SetTimeout(esys_context: *mut ESYS_CONTEXT, timeout: i32) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_TR_Serialize(
         esys_context: *mut ESYS_CONTEXT,
         object: ESYS_TR,
@@ -9699,7 +7145,7 @@ extern "C" {
         buffer_size: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_TR_Deserialize(
         esys_context: *mut ESYS_CONTEXT,
         buffer: *const u8,
@@ -9707,7 +7153,7 @@ extern "C" {
         esys_handle: *mut ESYS_TR,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_TR_FromTPMPublic_Async(
         esysContext: *mut ESYS_CONTEXT,
         tpm_handle: TPM2_HANDLE,
@@ -9716,13 +7162,13 @@ extern "C" {
         optionalSession3: ESYS_TR,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_TR_FromTPMPublic_Finish(
         esysContext: *mut ESYS_CONTEXT,
         object: *mut ESYS_TR,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_TR_FromTPMPublic(
         esysContext: *mut ESYS_CONTEXT,
         tpm_handle: TPM2_HANDLE,
@@ -9732,31 +7178,31 @@ extern "C" {
         object: *mut ESYS_TR,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_TR_Close(esys_context: *mut ESYS_CONTEXT, rsrc_handle: *mut ESYS_TR) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_TR_SetAuth(
         esysContext: *mut ESYS_CONTEXT,
         handle: ESYS_TR,
         authValue: *const TPM2B_AUTH,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_TR_GetName(
         esysContext: *mut ESYS_CONTEXT,
         handle: ESYS_TR,
         name: *mut *mut TPM2B_NAME,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_TRSess_GetAttributes(
         esysContext: *mut ESYS_CONTEXT,
         session: ESYS_TR,
         flags: *mut TPMA_SESSION,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_TRSess_SetAttributes(
         esysContext: *mut ESYS_CONTEXT,
         session: ESYS_TR,
@@ -9764,37 +7210,37 @@ extern "C" {
         mask: TPMA_SESSION,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_TRSess_GetNonceTPM(
         esysContext: *mut ESYS_CONTEXT,
         session: ESYS_TR,
         nonceTPM: *mut *mut TPM2B_NONCE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_TR_GetTpmHandle(
         esys_context: *mut ESYS_CONTEXT,
         esys_handle: ESYS_TR,
         tpm_handle: *mut TPM2_HANDLE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_TRSess_GetAuthRequired(
         esys_context: *mut ESYS_CONTEXT,
         esys_handle: ESYS_TR,
         auth_needed: *mut TPMI_YES_NO,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_Startup(esysContext: *mut ESYS_CONTEXT, startupType: TPM2_SU) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_Startup_Async(esysContext: *mut ESYS_CONTEXT, startupType: TPM2_SU) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_Startup_Finish(esysContext: *mut ESYS_CONTEXT) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_Shutdown(
         esysContext: *mut ESYS_CONTEXT,
         shandle1: ESYS_TR,
@@ -9803,7 +7249,7 @@ extern "C" {
         shutdownType: TPM2_SU,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_Shutdown_Async(
         esysContext: *mut ESYS_CONTEXT,
         shandle1: ESYS_TR,
@@ -9812,10 +7258,10 @@ extern "C" {
         shutdownType: TPM2_SU,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_Shutdown_Finish(esysContext: *mut ESYS_CONTEXT) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_SelfTest(
         esysContext: *mut ESYS_CONTEXT,
         shandle1: ESYS_TR,
@@ -9824,7 +7270,7 @@ extern "C" {
         fullTest: TPMI_YES_NO,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_SelfTest_Async(
         esysContext: *mut ESYS_CONTEXT,
         shandle1: ESYS_TR,
@@ -9833,10 +7279,10 @@ extern "C" {
         fullTest: TPMI_YES_NO,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_SelfTest_Finish(esysContext: *mut ESYS_CONTEXT) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_IncrementalSelfTest(
         esysContext: *mut ESYS_CONTEXT,
         shandle1: ESYS_TR,
@@ -9846,7 +7292,7 @@ extern "C" {
         toDoList: *mut *mut TPML_ALG,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_IncrementalSelfTest_Async(
         esysContext: *mut ESYS_CONTEXT,
         shandle1: ESYS_TR,
@@ -9855,13 +7301,13 @@ extern "C" {
         toTest: *const TPML_ALG,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_IncrementalSelfTest_Finish(
         esysContext: *mut ESYS_CONTEXT,
         toDoList: *mut *mut TPML_ALG,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_GetTestResult(
         esysContext: *mut ESYS_CONTEXT,
         shandle1: ESYS_TR,
@@ -9871,7 +7317,7 @@ extern "C" {
         testResult: *mut TPM2_RC,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_GetTestResult_Async(
         esysContext: *mut ESYS_CONTEXT,
         shandle1: ESYS_TR,
@@ -9879,14 +7325,14 @@ extern "C" {
         shandle3: ESYS_TR,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_GetTestResult_Finish(
         esysContext: *mut ESYS_CONTEXT,
         outData: *mut *mut TPM2B_MAX_BUFFER,
         testResult: *mut TPM2_RC,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_StartAuthSession(
         esysContext: *mut ESYS_CONTEXT,
         tpmKey: ESYS_TR,
@@ -9901,7 +7347,7 @@ extern "C" {
         sessionHandle: *mut ESYS_TR,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_StartAuthSession_Async(
         esysContext: *mut ESYS_CONTEXT,
         tpmKey: ESYS_TR,
@@ -9915,13 +7361,13 @@ extern "C" {
         authHash: TPMI_ALG_HASH,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_StartAuthSession_Finish(
         esysContext: *mut ESYS_CONTEXT,
         sessionHandle: *mut ESYS_TR,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_PolicyRestart(
         esysContext: *mut ESYS_CONTEXT,
         sessionHandle: ESYS_TR,
@@ -9930,7 +7376,7 @@ extern "C" {
         shandle3: ESYS_TR,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_PolicyRestart_Async(
         esysContext: *mut ESYS_CONTEXT,
         sessionHandle: ESYS_TR,
@@ -9939,10 +7385,10 @@ extern "C" {
         shandle3: ESYS_TR,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_PolicyRestart_Finish(esysContext: *mut ESYS_CONTEXT) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_Create(
         esysContext: *mut ESYS_CONTEXT,
         parentHandle: ESYS_TR,
@@ -9960,7 +7406,7 @@ extern "C" {
         creationTicket: *mut *mut TPMT_TK_CREATION,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_Create_Async(
         esysContext: *mut ESYS_CONTEXT,
         parentHandle: ESYS_TR,
@@ -9973,7 +7419,7 @@ extern "C" {
         creationPCR: *const TPML_PCR_SELECTION,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_Create_Finish(
         esysContext: *mut ESYS_CONTEXT,
         outPrivate: *mut *mut TPM2B_PRIVATE,
@@ -9983,7 +7429,7 @@ extern "C" {
         creationTicket: *mut *mut TPMT_TK_CREATION,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_Load(
         esysContext: *mut ESYS_CONTEXT,
         parentHandle: ESYS_TR,
@@ -9995,7 +7441,7 @@ extern "C" {
         objectHandle: *mut ESYS_TR,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_Load_Async(
         esysContext: *mut ESYS_CONTEXT,
         parentHandle: ESYS_TR,
@@ -10006,10 +7452,10 @@ extern "C" {
         inPublic: *const TPM2B_PUBLIC,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_Load_Finish(esysContext: *mut ESYS_CONTEXT, objectHandle: *mut ESYS_TR) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_LoadExternal(
         esysContext: *mut ESYS_CONTEXT,
         shandle1: ESYS_TR,
@@ -10021,7 +7467,7 @@ extern "C" {
         objectHandle: *mut ESYS_TR,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_LoadExternal_Async(
         esysContext: *mut ESYS_CONTEXT,
         shandle1: ESYS_TR,
@@ -10032,13 +7478,13 @@ extern "C" {
         hierarchy: ESYS_TR,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_LoadExternal_Finish(
         esysContext: *mut ESYS_CONTEXT,
         objectHandle: *mut ESYS_TR,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_ReadPublic(
         esysContext: *mut ESYS_CONTEXT,
         objectHandle: ESYS_TR,
@@ -10050,7 +7496,7 @@ extern "C" {
         qualifiedName: *mut *mut TPM2B_NAME,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_ReadPublic_Async(
         esysContext: *mut ESYS_CONTEXT,
         objectHandle: ESYS_TR,
@@ -10059,7 +7505,7 @@ extern "C" {
         shandle3: ESYS_TR,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_ReadPublic_Finish(
         esysContext: *mut ESYS_CONTEXT,
         outPublic: *mut *mut TPM2B_PUBLIC,
@@ -10067,7 +7513,7 @@ extern "C" {
         qualifiedName: *mut *mut TPM2B_NAME,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_ActivateCredential(
         esysContext: *mut ESYS_CONTEXT,
         activateHandle: ESYS_TR,
@@ -10080,7 +7526,7 @@ extern "C" {
         certInfo: *mut *mut TPM2B_DIGEST,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_ActivateCredential_Async(
         esysContext: *mut ESYS_CONTEXT,
         activateHandle: ESYS_TR,
@@ -10092,13 +7538,13 @@ extern "C" {
         secret: *const TPM2B_ENCRYPTED_SECRET,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_ActivateCredential_Finish(
         esysContext: *mut ESYS_CONTEXT,
         certInfo: *mut *mut TPM2B_DIGEST,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_ACT_SetTimeout(
         esysContext: *mut ESYS_CONTEXT,
         actHandle: ESYS_TR,
@@ -10108,7 +7554,7 @@ extern "C" {
         startTimeout: UINT32,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_ACT_SetTimeout_Async(
         esysContext: *mut ESYS_CONTEXT,
         actHandle: ESYS_TR,
@@ -10118,10 +7564,10 @@ extern "C" {
         startTimeout: UINT32,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_ACT_SetTimeout_Finish(esysContext: *mut ESYS_CONTEXT) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_AC_GetCapability_Async(
         esysContext: *mut ESYS_CONTEXT,
         optionalSession1: ESYS_TR,
@@ -10132,14 +7578,14 @@ extern "C" {
         count: UINT32,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_AC_GetCapability_Finish(
         esysContext: *mut ESYS_CONTEXT,
         moreData: *mut TPMI_YES_NO,
         capabilityData: *mut *mut TPML_AC_CAPABILITIES,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_AC_GetCapability(
         esysContext: *mut ESYS_CONTEXT,
         optionalSession1: ESYS_TR,
@@ -10152,7 +7598,7 @@ extern "C" {
         capabilityData: *mut *mut TPML_AC_CAPABILITIES,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_AC_Send_Async(
         esysContext: *mut ESYS_CONTEXT,
         sendObject: ESYS_TR,
@@ -10164,13 +7610,13 @@ extern "C" {
         acDataIn: *mut TPM2B_MAX_BUFFER,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_AC_Send_Finish(
         esysContext: *mut ESYS_CONTEXT,
         acDataOut: *mut *mut TPMS_AC_OUTPUT,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_AC_Send(
         esysContext: *mut ESYS_CONTEXT,
         sendObject: ESYS_TR,
@@ -10183,7 +7629,7 @@ extern "C" {
         acDataOut: *mut *mut TPMS_AC_OUTPUT,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_Policy_AC_SendSelect_Async(
         esysContext: *mut ESYS_CONTEXT,
         policySession1: ESYS_TR,
@@ -10195,10 +7641,10 @@ extern "C" {
         includeObject: TPMI_YES_NO,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_Policy_AC_SendSelect_Finish(esysContext: *mut ESYS_CONTEXT) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_Policy_AC_SendSelect(
         esysContext: *mut ESYS_CONTEXT,
         policySession1: ESYS_TR,
@@ -10210,7 +7656,7 @@ extern "C" {
         includeObject: TPMI_YES_NO,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_MakeCredential(
         esysContext: *mut ESYS_CONTEXT,
         handle: ESYS_TR,
@@ -10223,7 +7669,7 @@ extern "C" {
         secret: *mut *mut TPM2B_ENCRYPTED_SECRET,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_MakeCredential_Async(
         esysContext: *mut ESYS_CONTEXT,
         handle: ESYS_TR,
@@ -10234,14 +7680,14 @@ extern "C" {
         objectName: *const TPM2B_NAME,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_MakeCredential_Finish(
         esysContext: *mut ESYS_CONTEXT,
         credentialBlob: *mut *mut TPM2B_ID_OBJECT,
         secret: *mut *mut TPM2B_ENCRYPTED_SECRET,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_Unseal(
         esysContext: *mut ESYS_CONTEXT,
         itemHandle: ESYS_TR,
@@ -10251,7 +7697,7 @@ extern "C" {
         outData: *mut *mut TPM2B_SENSITIVE_DATA,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_Unseal_Async(
         esysContext: *mut ESYS_CONTEXT,
         itemHandle: ESYS_TR,
@@ -10260,13 +7706,13 @@ extern "C" {
         shandle3: ESYS_TR,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_Unseal_Finish(
         esysContext: *mut ESYS_CONTEXT,
         outData: *mut *mut TPM2B_SENSITIVE_DATA,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_ObjectChangeAuth(
         esysContext: *mut ESYS_CONTEXT,
         objectHandle: ESYS_TR,
@@ -10278,7 +7724,7 @@ extern "C" {
         outPrivate: *mut *mut TPM2B_PRIVATE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_ObjectChangeAuth_Async(
         esysContext: *mut ESYS_CONTEXT,
         objectHandle: ESYS_TR,
@@ -10289,13 +7735,13 @@ extern "C" {
         newAuth: *const TPM2B_AUTH,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_ObjectChangeAuth_Finish(
         esysContext: *mut ESYS_CONTEXT,
         outPrivate: *mut *mut TPM2B_PRIVATE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_CreateLoaded(
         esysContext: *mut ESYS_CONTEXT,
         parentHandle: ESYS_TR,
@@ -10309,7 +7755,7 @@ extern "C" {
         outPublic: *mut *mut TPM2B_PUBLIC,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_CreateLoaded_Async(
         esysContext: *mut ESYS_CONTEXT,
         parentHandle: ESYS_TR,
@@ -10320,7 +7766,7 @@ extern "C" {
         inPublic: *const TPM2B_TEMPLATE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_CreateLoaded_Finish(
         esysContext: *mut ESYS_CONTEXT,
         objectHandle: *mut ESYS_TR,
@@ -10328,7 +7774,7 @@ extern "C" {
         outPublic: *mut *mut TPM2B_PUBLIC,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_Duplicate(
         esysContext: *mut ESYS_CONTEXT,
         objectHandle: ESYS_TR,
@@ -10343,7 +7789,7 @@ extern "C" {
         outSymSeed: *mut *mut TPM2B_ENCRYPTED_SECRET,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_Duplicate_Async(
         esysContext: *mut ESYS_CONTEXT,
         objectHandle: ESYS_TR,
@@ -10355,7 +7801,7 @@ extern "C" {
         symmetricAlg: *const TPMT_SYM_DEF_OBJECT,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_Duplicate_Finish(
         esysContext: *mut ESYS_CONTEXT,
         encryptionKeyOut: *mut *mut TPM2B_DATA,
@@ -10363,7 +7809,7 @@ extern "C" {
         outSymSeed: *mut *mut TPM2B_ENCRYPTED_SECRET,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_Rewrap(
         esysContext: *mut ESYS_CONTEXT,
         oldParent: ESYS_TR,
@@ -10378,7 +7824,7 @@ extern "C" {
         outSymSeed: *mut *mut TPM2B_ENCRYPTED_SECRET,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_Rewrap_Async(
         esysContext: *mut ESYS_CONTEXT,
         oldParent: ESYS_TR,
@@ -10391,14 +7837,14 @@ extern "C" {
         inSymSeed: *const TPM2B_ENCRYPTED_SECRET,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_Rewrap_Finish(
         esysContext: *mut ESYS_CONTEXT,
         outDuplicate: *mut *mut TPM2B_PRIVATE,
         outSymSeed: *mut *mut TPM2B_ENCRYPTED_SECRET,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_Import(
         esysContext: *mut ESYS_CONTEXT,
         parentHandle: ESYS_TR,
@@ -10413,7 +7859,7 @@ extern "C" {
         outPrivate: *mut *mut TPM2B_PRIVATE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_Import_Async(
         esysContext: *mut ESYS_CONTEXT,
         parentHandle: ESYS_TR,
@@ -10427,13 +7873,13 @@ extern "C" {
         symmetricAlg: *const TPMT_SYM_DEF_OBJECT,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_Import_Finish(
         esysContext: *mut ESYS_CONTEXT,
         outPrivate: *mut *mut TPM2B_PRIVATE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_RSA_Encrypt(
         esysContext: *mut ESYS_CONTEXT,
         keyHandle: ESYS_TR,
@@ -10446,7 +7892,7 @@ extern "C" {
         outData: *mut *mut TPM2B_PUBLIC_KEY_RSA,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_RSA_Encrypt_Async(
         esysContext: *mut ESYS_CONTEXT,
         keyHandle: ESYS_TR,
@@ -10458,13 +7904,13 @@ extern "C" {
         label: *const TPM2B_DATA,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_RSA_Encrypt_Finish(
         esysContext: *mut ESYS_CONTEXT,
         outData: *mut *mut TPM2B_PUBLIC_KEY_RSA,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_RSA_Decrypt(
         esysContext: *mut ESYS_CONTEXT,
         keyHandle: ESYS_TR,
@@ -10477,7 +7923,7 @@ extern "C" {
         message: *mut *mut TPM2B_PUBLIC_KEY_RSA,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_RSA_Decrypt_Async(
         esysContext: *mut ESYS_CONTEXT,
         keyHandle: ESYS_TR,
@@ -10489,13 +7935,13 @@ extern "C" {
         label: *const TPM2B_DATA,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_RSA_Decrypt_Finish(
         esysContext: *mut ESYS_CONTEXT,
         message: *mut *mut TPM2B_PUBLIC_KEY_RSA,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_ECDH_KeyGen(
         esysContext: *mut ESYS_CONTEXT,
         keyHandle: ESYS_TR,
@@ -10506,7 +7952,7 @@ extern "C" {
         pubPoint: *mut *mut TPM2B_ECC_POINT,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_ECDH_KeyGen_Async(
         esysContext: *mut ESYS_CONTEXT,
         keyHandle: ESYS_TR,
@@ -10515,14 +7961,14 @@ extern "C" {
         shandle3: ESYS_TR,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_ECDH_KeyGen_Finish(
         esysContext: *mut ESYS_CONTEXT,
         zPoint: *mut *mut TPM2B_ECC_POINT,
         pubPoint: *mut *mut TPM2B_ECC_POINT,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_ECDH_ZGen(
         esysContext: *mut ESYS_CONTEXT,
         keyHandle: ESYS_TR,
@@ -10533,7 +7979,7 @@ extern "C" {
         outPoint: *mut *mut TPM2B_ECC_POINT,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_ECDH_ZGen_Async(
         esysContext: *mut ESYS_CONTEXT,
         keyHandle: ESYS_TR,
@@ -10543,13 +7989,13 @@ extern "C" {
         inPoint: *const TPM2B_ECC_POINT,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_ECDH_ZGen_Finish(
         esysContext: *mut ESYS_CONTEXT,
         outPoint: *mut *mut TPM2B_ECC_POINT,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_ECC_Parameters(
         esysContext: *mut ESYS_CONTEXT,
         shandle1: ESYS_TR,
@@ -10559,7 +8005,7 @@ extern "C" {
         parameters: *mut *mut TPMS_ALGORITHM_DETAIL_ECC,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_ECC_Parameters_Async(
         esysContext: *mut ESYS_CONTEXT,
         shandle1: ESYS_TR,
@@ -10568,13 +8014,13 @@ extern "C" {
         curveID: TPMI_ECC_CURVE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_ECC_Parameters_Finish(
         esysContext: *mut ESYS_CONTEXT,
         parameters: *mut *mut TPMS_ALGORITHM_DETAIL_ECC,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_ZGen_2Phase(
         esysContext: *mut ESYS_CONTEXT,
         keyA: ESYS_TR,
@@ -10589,7 +8035,7 @@ extern "C" {
         outZ2: *mut *mut TPM2B_ECC_POINT,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_ZGen_2Phase_Async(
         esysContext: *mut ESYS_CONTEXT,
         keyA: ESYS_TR,
@@ -10602,14 +8048,14 @@ extern "C" {
         counter: UINT16,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_ZGen_2Phase_Finish(
         esysContext: *mut ESYS_CONTEXT,
         outZ1: *mut *mut TPM2B_ECC_POINT,
         outZ2: *mut *mut TPM2B_ECC_POINT,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_EncryptDecrypt(
         esysContext: *mut ESYS_CONTEXT,
         keyHandle: ESYS_TR,
@@ -10624,7 +8070,7 @@ extern "C" {
         ivOut: *mut *mut TPM2B_IV,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_EncryptDecrypt_Async(
         esysContext: *mut ESYS_CONTEXT,
         keyHandle: ESYS_TR,
@@ -10637,14 +8083,14 @@ extern "C" {
         inData: *const TPM2B_MAX_BUFFER,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_EncryptDecrypt_Finish(
         esysContext: *mut ESYS_CONTEXT,
         outData: *mut *mut TPM2B_MAX_BUFFER,
         ivOut: *mut *mut TPM2B_IV,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_EncryptDecrypt2(
         esysContext: *mut ESYS_CONTEXT,
         keyHandle: ESYS_TR,
@@ -10659,7 +8105,7 @@ extern "C" {
         ivOut: *mut *mut TPM2B_IV,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_EncryptDecrypt2_Async(
         esysContext: *mut ESYS_CONTEXT,
         keyHandle: ESYS_TR,
@@ -10672,14 +8118,14 @@ extern "C" {
         ivIn: *const TPM2B_IV,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_EncryptDecrypt2_Finish(
         esysContext: *mut ESYS_CONTEXT,
         outData: *mut *mut TPM2B_MAX_BUFFER,
         ivOut: *mut *mut TPM2B_IV,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_Hash(
         esysContext: *mut ESYS_CONTEXT,
         shandle1: ESYS_TR,
@@ -10692,7 +8138,7 @@ extern "C" {
         validation: *mut *mut TPMT_TK_HASHCHECK,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_Hash_Async(
         esysContext: *mut ESYS_CONTEXT,
         shandle1: ESYS_TR,
@@ -10703,14 +8149,14 @@ extern "C" {
         hierarchy: ESYS_TR,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_Hash_Finish(
         esysContext: *mut ESYS_CONTEXT,
         outHash: *mut *mut TPM2B_DIGEST,
         validation: *mut *mut TPMT_TK_HASHCHECK,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_HMAC(
         esysContext: *mut ESYS_CONTEXT,
         handle: ESYS_TR,
@@ -10722,7 +8168,7 @@ extern "C" {
         outHMAC: *mut *mut TPM2B_DIGEST,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_HMAC_Async(
         esysContext: *mut ESYS_CONTEXT,
         handle: ESYS_TR,
@@ -10733,13 +8179,13 @@ extern "C" {
         hashAlg: TPMI_ALG_HASH,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_HMAC_Finish(
         esysContext: *mut ESYS_CONTEXT,
         outHMAC: *mut *mut TPM2B_DIGEST,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_MAC_Async(
         esysContext: *mut ESYS_CONTEXT,
         handle: ESYS_TR,
@@ -10750,13 +8196,13 @@ extern "C" {
         inScheme: TPMI_ALG_MAC_SCHEME,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_MAC_Finish(
         esysContext: *mut ESYS_CONTEXT,
         outMAC: *mut *mut TPM2B_DIGEST,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_MAC(
         esysContext: *mut ESYS_CONTEXT,
         handle: ESYS_TR,
@@ -10768,7 +8214,7 @@ extern "C" {
         outMAC: *mut *mut TPM2B_DIGEST,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_GetRandom(
         esysContext: *mut ESYS_CONTEXT,
         shandle1: ESYS_TR,
@@ -10778,7 +8224,7 @@ extern "C" {
         randomBytes: *mut *mut TPM2B_DIGEST,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_GetRandom_Async(
         esysContext: *mut ESYS_CONTEXT,
         shandle1: ESYS_TR,
@@ -10787,13 +8233,13 @@ extern "C" {
         bytesRequested: UINT16,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_GetRandom_Finish(
         esysContext: *mut ESYS_CONTEXT,
         randomBytes: *mut *mut TPM2B_DIGEST,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_StirRandom(
         esysContext: *mut ESYS_CONTEXT,
         shandle1: ESYS_TR,
@@ -10802,7 +8248,7 @@ extern "C" {
         inData: *const TPM2B_SENSITIVE_DATA,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_StirRandom_Async(
         esysContext: *mut ESYS_CONTEXT,
         shandle1: ESYS_TR,
@@ -10811,10 +8257,10 @@ extern "C" {
         inData: *const TPM2B_SENSITIVE_DATA,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_StirRandom_Finish(esysContext: *mut ESYS_CONTEXT) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_HMAC_Start(
         esysContext: *mut ESYS_CONTEXT,
         handle: ESYS_TR,
@@ -10826,7 +8272,7 @@ extern "C" {
         sequenceHandle: *mut ESYS_TR,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_HMAC_Start_Async(
         esysContext: *mut ESYS_CONTEXT,
         handle: ESYS_TR,
@@ -10837,13 +8283,13 @@ extern "C" {
         hashAlg: TPMI_ALG_HASH,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_HMAC_Start_Finish(
         esysContext: *mut ESYS_CONTEXT,
         sequenceHandle: *mut ESYS_TR,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_MAC_Start(
         esysContext: *mut ESYS_CONTEXT,
         handle: ESYS_TR,
@@ -10855,7 +8301,7 @@ extern "C" {
         sequenceHandle: *mut ESYS_TR,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_MAC_Start_Async(
         esysContext: *mut ESYS_CONTEXT,
         handle: ESYS_TR,
@@ -10866,13 +8312,13 @@ extern "C" {
         inScheme: TPMI_ALG_MAC_SCHEME,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_MAC_Start_Finish(
         esysContext: *mut ESYS_CONTEXT,
         sequenceHandle: *mut ESYS_TR,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_HashSequenceStart(
         esysContext: *mut ESYS_CONTEXT,
         shandle1: ESYS_TR,
@@ -10883,7 +8329,7 @@ extern "C" {
         sequenceHandle: *mut ESYS_TR,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_HashSequenceStart_Async(
         esysContext: *mut ESYS_CONTEXT,
         shandle1: ESYS_TR,
@@ -10893,13 +8339,13 @@ extern "C" {
         hashAlg: TPMI_ALG_HASH,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_HashSequenceStart_Finish(
         esysContext: *mut ESYS_CONTEXT,
         sequenceHandle: *mut ESYS_TR,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_SequenceUpdate(
         esysContext: *mut ESYS_CONTEXT,
         sequenceHandle: ESYS_TR,
@@ -10909,7 +8355,7 @@ extern "C" {
         buffer: *const TPM2B_MAX_BUFFER,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_SequenceUpdate_Async(
         esysContext: *mut ESYS_CONTEXT,
         sequenceHandle: ESYS_TR,
@@ -10919,10 +8365,10 @@ extern "C" {
         buffer: *const TPM2B_MAX_BUFFER,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_SequenceUpdate_Finish(esysContext: *mut ESYS_CONTEXT) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_SequenceComplete(
         esysContext: *mut ESYS_CONTEXT,
         sequenceHandle: ESYS_TR,
@@ -10935,7 +8381,7 @@ extern "C" {
         validation: *mut *mut TPMT_TK_HASHCHECK,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_SequenceComplete_Async(
         esysContext: *mut ESYS_CONTEXT,
         sequenceHandle: ESYS_TR,
@@ -10946,14 +8392,14 @@ extern "C" {
         hierarchy: ESYS_TR,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_SequenceComplete_Finish(
         esysContext: *mut ESYS_CONTEXT,
         result: *mut *mut TPM2B_DIGEST,
         validation: *mut *mut TPMT_TK_HASHCHECK,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_EventSequenceComplete(
         esysContext: *mut ESYS_CONTEXT,
         pcrHandle: ESYS_TR,
@@ -10965,7 +8411,7 @@ extern "C" {
         results: *mut *mut TPML_DIGEST_VALUES,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_EventSequenceComplete_Async(
         esysContext: *mut ESYS_CONTEXT,
         pcrHandle: ESYS_TR,
@@ -10976,13 +8422,13 @@ extern "C" {
         buffer: *const TPM2B_MAX_BUFFER,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_EventSequenceComplete_Finish(
         esysContext: *mut ESYS_CONTEXT,
         results: *mut *mut TPML_DIGEST_VALUES,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_Certify(
         esysContext: *mut ESYS_CONTEXT,
         objectHandle: ESYS_TR,
@@ -10996,7 +8442,7 @@ extern "C" {
         signature: *mut *mut TPMT_SIGNATURE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_Certify_Async(
         esysContext: *mut ESYS_CONTEXT,
         objectHandle: ESYS_TR,
@@ -11008,14 +8454,14 @@ extern "C" {
         inScheme: *const TPMT_SIG_SCHEME,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_Certify_Finish(
         esysContext: *mut ESYS_CONTEXT,
         certifyInfo: *mut *mut TPM2B_ATTEST,
         signature: *mut *mut TPMT_SIGNATURE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_CertifyCreation(
         esysContext: *mut ESYS_CONTEXT,
         signHandle: ESYS_TR,
@@ -11031,7 +8477,7 @@ extern "C" {
         signature: *mut *mut TPMT_SIGNATURE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_CertifyCreation_Async(
         esysContext: *mut ESYS_CONTEXT,
         signHandle: ESYS_TR,
@@ -11045,14 +8491,14 @@ extern "C" {
         creationTicket: *const TPMT_TK_CREATION,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_CertifyCreation_Finish(
         esysContext: *mut ESYS_CONTEXT,
         certifyInfo: *mut *mut TPM2B_ATTEST,
         signature: *mut *mut TPMT_SIGNATURE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_CertifyX509(
         esysContext: *mut ESYS_CONTEXT,
         objectHandle: ESYS_TR,
@@ -11068,7 +8514,7 @@ extern "C" {
         signature: *mut *mut TPMT_SIGNATURE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_CertifyX509_Async(
         esysContext: *mut ESYS_CONTEXT,
         objectHandle: ESYS_TR,
@@ -11081,7 +8527,7 @@ extern "C" {
         partialCertificate: *const TPM2B_MAX_BUFFER,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_CertifyX509_Finish(
         esysContext: *mut ESYS_CONTEXT,
         addedToCertificate: *mut *mut TPM2B_MAX_BUFFER,
@@ -11089,7 +8535,7 @@ extern "C" {
         signature: *mut *mut TPMT_SIGNATURE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_Quote(
         esysContext: *mut ESYS_CONTEXT,
         signHandle: ESYS_TR,
@@ -11103,7 +8549,7 @@ extern "C" {
         signature: *mut *mut TPMT_SIGNATURE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_Quote_Async(
         esysContext: *mut ESYS_CONTEXT,
         signHandle: ESYS_TR,
@@ -11115,14 +8561,14 @@ extern "C" {
         PCRselect: *const TPML_PCR_SELECTION,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_Quote_Finish(
         esysContext: *mut ESYS_CONTEXT,
         quoted: *mut *mut TPM2B_ATTEST,
         signature: *mut *mut TPMT_SIGNATURE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_GetSessionAuditDigest(
         esysContext: *mut ESYS_CONTEXT,
         privacyAdminHandle: ESYS_TR,
@@ -11137,7 +8583,7 @@ extern "C" {
         signature: *mut *mut TPMT_SIGNATURE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_GetSessionAuditDigest_Async(
         esysContext: *mut ESYS_CONTEXT,
         privacyAdminHandle: ESYS_TR,
@@ -11150,14 +8596,14 @@ extern "C" {
         inScheme: *const TPMT_SIG_SCHEME,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_GetSessionAuditDigest_Finish(
         esysContext: *mut ESYS_CONTEXT,
         auditInfo: *mut *mut TPM2B_ATTEST,
         signature: *mut *mut TPMT_SIGNATURE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_GetCommandAuditDigest(
         esysContext: *mut ESYS_CONTEXT,
         privacyHandle: ESYS_TR,
@@ -11171,7 +8617,7 @@ extern "C" {
         signature: *mut *mut TPMT_SIGNATURE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_GetCommandAuditDigest_Async(
         esysContext: *mut ESYS_CONTEXT,
         privacyHandle: ESYS_TR,
@@ -11183,14 +8629,14 @@ extern "C" {
         inScheme: *const TPMT_SIG_SCHEME,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_GetCommandAuditDigest_Finish(
         esysContext: *mut ESYS_CONTEXT,
         auditInfo: *mut *mut TPM2B_ATTEST,
         signature: *mut *mut TPMT_SIGNATURE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_GetTime(
         esysContext: *mut ESYS_CONTEXT,
         privacyAdminHandle: ESYS_TR,
@@ -11204,7 +8650,7 @@ extern "C" {
         signature: *mut *mut TPMT_SIGNATURE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_GetTime_Async(
         esysContext: *mut ESYS_CONTEXT,
         privacyAdminHandle: ESYS_TR,
@@ -11216,14 +8662,14 @@ extern "C" {
         inScheme: *const TPMT_SIG_SCHEME,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_GetTime_Finish(
         esysContext: *mut ESYS_CONTEXT,
         timeInfo: *mut *mut TPM2B_ATTEST,
         signature: *mut *mut TPMT_SIGNATURE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_Commit(
         esysContext: *mut ESYS_CONTEXT,
         signHandle: ESYS_TR,
@@ -11239,7 +8685,7 @@ extern "C" {
         counter: *mut UINT16,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_Commit_Async(
         esysContext: *mut ESYS_CONTEXT,
         signHandle: ESYS_TR,
@@ -11251,7 +8697,7 @@ extern "C" {
         y2: *const TPM2B_ECC_PARAMETER,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_Commit_Finish(
         esysContext: *mut ESYS_CONTEXT,
         K: *mut *mut TPM2B_ECC_POINT,
@@ -11260,7 +8706,7 @@ extern "C" {
         counter: *mut UINT16,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_EC_Ephemeral(
         esysContext: *mut ESYS_CONTEXT,
         shandle1: ESYS_TR,
@@ -11271,7 +8717,7 @@ extern "C" {
         counter: *mut UINT16,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_EC_Ephemeral_Async(
         esysContext: *mut ESYS_CONTEXT,
         shandle1: ESYS_TR,
@@ -11280,14 +8726,14 @@ extern "C" {
         curveID: TPMI_ECC_CURVE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_EC_Ephemeral_Finish(
         esysContext: *mut ESYS_CONTEXT,
         Q: *mut *mut TPM2B_ECC_POINT,
         counter: *mut UINT16,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_VerifySignature(
         esysContext: *mut ESYS_CONTEXT,
         keyHandle: ESYS_TR,
@@ -11299,7 +8745,7 @@ extern "C" {
         validation: *mut *mut TPMT_TK_VERIFIED,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_VerifySignature_Async(
         esysContext: *mut ESYS_CONTEXT,
         keyHandle: ESYS_TR,
@@ -11310,13 +8756,13 @@ extern "C" {
         signature: *const TPMT_SIGNATURE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_VerifySignature_Finish(
         esysContext: *mut ESYS_CONTEXT,
         validation: *mut *mut TPMT_TK_VERIFIED,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_Sign(
         esysContext: *mut ESYS_CONTEXT,
         keyHandle: ESYS_TR,
@@ -11329,7 +8775,7 @@ extern "C" {
         signature: *mut *mut TPMT_SIGNATURE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_Sign_Async(
         esysContext: *mut ESYS_CONTEXT,
         keyHandle: ESYS_TR,
@@ -11341,13 +8787,13 @@ extern "C" {
         validation: *const TPMT_TK_HASHCHECK,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_Sign_Finish(
         esysContext: *mut ESYS_CONTEXT,
         signature: *mut *mut TPMT_SIGNATURE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_SetCommandCodeAuditStatus(
         esysContext: *mut ESYS_CONTEXT,
         auth: ESYS_TR,
@@ -11359,7 +8805,7 @@ extern "C" {
         clearList: *const TPML_CC,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_SetCommandCodeAuditStatus_Async(
         esysContext: *mut ESYS_CONTEXT,
         auth: ESYS_TR,
@@ -11371,10 +8817,10 @@ extern "C" {
         clearList: *const TPML_CC,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_SetCommandCodeAuditStatus_Finish(esysContext: *mut ESYS_CONTEXT) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_PCR_Extend(
         esysContext: *mut ESYS_CONTEXT,
         pcrHandle: ESYS_TR,
@@ -11384,7 +8830,7 @@ extern "C" {
         digests: *const TPML_DIGEST_VALUES,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_PCR_Extend_Async(
         esysContext: *mut ESYS_CONTEXT,
         pcrHandle: ESYS_TR,
@@ -11394,10 +8840,10 @@ extern "C" {
         digests: *const TPML_DIGEST_VALUES,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_PCR_Extend_Finish(esysContext: *mut ESYS_CONTEXT) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_PCR_Event(
         esysContext: *mut ESYS_CONTEXT,
         pcrHandle: ESYS_TR,
@@ -11408,7 +8854,7 @@ extern "C" {
         digests: *mut *mut TPML_DIGEST_VALUES,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_PCR_Event_Async(
         esysContext: *mut ESYS_CONTEXT,
         pcrHandle: ESYS_TR,
@@ -11418,13 +8864,13 @@ extern "C" {
         eventData: *const TPM2B_EVENT,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_PCR_Event_Finish(
         esysContext: *mut ESYS_CONTEXT,
         digests: *mut *mut TPML_DIGEST_VALUES,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_PCR_Read(
         esysContext: *mut ESYS_CONTEXT,
         shandle1: ESYS_TR,
@@ -11436,7 +8882,7 @@ extern "C" {
         pcrValues: *mut *mut TPML_DIGEST,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_PCR_Read_Async(
         esysContext: *mut ESYS_CONTEXT,
         shandle1: ESYS_TR,
@@ -11445,7 +8891,7 @@ extern "C" {
         pcrSelectionIn: *const TPML_PCR_SELECTION,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_PCR_Read_Finish(
         esysContext: *mut ESYS_CONTEXT,
         pcrUpdateCounter: *mut UINT32,
@@ -11453,7 +8899,7 @@ extern "C" {
         pcrValues: *mut *mut TPML_DIGEST,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_PCR_Allocate(
         esysContext: *mut ESYS_CONTEXT,
         authHandle: ESYS_TR,
@@ -11467,7 +8913,7 @@ extern "C" {
         sizeAvailable: *mut UINT32,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_PCR_Allocate_Async(
         esysContext: *mut ESYS_CONTEXT,
         authHandle: ESYS_TR,
@@ -11477,7 +8923,7 @@ extern "C" {
         pcrAllocation: *const TPML_PCR_SELECTION,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_PCR_Allocate_Finish(
         esysContext: *mut ESYS_CONTEXT,
         allocationSuccess: *mut TPMI_YES_NO,
@@ -11486,7 +8932,7 @@ extern "C" {
         sizeAvailable: *mut UINT32,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_PCR_SetAuthPolicy(
         esysContext: *mut ESYS_CONTEXT,
         authHandle: ESYS_TR,
@@ -11498,7 +8944,7 @@ extern "C" {
         pcrNum: TPMI_DH_PCR,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_PCR_SetAuthPolicy_Async(
         esysContext: *mut ESYS_CONTEXT,
         authHandle: ESYS_TR,
@@ -11510,10 +8956,10 @@ extern "C" {
         pcrNum: TPMI_DH_PCR,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_PCR_SetAuthPolicy_Finish(esysContext: *mut ESYS_CONTEXT) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_PCR_SetAuthValue(
         esysContext: *mut ESYS_CONTEXT,
         pcrHandle: ESYS_TR,
@@ -11523,7 +8969,7 @@ extern "C" {
         auth: *const TPM2B_DIGEST,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_PCR_SetAuthValue_Async(
         esysContext: *mut ESYS_CONTEXT,
         pcrHandle: ESYS_TR,
@@ -11533,10 +8979,10 @@ extern "C" {
         auth: *const TPM2B_DIGEST,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_PCR_SetAuthValue_Finish(esysContext: *mut ESYS_CONTEXT) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_PCR_Reset(
         esysContext: *mut ESYS_CONTEXT,
         pcrHandle: ESYS_TR,
@@ -11545,7 +8991,7 @@ extern "C" {
         shandle3: ESYS_TR,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_PCR_Reset_Async(
         esysContext: *mut ESYS_CONTEXT,
         pcrHandle: ESYS_TR,
@@ -11554,10 +9000,10 @@ extern "C" {
         shandle3: ESYS_TR,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_PCR_Reset_Finish(esysContext: *mut ESYS_CONTEXT) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_PolicySigned(
         esysContext: *mut ESYS_CONTEXT,
         authObject: ESYS_TR,
@@ -11574,7 +9020,7 @@ extern "C" {
         policyTicket: *mut *mut TPMT_TK_AUTH,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_PolicySigned_Async(
         esysContext: *mut ESYS_CONTEXT,
         authObject: ESYS_TR,
@@ -11589,14 +9035,14 @@ extern "C" {
         auth: *const TPMT_SIGNATURE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_PolicySigned_Finish(
         esysContext: *mut ESYS_CONTEXT,
         timeout: *mut *mut TPM2B_TIMEOUT,
         policyTicket: *mut *mut TPMT_TK_AUTH,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_PolicySecret(
         esysContext: *mut ESYS_CONTEXT,
         authHandle: ESYS_TR,
@@ -11612,7 +9058,7 @@ extern "C" {
         policyTicket: *mut *mut TPMT_TK_AUTH,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_PolicySecret_Async(
         esysContext: *mut ESYS_CONTEXT,
         authHandle: ESYS_TR,
@@ -11626,14 +9072,14 @@ extern "C" {
         expiration: INT32,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_PolicySecret_Finish(
         esysContext: *mut ESYS_CONTEXT,
         timeout: *mut *mut TPM2B_TIMEOUT,
         policyTicket: *mut *mut TPMT_TK_AUTH,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_PolicyTicket(
         esysContext: *mut ESYS_CONTEXT,
         policySession: ESYS_TR,
@@ -11647,7 +9093,7 @@ extern "C" {
         ticket: *const TPMT_TK_AUTH,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_PolicyTicket_Async(
         esysContext: *mut ESYS_CONTEXT,
         policySession: ESYS_TR,
@@ -11661,10 +9107,10 @@ extern "C" {
         ticket: *const TPMT_TK_AUTH,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_PolicyTicket_Finish(esysContext: *mut ESYS_CONTEXT) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_PolicyOR(
         esysContext: *mut ESYS_CONTEXT,
         policySession: ESYS_TR,
@@ -11674,7 +9120,7 @@ extern "C" {
         pHashList: *const TPML_DIGEST,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_PolicyOR_Async(
         esysContext: *mut ESYS_CONTEXT,
         policySession: ESYS_TR,
@@ -11684,10 +9130,10 @@ extern "C" {
         pHashList: *const TPML_DIGEST,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_PolicyOR_Finish(esysContext: *mut ESYS_CONTEXT) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_PolicyPCR(
         esysContext: *mut ESYS_CONTEXT,
         policySession: ESYS_TR,
@@ -11698,7 +9144,7 @@ extern "C" {
         pcrs: *const TPML_PCR_SELECTION,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_PolicyPCR_Async(
         esysContext: *mut ESYS_CONTEXT,
         policySession: ESYS_TR,
@@ -11709,10 +9155,10 @@ extern "C" {
         pcrs: *const TPML_PCR_SELECTION,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_PolicyPCR_Finish(esysContext: *mut ESYS_CONTEXT) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_PolicyLocality(
         esysContext: *mut ESYS_CONTEXT,
         policySession: ESYS_TR,
@@ -11722,7 +9168,7 @@ extern "C" {
         locality: TPMA_LOCALITY,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_PolicyLocality_Async(
         esysContext: *mut ESYS_CONTEXT,
         policySession: ESYS_TR,
@@ -11732,10 +9178,10 @@ extern "C" {
         locality: TPMA_LOCALITY,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_PolicyLocality_Finish(esysContext: *mut ESYS_CONTEXT) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_PolicyNV(
         esysContext: *mut ESYS_CONTEXT,
         authHandle: ESYS_TR,
@@ -11749,7 +9195,7 @@ extern "C" {
         operation: TPM2_EO,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_PolicyNV_Async(
         esysContext: *mut ESYS_CONTEXT,
         authHandle: ESYS_TR,
@@ -11763,10 +9209,10 @@ extern "C" {
         operation: TPM2_EO,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_PolicyNV_Finish(esysContext: *mut ESYS_CONTEXT) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_PolicyCounterTimer(
         esysContext: *mut ESYS_CONTEXT,
         policySession: ESYS_TR,
@@ -11778,7 +9224,7 @@ extern "C" {
         operation: TPM2_EO,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_PolicyCounterTimer_Async(
         esysContext: *mut ESYS_CONTEXT,
         policySession: ESYS_TR,
@@ -11790,10 +9236,10 @@ extern "C" {
         operation: TPM2_EO,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_PolicyCounterTimer_Finish(esysContext: *mut ESYS_CONTEXT) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_PolicyCommandCode(
         esysContext: *mut ESYS_CONTEXT,
         policySession: ESYS_TR,
@@ -11803,7 +9249,7 @@ extern "C" {
         code: TPM2_CC,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_PolicyCommandCode_Async(
         esysContext: *mut ESYS_CONTEXT,
         policySession: ESYS_TR,
@@ -11813,10 +9259,10 @@ extern "C" {
         code: TPM2_CC,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_PolicyCommandCode_Finish(esysContext: *mut ESYS_CONTEXT) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_PolicyPhysicalPresence(
         esysContext: *mut ESYS_CONTEXT,
         policySession: ESYS_TR,
@@ -11825,7 +9271,7 @@ extern "C" {
         shandle3: ESYS_TR,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_PolicyPhysicalPresence_Async(
         esysContext: *mut ESYS_CONTEXT,
         policySession: ESYS_TR,
@@ -11834,10 +9280,10 @@ extern "C" {
         shandle3: ESYS_TR,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_PolicyPhysicalPresence_Finish(esysContext: *mut ESYS_CONTEXT) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_PolicyCpHash(
         esysContext: *mut ESYS_CONTEXT,
         policySession: ESYS_TR,
@@ -11847,7 +9293,7 @@ extern "C" {
         cpHashA: *const TPM2B_DIGEST,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_PolicyCpHash_Async(
         esysContext: *mut ESYS_CONTEXT,
         policySession: ESYS_TR,
@@ -11857,10 +9303,10 @@ extern "C" {
         cpHashA: *const TPM2B_DIGEST,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_PolicyCpHash_Finish(esysContext: *mut ESYS_CONTEXT) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_PolicyNameHash(
         esysContext: *mut ESYS_CONTEXT,
         policySession: ESYS_TR,
@@ -11870,7 +9316,7 @@ extern "C" {
         nameHash: *const TPM2B_DIGEST,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_PolicyNameHash_Async(
         esysContext: *mut ESYS_CONTEXT,
         policySession: ESYS_TR,
@@ -11880,10 +9326,10 @@ extern "C" {
         nameHash: *const TPM2B_DIGEST,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_PolicyNameHash_Finish(esysContext: *mut ESYS_CONTEXT) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_PolicyDuplicationSelect(
         esysContext: *mut ESYS_CONTEXT,
         policySession: ESYS_TR,
@@ -11895,7 +9341,7 @@ extern "C" {
         includeObject: TPMI_YES_NO,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_PolicyDuplicationSelect_Async(
         esysContext: *mut ESYS_CONTEXT,
         policySession: ESYS_TR,
@@ -11907,10 +9353,10 @@ extern "C" {
         includeObject: TPMI_YES_NO,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_PolicyDuplicationSelect_Finish(esysContext: *mut ESYS_CONTEXT) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_PolicyAuthorize(
         esysContext: *mut ESYS_CONTEXT,
         policySession: ESYS_TR,
@@ -11923,7 +9369,7 @@ extern "C" {
         checkTicket: *const TPMT_TK_VERIFIED,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_PolicyAuthorize_Async(
         esysContext: *mut ESYS_CONTEXT,
         policySession: ESYS_TR,
@@ -11936,10 +9382,10 @@ extern "C" {
         checkTicket: *const TPMT_TK_VERIFIED,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_PolicyAuthorize_Finish(esysContext: *mut ESYS_CONTEXT) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_PolicyAuthValue(
         esysContext: *mut ESYS_CONTEXT,
         policySession: ESYS_TR,
@@ -11948,7 +9394,7 @@ extern "C" {
         shandle3: ESYS_TR,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_PolicyAuthValue_Async(
         esysContext: *mut ESYS_CONTEXT,
         policySession: ESYS_TR,
@@ -11957,10 +9403,10 @@ extern "C" {
         shandle3: ESYS_TR,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_PolicyAuthValue_Finish(esysContext: *mut ESYS_CONTEXT) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_PolicyPassword(
         esysContext: *mut ESYS_CONTEXT,
         policySession: ESYS_TR,
@@ -11969,7 +9415,7 @@ extern "C" {
         shandle3: ESYS_TR,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_PolicyPassword_Async(
         esysContext: *mut ESYS_CONTEXT,
         policySession: ESYS_TR,
@@ -11978,10 +9424,10 @@ extern "C" {
         shandle3: ESYS_TR,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_PolicyPassword_Finish(esysContext: *mut ESYS_CONTEXT) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_PolicyGetDigest(
         esysContext: *mut ESYS_CONTEXT,
         policySession: ESYS_TR,
@@ -11991,7 +9437,7 @@ extern "C" {
         policyDigest: *mut *mut TPM2B_DIGEST,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_PolicyGetDigest_Async(
         esysContext: *mut ESYS_CONTEXT,
         policySession: ESYS_TR,
@@ -12000,13 +9446,13 @@ extern "C" {
         shandle3: ESYS_TR,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_PolicyGetDigest_Finish(
         esysContext: *mut ESYS_CONTEXT,
         policyDigest: *mut *mut TPM2B_DIGEST,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_PolicyNvWritten(
         esysContext: *mut ESYS_CONTEXT,
         policySession: ESYS_TR,
@@ -12016,7 +9462,7 @@ extern "C" {
         writtenSet: TPMI_YES_NO,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_PolicyNvWritten_Async(
         esysContext: *mut ESYS_CONTEXT,
         policySession: ESYS_TR,
@@ -12026,10 +9472,10 @@ extern "C" {
         writtenSet: TPMI_YES_NO,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_PolicyNvWritten_Finish(esysContext: *mut ESYS_CONTEXT) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_PolicyTemplate(
         esysContext: *mut ESYS_CONTEXT,
         policySession: ESYS_TR,
@@ -12039,7 +9485,7 @@ extern "C" {
         templateHash: *const TPM2B_DIGEST,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_PolicyTemplate_Async(
         esysContext: *mut ESYS_CONTEXT,
         policySession: ESYS_TR,
@@ -12049,10 +9495,10 @@ extern "C" {
         templateHash: *const TPM2B_DIGEST,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_PolicyTemplate_Finish(esysContext: *mut ESYS_CONTEXT) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_PolicyAuthorizeNV(
         esysContext: *mut ESYS_CONTEXT,
         authHandle: ESYS_TR,
@@ -12063,7 +9509,7 @@ extern "C" {
         shandle3: ESYS_TR,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_PolicyAuthorizeNV_Async(
         esysContext: *mut ESYS_CONTEXT,
         authHandle: ESYS_TR,
@@ -12074,10 +9520,10 @@ extern "C" {
         shandle3: ESYS_TR,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_PolicyAuthorizeNV_Finish(esysContext: *mut ESYS_CONTEXT) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_CreatePrimary(
         esysContext: *mut ESYS_CONTEXT,
         primaryHandle: ESYS_TR,
@@ -12095,7 +9541,7 @@ extern "C" {
         creationTicket: *mut *mut TPMT_TK_CREATION,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_CreatePrimary_Async(
         esysContext: *mut ESYS_CONTEXT,
         primaryHandle: ESYS_TR,
@@ -12108,7 +9554,7 @@ extern "C" {
         creationPCR: *const TPML_PCR_SELECTION,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_CreatePrimary_Finish(
         esysContext: *mut ESYS_CONTEXT,
         objectHandle: *mut ESYS_TR,
@@ -12118,7 +9564,7 @@ extern "C" {
         creationTicket: *mut *mut TPMT_TK_CREATION,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_HierarchyControl(
         esysContext: *mut ESYS_CONTEXT,
         authHandle: ESYS_TR,
@@ -12129,7 +9575,7 @@ extern "C" {
         state: TPMI_YES_NO,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_HierarchyControl_Async(
         esysContext: *mut ESYS_CONTEXT,
         authHandle: ESYS_TR,
@@ -12140,10 +9586,10 @@ extern "C" {
         state: TPMI_YES_NO,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_HierarchyControl_Finish(esysContext: *mut ESYS_CONTEXT) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_SetPrimaryPolicy(
         esysContext: *mut ESYS_CONTEXT,
         authHandle: ESYS_TR,
@@ -12154,7 +9600,7 @@ extern "C" {
         hashAlg: TPMI_ALG_HASH,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_SetPrimaryPolicy_Async(
         esysContext: *mut ESYS_CONTEXT,
         authHandle: ESYS_TR,
@@ -12165,10 +9611,10 @@ extern "C" {
         hashAlg: TPMI_ALG_HASH,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_SetPrimaryPolicy_Finish(esysContext: *mut ESYS_CONTEXT) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_ChangePPS(
         esysContext: *mut ESYS_CONTEXT,
         authHandle: ESYS_TR,
@@ -12177,7 +9623,7 @@ extern "C" {
         shandle3: ESYS_TR,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_ChangePPS_Async(
         esysContext: *mut ESYS_CONTEXT,
         authHandle: ESYS_TR,
@@ -12186,10 +9632,10 @@ extern "C" {
         shandle3: ESYS_TR,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_ChangePPS_Finish(esysContext: *mut ESYS_CONTEXT) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_ChangeEPS(
         esysContext: *mut ESYS_CONTEXT,
         authHandle: ESYS_TR,
@@ -12198,7 +9644,7 @@ extern "C" {
         shandle3: ESYS_TR,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_ChangeEPS_Async(
         esysContext: *mut ESYS_CONTEXT,
         authHandle: ESYS_TR,
@@ -12207,10 +9653,10 @@ extern "C" {
         shandle3: ESYS_TR,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_ChangeEPS_Finish(esysContext: *mut ESYS_CONTEXT) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_Clear(
         esysContext: *mut ESYS_CONTEXT,
         authHandle: ESYS_TR,
@@ -12219,7 +9665,7 @@ extern "C" {
         shandle3: ESYS_TR,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_Clear_Async(
         esysContext: *mut ESYS_CONTEXT,
         authHandle: ESYS_TR,
@@ -12228,10 +9674,10 @@ extern "C" {
         shandle3: ESYS_TR,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_Clear_Finish(esysContext: *mut ESYS_CONTEXT) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_ClearControl(
         esysContext: *mut ESYS_CONTEXT,
         auth: ESYS_TR,
@@ -12241,7 +9687,7 @@ extern "C" {
         disable: TPMI_YES_NO,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_ClearControl_Async(
         esysContext: *mut ESYS_CONTEXT,
         auth: ESYS_TR,
@@ -12251,10 +9697,10 @@ extern "C" {
         disable: TPMI_YES_NO,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_ClearControl_Finish(esysContext: *mut ESYS_CONTEXT) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_HierarchyChangeAuth(
         esysContext: *mut ESYS_CONTEXT,
         authHandle: ESYS_TR,
@@ -12264,7 +9710,7 @@ extern "C" {
         newAuth: *const TPM2B_AUTH,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_HierarchyChangeAuth_Async(
         esysContext: *mut ESYS_CONTEXT,
         authHandle: ESYS_TR,
@@ -12274,10 +9720,10 @@ extern "C" {
         newAuth: *const TPM2B_AUTH,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_HierarchyChangeAuth_Finish(esysContext: *mut ESYS_CONTEXT) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_DictionaryAttackLockReset(
         esysContext: *mut ESYS_CONTEXT,
         lockHandle: ESYS_TR,
@@ -12286,7 +9732,7 @@ extern "C" {
         shandle3: ESYS_TR,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_DictionaryAttackLockReset_Async(
         esysContext: *mut ESYS_CONTEXT,
         lockHandle: ESYS_TR,
@@ -12295,10 +9741,10 @@ extern "C" {
         shandle3: ESYS_TR,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_DictionaryAttackLockReset_Finish(esysContext: *mut ESYS_CONTEXT) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_DictionaryAttackParameters(
         esysContext: *mut ESYS_CONTEXT,
         lockHandle: ESYS_TR,
@@ -12310,7 +9756,7 @@ extern "C" {
         lockoutRecovery: UINT32,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_DictionaryAttackParameters_Async(
         esysContext: *mut ESYS_CONTEXT,
         lockHandle: ESYS_TR,
@@ -12322,10 +9768,10 @@ extern "C" {
         lockoutRecovery: UINT32,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_DictionaryAttackParameters_Finish(esysContext: *mut ESYS_CONTEXT) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_PP_Commands(
         esysContext: *mut ESYS_CONTEXT,
         auth: ESYS_TR,
@@ -12336,7 +9782,7 @@ extern "C" {
         clearList: *const TPML_CC,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_PP_Commands_Async(
         esysContext: *mut ESYS_CONTEXT,
         auth: ESYS_TR,
@@ -12347,10 +9793,10 @@ extern "C" {
         clearList: *const TPML_CC,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_PP_Commands_Finish(esysContext: *mut ESYS_CONTEXT) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_SetAlgorithmSet(
         esysContext: *mut ESYS_CONTEXT,
         authHandle: ESYS_TR,
@@ -12360,7 +9806,7 @@ extern "C" {
         algorithmSet: UINT32,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_SetAlgorithmSet_Async(
         esysContext: *mut ESYS_CONTEXT,
         authHandle: ESYS_TR,
@@ -12370,10 +9816,10 @@ extern "C" {
         algorithmSet: UINT32,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_SetAlgorithmSet_Finish(esysContext: *mut ESYS_CONTEXT) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_FieldUpgradeStart(
         esysContext: *mut ESYS_CONTEXT,
         authorization: ESYS_TR,
@@ -12385,7 +9831,7 @@ extern "C" {
         manifestSignature: *const TPMT_SIGNATURE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_FieldUpgradeStart_Async(
         esysContext: *mut ESYS_CONTEXT,
         authorization: ESYS_TR,
@@ -12397,10 +9843,10 @@ extern "C" {
         manifestSignature: *const TPMT_SIGNATURE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_FieldUpgradeStart_Finish(esysContext: *mut ESYS_CONTEXT) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_FieldUpgradeData(
         esysContext: *mut ESYS_CONTEXT,
         shandle1: ESYS_TR,
@@ -12411,7 +9857,7 @@ extern "C" {
         firstDigest: *mut *mut TPMT_HA,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_FieldUpgradeData_Async(
         esysContext: *mut ESYS_CONTEXT,
         shandle1: ESYS_TR,
@@ -12420,14 +9866,14 @@ extern "C" {
         fuData: *const TPM2B_MAX_BUFFER,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_FieldUpgradeData_Finish(
         esysContext: *mut ESYS_CONTEXT,
         nextDigest: *mut *mut TPMT_HA,
         firstDigest: *mut *mut TPMT_HA,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_FirmwareRead(
         esysContext: *mut ESYS_CONTEXT,
         shandle1: ESYS_TR,
@@ -12437,7 +9883,7 @@ extern "C" {
         fuData: *mut *mut TPM2B_MAX_BUFFER,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_FirmwareRead_Async(
         esysContext: *mut ESYS_CONTEXT,
         shandle1: ESYS_TR,
@@ -12446,58 +9892,58 @@ extern "C" {
         sequenceNumber: UINT32,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_FirmwareRead_Finish(
         esysContext: *mut ESYS_CONTEXT,
         fuData: *mut *mut TPM2B_MAX_BUFFER,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_ContextSave(
         esysContext: *mut ESYS_CONTEXT,
         saveHandle: ESYS_TR,
         context: *mut *mut TPMS_CONTEXT,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_ContextSave_Async(esysContext: *mut ESYS_CONTEXT, saveHandle: ESYS_TR) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_ContextSave_Finish(
         esysContext: *mut ESYS_CONTEXT,
         context: *mut *mut TPMS_CONTEXT,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_ContextLoad(
         esysContext: *mut ESYS_CONTEXT,
         context: *const TPMS_CONTEXT,
         loadedHandle: *mut ESYS_TR,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_ContextLoad_Async(
         esysContext: *mut ESYS_CONTEXT,
         context: *const TPMS_CONTEXT,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_ContextLoad_Finish(
         esysContext: *mut ESYS_CONTEXT,
         loadedHandle: *mut ESYS_TR,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_FlushContext(esysContext: *mut ESYS_CONTEXT, flushHandle: ESYS_TR) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_FlushContext_Async(esysContext: *mut ESYS_CONTEXT, flushHandle: ESYS_TR)
-        -> TSS2_RC;
+    -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_FlushContext_Finish(esysContext: *mut ESYS_CONTEXT) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_EvictControl(
         esysContext: *mut ESYS_CONTEXT,
         auth: ESYS_TR,
@@ -12509,7 +9955,7 @@ extern "C" {
         newObjectHandle: *mut ESYS_TR,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_EvictControl_Async(
         esysContext: *mut ESYS_CONTEXT,
         auth: ESYS_TR,
@@ -12520,13 +9966,13 @@ extern "C" {
         persistentHandle: TPMI_DH_PERSISTENT,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_EvictControl_Finish(
         esysContext: *mut ESYS_CONTEXT,
         newObjectHandle: *mut ESYS_TR,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_ReadClock(
         esysContext: *mut ESYS_CONTEXT,
         shandle1: ESYS_TR,
@@ -12535,7 +9981,7 @@ extern "C" {
         currentTime: *mut *mut TPMS_TIME_INFO,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_ReadClock_Async(
         esysContext: *mut ESYS_CONTEXT,
         shandle1: ESYS_TR,
@@ -12543,13 +9989,13 @@ extern "C" {
         shandle3: ESYS_TR,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_ReadClock_Finish(
         esysContext: *mut ESYS_CONTEXT,
         currentTime: *mut *mut TPMS_TIME_INFO,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_ClockSet(
         esysContext: *mut ESYS_CONTEXT,
         auth: ESYS_TR,
@@ -12559,7 +10005,7 @@ extern "C" {
         newTime: UINT64,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_ClockSet_Async(
         esysContext: *mut ESYS_CONTEXT,
         auth: ESYS_TR,
@@ -12569,10 +10015,10 @@ extern "C" {
         newTime: UINT64,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_ClockSet_Finish(esysContext: *mut ESYS_CONTEXT) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_ClockRateAdjust(
         esysContext: *mut ESYS_CONTEXT,
         auth: ESYS_TR,
@@ -12582,7 +10028,7 @@ extern "C" {
         rateAdjust: TPM2_CLOCK_ADJUST,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_ClockRateAdjust_Async(
         esysContext: *mut ESYS_CONTEXT,
         auth: ESYS_TR,
@@ -12592,10 +10038,10 @@ extern "C" {
         rateAdjust: TPM2_CLOCK_ADJUST,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_ClockRateAdjust_Finish(esysContext: *mut ESYS_CONTEXT) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_GetCapability(
         esysContext: *mut ESYS_CONTEXT,
         shandle1: ESYS_TR,
@@ -12608,7 +10054,7 @@ extern "C" {
         capabilityData: *mut *mut TPMS_CAPABILITY_DATA,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_GetCapability_Async(
         esysContext: *mut ESYS_CONTEXT,
         shandle1: ESYS_TR,
@@ -12619,14 +10065,14 @@ extern "C" {
         propertyCount: UINT32,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_GetCapability_Finish(
         esysContext: *mut ESYS_CONTEXT,
         moreData: *mut TPMI_YES_NO,
         capabilityData: *mut *mut TPMS_CAPABILITY_DATA,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_TestParms(
         esysContext: *mut ESYS_CONTEXT,
         shandle1: ESYS_TR,
@@ -12635,7 +10081,7 @@ extern "C" {
         parameters: *const TPMT_PUBLIC_PARMS,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_TestParms_Async(
         esysContext: *mut ESYS_CONTEXT,
         shandle1: ESYS_TR,
@@ -12644,10 +10090,10 @@ extern "C" {
         parameters: *const TPMT_PUBLIC_PARMS,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_TestParms_Finish(esysContext: *mut ESYS_CONTEXT) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_NV_DefineSpace(
         esysContext: *mut ESYS_CONTEXT,
         authHandle: ESYS_TR,
@@ -12659,7 +10105,7 @@ extern "C" {
         nvHandle: *mut ESYS_TR,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_NV_DefineSpace_Async(
         esysContext: *mut ESYS_CONTEXT,
         authHandle: ESYS_TR,
@@ -12670,13 +10116,13 @@ extern "C" {
         publicInfo: *const TPM2B_NV_PUBLIC,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_NV_DefineSpace_Finish(
         esysContext: *mut ESYS_CONTEXT,
         nvHandle: *mut ESYS_TR,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_NV_UndefineSpace(
         esysContext: *mut ESYS_CONTEXT,
         authHandle: ESYS_TR,
@@ -12686,7 +10132,7 @@ extern "C" {
         shandle3: ESYS_TR,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_NV_UndefineSpace_Async(
         esysContext: *mut ESYS_CONTEXT,
         authHandle: ESYS_TR,
@@ -12696,10 +10142,10 @@ extern "C" {
         shandle3: ESYS_TR,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_NV_UndefineSpace_Finish(esysContext: *mut ESYS_CONTEXT) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_NV_UndefineSpaceSpecial(
         esysContext: *mut ESYS_CONTEXT,
         nvIndex: ESYS_TR,
@@ -12709,7 +10155,7 @@ extern "C" {
         shandle3: ESYS_TR,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_NV_UndefineSpaceSpecial_Async(
         esysContext: *mut ESYS_CONTEXT,
         nvIndex: ESYS_TR,
@@ -12719,10 +10165,10 @@ extern "C" {
         shandle3: ESYS_TR,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_NV_UndefineSpaceSpecial_Finish(esysContext: *mut ESYS_CONTEXT) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_NV_ReadPublic(
         esysContext: *mut ESYS_CONTEXT,
         nvIndex: ESYS_TR,
@@ -12733,7 +10179,7 @@ extern "C" {
         nvName: *mut *mut TPM2B_NAME,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_NV_ReadPublic_Async(
         esysContext: *mut ESYS_CONTEXT,
         nvIndex: ESYS_TR,
@@ -12742,14 +10188,14 @@ extern "C" {
         shandle3: ESYS_TR,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_NV_ReadPublic_Finish(
         esysContext: *mut ESYS_CONTEXT,
         nvPublic: *mut *mut TPM2B_NV_PUBLIC,
         nvName: *mut *mut TPM2B_NAME,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_NV_Write(
         esysContext: *mut ESYS_CONTEXT,
         authHandle: ESYS_TR,
@@ -12761,7 +10207,7 @@ extern "C" {
         offset: UINT16,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_NV_Write_Async(
         esysContext: *mut ESYS_CONTEXT,
         authHandle: ESYS_TR,
@@ -12773,10 +10219,10 @@ extern "C" {
         offset: UINT16,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_NV_Write_Finish(esysContext: *mut ESYS_CONTEXT) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_NV_Increment(
         esysContext: *mut ESYS_CONTEXT,
         authHandle: ESYS_TR,
@@ -12786,7 +10232,7 @@ extern "C" {
         shandle3: ESYS_TR,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_NV_Increment_Async(
         esysContext: *mut ESYS_CONTEXT,
         authHandle: ESYS_TR,
@@ -12796,10 +10242,10 @@ extern "C" {
         shandle3: ESYS_TR,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_NV_Increment_Finish(esysContext: *mut ESYS_CONTEXT) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_NV_Extend(
         esysContext: *mut ESYS_CONTEXT,
         authHandle: ESYS_TR,
@@ -12810,7 +10256,7 @@ extern "C" {
         data: *const TPM2B_MAX_NV_BUFFER,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_NV_Extend_Async(
         esysContext: *mut ESYS_CONTEXT,
         authHandle: ESYS_TR,
@@ -12821,10 +10267,10 @@ extern "C" {
         data: *const TPM2B_MAX_NV_BUFFER,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_NV_Extend_Finish(esysContext: *mut ESYS_CONTEXT) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_NV_SetBits(
         esysContext: *mut ESYS_CONTEXT,
         authHandle: ESYS_TR,
@@ -12835,7 +10281,7 @@ extern "C" {
         bits: UINT64,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_NV_SetBits_Async(
         esysContext: *mut ESYS_CONTEXT,
         authHandle: ESYS_TR,
@@ -12846,10 +10292,10 @@ extern "C" {
         bits: UINT64,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_NV_SetBits_Finish(esysContext: *mut ESYS_CONTEXT) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_NV_WriteLock(
         esysContext: *mut ESYS_CONTEXT,
         authHandle: ESYS_TR,
@@ -12859,7 +10305,7 @@ extern "C" {
         shandle3: ESYS_TR,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_NV_WriteLock_Async(
         esysContext: *mut ESYS_CONTEXT,
         authHandle: ESYS_TR,
@@ -12869,10 +10315,10 @@ extern "C" {
         shandle3: ESYS_TR,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_NV_WriteLock_Finish(esysContext: *mut ESYS_CONTEXT) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_NV_GlobalWriteLock(
         esysContext: *mut ESYS_CONTEXT,
         authHandle: ESYS_TR,
@@ -12881,7 +10327,7 @@ extern "C" {
         shandle3: ESYS_TR,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_NV_GlobalWriteLock_Async(
         esysContext: *mut ESYS_CONTEXT,
         authHandle: ESYS_TR,
@@ -12890,10 +10336,10 @@ extern "C" {
         shandle3: ESYS_TR,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_NV_GlobalWriteLock_Finish(esysContext: *mut ESYS_CONTEXT) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_NV_Read(
         esysContext: *mut ESYS_CONTEXT,
         authHandle: ESYS_TR,
@@ -12906,7 +10352,7 @@ extern "C" {
         data: *mut *mut TPM2B_MAX_NV_BUFFER,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_NV_Read_Async(
         esysContext: *mut ESYS_CONTEXT,
         authHandle: ESYS_TR,
@@ -12918,13 +10364,13 @@ extern "C" {
         offset: UINT16,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_NV_Read_Finish(
         esysContext: *mut ESYS_CONTEXT,
         data: *mut *mut TPM2B_MAX_NV_BUFFER,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_NV_ReadLock(
         esysContext: *mut ESYS_CONTEXT,
         authHandle: ESYS_TR,
@@ -12934,7 +10380,7 @@ extern "C" {
         shandle3: ESYS_TR,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_NV_ReadLock_Async(
         esysContext: *mut ESYS_CONTEXT,
         authHandle: ESYS_TR,
@@ -12944,10 +10390,10 @@ extern "C" {
         shandle3: ESYS_TR,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_NV_ReadLock_Finish(esysContext: *mut ESYS_CONTEXT) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_NV_ChangeAuth(
         esysContext: *mut ESYS_CONTEXT,
         nvIndex: ESYS_TR,
@@ -12957,7 +10403,7 @@ extern "C" {
         newAuth: *const TPM2B_AUTH,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_NV_ChangeAuth_Async(
         esysContext: *mut ESYS_CONTEXT,
         nvIndex: ESYS_TR,
@@ -12967,10 +10413,10 @@ extern "C" {
         newAuth: *const TPM2B_AUTH,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_NV_ChangeAuth_Finish(esysContext: *mut ESYS_CONTEXT) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_NV_Certify(
         esysContext: *mut ESYS_CONTEXT,
         signHandle: ESYS_TR,
@@ -12987,7 +10433,7 @@ extern "C" {
         signature: *mut *mut TPMT_SIGNATURE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_NV_Certify_Async(
         esysContext: *mut ESYS_CONTEXT,
         signHandle: ESYS_TR,
@@ -13002,14 +10448,14 @@ extern "C" {
         offset: UINT16,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_NV_Certify_Finish(
         esysContext: *mut ESYS_CONTEXT,
         certifyInfo: *mut *mut TPM2B_ATTEST,
         signature: *mut *mut TPMT_SIGNATURE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_Vendor_TCG_Test(
         esysContext: *mut ESYS_CONTEXT,
         shandle1: ESYS_TR,
@@ -13019,7 +10465,7 @@ extern "C" {
         outputData: *mut *mut TPM2B_DATA,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_Vendor_TCG_Test_Async(
         esysContext: *mut ESYS_CONTEXT,
         shandle1: ESYS_TR,
@@ -13028,22 +10474,22 @@ extern "C" {
         inputData: *const TPM2B_DATA,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_Vendor_TCG_Test_Finish(
         esysContext: *mut ESYS_CONTEXT,
         outputData: *mut *mut TPM2B_DATA,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_Free(__ptr: *mut ::std::os::raw::c_void);
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_GetSysContext(
         esys_context: *mut ESYS_CONTEXT,
         sys_context: *mut *mut TSS2_SYS_CONTEXT,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Esys_SetCryptoCallbacks(
         esysContext: *mut ESYS_CONTEXT,
         callbacks: *mut ESYS_CRYPTO_CALLBACKS,
@@ -13056,59 +10502,41 @@ pub struct imaxdiv_t {
     pub quot: ::std::os::raw::c_longlong,
     pub rem: ::std::os::raw::c_longlong,
 }
-#[test]
-fn bindgen_test_layout_imaxdiv_t() {
-    const UNINIT: ::std::mem::MaybeUninit<imaxdiv_t> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<imaxdiv_t>(),
-        16usize,
-        "Size of imaxdiv_t"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<imaxdiv_t>(),
-        8usize,
-        "Alignment of imaxdiv_t"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).quot) as usize - ptr as usize },
-        0usize,
-        "Offset of field: imaxdiv_t::quot"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).rem) as usize - ptr as usize },
-        8usize,
-        "Offset of field: imaxdiv_t::rem"
-    );
-}
-extern "C" {
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of imaxdiv_t"][::std::mem::size_of::<imaxdiv_t>() - 16usize];
+    ["Alignment of imaxdiv_t"][::std::mem::align_of::<imaxdiv_t>() - 8usize];
+    ["Offset of field: imaxdiv_t::quot"][::std::mem::offset_of!(imaxdiv_t, quot) - 0usize];
+    ["Offset of field: imaxdiv_t::rem"][::std::mem::offset_of!(imaxdiv_t, rem) - 8usize];
+};
+unsafe extern "C" {
     pub fn imaxabs(__n: intmax_t) -> intmax_t;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn imaxdiv(__numer: intmax_t, __denom: intmax_t) -> imaxdiv_t;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn strtoimax(
         __nptr: *const ::std::os::raw::c_char,
         __endptr: *mut *mut ::std::os::raw::c_char,
         __base: ::std::os::raw::c_int,
     ) -> intmax_t;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn strtoumax(
         __nptr: *const ::std::os::raw::c_char,
         __endptr: *mut *mut ::std::os::raw::c_char,
         __base: ::std::os::raw::c_int,
     ) -> uintmax_t;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn wcstoimax(
         __nptr: *const __gwchar_t,
         __endptr: *mut *mut __gwchar_t,
         __base: ::std::os::raw::c_int,
     ) -> intmax_t;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn wcstoumax(
         __nptr: *const __gwchar_t,
         __endptr: *mut *mut __gwchar_t,
@@ -13124,160 +10552,118 @@ pub struct div_t {
     pub quot: ::std::os::raw::c_int,
     pub rem: ::std::os::raw::c_int,
 }
-#[test]
-fn bindgen_test_layout_div_t() {
-    const UNINIT: ::std::mem::MaybeUninit<div_t> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(::std::mem::size_of::<div_t>(), 8usize, "Size of div_t");
-    assert_eq!(
-        ::std::mem::align_of::<div_t>(),
-        4usize,
-        "Alignment of div_t"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).quot) as usize - ptr as usize },
-        0usize,
-        "Offset of field: div_t::quot"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).rem) as usize - ptr as usize },
-        4usize,
-        "Offset of field: div_t::rem"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of div_t"][::std::mem::size_of::<div_t>() - 8usize];
+    ["Alignment of div_t"][::std::mem::align_of::<div_t>() - 4usize];
+    ["Offset of field: div_t::quot"][::std::mem::offset_of!(div_t, quot) - 0usize];
+    ["Offset of field: div_t::rem"][::std::mem::offset_of!(div_t, rem) - 4usize];
+};
 #[repr(C)]
 #[derive(Debug, Default, Copy, Clone)]
 pub struct ldiv_t {
     pub quot: ::std::os::raw::c_long,
     pub rem: ::std::os::raw::c_long,
 }
-#[test]
-fn bindgen_test_layout_ldiv_t() {
-    const UNINIT: ::std::mem::MaybeUninit<ldiv_t> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(::std::mem::size_of::<ldiv_t>(), 8usize, "Size of ldiv_t");
-    assert_eq!(
-        ::std::mem::align_of::<ldiv_t>(),
-        4usize,
-        "Alignment of ldiv_t"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).quot) as usize - ptr as usize },
-        0usize,
-        "Offset of field: ldiv_t::quot"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).rem) as usize - ptr as usize },
-        4usize,
-        "Offset of field: ldiv_t::rem"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of ldiv_t"][::std::mem::size_of::<ldiv_t>() - 8usize];
+    ["Alignment of ldiv_t"][::std::mem::align_of::<ldiv_t>() - 4usize];
+    ["Offset of field: ldiv_t::quot"][::std::mem::offset_of!(ldiv_t, quot) - 0usize];
+    ["Offset of field: ldiv_t::rem"][::std::mem::offset_of!(ldiv_t, rem) - 4usize];
+};
 #[repr(C)]
 #[derive(Debug, Default, Copy, Clone)]
 pub struct lldiv_t {
     pub quot: ::std::os::raw::c_longlong,
     pub rem: ::std::os::raw::c_longlong,
 }
-#[test]
-fn bindgen_test_layout_lldiv_t() {
-    const UNINIT: ::std::mem::MaybeUninit<lldiv_t> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(::std::mem::size_of::<lldiv_t>(), 16usize, "Size of lldiv_t");
-    assert_eq!(
-        ::std::mem::align_of::<lldiv_t>(),
-        8usize,
-        "Alignment of lldiv_t"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).quot) as usize - ptr as usize },
-        0usize,
-        "Offset of field: lldiv_t::quot"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).rem) as usize - ptr as usize },
-        8usize,
-        "Offset of field: lldiv_t::rem"
-    );
-}
-extern "C" {
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of lldiv_t"][::std::mem::size_of::<lldiv_t>() - 16usize];
+    ["Alignment of lldiv_t"][::std::mem::align_of::<lldiv_t>() - 8usize];
+    ["Offset of field: lldiv_t::quot"][::std::mem::offset_of!(lldiv_t, quot) - 0usize];
+    ["Offset of field: lldiv_t::rem"][::std::mem::offset_of!(lldiv_t, rem) - 8usize];
+};
+unsafe extern "C" {
     pub fn __ctype_get_mb_cur_max() -> size_t;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn atof(__nptr: *const ::std::os::raw::c_char) -> f64;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn atoi(__nptr: *const ::std::os::raw::c_char) -> ::std::os::raw::c_int;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn atol(__nptr: *const ::std::os::raw::c_char) -> ::std::os::raw::c_long;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn atoll(__nptr: *const ::std::os::raw::c_char) -> ::std::os::raw::c_longlong;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn strtod(
         __nptr: *const ::std::os::raw::c_char,
         __endptr: *mut *mut ::std::os::raw::c_char,
     ) -> f64;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn strtof(
         __nptr: *const ::std::os::raw::c_char,
         __endptr: *mut *mut ::std::os::raw::c_char,
     ) -> f32;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn strtold(
         __nptr: *const ::std::os::raw::c_char,
         __endptr: *mut *mut ::std::os::raw::c_char,
     ) -> f64;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn strtol(
         __nptr: *const ::std::os::raw::c_char,
         __endptr: *mut *mut ::std::os::raw::c_char,
         __base: ::std::os::raw::c_int,
     ) -> ::std::os::raw::c_long;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn strtoul(
         __nptr: *const ::std::os::raw::c_char,
         __endptr: *mut *mut ::std::os::raw::c_char,
         __base: ::std::os::raw::c_int,
     ) -> ::std::os::raw::c_ulong;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn strtoq(
         __nptr: *const ::std::os::raw::c_char,
         __endptr: *mut *mut ::std::os::raw::c_char,
         __base: ::std::os::raw::c_int,
     ) -> ::std::os::raw::c_longlong;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn strtouq(
         __nptr: *const ::std::os::raw::c_char,
         __endptr: *mut *mut ::std::os::raw::c_char,
         __base: ::std::os::raw::c_int,
     ) -> ::std::os::raw::c_ulonglong;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn strtoll(
         __nptr: *const ::std::os::raw::c_char,
         __endptr: *mut *mut ::std::os::raw::c_char,
         __base: ::std::os::raw::c_int,
     ) -> ::std::os::raw::c_longlong;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn strtoull(
         __nptr: *const ::std::os::raw::c_char,
         __endptr: *mut *mut ::std::os::raw::c_char,
         __base: ::std::os::raw::c_int,
     ) -> ::std::os::raw::c_ulonglong;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn l64a(__n: ::std::os::raw::c_long) -> *mut ::std::os::raw::c_char;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn a64l(__s: *const ::std::os::raw::c_char) -> ::std::os::raw::c_long;
 }
 pub type u_char = __u_char;
@@ -13318,26 +10704,12 @@ pub type register_t = ::std::os::raw::c_int;
 pub struct __sigset_t {
     pub __val: [::std::os::raw::c_ulong; 32usize],
 }
-#[test]
-fn bindgen_test_layout___sigset_t() {
-    const UNINIT: ::std::mem::MaybeUninit<__sigset_t> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<__sigset_t>(),
-        128usize,
-        "Size of __sigset_t"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<__sigset_t>(),
-        4usize,
-        "Alignment of __sigset_t"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).__val) as usize - ptr as usize },
-        0usize,
-        "Offset of field: __sigset_t::__val"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of __sigset_t"][::std::mem::size_of::<__sigset_t>() - 128usize];
+    ["Alignment of __sigset_t"][::std::mem::align_of::<__sigset_t>() - 4usize];
+    ["Offset of field: __sigset_t::__val"][::std::mem::offset_of!(__sigset_t, __val) - 0usize];
+};
 pub type sigset_t = __sigset_t;
 #[repr(C)]
 #[derive(Debug, Default, Copy, Clone)]
@@ -13345,58 +10717,26 @@ pub struct timeval {
     pub tv_sec: __time_t,
     pub tv_usec: __suseconds_t,
 }
-#[test]
-fn bindgen_test_layout_timeval() {
-    const UNINIT: ::std::mem::MaybeUninit<timeval> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(::std::mem::size_of::<timeval>(), 8usize, "Size of timeval");
-    assert_eq!(
-        ::std::mem::align_of::<timeval>(),
-        4usize,
-        "Alignment of timeval"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).tv_sec) as usize - ptr as usize },
-        0usize,
-        "Offset of field: timeval::tv_sec"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).tv_usec) as usize - ptr as usize },
-        4usize,
-        "Offset of field: timeval::tv_usec"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of timeval"][::std::mem::size_of::<timeval>() - 8usize];
+    ["Alignment of timeval"][::std::mem::align_of::<timeval>() - 4usize];
+    ["Offset of field: timeval::tv_sec"][::std::mem::offset_of!(timeval, tv_sec) - 0usize];
+    ["Offset of field: timeval::tv_usec"][::std::mem::offset_of!(timeval, tv_usec) - 4usize];
+};
 #[repr(C)]
 #[derive(Debug, Default, Copy, Clone)]
 pub struct timespec {
     pub tv_sec: __time_t,
     pub tv_nsec: __syscall_slong_t,
 }
-#[test]
-fn bindgen_test_layout_timespec() {
-    const UNINIT: ::std::mem::MaybeUninit<timespec> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<timespec>(),
-        8usize,
-        "Size of timespec"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<timespec>(),
-        4usize,
-        "Alignment of timespec"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).tv_sec) as usize - ptr as usize },
-        0usize,
-        "Offset of field: timespec::tv_sec"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).tv_nsec) as usize - ptr as usize },
-        4usize,
-        "Offset of field: timespec::tv_nsec"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of timespec"][::std::mem::size_of::<timespec>() - 8usize];
+    ["Alignment of timespec"][::std::mem::align_of::<timespec>() - 4usize];
+    ["Offset of field: timespec::tv_sec"][::std::mem::offset_of!(timespec, tv_sec) - 0usize];
+    ["Offset of field: timespec::tv_nsec"][::std::mem::offset_of!(timespec, tv_nsec) - 4usize];
+};
 pub type suseconds_t = __suseconds_t;
 pub type __fd_mask = ::std::os::raw::c_long;
 #[repr(C)]
@@ -13404,24 +10744,14 @@ pub type __fd_mask = ::std::os::raw::c_long;
 pub struct fd_set {
     pub __fds_bits: [__fd_mask; 32usize],
 }
-#[test]
-fn bindgen_test_layout_fd_set() {
-    const UNINIT: ::std::mem::MaybeUninit<fd_set> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(::std::mem::size_of::<fd_set>(), 128usize, "Size of fd_set");
-    assert_eq!(
-        ::std::mem::align_of::<fd_set>(),
-        4usize,
-        "Alignment of fd_set"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).__fds_bits) as usize - ptr as usize },
-        0usize,
-        "Offset of field: fd_set::__fds_bits"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of fd_set"][::std::mem::size_of::<fd_set>() - 128usize];
+    ["Alignment of fd_set"][::std::mem::align_of::<fd_set>() - 4usize];
+    ["Offset of field: fd_set::__fds_bits"][::std::mem::offset_of!(fd_set, __fds_bits) - 0usize];
+};
 pub type fd_mask = __fd_mask;
-extern "C" {
+unsafe extern "C" {
     pub fn select(
         __nfds: ::std::os::raw::c_int,
         __readfds: *mut fd_set,
@@ -13430,7 +10760,7 @@ extern "C" {
         __timeout: *mut timeval,
     ) -> ::std::os::raw::c_int;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn pselect(
         __nfds: ::std::os::raw::c_int,
         __readfds: *mut fd_set,
@@ -13456,58 +10786,27 @@ pub struct __atomic_wide_counter__bindgen_ty_1 {
     pub __low: ::std::os::raw::c_uint,
     pub __high: ::std::os::raw::c_uint,
 }
-#[test]
-fn bindgen_test_layout___atomic_wide_counter__bindgen_ty_1() {
-    const UNINIT: ::std::mem::MaybeUninit<__atomic_wide_counter__bindgen_ty_1> =
-        ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<__atomic_wide_counter__bindgen_ty_1>(),
-        8usize,
-        "Size of __atomic_wide_counter__bindgen_ty_1"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<__atomic_wide_counter__bindgen_ty_1>(),
-        4usize,
-        "Alignment of __atomic_wide_counter__bindgen_ty_1"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).__low) as usize - ptr as usize },
-        0usize,
-        "Offset of field: __atomic_wide_counter__bindgen_ty_1::__low"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).__high) as usize - ptr as usize },
-        4usize,
-        "Offset of field: __atomic_wide_counter__bindgen_ty_1::__high"
-    );
-}
-#[test]
-fn bindgen_test_layout___atomic_wide_counter() {
-    const UNINIT: ::std::mem::MaybeUninit<__atomic_wide_counter> =
-        ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<__atomic_wide_counter>(),
-        8usize,
-        "Size of __atomic_wide_counter"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<__atomic_wide_counter>(),
-        8usize,
-        "Alignment of __atomic_wide_counter"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).__value64) as usize - ptr as usize },
-        0usize,
-        "Offset of field: __atomic_wide_counter::__value64"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).__value32) as usize - ptr as usize },
-        0usize,
-        "Offset of field: __atomic_wide_counter::__value32"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of __atomic_wide_counter__bindgen_ty_1"]
+        [::std::mem::size_of::<__atomic_wide_counter__bindgen_ty_1>() - 8usize];
+    ["Alignment of __atomic_wide_counter__bindgen_ty_1"]
+        [::std::mem::align_of::<__atomic_wide_counter__bindgen_ty_1>() - 4usize];
+    ["Offset of field: __atomic_wide_counter__bindgen_ty_1::__low"]
+        [::std::mem::offset_of!(__atomic_wide_counter__bindgen_ty_1, __low) - 0usize];
+    ["Offset of field: __atomic_wide_counter__bindgen_ty_1::__high"]
+        [::std::mem::offset_of!(__atomic_wide_counter__bindgen_ty_1, __high) - 4usize];
+};
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of __atomic_wide_counter"][::std::mem::size_of::<__atomic_wide_counter>() - 8usize];
+    ["Alignment of __atomic_wide_counter"]
+        [::std::mem::align_of::<__atomic_wide_counter>() - 8usize];
+    ["Offset of field: __atomic_wide_counter::__value64"]
+        [::std::mem::offset_of!(__atomic_wide_counter, __value64) - 0usize];
+    ["Offset of field: __atomic_wide_counter::__value32"]
+        [::std::mem::offset_of!(__atomic_wide_counter, __value32) - 0usize];
+};
 impl Default for __atomic_wide_counter {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
@@ -13523,32 +10822,16 @@ pub struct __pthread_internal_list {
     pub __prev: *mut __pthread_internal_list,
     pub __next: *mut __pthread_internal_list,
 }
-#[test]
-fn bindgen_test_layout___pthread_internal_list() {
-    const UNINIT: ::std::mem::MaybeUninit<__pthread_internal_list> =
-        ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<__pthread_internal_list>(),
-        8usize,
-        "Size of __pthread_internal_list"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<__pthread_internal_list>(),
-        4usize,
-        "Alignment of __pthread_internal_list"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).__prev) as usize - ptr as usize },
-        0usize,
-        "Offset of field: __pthread_internal_list::__prev"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).__next) as usize - ptr as usize },
-        4usize,
-        "Offset of field: __pthread_internal_list::__next"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of __pthread_internal_list"][::std::mem::size_of::<__pthread_internal_list>() - 8usize];
+    ["Alignment of __pthread_internal_list"]
+        [::std::mem::align_of::<__pthread_internal_list>() - 4usize];
+    ["Offset of field: __pthread_internal_list::__prev"]
+        [::std::mem::offset_of!(__pthread_internal_list, __prev) - 0usize];
+    ["Offset of field: __pthread_internal_list::__next"]
+        [::std::mem::offset_of!(__pthread_internal_list, __next) - 4usize];
+};
 impl Default for __pthread_internal_list {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
@@ -13564,27 +10847,15 @@ pub type __pthread_list_t = __pthread_internal_list;
 pub struct __pthread_internal_slist {
     pub __next: *mut __pthread_internal_slist,
 }
-#[test]
-fn bindgen_test_layout___pthread_internal_slist() {
-    const UNINIT: ::std::mem::MaybeUninit<__pthread_internal_slist> =
-        ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<__pthread_internal_slist>(),
-        4usize,
-        "Size of __pthread_internal_slist"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<__pthread_internal_slist>(),
-        4usize,
-        "Alignment of __pthread_internal_slist"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).__next) as usize - ptr as usize },
-        0usize,
-        "Offset of field: __pthread_internal_slist::__next"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of __pthread_internal_slist"]
+        [::std::mem::size_of::<__pthread_internal_slist>() - 4usize];
+    ["Alignment of __pthread_internal_slist"]
+        [::std::mem::align_of::<__pthread_internal_slist>() - 4usize];
+    ["Offset of field: __pthread_internal_slist::__next"]
+        [::std::mem::offset_of!(__pthread_internal_slist, __next) - 0usize];
+};
 impl Default for __pthread_internal_slist {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
@@ -13611,32 +10882,17 @@ pub union __pthread_mutex_s__bindgen_ty_1 {
     pub __spins: ::std::os::raw::c_int,
     pub __list: __pthread_slist_t,
 }
-#[test]
-fn bindgen_test_layout___pthread_mutex_s__bindgen_ty_1() {
-    const UNINIT: ::std::mem::MaybeUninit<__pthread_mutex_s__bindgen_ty_1> =
-        ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<__pthread_mutex_s__bindgen_ty_1>(),
-        4usize,
-        "Size of __pthread_mutex_s__bindgen_ty_1"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<__pthread_mutex_s__bindgen_ty_1>(),
-        4usize,
-        "Alignment of __pthread_mutex_s__bindgen_ty_1"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).__spins) as usize - ptr as usize },
-        0usize,
-        "Offset of field: __pthread_mutex_s__bindgen_ty_1::__spins"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).__list) as usize - ptr as usize },
-        0usize,
-        "Offset of field: __pthread_mutex_s__bindgen_ty_1::__list"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of __pthread_mutex_s__bindgen_ty_1"]
+        [::std::mem::size_of::<__pthread_mutex_s__bindgen_ty_1>() - 4usize];
+    ["Alignment of __pthread_mutex_s__bindgen_ty_1"]
+        [::std::mem::align_of::<__pthread_mutex_s__bindgen_ty_1>() - 4usize];
+    ["Offset of field: __pthread_mutex_s__bindgen_ty_1::__spins"]
+        [::std::mem::offset_of!(__pthread_mutex_s__bindgen_ty_1, __spins) - 0usize];
+    ["Offset of field: __pthread_mutex_s__bindgen_ty_1::__list"]
+        [::std::mem::offset_of!(__pthread_mutex_s__bindgen_ty_1, __list) - 0usize];
+};
 impl Default for __pthread_mutex_s__bindgen_ty_1 {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
@@ -13646,46 +10902,21 @@ impl Default for __pthread_mutex_s__bindgen_ty_1 {
         }
     }
 }
-#[test]
-fn bindgen_test_layout___pthread_mutex_s() {
-    const UNINIT: ::std::mem::MaybeUninit<__pthread_mutex_s> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<__pthread_mutex_s>(),
-        24usize,
-        "Size of __pthread_mutex_s"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<__pthread_mutex_s>(),
-        4usize,
-        "Alignment of __pthread_mutex_s"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).__lock) as usize - ptr as usize },
-        0usize,
-        "Offset of field: __pthread_mutex_s::__lock"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).__count) as usize - ptr as usize },
-        4usize,
-        "Offset of field: __pthread_mutex_s::__count"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).__owner) as usize - ptr as usize },
-        8usize,
-        "Offset of field: __pthread_mutex_s::__owner"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).__kind) as usize - ptr as usize },
-        12usize,
-        "Offset of field: __pthread_mutex_s::__kind"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).__nusers) as usize - ptr as usize },
-        16usize,
-        "Offset of field: __pthread_mutex_s::__nusers"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of __pthread_mutex_s"][::std::mem::size_of::<__pthread_mutex_s>() - 24usize];
+    ["Alignment of __pthread_mutex_s"][::std::mem::align_of::<__pthread_mutex_s>() - 4usize];
+    ["Offset of field: __pthread_mutex_s::__lock"]
+        [::std::mem::offset_of!(__pthread_mutex_s, __lock) - 0usize];
+    ["Offset of field: __pthread_mutex_s::__count"]
+        [::std::mem::offset_of!(__pthread_mutex_s, __count) - 4usize];
+    ["Offset of field: __pthread_mutex_s::__owner"]
+        [::std::mem::offset_of!(__pthread_mutex_s, __owner) - 8usize];
+    ["Offset of field: __pthread_mutex_s::__kind"]
+        [::std::mem::offset_of!(__pthread_mutex_s, __kind) - 12usize];
+    ["Offset of field: __pthread_mutex_s::__nusers"]
+        [::std::mem::offset_of!(__pthread_mutex_s, __nusers) - 16usize];
+};
 impl Default for __pthread_mutex_s {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
@@ -13710,77 +10941,34 @@ pub struct __pthread_rwlock_arch_t {
     pub __pad2: ::std::os::raw::c_uchar,
     pub __cur_writer: ::std::os::raw::c_int,
 }
-#[test]
-fn bindgen_test_layout___pthread_rwlock_arch_t() {
-    const UNINIT: ::std::mem::MaybeUninit<__pthread_rwlock_arch_t> =
-        ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<__pthread_rwlock_arch_t>(),
-        32usize,
-        "Size of __pthread_rwlock_arch_t"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<__pthread_rwlock_arch_t>(),
-        4usize,
-        "Alignment of __pthread_rwlock_arch_t"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).__readers) as usize - ptr as usize },
-        0usize,
-        "Offset of field: __pthread_rwlock_arch_t::__readers"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).__writers) as usize - ptr as usize },
-        4usize,
-        "Offset of field: __pthread_rwlock_arch_t::__writers"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).__wrphase_futex) as usize - ptr as usize },
-        8usize,
-        "Offset of field: __pthread_rwlock_arch_t::__wrphase_futex"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).__writers_futex) as usize - ptr as usize },
-        12usize,
-        "Offset of field: __pthread_rwlock_arch_t::__writers_futex"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).__pad3) as usize - ptr as usize },
-        16usize,
-        "Offset of field: __pthread_rwlock_arch_t::__pad3"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).__pad4) as usize - ptr as usize },
-        20usize,
-        "Offset of field: __pthread_rwlock_arch_t::__pad4"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).__flags) as usize - ptr as usize },
-        24usize,
-        "Offset of field: __pthread_rwlock_arch_t::__flags"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).__shared) as usize - ptr as usize },
-        25usize,
-        "Offset of field: __pthread_rwlock_arch_t::__shared"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).__pad1) as usize - ptr as usize },
-        26usize,
-        "Offset of field: __pthread_rwlock_arch_t::__pad1"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).__pad2) as usize - ptr as usize },
-        27usize,
-        "Offset of field: __pthread_rwlock_arch_t::__pad2"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).__cur_writer) as usize - ptr as usize },
-        28usize,
-        "Offset of field: __pthread_rwlock_arch_t::__cur_writer"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of __pthread_rwlock_arch_t"][::std::mem::size_of::<__pthread_rwlock_arch_t>() - 32usize];
+    ["Alignment of __pthread_rwlock_arch_t"]
+        [::std::mem::align_of::<__pthread_rwlock_arch_t>() - 4usize];
+    ["Offset of field: __pthread_rwlock_arch_t::__readers"]
+        [::std::mem::offset_of!(__pthread_rwlock_arch_t, __readers) - 0usize];
+    ["Offset of field: __pthread_rwlock_arch_t::__writers"]
+        [::std::mem::offset_of!(__pthread_rwlock_arch_t, __writers) - 4usize];
+    ["Offset of field: __pthread_rwlock_arch_t::__wrphase_futex"]
+        [::std::mem::offset_of!(__pthread_rwlock_arch_t, __wrphase_futex) - 8usize];
+    ["Offset of field: __pthread_rwlock_arch_t::__writers_futex"]
+        [::std::mem::offset_of!(__pthread_rwlock_arch_t, __writers_futex) - 12usize];
+    ["Offset of field: __pthread_rwlock_arch_t::__pad3"]
+        [::std::mem::offset_of!(__pthread_rwlock_arch_t, __pad3) - 16usize];
+    ["Offset of field: __pthread_rwlock_arch_t::__pad4"]
+        [::std::mem::offset_of!(__pthread_rwlock_arch_t, __pad4) - 20usize];
+    ["Offset of field: __pthread_rwlock_arch_t::__flags"]
+        [::std::mem::offset_of!(__pthread_rwlock_arch_t, __flags) - 24usize];
+    ["Offset of field: __pthread_rwlock_arch_t::__shared"]
+        [::std::mem::offset_of!(__pthread_rwlock_arch_t, __shared) - 25usize];
+    ["Offset of field: __pthread_rwlock_arch_t::__pad1"]
+        [::std::mem::offset_of!(__pthread_rwlock_arch_t, __pad1) - 26usize];
+    ["Offset of field: __pthread_rwlock_arch_t::__pad2"]
+        [::std::mem::offset_of!(__pthread_rwlock_arch_t, __pad2) - 27usize];
+    ["Offset of field: __pthread_rwlock_arch_t::__cur_writer"]
+        [::std::mem::offset_of!(__pthread_rwlock_arch_t, __cur_writer) - 28usize];
+};
 #[repr(C)]
 #[derive(Copy, Clone)]
 pub struct __pthread_cond_s {
@@ -13792,56 +10980,25 @@ pub struct __pthread_cond_s {
     pub __wrefs: ::std::os::raw::c_uint,
     pub __g_signals: [::std::os::raw::c_uint; 2usize],
 }
-#[test]
-fn bindgen_test_layout___pthread_cond_s() {
-    const UNINIT: ::std::mem::MaybeUninit<__pthread_cond_s> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<__pthread_cond_s>(),
-        48usize,
-        "Size of __pthread_cond_s"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<__pthread_cond_s>(),
-        8usize,
-        "Alignment of __pthread_cond_s"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).__wseq) as usize - ptr as usize },
-        0usize,
-        "Offset of field: __pthread_cond_s::__wseq"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).__g1_start) as usize - ptr as usize },
-        8usize,
-        "Offset of field: __pthread_cond_s::__g1_start"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).__g_refs) as usize - ptr as usize },
-        16usize,
-        "Offset of field: __pthread_cond_s::__g_refs"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).__g_size) as usize - ptr as usize },
-        24usize,
-        "Offset of field: __pthread_cond_s::__g_size"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).__g1_orig_size) as usize - ptr as usize },
-        32usize,
-        "Offset of field: __pthread_cond_s::__g1_orig_size"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).__wrefs) as usize - ptr as usize },
-        36usize,
-        "Offset of field: __pthread_cond_s::__wrefs"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).__g_signals) as usize - ptr as usize },
-        40usize,
-        "Offset of field: __pthread_cond_s::__g_signals"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of __pthread_cond_s"][::std::mem::size_of::<__pthread_cond_s>() - 48usize];
+    ["Alignment of __pthread_cond_s"][::std::mem::align_of::<__pthread_cond_s>() - 8usize];
+    ["Offset of field: __pthread_cond_s::__wseq"]
+        [::std::mem::offset_of!(__pthread_cond_s, __wseq) - 0usize];
+    ["Offset of field: __pthread_cond_s::__g1_start"]
+        [::std::mem::offset_of!(__pthread_cond_s, __g1_start) - 8usize];
+    ["Offset of field: __pthread_cond_s::__g_refs"]
+        [::std::mem::offset_of!(__pthread_cond_s, __g_refs) - 16usize];
+    ["Offset of field: __pthread_cond_s::__g_size"]
+        [::std::mem::offset_of!(__pthread_cond_s, __g_size) - 24usize];
+    ["Offset of field: __pthread_cond_s::__g1_orig_size"]
+        [::std::mem::offset_of!(__pthread_cond_s, __g1_orig_size) - 32usize];
+    ["Offset of field: __pthread_cond_s::__wrefs"]
+        [::std::mem::offset_of!(__pthread_cond_s, __wrefs) - 36usize];
+    ["Offset of field: __pthread_cond_s::__g_signals"]
+        [::std::mem::offset_of!(__pthread_cond_s, __g_signals) - 40usize];
+};
 impl Default for __pthread_cond_s {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
@@ -13858,26 +11015,12 @@ pub type __thrd_t = ::std::os::raw::c_ulong;
 pub struct __once_flag {
     pub __data: ::std::os::raw::c_int,
 }
-#[test]
-fn bindgen_test_layout___once_flag() {
-    const UNINIT: ::std::mem::MaybeUninit<__once_flag> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<__once_flag>(),
-        4usize,
-        "Size of __once_flag"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<__once_flag>(),
-        4usize,
-        "Alignment of __once_flag"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).__data) as usize - ptr as usize },
-        0usize,
-        "Offset of field: __once_flag::__data"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of __once_flag"][::std::mem::size_of::<__once_flag>() - 4usize];
+    ["Alignment of __once_flag"][::std::mem::align_of::<__once_flag>() - 4usize];
+    ["Offset of field: __once_flag::__data"][::std::mem::offset_of!(__once_flag, __data) - 0usize];
+};
 pub type pthread_t = ::std::os::raw::c_ulong;
 #[repr(C)]
 #[derive(Copy, Clone)]
@@ -13885,31 +11028,15 @@ pub union pthread_mutexattr_t {
     pub __size: [::std::os::raw::c_char; 4usize],
     pub __align: ::std::os::raw::c_int,
 }
-#[test]
-fn bindgen_test_layout_pthread_mutexattr_t() {
-    const UNINIT: ::std::mem::MaybeUninit<pthread_mutexattr_t> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<pthread_mutexattr_t>(),
-        4usize,
-        "Size of pthread_mutexattr_t"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<pthread_mutexattr_t>(),
-        4usize,
-        "Alignment of pthread_mutexattr_t"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).__size) as usize - ptr as usize },
-        0usize,
-        "Offset of field: pthread_mutexattr_t::__size"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).__align) as usize - ptr as usize },
-        0usize,
-        "Offset of field: pthread_mutexattr_t::__align"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of pthread_mutexattr_t"][::std::mem::size_of::<pthread_mutexattr_t>() - 4usize];
+    ["Alignment of pthread_mutexattr_t"][::std::mem::align_of::<pthread_mutexattr_t>() - 4usize];
+    ["Offset of field: pthread_mutexattr_t::__size"]
+        [::std::mem::offset_of!(pthread_mutexattr_t, __size) - 0usize];
+    ["Offset of field: pthread_mutexattr_t::__align"]
+        [::std::mem::offset_of!(pthread_mutexattr_t, __align) - 0usize];
+};
 impl Default for pthread_mutexattr_t {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
@@ -13925,31 +11052,15 @@ pub union pthread_condattr_t {
     pub __size: [::std::os::raw::c_char; 4usize],
     pub __align: ::std::os::raw::c_int,
 }
-#[test]
-fn bindgen_test_layout_pthread_condattr_t() {
-    const UNINIT: ::std::mem::MaybeUninit<pthread_condattr_t> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<pthread_condattr_t>(),
-        4usize,
-        "Size of pthread_condattr_t"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<pthread_condattr_t>(),
-        4usize,
-        "Alignment of pthread_condattr_t"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).__size) as usize - ptr as usize },
-        0usize,
-        "Offset of field: pthread_condattr_t::__size"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).__align) as usize - ptr as usize },
-        0usize,
-        "Offset of field: pthread_condattr_t::__align"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of pthread_condattr_t"][::std::mem::size_of::<pthread_condattr_t>() - 4usize];
+    ["Alignment of pthread_condattr_t"][::std::mem::align_of::<pthread_condattr_t>() - 4usize];
+    ["Offset of field: pthread_condattr_t::__size"]
+        [::std::mem::offset_of!(pthread_condattr_t, __size) - 0usize];
+    ["Offset of field: pthread_condattr_t::__align"]
+        [::std::mem::offset_of!(pthread_condattr_t, __align) - 0usize];
+};
 impl Default for pthread_condattr_t {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
@@ -13967,31 +11078,15 @@ pub union pthread_attr_t {
     pub __size: [::std::os::raw::c_char; 36usize],
     pub __align: ::std::os::raw::c_long,
 }
-#[test]
-fn bindgen_test_layout_pthread_attr_t() {
-    const UNINIT: ::std::mem::MaybeUninit<pthread_attr_t> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<pthread_attr_t>(),
-        36usize,
-        "Size of pthread_attr_t"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<pthread_attr_t>(),
-        4usize,
-        "Alignment of pthread_attr_t"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).__size) as usize - ptr as usize },
-        0usize,
-        "Offset of field: pthread_attr_t::__size"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).__align) as usize - ptr as usize },
-        0usize,
-        "Offset of field: pthread_attr_t::__align"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of pthread_attr_t"][::std::mem::size_of::<pthread_attr_t>() - 36usize];
+    ["Alignment of pthread_attr_t"][::std::mem::align_of::<pthread_attr_t>() - 4usize];
+    ["Offset of field: pthread_attr_t::__size"]
+        [::std::mem::offset_of!(pthread_attr_t, __size) - 0usize];
+    ["Offset of field: pthread_attr_t::__align"]
+        [::std::mem::offset_of!(pthread_attr_t, __align) - 0usize];
+};
 impl Default for pthread_attr_t {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
@@ -14008,36 +11103,17 @@ pub union pthread_mutex_t {
     pub __size: [::std::os::raw::c_char; 24usize],
     pub __align: ::std::os::raw::c_long,
 }
-#[test]
-fn bindgen_test_layout_pthread_mutex_t() {
-    const UNINIT: ::std::mem::MaybeUninit<pthread_mutex_t> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<pthread_mutex_t>(),
-        24usize,
-        "Size of pthread_mutex_t"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<pthread_mutex_t>(),
-        4usize,
-        "Alignment of pthread_mutex_t"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).__data) as usize - ptr as usize },
-        0usize,
-        "Offset of field: pthread_mutex_t::__data"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).__size) as usize - ptr as usize },
-        0usize,
-        "Offset of field: pthread_mutex_t::__size"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).__align) as usize - ptr as usize },
-        0usize,
-        "Offset of field: pthread_mutex_t::__align"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of pthread_mutex_t"][::std::mem::size_of::<pthread_mutex_t>() - 24usize];
+    ["Alignment of pthread_mutex_t"][::std::mem::align_of::<pthread_mutex_t>() - 4usize];
+    ["Offset of field: pthread_mutex_t::__data"]
+        [::std::mem::offset_of!(pthread_mutex_t, __data) - 0usize];
+    ["Offset of field: pthread_mutex_t::__size"]
+        [::std::mem::offset_of!(pthread_mutex_t, __size) - 0usize];
+    ["Offset of field: pthread_mutex_t::__align"]
+        [::std::mem::offset_of!(pthread_mutex_t, __align) - 0usize];
+};
 impl Default for pthread_mutex_t {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
@@ -14054,36 +11130,17 @@ pub union pthread_cond_t {
     pub __size: [::std::os::raw::c_char; 48usize],
     pub __align: ::std::os::raw::c_longlong,
 }
-#[test]
-fn bindgen_test_layout_pthread_cond_t() {
-    const UNINIT: ::std::mem::MaybeUninit<pthread_cond_t> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<pthread_cond_t>(),
-        48usize,
-        "Size of pthread_cond_t"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<pthread_cond_t>(),
-        8usize,
-        "Alignment of pthread_cond_t"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).__data) as usize - ptr as usize },
-        0usize,
-        "Offset of field: pthread_cond_t::__data"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).__size) as usize - ptr as usize },
-        0usize,
-        "Offset of field: pthread_cond_t::__size"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).__align) as usize - ptr as usize },
-        0usize,
-        "Offset of field: pthread_cond_t::__align"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of pthread_cond_t"][::std::mem::size_of::<pthread_cond_t>() - 48usize];
+    ["Alignment of pthread_cond_t"][::std::mem::align_of::<pthread_cond_t>() - 8usize];
+    ["Offset of field: pthread_cond_t::__data"]
+        [::std::mem::offset_of!(pthread_cond_t, __data) - 0usize];
+    ["Offset of field: pthread_cond_t::__size"]
+        [::std::mem::offset_of!(pthread_cond_t, __size) - 0usize];
+    ["Offset of field: pthread_cond_t::__align"]
+        [::std::mem::offset_of!(pthread_cond_t, __align) - 0usize];
+};
 impl Default for pthread_cond_t {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
@@ -14100,36 +11157,17 @@ pub union pthread_rwlock_t {
     pub __size: [::std::os::raw::c_char; 32usize],
     pub __align: ::std::os::raw::c_long,
 }
-#[test]
-fn bindgen_test_layout_pthread_rwlock_t() {
-    const UNINIT: ::std::mem::MaybeUninit<pthread_rwlock_t> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<pthread_rwlock_t>(),
-        32usize,
-        "Size of pthread_rwlock_t"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<pthread_rwlock_t>(),
-        4usize,
-        "Alignment of pthread_rwlock_t"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).__data) as usize - ptr as usize },
-        0usize,
-        "Offset of field: pthread_rwlock_t::__data"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).__size) as usize - ptr as usize },
-        0usize,
-        "Offset of field: pthread_rwlock_t::__size"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).__align) as usize - ptr as usize },
-        0usize,
-        "Offset of field: pthread_rwlock_t::__align"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of pthread_rwlock_t"][::std::mem::size_of::<pthread_rwlock_t>() - 32usize];
+    ["Alignment of pthread_rwlock_t"][::std::mem::align_of::<pthread_rwlock_t>() - 4usize];
+    ["Offset of field: pthread_rwlock_t::__data"]
+        [::std::mem::offset_of!(pthread_rwlock_t, __data) - 0usize];
+    ["Offset of field: pthread_rwlock_t::__size"]
+        [::std::mem::offset_of!(pthread_rwlock_t, __size) - 0usize];
+    ["Offset of field: pthread_rwlock_t::__align"]
+        [::std::mem::offset_of!(pthread_rwlock_t, __align) - 0usize];
+};
 impl Default for pthread_rwlock_t {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
@@ -14145,31 +11183,15 @@ pub union pthread_rwlockattr_t {
     pub __size: [::std::os::raw::c_char; 8usize],
     pub __align: ::std::os::raw::c_long,
 }
-#[test]
-fn bindgen_test_layout_pthread_rwlockattr_t() {
-    const UNINIT: ::std::mem::MaybeUninit<pthread_rwlockattr_t> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<pthread_rwlockattr_t>(),
-        8usize,
-        "Size of pthread_rwlockattr_t"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<pthread_rwlockattr_t>(),
-        4usize,
-        "Alignment of pthread_rwlockattr_t"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).__size) as usize - ptr as usize },
-        0usize,
-        "Offset of field: pthread_rwlockattr_t::__size"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).__align) as usize - ptr as usize },
-        0usize,
-        "Offset of field: pthread_rwlockattr_t::__align"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of pthread_rwlockattr_t"][::std::mem::size_of::<pthread_rwlockattr_t>() - 8usize];
+    ["Alignment of pthread_rwlockattr_t"][::std::mem::align_of::<pthread_rwlockattr_t>() - 4usize];
+    ["Offset of field: pthread_rwlockattr_t::__size"]
+        [::std::mem::offset_of!(pthread_rwlockattr_t, __size) - 0usize];
+    ["Offset of field: pthread_rwlockattr_t::__align"]
+        [::std::mem::offset_of!(pthread_rwlockattr_t, __align) - 0usize];
+};
 impl Default for pthread_rwlockattr_t {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
@@ -14186,31 +11208,15 @@ pub union pthread_barrier_t {
     pub __size: [::std::os::raw::c_char; 20usize],
     pub __align: ::std::os::raw::c_long,
 }
-#[test]
-fn bindgen_test_layout_pthread_barrier_t() {
-    const UNINIT: ::std::mem::MaybeUninit<pthread_barrier_t> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<pthread_barrier_t>(),
-        20usize,
-        "Size of pthread_barrier_t"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<pthread_barrier_t>(),
-        4usize,
-        "Alignment of pthread_barrier_t"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).__size) as usize - ptr as usize },
-        0usize,
-        "Offset of field: pthread_barrier_t::__size"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).__align) as usize - ptr as usize },
-        0usize,
-        "Offset of field: pthread_barrier_t::__align"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of pthread_barrier_t"][::std::mem::size_of::<pthread_barrier_t>() - 20usize];
+    ["Alignment of pthread_barrier_t"][::std::mem::align_of::<pthread_barrier_t>() - 4usize];
+    ["Offset of field: pthread_barrier_t::__size"]
+        [::std::mem::offset_of!(pthread_barrier_t, __size) - 0usize];
+    ["Offset of field: pthread_barrier_t::__align"]
+        [::std::mem::offset_of!(pthread_barrier_t, __align) - 0usize];
+};
 impl Default for pthread_barrier_t {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
@@ -14226,32 +11232,16 @@ pub union pthread_barrierattr_t {
     pub __size: [::std::os::raw::c_char; 4usize],
     pub __align: ::std::os::raw::c_int,
 }
-#[test]
-fn bindgen_test_layout_pthread_barrierattr_t() {
-    const UNINIT: ::std::mem::MaybeUninit<pthread_barrierattr_t> =
-        ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<pthread_barrierattr_t>(),
-        4usize,
-        "Size of pthread_barrierattr_t"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<pthread_barrierattr_t>(),
-        4usize,
-        "Alignment of pthread_barrierattr_t"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).__size) as usize - ptr as usize },
-        0usize,
-        "Offset of field: pthread_barrierattr_t::__size"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).__align) as usize - ptr as usize },
-        0usize,
-        "Offset of field: pthread_barrierattr_t::__align"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of pthread_barrierattr_t"][::std::mem::size_of::<pthread_barrierattr_t>() - 4usize];
+    ["Alignment of pthread_barrierattr_t"]
+        [::std::mem::align_of::<pthread_barrierattr_t>() - 4usize];
+    ["Offset of field: pthread_barrierattr_t::__size"]
+        [::std::mem::offset_of!(pthread_barrierattr_t, __size) - 0usize];
+    ["Offset of field: pthread_barrierattr_t::__align"]
+        [::std::mem::offset_of!(pthread_barrierattr_t, __align) - 0usize];
+};
 impl Default for pthread_barrierattr_t {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
@@ -14261,20 +11251,20 @@ impl Default for pthread_barrierattr_t {
         }
     }
 }
-extern "C" {
+unsafe extern "C" {
     pub fn random() -> ::std::os::raw::c_long;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn srandom(__seed: ::std::os::raw::c_uint);
 }
-extern "C" {
+unsafe extern "C" {
     pub fn initstate(
         __seed: ::std::os::raw::c_uint,
         __statebuf: *mut ::std::os::raw::c_char,
         __statelen: size_t,
     ) -> *mut ::std::os::raw::c_char;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn setstate(__statebuf: *mut ::std::os::raw::c_char) -> *mut ::std::os::raw::c_char;
 }
 #[repr(C)]
@@ -14288,56 +11278,22 @@ pub struct random_data {
     pub rand_sep: ::std::os::raw::c_int,
     pub end_ptr: *mut i32,
 }
-#[test]
-fn bindgen_test_layout_random_data() {
-    const UNINIT: ::std::mem::MaybeUninit<random_data> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<random_data>(),
-        28usize,
-        "Size of random_data"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<random_data>(),
-        4usize,
-        "Alignment of random_data"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).fptr) as usize - ptr as usize },
-        0usize,
-        "Offset of field: random_data::fptr"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).rptr) as usize - ptr as usize },
-        4usize,
-        "Offset of field: random_data::rptr"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).state) as usize - ptr as usize },
-        8usize,
-        "Offset of field: random_data::state"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).rand_type) as usize - ptr as usize },
-        12usize,
-        "Offset of field: random_data::rand_type"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).rand_deg) as usize - ptr as usize },
-        16usize,
-        "Offset of field: random_data::rand_deg"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).rand_sep) as usize - ptr as usize },
-        20usize,
-        "Offset of field: random_data::rand_sep"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).end_ptr) as usize - ptr as usize },
-        24usize,
-        "Offset of field: random_data::end_ptr"
-    );
-}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of random_data"][::std::mem::size_of::<random_data>() - 28usize];
+    ["Alignment of random_data"][::std::mem::align_of::<random_data>() - 4usize];
+    ["Offset of field: random_data::fptr"][::std::mem::offset_of!(random_data, fptr) - 0usize];
+    ["Offset of field: random_data::rptr"][::std::mem::offset_of!(random_data, rptr) - 4usize];
+    ["Offset of field: random_data::state"][::std::mem::offset_of!(random_data, state) - 8usize];
+    ["Offset of field: random_data::rand_type"]
+        [::std::mem::offset_of!(random_data, rand_type) - 12usize];
+    ["Offset of field: random_data::rand_deg"]
+        [::std::mem::offset_of!(random_data, rand_deg) - 16usize];
+    ["Offset of field: random_data::rand_sep"]
+        [::std::mem::offset_of!(random_data, rand_sep) - 20usize];
+    ["Offset of field: random_data::end_ptr"]
+        [::std::mem::offset_of!(random_data, end_ptr) - 24usize];
+};
 impl Default for random_data {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
@@ -14347,16 +11303,16 @@ impl Default for random_data {
         }
     }
 }
-extern "C" {
+unsafe extern "C" {
     pub fn random_r(__buf: *mut random_data, __result: *mut i32) -> ::std::os::raw::c_int;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn srandom_r(
         __seed: ::std::os::raw::c_uint,
         __buf: *mut random_data,
     ) -> ::std::os::raw::c_int;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn initstate_r(
         __seed: ::std::os::raw::c_uint,
         __statebuf: *mut ::std::os::raw::c_char,
@@ -14364,46 +11320,46 @@ extern "C" {
         __buf: *mut random_data,
     ) -> ::std::os::raw::c_int;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn setstate_r(
         __statebuf: *mut ::std::os::raw::c_char,
         __buf: *mut random_data,
     ) -> ::std::os::raw::c_int;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn rand() -> ::std::os::raw::c_int;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn srand(__seed: ::std::os::raw::c_uint);
 }
-extern "C" {
+unsafe extern "C" {
     pub fn rand_r(__seed: *mut ::std::os::raw::c_uint) -> ::std::os::raw::c_int;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn drand48() -> f64;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn erand48(__xsubi: *mut ::std::os::raw::c_ushort) -> f64;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn lrand48() -> ::std::os::raw::c_long;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn nrand48(__xsubi: *mut ::std::os::raw::c_ushort) -> ::std::os::raw::c_long;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn mrand48() -> ::std::os::raw::c_long;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn jrand48(__xsubi: *mut ::std::os::raw::c_ushort) -> ::std::os::raw::c_long;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn srand48(__seedval: ::std::os::raw::c_long);
 }
-extern "C" {
+unsafe extern "C" {
     pub fn seed48(__seed16v: *mut ::std::os::raw::c_ushort) -> *mut ::std::os::raw::c_ushort;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn lcong48(__param: *mut ::std::os::raw::c_ushort);
 }
 #[repr(C)]
@@ -14415,156 +11371,128 @@ pub struct drand48_data {
     pub __init: ::std::os::raw::c_ushort,
     pub __a: ::std::os::raw::c_ulonglong,
 }
-#[test]
-fn bindgen_test_layout_drand48_data() {
-    const UNINIT: ::std::mem::MaybeUninit<drand48_data> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<drand48_data>(),
-        24usize,
-        "Size of drand48_data"
-    );
-    assert_eq!(
-        ::std::mem::align_of::<drand48_data>(),
-        8usize,
-        "Alignment of drand48_data"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).__x) as usize - ptr as usize },
-        0usize,
-        "Offset of field: drand48_data::__x"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).__old_x) as usize - ptr as usize },
-        6usize,
-        "Offset of field: drand48_data::__old_x"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).__c) as usize - ptr as usize },
-        12usize,
-        "Offset of field: drand48_data::__c"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).__init) as usize - ptr as usize },
-        14usize,
-        "Offset of field: drand48_data::__init"
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).__a) as usize - ptr as usize },
-        16usize,
-        "Offset of field: drand48_data::__a"
-    );
-}
-extern "C" {
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of drand48_data"][::std::mem::size_of::<drand48_data>() - 24usize];
+    ["Alignment of drand48_data"][::std::mem::align_of::<drand48_data>() - 8usize];
+    ["Offset of field: drand48_data::__x"][::std::mem::offset_of!(drand48_data, __x) - 0usize];
+    ["Offset of field: drand48_data::__old_x"]
+        [::std::mem::offset_of!(drand48_data, __old_x) - 6usize];
+    ["Offset of field: drand48_data::__c"][::std::mem::offset_of!(drand48_data, __c) - 12usize];
+    ["Offset of field: drand48_data::__init"]
+        [::std::mem::offset_of!(drand48_data, __init) - 14usize];
+    ["Offset of field: drand48_data::__a"][::std::mem::offset_of!(drand48_data, __a) - 16usize];
+};
+unsafe extern "C" {
     pub fn drand48_r(__buffer: *mut drand48_data, __result: *mut f64) -> ::std::os::raw::c_int;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn erand48_r(
         __xsubi: *mut ::std::os::raw::c_ushort,
         __buffer: *mut drand48_data,
         __result: *mut f64,
     ) -> ::std::os::raw::c_int;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn lrand48_r(
         __buffer: *mut drand48_data,
         __result: *mut ::std::os::raw::c_long,
     ) -> ::std::os::raw::c_int;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn nrand48_r(
         __xsubi: *mut ::std::os::raw::c_ushort,
         __buffer: *mut drand48_data,
         __result: *mut ::std::os::raw::c_long,
     ) -> ::std::os::raw::c_int;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn mrand48_r(
         __buffer: *mut drand48_data,
         __result: *mut ::std::os::raw::c_long,
     ) -> ::std::os::raw::c_int;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn jrand48_r(
         __xsubi: *mut ::std::os::raw::c_ushort,
         __buffer: *mut drand48_data,
         __result: *mut ::std::os::raw::c_long,
     ) -> ::std::os::raw::c_int;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn srand48_r(
         __seedval: ::std::os::raw::c_long,
         __buffer: *mut drand48_data,
     ) -> ::std::os::raw::c_int;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn seed48_r(
         __seed16v: *mut ::std::os::raw::c_ushort,
         __buffer: *mut drand48_data,
     ) -> ::std::os::raw::c_int;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn lcong48_r(
         __param: *mut ::std::os::raw::c_ushort,
         __buffer: *mut drand48_data,
     ) -> ::std::os::raw::c_int;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn malloc(__size: ::std::os::raw::c_uint) -> *mut ::std::os::raw::c_void;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn calloc(
         __nmemb: ::std::os::raw::c_uint,
         __size: ::std::os::raw::c_uint,
     ) -> *mut ::std::os::raw::c_void;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn realloc(
         __ptr: *mut ::std::os::raw::c_void,
         __size: ::std::os::raw::c_uint,
     ) -> *mut ::std::os::raw::c_void;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn free(__ptr: *mut ::std::os::raw::c_void);
 }
-extern "C" {
+unsafe extern "C" {
     pub fn reallocarray(
         __ptr: *mut ::std::os::raw::c_void,
         __nmemb: size_t,
         __size: size_t,
     ) -> *mut ::std::os::raw::c_void;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn alloca(__size: ::std::os::raw::c_uint) -> *mut ::std::os::raw::c_void;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn valloc(__size: size_t) -> *mut ::std::os::raw::c_void;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn posix_memalign(
         __memptr: *mut *mut ::std::os::raw::c_void,
         __alignment: size_t,
         __size: size_t,
     ) -> ::std::os::raw::c_int;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn aligned_alloc(
         __alignment: ::std::os::raw::c_uint,
         __size: ::std::os::raw::c_uint,
     ) -> *mut ::std::os::raw::c_void;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn abort() -> !;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn atexit(__func: ::std::option::Option<unsafe extern "C" fn()>) -> ::std::os::raw::c_int;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn at_quick_exit(
         __func: ::std::option::Option<unsafe extern "C" fn()>,
     ) -> ::std::os::raw::c_int;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn on_exit(
         __func: ::std::option::Option<
             unsafe extern "C" fn(
@@ -14575,53 +11503,53 @@ extern "C" {
         __arg: *mut ::std::os::raw::c_void,
     ) -> ::std::os::raw::c_int;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn exit(__status: ::std::os::raw::c_int) -> !;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn quick_exit(__status: ::std::os::raw::c_int) -> !;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn _Exit(__status: ::std::os::raw::c_int) -> !;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn getenv(__name: *const ::std::os::raw::c_char) -> *mut ::std::os::raw::c_char;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn putenv(__string: *mut ::std::os::raw::c_char) -> ::std::os::raw::c_int;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn setenv(
         __name: *const ::std::os::raw::c_char,
         __value: *const ::std::os::raw::c_char,
         __replace: ::std::os::raw::c_int,
     ) -> ::std::os::raw::c_int;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn unsetenv(__name: *const ::std::os::raw::c_char) -> ::std::os::raw::c_int;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn clearenv() -> ::std::os::raw::c_int;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn mktemp(__template: *mut ::std::os::raw::c_char) -> *mut ::std::os::raw::c_char;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn mkstemp(__template: *mut ::std::os::raw::c_char) -> ::std::os::raw::c_int;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn mkstemps(
         __template: *mut ::std::os::raw::c_char,
         __suffixlen: ::std::os::raw::c_int,
     ) -> ::std::os::raw::c_int;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn mkdtemp(__template: *mut ::std::os::raw::c_char) -> *mut ::std::os::raw::c_char;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn system(__command: *const ::std::os::raw::c_char) -> ::std::os::raw::c_int;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn realpath(
         __name: *const ::std::os::raw::c_char,
         __resolved: *mut ::std::os::raw::c_char,
@@ -14633,7 +11561,7 @@ pub type __compar_fn_t = ::std::option::Option<
         arg2: *const ::std::os::raw::c_void,
     ) -> ::std::os::raw::c_int,
 >;
-extern "C" {
+unsafe extern "C" {
     pub fn bsearch(
         __key: *const ::std::os::raw::c_void,
         __base: *const ::std::os::raw::c_void,
@@ -14642,7 +11570,7 @@ extern "C" {
         __compar: __compar_fn_t,
     ) -> *mut ::std::os::raw::c_void;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn qsort(
         __base: *mut ::std::os::raw::c_void,
         __nmemb: size_t,
@@ -14650,28 +11578,28 @@ extern "C" {
         __compar: __compar_fn_t,
     );
 }
-extern "C" {
+unsafe extern "C" {
     pub fn abs(__x: ::std::os::raw::c_int) -> ::std::os::raw::c_int;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn labs(__x: ::std::os::raw::c_long) -> ::std::os::raw::c_long;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn llabs(__x: ::std::os::raw::c_longlong) -> ::std::os::raw::c_longlong;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn div(__numer: ::std::os::raw::c_int, __denom: ::std::os::raw::c_int) -> div_t;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn ldiv(__numer: ::std::os::raw::c_long, __denom: ::std::os::raw::c_long) -> ldiv_t;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn lldiv(
         __numer: ::std::os::raw::c_longlong,
         __denom: ::std::os::raw::c_longlong,
     ) -> lldiv_t;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn ecvt(
         __value: f64,
         __ndigit: ::std::os::raw::c_int,
@@ -14679,7 +11607,7 @@ extern "C" {
         __sign: *mut ::std::os::raw::c_int,
     ) -> *mut ::std::os::raw::c_char;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn fcvt(
         __value: f64,
         __ndigit: ::std::os::raw::c_int,
@@ -14687,14 +11615,14 @@ extern "C" {
         __sign: *mut ::std::os::raw::c_int,
     ) -> *mut ::std::os::raw::c_char;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn gcvt(
         __value: f64,
         __ndigit: ::std::os::raw::c_int,
         __buf: *mut ::std::os::raw::c_char,
     ) -> *mut ::std::os::raw::c_char;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn qecvt(
         __value: f64,
         __ndigit: ::std::os::raw::c_int,
@@ -14702,7 +11630,7 @@ extern "C" {
         __sign: *mut ::std::os::raw::c_int,
     ) -> *mut ::std::os::raw::c_char;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn qfcvt(
         __value: f64,
         __ndigit: ::std::os::raw::c_int,
@@ -14710,14 +11638,14 @@ extern "C" {
         __sign: *mut ::std::os::raw::c_int,
     ) -> *mut ::std::os::raw::c_char;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn qgcvt(
         __value: f64,
         __ndigit: ::std::os::raw::c_int,
         __buf: *mut ::std::os::raw::c_char,
     ) -> *mut ::std::os::raw::c_char;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn ecvt_r(
         __value: f64,
         __ndigit: ::std::os::raw::c_int,
@@ -14727,7 +11655,7 @@ extern "C" {
         __len: size_t,
     ) -> ::std::os::raw::c_int;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn fcvt_r(
         __value: f64,
         __ndigit: ::std::os::raw::c_int,
@@ -14737,7 +11665,7 @@ extern "C" {
         __len: size_t,
     ) -> ::std::os::raw::c_int;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn qecvt_r(
         __value: f64,
         __ndigit: ::std::os::raw::c_int,
@@ -14747,7 +11675,7 @@ extern "C" {
         __len: size_t,
     ) -> ::std::os::raw::c_int;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn qfcvt_r(
         __value: f64,
         __ndigit: ::std::os::raw::c_int,
@@ -14757,80 +11685,80 @@ extern "C" {
         __len: size_t,
     ) -> ::std::os::raw::c_int;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn mblen(__s: *const ::std::os::raw::c_char, __n: size_t) -> ::std::os::raw::c_int;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn mbtowc(
         __pwc: *mut wchar_t,
         __s: *const ::std::os::raw::c_char,
         __n: size_t,
     ) -> ::std::os::raw::c_int;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn wctomb(__s: *mut ::std::os::raw::c_char, __wchar: wchar_t) -> ::std::os::raw::c_int;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn mbstowcs(
         __pwcs: *mut wchar_t,
         __s: *const ::std::os::raw::c_char,
         __n: size_t,
     ) -> size_t;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn wcstombs(
         __s: *mut ::std::os::raw::c_char,
         __pwcs: *const wchar_t,
         __n: size_t,
     ) -> size_t;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn rpmatch(__response: *const ::std::os::raw::c_char) -> ::std::os::raw::c_int;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn getsubopt(
         __optionp: *mut *mut ::std::os::raw::c_char,
         __tokens: *const *mut ::std::os::raw::c_char,
         __valuep: *mut *mut ::std::os::raw::c_char,
     ) -> ::std::os::raw::c_int;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn getloadavg(__loadavg: *mut f64, __nelem: ::std::os::raw::c_int)
-        -> ::std::os::raw::c_int;
+    -> ::std::os::raw::c_int;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_TctiLdr_Finalize(context: *mut *mut TSS2_TCTI_CONTEXT);
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_TctiLdr_Initialize_Ex(
         name: *const ::std::os::raw::c_char,
         conf: *const ::std::os::raw::c_char,
         context: *mut *mut TSS2_TCTI_CONTEXT,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_TctiLdr_Initialize(
         nameConf: *const ::std::os::raw::c_char,
         context: *mut *mut TSS2_TCTI_CONTEXT,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_TctiLdr_GetInfo(
         name: *const ::std::os::raw::c_char,
         info: *mut *mut TSS2_TCTI_INFO,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_TctiLdr_FreeInfo(info: *mut *mut TSS2_TCTI_INFO);
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_Tcti_TctiLdr_Init(
         tctiContext: *mut TSS2_TCTI_CONTEXT,
         size: *mut size_t,
         nameConf: *const ::std::os::raw::c_char,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_INT8_Marshal(
         src: INT8,
         buffer: *mut u8,
@@ -14838,7 +11766,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_INT8_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -14846,7 +11774,7 @@ extern "C" {
         dest: *mut INT8,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_INT16_Marshal(
         src: INT16,
         buffer: *mut u8,
@@ -14854,7 +11782,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_INT16_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -14862,7 +11790,7 @@ extern "C" {
         dest: *mut INT16,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_INT32_Marshal(
         src: INT32,
         buffer: *mut u8,
@@ -14870,7 +11798,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_INT32_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -14878,7 +11806,7 @@ extern "C" {
         dest: *mut INT32,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_INT64_Marshal(
         src: INT64,
         buffer: *mut u8,
@@ -14886,7 +11814,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_INT64_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -14894,7 +11822,7 @@ extern "C" {
         dest: *mut INT64,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_UINT8_Marshal(
         src: UINT8,
         buffer: *mut u8,
@@ -14902,7 +11830,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_UINT8_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -14910,7 +11838,7 @@ extern "C" {
         dest: *mut UINT8,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_UINT16_Marshal(
         src: UINT16,
         buffer: *mut u8,
@@ -14918,7 +11846,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_UINT16_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -14926,7 +11854,7 @@ extern "C" {
         dest: *mut UINT16,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_UINT32_Marshal(
         src: UINT32,
         buffer: *mut u8,
@@ -14934,7 +11862,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_UINT32_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -14942,7 +11870,7 @@ extern "C" {
         dest: *mut UINT32,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_UINT64_Marshal(
         src: UINT64,
         buffer: *mut u8,
@@ -14950,7 +11878,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_UINT64_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -14958,7 +11886,7 @@ extern "C" {
         dest: *mut UINT64,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPM2_CC_Marshal(
         src: TPM2_CC,
         buffer: *mut u8,
@@ -14966,7 +11894,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPM2_CC_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -14974,7 +11902,7 @@ extern "C" {
         dest: *mut TPM2_CC,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPM2_ST_Marshal(
         src: TPM2_ST,
         buffer: *mut u8,
@@ -14982,7 +11910,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPM2_ST_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -14990,7 +11918,7 @@ extern "C" {
         dest: *mut TPM2_ST,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMA_ALGORITHM_Marshal(
         src: TPMA_ALGORITHM,
         buffer: *mut u8,
@@ -14998,7 +11926,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMA_ALGORITHM_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -15006,7 +11934,7 @@ extern "C" {
         dest: *mut TPMA_ALGORITHM,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMA_CC_Marshal(
         src: TPMA_CC,
         buffer: *mut u8,
@@ -15014,7 +11942,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMA_CC_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -15022,7 +11950,7 @@ extern "C" {
         dest: *mut TPMA_CC,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMA_LOCALITY_Marshal(
         src: TPMA_LOCALITY,
         buffer: *mut u8,
@@ -15030,7 +11958,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMA_LOCALITY_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -15038,7 +11966,7 @@ extern "C" {
         dest: *mut TPMA_LOCALITY,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMA_NV_Marshal(
         src: TPMA_NV,
         buffer: *mut u8,
@@ -15046,7 +11974,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMA_NV_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -15054,7 +11982,7 @@ extern "C" {
         dest: *mut TPMA_NV,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMA_OBJECT_Marshal(
         src: TPMA_OBJECT,
         buffer: *mut u8,
@@ -15062,7 +11990,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMA_OBJECT_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -15070,7 +11998,7 @@ extern "C" {
         dest: *mut TPMA_OBJECT,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMA_PERMANENT_Marshal(
         src: TPMA_PERMANENT,
         buffer: *mut u8,
@@ -15078,7 +12006,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMA_PERMANENT_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -15086,7 +12014,7 @@ extern "C" {
         dest: *mut TPMA_PERMANENT,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMA_SESSION_Marshal(
         src: TPMA_SESSION,
         buffer: *mut u8,
@@ -15094,7 +12022,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMA_SESSION_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -15102,7 +12030,7 @@ extern "C" {
         dest: *mut TPMA_SESSION,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMA_STARTUP_CLEAR_Marshal(
         src: TPMA_STARTUP_CLEAR,
         buffer: *mut u8,
@@ -15110,7 +12038,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMA_STARTUP_CLEAR_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -15118,7 +12046,7 @@ extern "C" {
         dest: *mut TPMA_STARTUP_CLEAR,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPM2B_DIGEST_Marshal(
         src: *const TPM2B_DIGEST,
         buffer: *mut u8,
@@ -15126,7 +12054,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPM2B_DIGEST_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -15134,7 +12062,7 @@ extern "C" {
         dest: *mut TPM2B_DIGEST,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPM2B_ATTEST_Marshal(
         src: *const TPM2B_ATTEST,
         buffer: *mut u8,
@@ -15142,7 +12070,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPM2B_ATTEST_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -15150,7 +12078,7 @@ extern "C" {
         dest: *mut TPM2B_ATTEST,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPM2B_NAME_Marshal(
         src: *const TPM2B_NAME,
         buffer: *mut u8,
@@ -15158,7 +12086,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPM2B_NAME_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -15166,7 +12094,7 @@ extern "C" {
         dest: *mut TPM2B_NAME,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPM2B_MAX_NV_BUFFER_Marshal(
         src: *const TPM2B_MAX_NV_BUFFER,
         buffer: *mut u8,
@@ -15174,7 +12102,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPM2B_MAX_NV_BUFFER_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -15182,7 +12110,7 @@ extern "C" {
         dest: *mut TPM2B_MAX_NV_BUFFER,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPM2B_SENSITIVE_DATA_Marshal(
         src: *const TPM2B_SENSITIVE_DATA,
         buffer: *mut u8,
@@ -15190,7 +12118,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPM2B_SENSITIVE_DATA_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -15198,7 +12126,7 @@ extern "C" {
         dest: *mut TPM2B_SENSITIVE_DATA,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPM2B_ECC_PARAMETER_Marshal(
         src: *const TPM2B_ECC_PARAMETER,
         buffer: *mut u8,
@@ -15206,7 +12134,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPM2B_ECC_PARAMETER_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -15214,7 +12142,7 @@ extern "C" {
         dest: *mut TPM2B_ECC_PARAMETER,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPM2B_PUBLIC_KEY_RSA_Marshal(
         src: *const TPM2B_PUBLIC_KEY_RSA,
         buffer: *mut u8,
@@ -15222,7 +12150,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPM2B_PUBLIC_KEY_RSA_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -15230,7 +12158,7 @@ extern "C" {
         dest: *mut TPM2B_PUBLIC_KEY_RSA,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPM2B_PRIVATE_KEY_RSA_Marshal(
         src: *const TPM2B_PRIVATE_KEY_RSA,
         buffer: *mut u8,
@@ -15238,7 +12166,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPM2B_PRIVATE_KEY_RSA_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -15246,7 +12174,7 @@ extern "C" {
         dest: *mut TPM2B_PRIVATE_KEY_RSA,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPM2B_PRIVATE_Marshal(
         src: *const TPM2B_PRIVATE,
         buffer: *mut u8,
@@ -15254,7 +12182,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPM2B_PRIVATE_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -15262,7 +12190,7 @@ extern "C" {
         dest: *mut TPM2B_PRIVATE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPM2B_CONTEXT_SENSITIVE_Marshal(
         src: *const TPM2B_CONTEXT_SENSITIVE,
         buffer: *mut u8,
@@ -15270,7 +12198,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPM2B_CONTEXT_SENSITIVE_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -15278,7 +12206,7 @@ extern "C" {
         dest: *mut TPM2B_CONTEXT_SENSITIVE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPM2B_CONTEXT_DATA_Marshal(
         src: *const TPM2B_CONTEXT_DATA,
         buffer: *mut u8,
@@ -15286,7 +12214,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPM2B_CONTEXT_DATA_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -15294,7 +12222,7 @@ extern "C" {
         dest: *mut TPM2B_CONTEXT_DATA,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPM2B_DATA_Marshal(
         src: *const TPM2B_DATA,
         buffer: *mut u8,
@@ -15302,7 +12230,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPM2B_DATA_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -15310,7 +12238,7 @@ extern "C" {
         dest: *mut TPM2B_DATA,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPM2B_SYM_KEY_Marshal(
         src: *const TPM2B_SYM_KEY,
         buffer: *mut u8,
@@ -15318,7 +12246,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPM2B_SYM_KEY_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -15326,7 +12254,7 @@ extern "C" {
         dest: *mut TPM2B_SYM_KEY,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPM2B_ECC_POINT_Marshal(
         src: *const TPM2B_ECC_POINT,
         buffer: *mut u8,
@@ -15334,7 +12262,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPM2B_ECC_POINT_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -15342,7 +12270,7 @@ extern "C" {
         dest: *mut TPM2B_ECC_POINT,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPM2B_NV_PUBLIC_Marshal(
         src: *const TPM2B_NV_PUBLIC,
         buffer: *mut u8,
@@ -15350,7 +12278,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPM2B_NV_PUBLIC_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -15358,7 +12286,7 @@ extern "C" {
         dest: *mut TPM2B_NV_PUBLIC,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPM2B_SENSITIVE_Marshal(
         src: *const TPM2B_SENSITIVE,
         buffer: *mut u8,
@@ -15366,7 +12294,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPM2B_SENSITIVE_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -15374,7 +12302,7 @@ extern "C" {
         dest: *mut TPM2B_SENSITIVE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPM2B_SENSITIVE_CREATE_Marshal(
         src: *const TPM2B_SENSITIVE_CREATE,
         buffer: *mut u8,
@@ -15382,7 +12310,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPM2B_SENSITIVE_CREATE_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -15390,7 +12318,7 @@ extern "C" {
         dest: *mut TPM2B_SENSITIVE_CREATE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPM2B_CREATION_DATA_Marshal(
         src: *const TPM2B_CREATION_DATA,
         buffer: *mut u8,
@@ -15398,7 +12326,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPM2B_CREATION_DATA_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -15406,7 +12334,7 @@ extern "C" {
         dest: *mut TPM2B_CREATION_DATA,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPM2B_PUBLIC_Marshal(
         src: *const TPM2B_PUBLIC,
         buffer: *mut u8,
@@ -15414,7 +12342,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPM2B_PUBLIC_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -15422,7 +12350,7 @@ extern "C" {
         dest: *mut TPM2B_PUBLIC,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPM2B_ENCRYPTED_SECRET_Marshal(
         src: *const TPM2B_ENCRYPTED_SECRET,
         buffer: *mut u8,
@@ -15430,7 +12358,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPM2B_ENCRYPTED_SECRET_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -15438,7 +12366,7 @@ extern "C" {
         dest: *mut TPM2B_ENCRYPTED_SECRET,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPM2B_ID_OBJECT_Marshal(
         src: *const TPM2B_ID_OBJECT,
         buffer: *mut u8,
@@ -15446,7 +12374,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPM2B_ID_OBJECT_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -15454,7 +12382,7 @@ extern "C" {
         dest: *mut TPM2B_ID_OBJECT,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPM2B_IV_Marshal(
         src: *const TPM2B_IV,
         buffer: *mut u8,
@@ -15462,7 +12390,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPM2B_IV_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -15470,7 +12398,7 @@ extern "C" {
         dest: *mut TPM2B_IV,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPM2B_AUTH_Marshal(
         src: *const TPM2B_AUTH,
         buffer: *mut u8,
@@ -15478,7 +12406,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPM2B_AUTH_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -15486,7 +12414,7 @@ extern "C" {
         dest: *mut TPM2B_AUTH,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPM2B_EVENT_Marshal(
         src: *const TPM2B_EVENT,
         buffer: *mut u8,
@@ -15494,7 +12422,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPM2B_EVENT_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -15502,7 +12430,7 @@ extern "C" {
         dest: *mut TPM2B_EVENT,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPM2B_MAX_BUFFER_Marshal(
         src: *const TPM2B_MAX_BUFFER,
         buffer: *mut u8,
@@ -15510,7 +12438,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPM2B_MAX_BUFFER_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -15518,7 +12446,7 @@ extern "C" {
         dest: *mut TPM2B_MAX_BUFFER,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPM2B_NONCE_Marshal(
         src: *const TPM2B_NONCE,
         buffer: *mut u8,
@@ -15526,7 +12454,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPM2B_NONCE_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -15534,7 +12462,7 @@ extern "C" {
         dest: *mut TPM2B_NONCE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPM2B_OPERAND_Marshal(
         src: *const TPM2B_OPERAND,
         buffer: *mut u8,
@@ -15542,7 +12470,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPM2B_OPERAND_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -15550,7 +12478,7 @@ extern "C" {
         dest: *mut TPM2B_OPERAND,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPM2B_TIMEOUT_Marshal(
         src: *const TPM2B_TIMEOUT,
         buffer: *mut u8,
@@ -15558,7 +12486,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPM2B_TIMEOUT_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -15566,7 +12494,7 @@ extern "C" {
         dest: *mut TPM2B_TIMEOUT,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPM2B_TEMPLATE_Marshal(
         src: *const TPM2B_TEMPLATE,
         buffer: *mut u8,
@@ -15574,7 +12502,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPM2B_TEMPLATE_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -15582,7 +12510,7 @@ extern "C" {
         dest: *mut TPM2B_TEMPLATE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMS_CONTEXT_Marshal(
         src: *const TPMS_CONTEXT,
         buffer: *mut u8,
@@ -15590,7 +12518,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMS_CONTEXT_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -15598,7 +12526,7 @@ extern "C" {
         dest: *mut TPMS_CONTEXT,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMS_TIME_INFO_Marshal(
         src: *const TPMS_TIME_INFO,
         buffer: *mut u8,
@@ -15606,7 +12534,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMS_TIME_INFO_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -15614,7 +12542,7 @@ extern "C" {
         dest: *mut TPMS_TIME_INFO,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMS_ECC_POINT_Marshal(
         src: *const TPMS_ECC_POINT,
         buffer: *mut u8,
@@ -15622,7 +12550,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMS_ECC_POINT_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -15630,7 +12558,7 @@ extern "C" {
         dest: *mut TPMS_ECC_POINT,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMS_NV_PUBLIC_Marshal(
         src: *const TPMS_NV_PUBLIC,
         buffer: *mut u8,
@@ -15638,7 +12566,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMS_NV_PUBLIC_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -15646,7 +12574,7 @@ extern "C" {
         dest: *mut TPMS_NV_PUBLIC,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMS_ALG_PROPERTY_Marshal(
         src: *const TPMS_ALG_PROPERTY,
         buffer: *mut u8,
@@ -15654,7 +12582,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMS_ALG_PROPERTY_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -15662,7 +12590,7 @@ extern "C" {
         dest: *mut TPMS_ALG_PROPERTY,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMS_TAGGED_PROPERTY_Marshal(
         src: *const TPMS_TAGGED_PROPERTY,
         buffer: *mut u8,
@@ -15670,7 +12598,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMS_TAGGED_PROPERTY_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -15678,7 +12606,7 @@ extern "C" {
         dest: *mut TPMS_TAGGED_PROPERTY,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMS_TAGGED_POLICY_Marshal(
         src: *const TPMS_TAGGED_POLICY,
         buffer: *mut u8,
@@ -15686,7 +12614,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMS_TAGGED_POLICY_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -15694,7 +12622,7 @@ extern "C" {
         dest: *mut TPMS_TAGGED_POLICY,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMS_CLOCK_INFO_Marshal(
         src: *const TPMS_CLOCK_INFO,
         buffer: *mut u8,
@@ -15702,7 +12630,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMS_CLOCK_INFO_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -15710,7 +12638,7 @@ extern "C" {
         dest: *mut TPMS_CLOCK_INFO,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMS_TIME_ATTEST_INFO_Marshal(
         src: *const TPMS_TIME_ATTEST_INFO,
         buffer: *mut u8,
@@ -15718,7 +12646,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMS_TIME_ATTEST_INFO_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -15726,7 +12654,7 @@ extern "C" {
         dest: *mut TPMS_TIME_ATTEST_INFO,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMS_CERTIFY_INFO_Marshal(
         src: *const TPMS_CERTIFY_INFO,
         buffer: *mut u8,
@@ -15734,7 +12662,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMS_CERTIFY_INFO_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -15742,7 +12670,7 @@ extern "C" {
         dest: *mut TPMS_CERTIFY_INFO,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMS_COMMAND_AUDIT_INFO_Marshal(
         src: *const TPMS_COMMAND_AUDIT_INFO,
         buffer: *mut u8,
@@ -15750,7 +12678,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMS_COMMAND_AUDIT_INFO_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -15758,7 +12686,7 @@ extern "C" {
         dest: *mut TPMS_COMMAND_AUDIT_INFO,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMS_SESSION_AUDIT_INFO_Marshal(
         src: *const TPMS_SESSION_AUDIT_INFO,
         buffer: *mut u8,
@@ -15766,7 +12694,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMS_SESSION_AUDIT_INFO_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -15774,7 +12702,7 @@ extern "C" {
         dest: *mut TPMS_SESSION_AUDIT_INFO,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMS_CREATION_INFO_Marshal(
         src: *const TPMS_CREATION_INFO,
         buffer: *mut u8,
@@ -15782,7 +12710,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMS_CREATION_INFO_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -15790,7 +12718,7 @@ extern "C" {
         dest: *mut TPMS_CREATION_INFO,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMS_NV_CERTIFY_INFO_Marshal(
         src: *const TPMS_NV_CERTIFY_INFO,
         buffer: *mut u8,
@@ -15798,7 +12726,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMS_NV_CERTIFY_INFO_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -15806,7 +12734,7 @@ extern "C" {
         dest: *mut TPMS_NV_CERTIFY_INFO,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMS_AUTH_COMMAND_Marshal(
         src: *const TPMS_AUTH_COMMAND,
         buffer: *mut u8,
@@ -15814,7 +12742,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMS_AUTH_COMMAND_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -15822,7 +12750,7 @@ extern "C" {
         dest: *mut TPMS_AUTH_COMMAND,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMS_AUTH_RESPONSE_Marshal(
         src: *const TPMS_AUTH_RESPONSE,
         buffer: *mut u8,
@@ -15830,7 +12758,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMS_AUTH_RESPONSE_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -15838,7 +12766,7 @@ extern "C" {
         dest: *mut TPMS_AUTH_RESPONSE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMS_SENSITIVE_CREATE_Marshal(
         src: *const TPMS_SENSITIVE_CREATE,
         buffer: *mut u8,
@@ -15846,7 +12774,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMS_SENSITIVE_CREATE_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -15854,7 +12782,7 @@ extern "C" {
         dest: *mut TPMS_SENSITIVE_CREATE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMS_SCHEME_HASH_Marshal(
         src: *const TPMS_SCHEME_HASH,
         buffer: *mut u8,
@@ -15862,7 +12790,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMS_SCHEME_HASH_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -15870,7 +12798,7 @@ extern "C" {
         dest: *mut TPMS_SCHEME_HASH,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMS_SCHEME_ECDAA_Marshal(
         src: *const TPMS_SCHEME_ECDAA,
         buffer: *mut u8,
@@ -15878,7 +12806,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMS_SCHEME_ECDAA_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -15886,7 +12814,7 @@ extern "C" {
         dest: *mut TPMS_SCHEME_ECDAA,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMS_SCHEME_XOR_Marshal(
         src: *const TPMS_SCHEME_XOR,
         buffer: *mut u8,
@@ -15894,7 +12822,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMS_SCHEME_XOR_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -15902,7 +12830,7 @@ extern "C" {
         dest: *mut TPMS_SCHEME_XOR,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMS_SIGNATURE_RSA_Marshal(
         src: *const TPMS_SIGNATURE_RSA,
         buffer: *mut u8,
@@ -15910,7 +12838,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMS_SIGNATURE_RSA_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -15918,7 +12846,7 @@ extern "C" {
         dest: *mut TPMS_SIGNATURE_RSA,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMS_SIGNATURE_ECC_Marshal(
         src: *const TPMS_SIGNATURE_ECC,
         buffer: *mut u8,
@@ -15926,7 +12854,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMS_SIGNATURE_ECC_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -15934,7 +12862,7 @@ extern "C" {
         dest: *mut TPMS_SIGNATURE_ECC,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMS_NV_PIN_COUNTER_PARAMETERS_Marshal(
         src: *const TPMS_NV_PIN_COUNTER_PARAMETERS,
         buffer: *mut u8,
@@ -15942,7 +12870,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMS_NV_PIN_COUNTER_PARAMETERS_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -15950,7 +12878,7 @@ extern "C" {
         dest: *mut TPMS_NV_PIN_COUNTER_PARAMETERS,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMS_CONTEXT_DATA_Marshal(
         src: *const TPMS_CONTEXT_DATA,
         buffer: *mut u8,
@@ -15958,7 +12886,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMS_CONTEXT_DATA_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -15966,7 +12894,7 @@ extern "C" {
         dest: *mut TPMS_CONTEXT_DATA,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMS_PCR_SELECT_Marshal(
         src: *const TPMS_PCR_SELECT,
         buffer: *mut u8,
@@ -15974,7 +12902,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMS_PCR_SELECT_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -15982,7 +12910,7 @@ extern "C" {
         dest: *mut TPMS_PCR_SELECT,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMS_PCR_SELECTION_Marshal(
         src: *const TPMS_PCR_SELECTION,
         buffer: *mut u8,
@@ -15990,7 +12918,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMS_PCR_SELECTION_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -15998,7 +12926,7 @@ extern "C" {
         dest: *mut TPMS_PCR_SELECTION,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMS_TAGGED_PCR_SELECT_Marshal(
         src: *const TPMS_TAGGED_PCR_SELECT,
         buffer: *mut u8,
@@ -16006,7 +12934,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMS_TAGGED_PCR_SELECT_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -16014,7 +12942,7 @@ extern "C" {
         dest: *mut TPMS_TAGGED_PCR_SELECT,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMS_QUOTE_INFO_Marshal(
         src: *const TPMS_QUOTE_INFO,
         buffer: *mut u8,
@@ -16022,7 +12950,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMS_QUOTE_INFO_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -16030,7 +12958,7 @@ extern "C" {
         dest: *mut TPMS_QUOTE_INFO,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMS_CREATION_DATA_Marshal(
         src: *const TPMS_CREATION_DATA,
         buffer: *mut u8,
@@ -16038,7 +12966,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMS_CREATION_DATA_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -16046,7 +12974,7 @@ extern "C" {
         dest: *mut TPMS_CREATION_DATA,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMS_ECC_PARMS_Marshal(
         src: *const TPMS_ECC_PARMS,
         buffer: *mut u8,
@@ -16054,7 +12982,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMS_ECC_PARMS_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -16062,7 +12990,7 @@ extern "C" {
         dest: *mut TPMS_ECC_PARMS,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMS_ATTEST_Marshal(
         src: *const TPMS_ATTEST,
         buffer: *mut u8,
@@ -16070,7 +12998,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMS_ATTEST_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -16078,7 +13006,7 @@ extern "C" {
         dest: *mut TPMS_ATTEST,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMS_ALGORITHM_DETAIL_ECC_Marshal(
         src: *const TPMS_ALGORITHM_DETAIL_ECC,
         buffer: *mut u8,
@@ -16086,7 +13014,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMS_ALGORITHM_DETAIL_ECC_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -16094,7 +13022,7 @@ extern "C" {
         dest: *mut TPMS_ALGORITHM_DETAIL_ECC,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMS_CAPABILITY_DATA_Marshal(
         src: *const TPMS_CAPABILITY_DATA,
         buffer: *mut u8,
@@ -16102,7 +13030,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMS_CAPABILITY_DATA_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -16110,7 +13038,7 @@ extern "C" {
         dest: *mut TPMS_CAPABILITY_DATA,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMS_KEYEDHASH_PARMS_Marshal(
         src: *const TPMS_KEYEDHASH_PARMS,
         buffer: *mut u8,
@@ -16118,7 +13046,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMS_KEYEDHASH_PARMS_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -16126,7 +13054,7 @@ extern "C" {
         dest: *mut TPMS_KEYEDHASH_PARMS,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMS_RSA_PARMS_Marshal(
         src: *const TPMS_RSA_PARMS,
         buffer: *mut u8,
@@ -16134,7 +13062,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMS_RSA_PARMS_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -16142,7 +13070,7 @@ extern "C" {
         dest: *mut TPMS_RSA_PARMS,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMS_SYMCIPHER_PARMS_Marshal(
         src: *const TPMS_SYMCIPHER_PARMS,
         buffer: *mut u8,
@@ -16150,7 +13078,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMS_SYMCIPHER_PARMS_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -16158,7 +13086,7 @@ extern "C" {
         dest: *mut TPMS_SYMCIPHER_PARMS,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMS_AC_OUTPUT_Marshal(
         src: *const TPMS_AC_OUTPUT,
         buffer: *mut u8,
@@ -16166,7 +13094,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMS_AC_OUTPUT_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -16174,7 +13102,7 @@ extern "C" {
         dest: *mut TPMS_AC_OUTPUT,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMS_ID_OBJECT_Marshal(
         src: *const TPMS_ID_OBJECT,
         buffer: *mut u8,
@@ -16182,7 +13110,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMS_ID_OBJECT_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -16190,7 +13118,7 @@ extern "C" {
         dest: *mut TPMS_ID_OBJECT,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMS_ACT_DATA_Marshal(
         src: *const TPMS_ACT_DATA,
         buffer: *mut u8,
@@ -16198,7 +13126,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMS_ACT_DATA_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -16206,7 +13134,7 @@ extern "C" {
         dest: *mut TPMS_ACT_DATA,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMS_NV_DIGEST_CERTIFY_INFO_Marshal(
         src: *const TPMS_NV_DIGEST_CERTIFY_INFO,
         buffer: *mut u8,
@@ -16214,7 +13142,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMS_NV_DIGEST_CERTIFY_INFO_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -16222,7 +13150,7 @@ extern "C" {
         dest: *mut TPMS_NV_DIGEST_CERTIFY_INFO,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPML_CC_Marshal(
         src: *const TPML_CC,
         buffer: *mut u8,
@@ -16230,7 +13158,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPML_CC_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -16238,7 +13166,7 @@ extern "C" {
         dest: *mut TPML_CC,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPML_CCA_Marshal(
         src: *const TPML_CCA,
         buffer: *mut u8,
@@ -16246,7 +13174,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPML_CCA_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -16254,7 +13182,7 @@ extern "C" {
         dest: *mut TPML_CCA,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPML_ALG_Marshal(
         src: *const TPML_ALG,
         buffer: *mut u8,
@@ -16262,7 +13190,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPML_ALG_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -16270,7 +13198,7 @@ extern "C" {
         dest: *mut TPML_ALG,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPML_HANDLE_Marshal(
         src: *const TPML_HANDLE,
         buffer: *mut u8,
@@ -16278,7 +13206,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPML_HANDLE_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -16286,7 +13214,7 @@ extern "C" {
         dest: *mut TPML_HANDLE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPML_DIGEST_Marshal(
         src: *const TPML_DIGEST,
         buffer: *mut u8,
@@ -16294,7 +13222,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPML_DIGEST_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -16302,7 +13230,7 @@ extern "C" {
         dest: *mut TPML_DIGEST,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPML_DIGEST_VALUES_Marshal(
         src: *const TPML_DIGEST_VALUES,
         buffer: *mut u8,
@@ -16310,7 +13238,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPML_DIGEST_VALUES_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -16318,7 +13246,7 @@ extern "C" {
         dest: *mut TPML_DIGEST_VALUES,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPML_PCR_SELECTION_Marshal(
         src: *const TPML_PCR_SELECTION,
         buffer: *mut u8,
@@ -16326,7 +13254,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPML_PCR_SELECTION_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -16334,7 +13262,7 @@ extern "C" {
         dest: *mut TPML_PCR_SELECTION,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPML_ALG_PROPERTY_Marshal(
         src: *const TPML_ALG_PROPERTY,
         buffer: *mut u8,
@@ -16342,7 +13270,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPML_ALG_PROPERTY_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -16350,7 +13278,7 @@ extern "C" {
         dest: *mut TPML_ALG_PROPERTY,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPML_ECC_CURVE_Marshal(
         src: *const TPML_ECC_CURVE,
         buffer: *mut u8,
@@ -16358,7 +13286,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPML_ECC_CURVE_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -16366,7 +13294,7 @@ extern "C" {
         dest: *mut TPML_ECC_CURVE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPML_TAGGED_PCR_PROPERTY_Marshal(
         src: *const TPML_TAGGED_PCR_PROPERTY,
         buffer: *mut u8,
@@ -16374,7 +13302,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPML_TAGGED_PCR_PROPERTY_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -16382,7 +13310,7 @@ extern "C" {
         dest: *mut TPML_TAGGED_PCR_PROPERTY,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPML_TAGGED_TPM_PROPERTY_Marshal(
         src: *const TPML_TAGGED_TPM_PROPERTY,
         buffer: *mut u8,
@@ -16390,7 +13318,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPML_TAGGED_TPM_PROPERTY_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -16398,7 +13326,7 @@ extern "C" {
         dest: *mut TPML_TAGGED_TPM_PROPERTY,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPML_AC_CAPABILITIES_Marshal(
         src: *const TPML_AC_CAPABILITIES,
         buffer: *mut u8,
@@ -16406,7 +13334,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPML_AC_CAPABILITIES_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -16414,7 +13342,7 @@ extern "C" {
         dest: *mut TPML_AC_CAPABILITIES,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPML_TAGGED_POLICY_Marshal(
         src: *const TPML_TAGGED_POLICY,
         buffer: *mut u8,
@@ -16422,7 +13350,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPML_TAGGED_POLICY_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -16430,7 +13358,7 @@ extern "C" {
         dest: *mut TPML_TAGGED_POLICY,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPML_ACT_DATA_Marshal(
         src: *const TPML_ACT_DATA,
         buffer: *mut u8,
@@ -16438,7 +13366,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPML_ACT_DATA_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -16446,7 +13374,7 @@ extern "C" {
         dest: *mut TPML_ACT_DATA,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMU_HA_Marshal(
         src: *const TPMU_HA,
         selector_value: u32,
@@ -16455,7 +13383,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMU_HA_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -16464,7 +13392,7 @@ extern "C" {
         dest: *mut TPMU_HA,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMU_CAPABILITIES_Marshal(
         src: *const TPMU_CAPABILITIES,
         selector_value: u32,
@@ -16473,7 +13401,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMU_CAPABILITIES_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -16482,7 +13410,7 @@ extern "C" {
         dest: *mut TPMU_CAPABILITIES,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMU_ATTEST_Marshal(
         src: *const TPMU_ATTEST,
         selector_value: u32,
@@ -16491,7 +13419,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMU_ATTEST_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -16500,7 +13428,7 @@ extern "C" {
         dest: *mut TPMU_ATTEST,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMU_SYM_KEY_BITS_Marshal(
         src: *const TPMU_SYM_KEY_BITS,
         selector_value: u32,
@@ -16509,7 +13437,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMU_SYM_KEY_BITS_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -16518,7 +13446,7 @@ extern "C" {
         dest: *mut TPMU_SYM_KEY_BITS,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMU_SYM_MODE_Marshal(
         src: *const TPMU_SYM_MODE,
         selector_value: u32,
@@ -16527,7 +13455,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMU_SYM_MODE_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -16536,7 +13464,7 @@ extern "C" {
         dest: *mut TPMU_SYM_MODE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMU_SIG_SCHEME_Marshal(
         src: *const TPMU_SIG_SCHEME,
         selector_value: u32,
@@ -16545,7 +13473,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMU_SIG_SCHEME_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -16554,7 +13482,7 @@ extern "C" {
         dest: *mut TPMU_SIG_SCHEME,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMU_KDF_SCHEME_Marshal(
         src: *const TPMU_KDF_SCHEME,
         selector_value: u32,
@@ -16563,7 +13491,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMU_KDF_SCHEME_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -16572,7 +13500,7 @@ extern "C" {
         dest: *mut TPMU_KDF_SCHEME,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMU_ASYM_SCHEME_Marshal(
         src: *const TPMU_ASYM_SCHEME,
         selector_value: u32,
@@ -16581,7 +13509,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMU_ASYM_SCHEME_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -16590,7 +13518,7 @@ extern "C" {
         dest: *mut TPMU_ASYM_SCHEME,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMU_SCHEME_KEYEDHASH_Marshal(
         src: *const TPMU_SCHEME_KEYEDHASH,
         selector_value: u32,
@@ -16599,7 +13527,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMU_SCHEME_KEYEDHASH_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -16608,7 +13536,7 @@ extern "C" {
         dest: *mut TPMU_SCHEME_KEYEDHASH,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMU_SIGNATURE_Marshal(
         src: *const TPMU_SIGNATURE,
         selector_value: u32,
@@ -16617,7 +13545,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMU_SIGNATURE_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -16626,7 +13554,7 @@ extern "C" {
         dest: *mut TPMU_SIGNATURE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMU_SENSITIVE_COMPOSITE_Marshal(
         src: *const TPMU_SENSITIVE_COMPOSITE,
         selector_value: u32,
@@ -16635,7 +13563,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMU_SENSITIVE_COMPOSITE_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -16644,7 +13572,7 @@ extern "C" {
         dest: *mut TPMU_SENSITIVE_COMPOSITE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMU_ENCRYPTED_SECRET_Marshal(
         src: *const TPMU_ENCRYPTED_SECRET,
         selector_value: u32,
@@ -16653,7 +13581,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMU_ENCRYPTED_SECRET_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -16662,7 +13590,7 @@ extern "C" {
         dest: *mut TPMU_ENCRYPTED_SECRET,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMU_PUBLIC_PARMS_Marshal(
         src: *const TPMU_PUBLIC_PARMS,
         selector_value: u32,
@@ -16671,7 +13599,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMU_PUBLIC_PARMS_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -16680,7 +13608,7 @@ extern "C" {
         dest: *mut TPMU_PUBLIC_PARMS,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMU_PUBLIC_ID_Marshal(
         src: *const TPMU_PUBLIC_ID,
         selector_value: u32,
@@ -16689,7 +13617,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMU_PUBLIC_ID_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -16698,7 +13626,7 @@ extern "C" {
         dest: *mut TPMU_PUBLIC_ID,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMU_NAME_Marshal(
         src: *const TPMU_NAME,
         selector_value: u32,
@@ -16707,7 +13635,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMU_NAME_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -16716,7 +13644,7 @@ extern "C" {
         dest: *mut TPMU_NAME,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMT_HA_Marshal(
         src: *const TPMT_HA,
         buffer: *mut u8,
@@ -16724,7 +13652,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMT_HA_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -16732,7 +13660,7 @@ extern "C" {
         dest: *mut TPMT_HA,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMT_SYM_DEF_Marshal(
         src: *const TPMT_SYM_DEF,
         buffer: *mut u8,
@@ -16740,7 +13668,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMT_SYM_DEF_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -16748,7 +13676,7 @@ extern "C" {
         dest: *mut TPMT_SYM_DEF,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMT_SYM_DEF_OBJECT_Marshal(
         src: *const TPMT_SYM_DEF_OBJECT,
         buffer: *mut u8,
@@ -16756,7 +13684,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMT_SYM_DEF_OBJECT_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -16764,7 +13692,7 @@ extern "C" {
         dest: *mut TPMT_SYM_DEF_OBJECT,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMT_KEYEDHASH_SCHEME_Marshal(
         src: *const TPMT_KEYEDHASH_SCHEME,
         buffer: *mut u8,
@@ -16772,7 +13700,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMT_KEYEDHASH_SCHEME_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -16780,7 +13708,7 @@ extern "C" {
         dest: *mut TPMT_KEYEDHASH_SCHEME,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMT_SIG_SCHEME_Marshal(
         src: *const TPMT_SIG_SCHEME,
         buffer: *mut u8,
@@ -16788,7 +13716,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMT_SIG_SCHEME_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -16796,7 +13724,7 @@ extern "C" {
         dest: *mut TPMT_SIG_SCHEME,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMT_KDF_SCHEME_Marshal(
         src: *const TPMT_KDF_SCHEME,
         buffer: *mut u8,
@@ -16804,7 +13732,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMT_KDF_SCHEME_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -16812,7 +13740,7 @@ extern "C" {
         dest: *mut TPMT_KDF_SCHEME,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMT_ASYM_SCHEME_Marshal(
         src: *const TPMT_ASYM_SCHEME,
         buffer: *mut u8,
@@ -16820,7 +13748,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMT_ASYM_SCHEME_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -16828,7 +13756,7 @@ extern "C" {
         dest: *mut TPMT_ASYM_SCHEME,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMT_RSA_SCHEME_Marshal(
         src: *const TPMT_RSA_SCHEME,
         buffer: *mut u8,
@@ -16836,7 +13764,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMT_RSA_SCHEME_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -16844,7 +13772,7 @@ extern "C" {
         dest: *mut TPMT_RSA_SCHEME,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMT_RSA_DECRYPT_Marshal(
         src: *const TPMT_RSA_DECRYPT,
         buffer: *mut u8,
@@ -16852,7 +13780,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMT_RSA_DECRYPT_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -16860,7 +13788,7 @@ extern "C" {
         dest: *mut TPMT_RSA_DECRYPT,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMT_ECC_SCHEME_Marshal(
         src: *const TPMT_ECC_SCHEME,
         buffer: *mut u8,
@@ -16868,7 +13796,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMT_ECC_SCHEME_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -16876,7 +13804,7 @@ extern "C" {
         dest: *mut TPMT_ECC_SCHEME,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMT_SIGNATURE_Marshal(
         src: *const TPMT_SIGNATURE,
         buffer: *mut u8,
@@ -16884,7 +13812,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMT_SIGNATURE_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -16892,7 +13820,7 @@ extern "C" {
         dest: *mut TPMT_SIGNATURE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMT_SENSITIVE_Marshal(
         src: *const TPMT_SENSITIVE,
         buffer: *mut u8,
@@ -16900,7 +13828,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMT_SENSITIVE_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -16908,7 +13836,7 @@ extern "C" {
         dest: *mut TPMT_SENSITIVE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMT_PUBLIC_Marshal(
         src: *const TPMT_PUBLIC,
         buffer: *mut u8,
@@ -16916,7 +13844,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMT_PUBLIC_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -16924,7 +13852,7 @@ extern "C" {
         dest: *mut TPMT_PUBLIC,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMT_PUBLIC_PARMS_Marshal(
         src: *const TPMT_PUBLIC_PARMS,
         buffer: *mut u8,
@@ -16932,7 +13860,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMT_PUBLIC_PARMS_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -16940,7 +13868,7 @@ extern "C" {
         dest: *mut TPMT_PUBLIC_PARMS,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMT_TK_CREATION_Marshal(
         src: *const TPMT_TK_CREATION,
         buffer: *mut u8,
@@ -16948,7 +13876,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMT_TK_CREATION_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -16956,7 +13884,7 @@ extern "C" {
         dest: *mut TPMT_TK_CREATION,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMT_TK_VERIFIED_Marshal(
         src: *const TPMT_TK_VERIFIED,
         buffer: *mut u8,
@@ -16964,7 +13892,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMT_TK_VERIFIED_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -16972,7 +13900,7 @@ extern "C" {
         dest: *mut TPMT_TK_VERIFIED,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMT_TK_AUTH_Marshal(
         src: *const TPMT_TK_AUTH,
         buffer: *mut u8,
@@ -16980,7 +13908,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMT_TK_AUTH_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -16988,7 +13916,7 @@ extern "C" {
         dest: *mut TPMT_TK_AUTH,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMT_TK_HASHCHECK_Marshal(
         src: *const TPMT_TK_HASHCHECK,
         buffer: *mut u8,
@@ -16996,7 +13924,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMT_TK_HASHCHECK_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -17004,7 +13932,7 @@ extern "C" {
         dest: *mut TPMT_TK_HASHCHECK,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPM2_HANDLE_Marshal(
         in_: TPM2_HANDLE,
         buffer: *mut u8,
@@ -17012,7 +13940,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPM2_HANDLE_Unmarshal(
         buffer: *const u8,
         size: size_t,
@@ -17020,7 +13948,7 @@ extern "C" {
         out: *mut TPM2_HANDLE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMI_ALG_HASH_Marshal(
         in_: TPMI_ALG_HASH,
         buffer: *mut u8,
@@ -17028,7 +13956,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMI_ALG_HASH_Unmarshal(
         buffer: *const u8,
         size: size_t,
@@ -17036,7 +13964,7 @@ extern "C" {
         out: *mut TPMI_ALG_HASH,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_BYTE_Marshal(
         in_: BYTE,
         buffer: *mut u8,
@@ -17044,7 +13972,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_BYTE_Unmarshal(
         buffer: *const u8,
         size: size_t,
@@ -17052,7 +13980,7 @@ extern "C" {
         out: *mut BYTE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPM2_SE_Marshal(
         in_: TPM2_SE,
         buffer: *mut u8,
@@ -17060,7 +13988,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPM2_SE_Unmarshal(
         buffer: *const u8,
         size: size_t,
@@ -17068,7 +13996,7 @@ extern "C" {
         out: *mut TPM2_SE,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPM2_NT_Marshal(
         in_: TPM2_NT,
         buffer: *mut u8,
@@ -17076,7 +14004,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPM2_NT_Unmarshal(
         buffer: *const u8,
         size: size_t,
@@ -17084,7 +14012,7 @@ extern "C" {
         out: *mut TPM2_NT,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMS_EMPTY_Marshal(
         in_: *const TPMS_EMPTY,
         buffer: *mut u8,
@@ -17092,7 +14020,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPMS_EMPTY_Unmarshal(
         buffer: *const u8,
         size: size_t,
@@ -17100,7 +14028,7 @@ extern "C" {
         out: *mut TPMS_EMPTY,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPM2B_MAX_CAP_BUFFER_Marshal(
         src: *const TPM2B_MAX_CAP_BUFFER,
         buffer: *mut u8,
@@ -17108,7 +14036,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPM2B_MAX_CAP_BUFFER_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
@@ -17116,7 +14044,7 @@ extern "C" {
         dest: *mut TPM2B_MAX_CAP_BUFFER,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPML_INTEL_PTT_PROPERTY_Marshal(
         src: *const TPML_INTEL_PTT_PROPERTY,
         buffer: *mut u8,
@@ -17124,7 +14052,7 @@ extern "C" {
         offset: *mut size_t,
     ) -> TSS2_RC;
 }
-extern "C" {
+unsafe extern "C" {
     pub fn Tss2_MU_TPML_INTEL_PTT_PROPERTY_Unmarshal(
         buffer: *const u8,
         buffer_size: size_t,
