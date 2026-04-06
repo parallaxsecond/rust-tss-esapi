@@ -373,10 +373,11 @@ pub mod tpm2_tss {
                 }
                 else {
                     let install_path = Self::compile_with_autotools(source_path);
-                    std::env::set_var(
+                    // The build script is not multi threaded so this is safe to do.
+                    unsafe {std::env::set_var(
                         "PKG_CONFIG_PATH",
                         format!("{}", install_path.join("lib").join("pkgconfig").display()),
-                    );
+                    )};
                 }
             }
         }
