@@ -1,12 +1,12 @@
 // Copyright 2021 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
 use crate::{
+    Error, Result, WrapperErrorKind,
     constants::tss::{
         TPM2_NT_BITS, TPM2_NT_COUNTER, TPM2_NT_EXTEND, TPM2_NT_ORDINARY, TPM2_NT_PIN_FAIL,
         TPM2_NT_PIN_PASS,
     },
     tss2_esys::TPM2_NT,
-    Error, Result, WrapperErrorKind,
 };
 use log::error;
 use std::convert::TryFrom;

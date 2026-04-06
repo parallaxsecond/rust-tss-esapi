@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 mod structure;
 
-use crate::{traits::impl_mu_simple, tss2_esys::TPM2_CC, Error, Result, WrapperErrorKind};
+use crate::{Error, Result, WrapperErrorKind, traits::impl_mu_simple, tss2_esys::TPM2_CC};
 use log::error;
 use num_derive::{FromPrimitive, ToPrimitive};
 use num_traits::{FromPrimitive, ToPrimitive};

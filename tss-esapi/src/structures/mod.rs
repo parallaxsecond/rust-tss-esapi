@@ -154,10 +154,10 @@ mod tagged;
 pub use tagged::{
     parameters::PublicParameters,
     public::{
+        Public, PublicBuilder,
         ecc::{PublicEccParameters, PublicEccParametersBuilder},
         keyed_hash::PublicKeyedHashParameters,
         rsa::{PublicRsaParameters, PublicRsaParametersBuilder, RsaExponent},
-        Public, PublicBuilder,
     },
     schemes::{
         EccScheme, KeyDerivationFunctionScheme, KeyedHashScheme, RsaDecryptionScheme, RsaScheme,

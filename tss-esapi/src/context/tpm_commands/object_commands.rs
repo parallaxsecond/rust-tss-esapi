@@ -4,6 +4,7 @@ mod create_command_input;
 mod create_command_output;
 
 use crate::{
+    Context, Error, Result, ReturnCode, WrapperErrorKind,
     context::handle_manager::HandleDropAction,
     handles::{KeyHandle, ObjectHandle, TpmHandle},
     interface_types::reserved_handles::Hierarchy,
@@ -15,7 +16,6 @@ use crate::{
         Esys_ActivateCredential, Esys_Create, Esys_Load, Esys_LoadExternal, Esys_MakeCredential,
         Esys_ObjectChangeAuth, Esys_ReadPublic, Esys_Unseal,
     },
-    Context, Error, Result, ReturnCode, WrapperErrorKind,
 };
 use create_command_input::CreateCommandInputHandler;
 use create_command_output::CreateCommandOutputHandler;
@@ -229,7 +229,9 @@ impl Context {
     ) -> Result<KeyHandle> {
         let potential_private = private.into();
         if (hierarchy != Hierarchy::Null) && potential_private.is_some() {
-            error!("Only NULL hierarchy is valid in load_external when loading both private and public part.");
+            error!(
+                "Only NULL hierarchy is valid in load_external when loading both private and public part."
+            );
             return Err(Error::local_error(WrapperErrorKind::InvalidParam));
         }
         let mut object_handle = ObjectHandle::None.into();

@@ -5,10 +5,11 @@
 //!
 //! This modules presents objects held in a TPM over a [`signature::DigestSigner`] interface.
 use crate::{
+    Context, Error, WrapperErrorKind,
     abstraction::{
+        AssociatedHashingAlgorithm,
         public::AssociatedTpmCurve,
         transient::{KeyMaterial, KeyParams, TransientKeyContext},
-        AssociatedHashingAlgorithm,
     },
     handles::KeyHandle,
     interface_types::algorithm::EccSchemeAlgorithm,
@@ -16,23 +17,22 @@ use crate::{
         Auth, Digest as TpmDigest, EccScheme, Public, Signature as TpmSignature, SignatureScheme,
     },
     utils::PublicKey as TpmPublicKey,
-    Context, Error, WrapperErrorKind,
 };
 
 use std::{convert::TryFrom, ops::Add, sync::Mutex};
 
 use digest::{Digest, FixedOutput, Output};
 use ecdsa::{
+    Signature, SignatureSize, VerifyingKey,
     der::{MaxOverhead, MaxSize, Signature as DerSignature},
     hazmat::{DigestPrimitive, SignPrimitive},
-    Signature, SignatureSize, VerifyingKey,
 };
 use elliptic_curve::{
+    AffinePoint, CurveArithmetic, FieldBytesSize, PrimeCurve, PublicKey, Scalar,
     generic_array::ArrayLength,
     ops::Invert,
     sec1::{FromEncodedPoint, ModulusSize, ToEncodedPoint},
     subtle::CtOption,
-    AffinePoint, CurveArithmetic, FieldBytesSize, PrimeCurve, PublicKey, Scalar,
 };
 use log::error;
 use signature::{DigestSigner, Error as SigError, KeypairRef, Signer};
@@ -151,7 +151,6 @@ where
     C: AssociatedTpmCurve,
     FieldBytesSize<C>: ModulusSize,
     AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
-
     Ctx: TpmSigner,
 {
     pub fn new(context: Ctx) -> Result<Self, Error> {
@@ -268,10 +267,8 @@ where
     Scalar<C>: Invert<Output = CtOption<Scalar<C>>> + SignPrimitive<C>,
     SignatureSize<C>: ArrayLength<u8>,
     TpmDigest: From<Output<D>>,
-
     MaxSize<C>: ArrayLength<u8>,
     <FieldBytesSize<C> as Add>::Output: Add<MaxOverhead> + ArrayLength<u8>,
-
     Ctx: TpmSigner,
 {
     fn try_sign_digest(&self, digest: D) -> Result<DerSignature<C>, SigError> {
@@ -288,7 +285,6 @@ where
     Scalar<C>: Invert<Output = CtOption<Scalar<C>>> + SignPrimitive<C>,
     SignatureSize<C>: ArrayLength<u8>,
     TpmDigest: From<Output<<C as DigestPrimitive>::Digest>>,
-
     Ctx: TpmSigner,
 {
     fn try_sign(&self, msg: &[u8]) -> Result<Signature<C>, SigError> {
@@ -304,10 +300,8 @@ where
     Scalar<C>: Invert<Output = CtOption<Scalar<C>>> + SignPrimitive<C>,
     SignatureSize<C>: ArrayLength<u8>,
     TpmDigest: From<Output<<C as DigestPrimitive>::Digest>>,
-
     MaxSize<C>: ArrayLength<u8>,
     <FieldBytesSize<C> as Add>::Output: Add<MaxOverhead> + ArrayLength<u8>,
-
     Ctx: TpmSigner,
 {
     fn try_sign(&self, msg: &[u8]) -> Result<DerSignature<C>, SigError> {
@@ -333,9 +327,9 @@ mod rsa {
     use super::TpmSigner;
 
     use crate::{
-        abstraction::{signer::KeyParams, AssociatedHashingAlgorithm},
-        structures::{Digest as TpmDigest, RsaScheme},
         Error, WrapperErrorKind,
+        abstraction::{AssociatedHashingAlgorithm, signer::KeyParams},
+        structures::{Digest as TpmDigest, RsaScheme},
     };
 
     use std::fmt;
@@ -352,7 +346,7 @@ mod rsa {
         },
     };
 
-    use ::rsa::{pkcs1v15, pss, RsaPublicKey};
+    use ::rsa::{RsaPublicKey, pkcs1v15, pss};
 
     /// [`RsaPkcsSigner`] will sign a payload with an RSA secret key stored on the TPM.
     ///

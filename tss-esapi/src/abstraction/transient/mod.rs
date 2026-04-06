@@ -7,6 +7,7 @@
 //! `Context` structure. The abstraction works by hiding resource handle management from the
 //! client.
 use crate::{
+    Context, Error, Result, ReturnCode, WrapperErrorKind as ErrorKind,
     attributes::{ObjectAttributesBuilder, SessionAttributesBuilder},
     constants::{SessionType, TpmFormatZeroError},
     error::{TpmFormatZeroResponseCode, TpmResponseCode},
@@ -24,8 +25,7 @@ use crate::{
         VerifiedTicket,
     },
     tcti_ldr::TctiNameConf,
-    utils::{create_restricted_decryption_rsa_public, PublicKey},
-    Context, Error, Result, ReturnCode, WrapperErrorKind as ErrorKind,
+    utils::{PublicKey, create_restricted_decryption_rsa_public},
 };
 
 use log::error;

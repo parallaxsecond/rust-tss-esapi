@@ -1,10 +1,11 @@
 // Copyright 2021 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
 use crate::{
+    Context, Error, Result, ReturnCode, WrapperErrorKind as ErrorKind,
     attributes::LocalityAttributes,
     constants::CommandCode,
     handles::{AuthHandle, NvIndexHandle, ObjectHandle, SessionHandle},
-    interface_types::{reserved_handles::NvAuth, session_handles::PolicySession, YesNo},
+    interface_types::{YesNo, reserved_handles::NvAuth, session_handles::PolicySession},
     structures::{
         AuthTicket, Digest, DigestList, Name, Nonce, PcrSelectionList, Signature, Timeout,
         VerifiedTicket,
@@ -16,7 +17,6 @@ use crate::{
         Esys_PolicyPassword, Esys_PolicyPhysicalPresence, Esys_PolicySecret, Esys_PolicySigned,
         Esys_PolicyTemplate,
     },
-    Context, Error, Result, ReturnCode, WrapperErrorKind as ErrorKind,
 };
 use log::error;
 use std::convert::{TryFrom, TryInto};

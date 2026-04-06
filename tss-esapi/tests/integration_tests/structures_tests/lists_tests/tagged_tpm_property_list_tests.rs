@@ -2,10 +2,10 @@
 // SPDX-License-Identifier: Apache-2.0
 use std::convert::{TryFrom, TryInto};
 use tss_esapi::{
+    Error, WrapperErrorKind,
     constants::PropertyTag,
     structures::{TaggedProperty, TaggedTpmPropertyList},
     tss2_esys::{TPML_TAGGED_TPM_PROPERTY, TPMS_TAGGED_PROPERTY},
-    Error, WrapperErrorKind,
 };
 #[test]
 fn test_valid_conversions() {
@@ -72,7 +72,13 @@ fn test_valid_conversions() {
 fn test_invalid_conversions() {
     assert_eq!(
         Err(Error::WrapperError(WrapperErrorKind::InvalidParam)),
-        TaggedTpmPropertyList::try_from(vec![TaggedProperty::new(PropertyTag::FamilyIndicator, 8u32); TaggedTpmPropertyList::MAX_SIZE + 1]),
+        TaggedTpmPropertyList::try_from(vec![
+            TaggedProperty::new(
+                PropertyTag::FamilyIndicator,
+                8u32
+            );
+            TaggedTpmPropertyList::MAX_SIZE + 1
+        ]),
         "Converting a vector with to many elements into a TaggedTpmPropertyList did not produce the expected error",
     );
 

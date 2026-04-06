@@ -32,12 +32,14 @@ macro_rules! assert_create_ok {
         );
     };
     (EccSchemeAlgorithm::$scheme_alg_item:ident, $hash_alg_expr:expr, $count_expr:expr) => {
-        assert!(EccScheme::create(
-            EccSchemeAlgorithm::$scheme_alg_item,
-            $hash_alg_expr,
-            $count_expr
-        )
-        .is_ok());
+        assert!(
+            EccScheme::create(
+                EccSchemeAlgorithm::$scheme_alg_item,
+                $hash_alg_expr,
+                $count_expr
+            )
+            .is_ok()
+        );
     };
 }
 

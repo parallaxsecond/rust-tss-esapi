@@ -1,7 +1,7 @@
 // Copyright 2021 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::{constants::PropertyTag, tss2_esys::TPMS_TAGGED_PROPERTY, Error, Result};
+use crate::{Error, Result, constants::PropertyTag, tss2_esys::TPMS_TAGGED_PROPERTY};
 use std::convert::TryFrom;
 
 /// Struct representing a tagged property

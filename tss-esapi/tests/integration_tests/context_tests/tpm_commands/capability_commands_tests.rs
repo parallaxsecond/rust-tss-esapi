@@ -3,7 +3,7 @@
 mod test_get_capability {
     use crate::common::create_ctx_without_session;
     use tss_esapi::{
-        constants::{tss::TPM2_PT_VENDOR_STRING_1, CapabilityType, PropertyTag},
+        constants::{CapabilityType, PropertyTag, tss::TPM2_PT_VENDOR_STRING_1},
         structures::CapabilityData,
     };
 

@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use crate::{
-    structures::{Digest, PcrSlot},
     Error, Result, WrapperErrorKind,
+    structures::{Digest, PcrSlot},
 };
 use log::error;
 use std::collections::BTreeMap;

@@ -1,8 +1,8 @@
 // Copyright 2021 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
 use crate::{
-    tss2_esys::{TPM2_KEY_BITS, TPMI_AES_KEY_BITS, TPMI_RSA_KEY_BITS, TPMI_SM4_KEY_BITS},
     Error, Result, WrapperErrorKind,
+    tss2_esys::{TPM2_KEY_BITS, TPMI_AES_KEY_BITS, TPMI_RSA_KEY_BITS, TPMI_SM4_KEY_BITS},
 };
 use std::convert::TryFrom;
 /// AES key bits interface type

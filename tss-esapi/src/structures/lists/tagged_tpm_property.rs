@@ -2,10 +2,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use crate::{
+    Error, Result, WrapperErrorKind,
     constants::PropertyTag,
     structures::TaggedProperty,
     tss2_esys::{TPML_TAGGED_TPM_PROPERTY, TPMS_TAGGED_PROPERTY},
-    Error, Result, WrapperErrorKind,
 };
 use log::error;
 use std::{convert::TryFrom, iter::IntoIterator, ops::Deref};
@@ -55,7 +55,10 @@ impl TryFrom<Vec<TaggedProperty>> for TaggedTpmPropertyList {
 
     fn try_from(tagged_tpm_properties: Vec<TaggedProperty>) -> Result<Self> {
         if tagged_tpm_properties.len() > Self::MAX_SIZE {
-            error!("Failed to convert Vec<TaggedProperty> into TaggedTpmPropertyList, to many items (> {})", Self::MAX_SIZE);
+            error!(
+                "Failed to convert Vec<TaggedProperty> into TaggedTpmPropertyList, to many items (> {})",
+                Self::MAX_SIZE
+            );
             return Err(Error::local_error(WrapperErrorKind::InvalidParam));
         }
         Ok(TaggedTpmPropertyList {

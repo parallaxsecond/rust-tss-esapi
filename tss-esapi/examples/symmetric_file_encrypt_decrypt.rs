@@ -1,6 +1,7 @@
 use core::str;
 use std::{convert::TryFrom, fs, path::Path};
 use tss_esapi::{
+    Context, TctiNameConf,
     attributes::ObjectAttributesBuilder,
     interface_types::{
         algorithm::{HashingAlgorithm, PublicAlgorithm, SymmetricMode},
@@ -10,7 +11,6 @@ use tss_esapi::{
         CreatePrimaryKeyResult, Digest, InitialValue, MaxBuffer, PublicBuilder,
         SymmetricCipherParameters, SymmetricDefinitionObject,
     },
-    Context, TctiNameConf,
 };
 
 const DEFAULT_INITIAL_DATA_FILE: &str =

@@ -4,7 +4,8 @@
 use std::convert::{TryFrom, TryInto};
 
 use tss_esapi::{
-    abstraction::{ak, ek, AsymmetricAlgorithmSelection, KeyCustomization},
+    Error, WrapperErrorKind,
+    abstraction::{AsymmetricAlgorithmSelection, KeyCustomization, ak, ek},
     attributes::{ObjectAttributesBuilder, SessionAttributesBuilder},
     constants::SessionType,
     handles::AuthHandle,
@@ -15,7 +16,6 @@ use tss_esapi::{
         session_handles::PolicySession,
     },
     structures::{Auth, Digest, PublicBuilder, SymmetricDefinition},
-    Error, WrapperErrorKind,
 };
 
 use crate::common::create_ctx_without_session;

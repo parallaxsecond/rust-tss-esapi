@@ -2,10 +2,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use crate::{
+    Error, Result,
     constants::PcrPropertyTag,
     structures::{PcrSelectSize, PcrSlot, PcrSlotCollection},
     tss2_esys::TPMS_TAGGED_PCR_SELECT,
-    Error, Result,
 };
 
 use std::convert::TryFrom;

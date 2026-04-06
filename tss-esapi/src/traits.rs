@@ -1,6 +1,6 @@
 // Copyright 2021 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
-use crate::{tss2_esys::UINT32, Result};
+use crate::{Result, tss2_esys::UINT32};
 use std::convert::TryFrom;
 
 /// Trait for types that can be converted into

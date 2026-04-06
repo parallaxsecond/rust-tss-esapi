@@ -3,8 +3,8 @@
 
 use std::convert::TryFrom;
 use tss_esapi::{
-    interface_types::YesNo, structures::ClockInfo, tss2_esys::TPMS_CLOCK_INFO, Error,
-    WrapperErrorKind,
+    Error, WrapperErrorKind, interface_types::YesNo, structures::ClockInfo,
+    tss2_esys::TPMS_CLOCK_INFO,
 };
 
 #[test]

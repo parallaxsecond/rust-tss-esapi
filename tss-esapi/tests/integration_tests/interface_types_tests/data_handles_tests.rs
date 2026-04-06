@@ -2,13 +2,13 @@
 // SPDX-License-Identifier: Apache-2.0
 use std::convert::TryFrom;
 use tss_esapi::{
+    Error, WrapperErrorKind,
     constants::tss::{
         TPM2_HMAC_SESSION_LAST, TPM2_PERMANENT_LAST, TPM2_POLICY_SESSION_LAST, TPM2_TRANSIENT_LAST,
         TPMI_DH_SAVED_SEQUENCE, TPMI_DH_SAVED_TRANSIENT, TPMI_DH_SAVED_TRANSIENT_CLEAR,
     },
     handles::{HmacSessionTpmHandle, PolicySessionTpmHandle, TransientTpmHandle},
     interface_types::data_handles::{ContextDataHandle, Saved},
-    Error, WrapperErrorKind,
 };
 
 macro_rules! test_valid_conversions_for_range_enum_items {

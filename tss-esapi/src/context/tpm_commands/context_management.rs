@@ -1,12 +1,12 @@
 // Copyright 2021 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
 use crate::{
+    Context, Result, ReturnCode,
     context::handle_manager::HandleDropAction,
-    handles::{handle_conversion::TryIntoNotNone, AuthHandle, ObjectHandle, PersistentTpmHandle},
+    handles::{AuthHandle, ObjectHandle, PersistentTpmHandle, handle_conversion::TryIntoNotNone},
     interface_types::{data_handles::Persistent, reserved_handles::Provision},
     structures::SavedTpmContext,
     tss2_esys::{Esys_ContextLoad, Esys_ContextSave, Esys_EvictControl, Esys_FlushContext},
-    Context, Result, ReturnCode,
 };
 use log::error;
 use std::convert::TryFrom;

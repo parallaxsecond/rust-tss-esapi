@@ -4,8 +4,8 @@
 use tss_esapi_sys::TPMI_ST_COMMAND_TAG;
 
 use crate::{
-    constants::StructureTag, traits::impl_mu_simple, tss2_esys::TPMI_ST_ATTEST, Error, Result,
-    WrapperErrorKind,
+    Error, Result, WrapperErrorKind, constants::StructureTag, traits::impl_mu_simple,
+    tss2_esys::TPMI_ST_ATTEST,
 };
 use std::convert::TryFrom;
 

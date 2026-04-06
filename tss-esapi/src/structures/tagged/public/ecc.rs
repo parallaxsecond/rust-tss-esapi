@@ -1,10 +1,10 @@
 // Copyright 2021 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
 use crate::{
+    Error, Result, WrapperErrorKind,
     interface_types::{algorithm::EccSchemeAlgorithm, ecc::EccCurve},
     structures::{EccScheme, KeyDerivationFunctionScheme, SymmetricDefinitionObject},
     tss2_esys::TPMS_ECC_PARMS,
-    Error, Result, WrapperErrorKind,
 };
 use log::error;
 use std::convert::{TryFrom, TryInto};
@@ -151,16 +151,22 @@ impl PublicEccParametersBuilder {
         if self.restricted && self.is_decryption_key {
             if let Some(symmetric) = self.symmetric {
                 if symmetric.is_null() {
-                    error!("Found symmetric parameter but it was Null but 'restricted' and 'is_decrypt_key' are set to true");
+                    error!(
+                        "Found symmetric parameter but it was Null but 'restricted' and 'is_decrypt_key' are set to true"
+                    );
                     return Err(Error::local_error(WrapperErrorKind::InconsistentParams));
                 }
             } else {
-                error!("Symmetric parameter was not set but 'restricted' and 'is_decrypt_key' are set to true");
+                error!(
+                    "Symmetric parameter was not set but 'restricted' and 'is_decrypt_key' are set to true"
+                );
                 return Err(Error::local_error(WrapperErrorKind::ParamsMissing));
             }
         } else if let Some(symmetric) = self.symmetric {
             if !symmetric.is_null() {
-                error!("Found symmetric parameter, expected it to be Null or not set at all because 'restricted' or 'is_decrypt_key' are set to false");
+                error!(
+                    "Found symmetric parameter, expected it to be Null or not set at all because 'restricted' or 'is_decrypt_key' are set to false"
+                );
                 return Err(Error::local_error(WrapperErrorKind::InconsistentParams));
             }
         }

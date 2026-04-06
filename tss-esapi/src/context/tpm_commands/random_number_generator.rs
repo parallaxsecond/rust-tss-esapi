@@ -1,9 +1,9 @@
 // Copyright 2021 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
 use crate::{
+    Context, Error, Result, ReturnCode, WrapperErrorKind as ErrorKind,
     structures::{Digest, SensitiveData},
     tss2_esys::{Esys_GetRandom, Esys_StirRandom},
-    Context, Error, Result, ReturnCode, WrapperErrorKind as ErrorKind,
 };
 use log::error;
 use std::convert::{TryFrom, TryInto};

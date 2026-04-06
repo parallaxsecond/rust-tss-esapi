@@ -1,11 +1,11 @@
 // Copyright 2021 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
 use crate::{
+    Error, Result,
     interface_types::algorithm::SignatureSchemeAlgorithm,
     structures::{EccSignature, HashAgile, RsaSignature},
     traits::impl_mu_complex,
     tss2_esys::{TPMT_SIGNATURE, TPMU_SIGNATURE},
-    Error, Result,
 };
 use std::convert::{TryFrom, TryInto};
 

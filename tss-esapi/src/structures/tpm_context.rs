@@ -1,12 +1,12 @@
 // Copyright 2024 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
 use crate::{
+    Error, Result,
     handles::TpmHandle,
     interface_types::{data_handles::Saved, reserved_handles::Hierarchy},
     structures::TpmContextData,
     traits::impl_mu_standard,
     tss2_esys::TPMS_CONTEXT,
-    Error, Result,
 };
 use std::convert::TryFrom;
 

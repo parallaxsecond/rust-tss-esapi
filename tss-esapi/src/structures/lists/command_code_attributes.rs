@@ -1,9 +1,9 @@
 // Copyright 2022 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
 use crate::{
+    Error, Result, WrapperErrorKind,
     attributes::CommandCodeAttributes,
     tss2_esys::{TPMA_CC, TPML_CCA},
-    Error, Result, WrapperErrorKind,
 };
 use log::error;
 use std::{convert::TryFrom, iter::IntoIterator, ops::Deref};
@@ -54,7 +54,10 @@ impl TryFrom<Vec<CommandCodeAttributes>> for CommandCodeAttributesList {
 
     fn try_from(command_code_attributes: Vec<CommandCodeAttributes>) -> Result<Self> {
         if command_code_attributes.len() > Self::MAX_SIZE {
-            error!("Failed to convert Vec<CommandCodeAttributes> into CommandCodeAttributesList, to many items (> {})", Self::MAX_SIZE);
+            error!(
+                "Failed to convert Vec<CommandCodeAttributes> into CommandCodeAttributesList, to many items (> {})",
+                Self::MAX_SIZE
+            );
             return Err(Error::local_error(WrapperErrorKind::InvalidParam));
         }
         Ok(CommandCodeAttributesList {

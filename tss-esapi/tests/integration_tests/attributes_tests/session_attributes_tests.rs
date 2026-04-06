@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0
 use std::convert::TryFrom;
 use tss_esapi::{
+    Error, WrapperErrorKind,
     attributes::{SessionAttributes, SessionAttributesBuilder, SessionAttributesMask},
     tss2_esys::TPMA_SESSION,
-    Error, WrapperErrorKind,
 };
 
 macro_rules! test_valid_conversion {
@@ -109,12 +109,14 @@ fn test_valid_session_attributes_conversions() {
 
 #[test]
 fn test_invalid_session_attributes_conversions() {
-    test_conversion_with_reserved_bits_set!(1u8
-        .checked_shl(3)
-        .expect("Failed to create value with reserved bit 3 set"));
-    test_conversion_with_reserved_bits_set!(1u8
-        .checked_shl(4)
-        .expect("Failed to create value with reserved bit 4 set"));
+    test_conversion_with_reserved_bits_set!(
+        1u8.checked_shl(3)
+            .expect("Failed to create value with reserved bit 3 set")
+    );
+    test_conversion_with_reserved_bits_set!(
+        1u8.checked_shl(4)
+            .expect("Failed to create value with reserved bit 4 set")
+    );
 }
 
 #[test]
@@ -153,12 +155,14 @@ fn test_valid_session_attributes_mask_conversions() {
 
 #[test]
 fn test_invalid_session_attributes_mask_conversions() {
-    test_mask_conversion_with_reserved_bits_set!(1u8
-        .checked_shl(3)
-        .expect("Failed to create value with reserved bit 3 set"));
-    test_mask_conversion_with_reserved_bits_set!(1u8
-        .checked_shl(4)
-        .expect("Failed to create value with reserved bit 4 set"));
+    test_mask_conversion_with_reserved_bits_set!(
+        1u8.checked_shl(3)
+            .expect("Failed to create value with reserved bit 3 set")
+    );
+    test_mask_conversion_with_reserved_bits_set!(
+        1u8.checked_shl(4)
+            .expect("Failed to create value with reserved bit 4 set")
+    );
 }
 
 #[test]
@@ -172,29 +176,61 @@ fn test_session_attributes_builder_constructing() {
 #[test]
 fn test_builder_from_session_attributes() {
     let (attributes, mask) = SessionAttributes::builder().build();
-    assert_eq!(SessionAttributes::try_from(0).expect("Failed to convert 0 into SessionAttributes"), attributes, "Building session attributes without anything set using SessionAttributes::builder() did not produce expected result");
-    assert_eq!(SessionAttributesMask::try_from(0).expect("Failed to convert 0 into SessionAttributesMask"), mask, "Building session attributes mask without anything set using SessionAttributes::builder() did not produce expected result")
+    assert_eq!(
+        SessionAttributes::try_from(0).expect("Failed to convert 0 into SessionAttributes"),
+        attributes,
+        "Building session attributes without anything set using SessionAttributes::builder() did not produce expected result"
+    );
+    assert_eq!(
+        SessionAttributesMask::try_from(0).expect("Failed to convert 0 into SessionAttributesMask"),
+        mask,
+        "Building session attributes mask without anything set using SessionAttributes::builder() did not produce expected result"
+    )
 }
 
 #[test]
 fn test_builder_from_session_attributes_mask() {
     let (attributes, mask) = SessionAttributesMask::builder().build();
-    assert_eq!(SessionAttributes::try_from(0).expect("Failed to convert 0 into SessionAttributes"), attributes, "Building session attributes without anything set using SessionAttributesMask::builder() did not produce expected result");
-    assert_eq!(SessionAttributesMask::try_from(0).expect("Failed to convert 0 into SessionAttributesMask"), mask, "Building session attributes mask without anything set using SessionAttributesMask::builder() did not produce expected result")
+    assert_eq!(
+        SessionAttributes::try_from(0).expect("Failed to convert 0 into SessionAttributes"),
+        attributes,
+        "Building session attributes without anything set using SessionAttributesMask::builder() did not produce expected result"
+    );
+    assert_eq!(
+        SessionAttributesMask::try_from(0).expect("Failed to convert 0 into SessionAttributesMask"),
+        mask,
+        "Building session attributes mask without anything set using SessionAttributesMask::builder() did not produce expected result"
+    )
 }
 
 #[test]
 fn test_builder_from_session_attributes_builder_default() {
     let (attributes, mask) = SessionAttributesBuilder::default().build();
-    assert_eq!(SessionAttributes::try_from(0).expect("Failed to convert 0 into SessionAttributes"), attributes, "Building session attributes without anything set using SessionAttributesBuilder::default() did not produce expected result");
-    assert_eq!(SessionAttributesMask::try_from(0).expect("Failed to convert 0 into SessionAttributesMask"), mask, "Building session attributes mask without anything set using SessionAttributesBuilder::default() did not produce expected result")
+    assert_eq!(
+        SessionAttributes::try_from(0).expect("Failed to convert 0 into SessionAttributes"),
+        attributes,
+        "Building session attributes without anything set using SessionAttributesBuilder::default() did not produce expected result"
+    );
+    assert_eq!(
+        SessionAttributesMask::try_from(0).expect("Failed to convert 0 into SessionAttributesMask"),
+        mask,
+        "Building session attributes mask without anything set using SessionAttributesBuilder::default() did not produce expected result"
+    )
 }
 
 #[test]
 fn test_builder_from_session_attributes_builder_new() {
     let (attributes, mask) = SessionAttributesBuilder::new().build();
-    assert_eq!(SessionAttributes::try_from(0).expect("Failed to convert 0 into SessionAttributes"), attributes, "Building session attributes without anything set using SessionAttributesBuilder::new() did not produce expected result");
-    assert_eq!(SessionAttributesMask::try_from(0).expect("Failed to convert 0 into SessionAttributesMask"), mask, "Building session attributes mask without anything set using SessionAttributesBuilder::new() did not produce expected result")
+    assert_eq!(
+        SessionAttributes::try_from(0).expect("Failed to convert 0 into SessionAttributes"),
+        attributes,
+        "Building session attributes without anything set using SessionAttributesBuilder::new() did not produce expected result"
+    );
+    assert_eq!(
+        SessionAttributesMask::try_from(0).expect("Failed to convert 0 into SessionAttributesMask"),
+        mask,
+        "Building session attributes mask without anything set using SessionAttributesBuilder::new() did not produce expected result"
+    )
 }
 
 #[test]

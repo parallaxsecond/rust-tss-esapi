@@ -1,7 +1,7 @@
 // Copyright 2021 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
 mod test_verify_signature {
-    use crate::common::{create_ctx_with_session, signing_key_pub, HASH};
+    use crate::common::{HASH, create_ctx_with_session, signing_key_pub};
     use std::convert::TryFrom;
     use tss_esapi::{
         interface_types::{algorithm::HashingAlgorithm, reserved_handles::Hierarchy},
@@ -83,13 +83,15 @@ mod test_verify_signature {
             .expect("Failed to create signature");
         }
 
-        assert!(context
-            .verify_signature(
-                key_handle,
-                Digest::try_from(HASH[..32].to_vec()).unwrap(),
-                signature,
-            )
-            .is_err());
+        assert!(
+            context
+                .verify_signature(
+                    key_handle,
+                    Digest::try_from(HASH[..32].to_vec()).unwrap(),
+                    signature,
+                )
+                .is_err()
+        );
     }
 
     #[test]
@@ -120,13 +122,15 @@ mod test_verify_signature {
             .expect("Failed to create RSA SSA signature"),
         );
 
-        assert!(context
-            .verify_signature(
-                key_handle,
-                Digest::try_from(HASH[..32].to_vec()).unwrap(),
-                signature,
-            )
-            .is_err());
+        assert!(
+            context
+                .verify_signature(
+                    key_handle,
+                    Digest::try_from(HASH[..32].to_vec()).unwrap(),
+                    signature,
+                )
+                .is_err()
+        );
     }
 
     #[test]
@@ -156,18 +160,20 @@ mod test_verify_signature {
             )
             .expect("Failed to create RSA SSA signature"),
         );
-        assert!(context
-            .verify_signature(
-                key_handle,
-                Digest::try_from(HASH[..32].to_vec()).unwrap(),
-                signature,
-            )
-            .is_err());
+        assert!(
+            context
+                .verify_signature(
+                    key_handle,
+                    Digest::try_from(HASH[..32].to_vec()).unwrap(),
+                    signature,
+                )
+                .is_err()
+        );
     }
 }
 
 mod test_sign {
-    use crate::common::{create_ctx_with_session, signing_key_pub, HASH};
+    use crate::common::{HASH, create_ctx_with_session, signing_key_pub};
     use std::convert::TryFrom;
     use tss_esapi::{
         interface_types::{
@@ -184,7 +190,7 @@ mod test_sign {
 
     #[cfg(feature = "p256")]
     use {
-        p256::{ecdsa::Signature, NistP256},
+        p256::{NistP256, ecdsa::Signature},
         tss_esapi::{
             abstraction::EcSigner,
             interface_types::{algorithm::HashingAlgorithm, ecc::EccCurve},

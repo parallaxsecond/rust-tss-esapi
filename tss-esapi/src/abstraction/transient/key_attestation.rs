@@ -2,7 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 use super::{ObjectWrapper, TransientKeyContext};
 use crate::{
-    abstraction::{ek, AsymmetricAlgorithmSelection},
+    Result,
+    abstraction::{AsymmetricAlgorithmSelection, ek},
     constants::SessionType,
     handles::{AuthHandle, KeyHandle, SessionHandle},
     interface_types::{
@@ -13,7 +14,6 @@ use crate::{
     structures::{EncryptedSecret, IdObject, SymmetricDefinition},
     traits::Marshall,
     utils::PublicKey,
-    Result,
 };
 use std::convert::TryFrom;
 

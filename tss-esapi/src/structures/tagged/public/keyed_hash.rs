@@ -1,6 +1,6 @@
 // Copyright 2021 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
-use crate::{structures::KeyedHashScheme, tss2_esys::TPMS_KEYEDHASH_PARMS, Error, Result};
+use crate::{Error, Result, structures::KeyedHashScheme, tss2_esys::TPMS_KEYEDHASH_PARMS};
 use std::convert::{TryFrom, TryInto};
 
 /// Keyed hash parameters

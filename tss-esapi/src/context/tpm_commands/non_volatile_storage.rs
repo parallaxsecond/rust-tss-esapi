@@ -1,6 +1,7 @@
 // Copyright 2021 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
 use crate::{
+    Context, Result, ReturnCode,
     context::handle_manager::HandleDropAction,
     handles::{AuthHandle, NvIndexHandle, ObjectHandle},
     interface_types::reserved_handles::{NvAuth, Provision},
@@ -9,7 +10,6 @@ use crate::{
         Esys_NV_DefineSpace, Esys_NV_Extend, Esys_NV_Increment, Esys_NV_Read, Esys_NV_ReadPublic,
         Esys_NV_UndefineSpace, Esys_NV_UndefineSpaceSpecial, Esys_NV_Write,
     },
-    Context, Result, ReturnCode,
 };
 use log::error;
 use std::convert::{TryFrom, TryInto};

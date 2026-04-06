@@ -1,9 +1,9 @@
 // Copyright 2020 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
 use crate::{
+    Error, Result, WrapperErrorKind,
     constants::NvIndexType,
     tss2_esys::{TPM2_NT, TPMA_NV},
-    Error, Result, WrapperErrorKind,
 };
 
 use bitfield::bitfield;

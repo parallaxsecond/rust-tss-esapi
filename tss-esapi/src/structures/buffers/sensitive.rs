@@ -1,10 +1,10 @@
 // Copyright 2022 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
 use crate::{
-    structures::Sensitive,
-    traits::{impl_mu_complex, Marshall, UnMarshall},
-    tss2_esys::{TPM2B_SENSITIVE, TPMT_SENSITIVE},
     Error, Result, WrapperErrorKind,
+    structures::Sensitive,
+    traits::{Marshall, UnMarshall, impl_mu_complex},
+    tss2_esys::{TPM2B_SENSITIVE, TPMT_SENSITIVE},
 };
 use log::error;
 use std::{

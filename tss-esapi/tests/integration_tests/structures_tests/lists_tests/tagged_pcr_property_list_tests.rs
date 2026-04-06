@@ -51,10 +51,10 @@ fn test_valid_conversions() {
         .expect("Failed to convert Vec<TaggedPcrSelect> into TaggedPcrPropertyList");
 
     assert_eq!(
-            expected_tagged_pcr_properties.len(),
-            tagged_pcr_property_list_from_vec.len(),
-            "Mismatch in 'len()' between the Vec<TaggedPcrSelect> and the TaggedPcrPropertyList(from vec)"
-        );
+        expected_tagged_pcr_properties.len(),
+        tagged_pcr_property_list_from_vec.len(),
+        "Mismatch in 'len()' between the Vec<TaggedPcrSelect> and the TaggedPcrPropertyList(from vec)"
+    );
 
     expected_tagged_pcr_properties
             .iter()
@@ -69,10 +69,10 @@ fn test_valid_conversions() {
             .expect("Failed to convert TPML_TAGGED_PCR_PROPERTY into TaggedPcrPropertyList");
 
     assert_eq!(
-            expected_tagged_pcr_properties.len(),
-            tagged_pcr_property_list_from_tss.len(),
-            "Mismatch in 'len()' between the Vec<TaggedPcrSelect> and the TaggedPcrPropertyList(from tss)"
-        );
+        expected_tagged_pcr_properties.len(),
+        tagged_pcr_property_list_from_tss.len(),
+        "Mismatch in 'len()' between the Vec<TaggedPcrSelect> and the TaggedPcrPropertyList(from tss)"
+    );
 
     expected_tagged_pcr_properties
             .iter()

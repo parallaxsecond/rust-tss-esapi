@@ -1,13 +1,13 @@
 // Copyright 2021 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
 use crate::{
+    Error, Result,
     interface_types::algorithm::PublicAlgorithm,
     structures::{
         PublicEccParameters, PublicKeyedHashParameters, PublicRsaParameters,
         SymmetricCipherParameters,
     },
     tss2_esys::{TPMT_PUBLIC_PARMS, TPMU_PUBLIC_PARMS},
-    Error, Result,
 };
 use std::convert::{TryFrom, TryInto};
 /// Enum representing the public parameters structure.

@@ -2,10 +2,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use tss_esapi::{
+    Error, WrapperErrorKind,
     constants::CommandCode,
     structures::CommandCodeList,
     tss2_esys::{TPM2_CC, TPML_CC},
-    Error, WrapperErrorKind,
 };
 
 use std::convert::{TryFrom, TryInto};

@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 mod handle_manager;
 use crate::{
+    Error, Result, ReturnCode, WrapperErrorKind as ErrorKind,
     attributes::SessionAttributesBuilder,
     constants::{CapabilityType, PropertyTag, SessionType, StartupType},
     handles::{ObjectHandle, SessionHandle},
@@ -9,7 +10,6 @@ use crate::{
     structures::{CapabilityData, SymmetricDefinition},
     tcti_ldr::{TabrmdConfig, TctiContext, TctiNameConf},
     tss2_esys::*,
-    Error, Result, ReturnCode, WrapperErrorKind as ErrorKind,
 };
 use handle_manager::HandleManager;
 use log::{debug, error};

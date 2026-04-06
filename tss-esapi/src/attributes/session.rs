@@ -1,4 +1,4 @@
-use crate::{tss2_esys::TPMA_SESSION, Error, Result, WrapperErrorKind};
+use crate::{Error, Result, WrapperErrorKind, tss2_esys::TPMA_SESSION};
 use bitfield::bitfield;
 use std::convert::TryFrom;
 

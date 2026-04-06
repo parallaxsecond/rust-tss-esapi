@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use crate::{
+    Error, Result, WrapperErrorKind,
     structures::{PcrSelectSize, PcrSlot},
     tss2_esys::TPM2_PCR_SELECT_MAX,
-    Error, Result, WrapperErrorKind,
 };
 use enumflags2::BitFlags;
 use log::error;
@@ -48,7 +48,9 @@ impl PcrSlotCollection {
             .iter()
             .any(|&item| u32::from(item) > max_pcr_slot_value)
         {
-            error!("pcr_slots contained a pcr slot that does not reside in octets specified by size_of_select");
+            error!(
+                "pcr_slots contained a pcr slot that does not reside in octets specified by size_of_select"
+            );
             return Err(Error::local_error(WrapperErrorKind::InconsistentParams));
         }
         Ok(())

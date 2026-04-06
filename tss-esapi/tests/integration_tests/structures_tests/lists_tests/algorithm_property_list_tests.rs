@@ -2,11 +2,11 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use tss_esapi::{
+    Error, WrapperErrorKind,
     attributes::AlgorithmAttributes,
     constants::AlgorithmIdentifier,
     structures::{AlgorithmProperty, AlgorithmPropertyList},
     tss2_esys::{TPML_ALG_PROPERTY, TPMS_ALG_PROPERTY},
-    Error, WrapperErrorKind,
 };
 
 use std::convert::{TryFrom, TryInto};
@@ -33,7 +33,8 @@ fn test_conversions() {
         .expect("Failed to convert TPML_ALG_PROPERTY into AlgorithmPropertyList");
 
     assert_eq!(
-        expected_algorithm_properties.len(), actual_algorithm_property_list.len(),
+        expected_algorithm_properties.len(),
+        actual_algorithm_property_list.len(),
         "The algorithm property list converted from TPML_ALG_PROPERTY did not contain the expected amount of elements"
     );
 
@@ -81,7 +82,8 @@ fn test_valid_conversion_vector() {
         .expect("Failed to convert TPML_ALG_PROPERTY into AlgorithmPropertyList");
 
     assert_eq!(
-        expected_algorithm_properties.len(), expected_algorithm_property_list.len(),
+        expected_algorithm_properties.len(),
+        expected_algorithm_property_list.len(),
         "The algorithm property list converted from TPML_ALG_PROPERTY did not contain the expected amount of elements"
     );
 

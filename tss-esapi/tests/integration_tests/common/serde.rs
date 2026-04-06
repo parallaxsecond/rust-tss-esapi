@@ -1,6 +1,6 @@
 // Copyright 2023 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
-use serde::{de::DeserializeOwned, Serialize};
+use serde::{Serialize, de::DeserializeOwned};
 use tss_esapi::traits::{Marshall, UnMarshall};
 
 pub fn check_serialise_deserialise<

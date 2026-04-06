@@ -1,6 +1,6 @@
 // Copyright 2022 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
-use crate::{constants::return_code::BaseError, Error, Result};
+use crate::{Error, Result, constants::return_code::BaseError};
 use std::convert::TryFrom;
 
 /// Struct representing the TSS base response code
@@ -71,8 +71,14 @@ impl std::fmt::Display for BaseReturnCode {
                 f,
                 "The TPM command doesn't use the number of sessions provided by the caller."
             ),
-            BaseError::NoDecryptParam => write!(f, "A session with decrypt set in its SessionAttributes (TPMA_SESSION_DECRYPT bit set) was passed to a TPM command that doesn't support encryption of the first command parameter."),
-            BaseError::NoEncryptParam => write!(f, "A session with encrypt set in its SessionAttributes (TPMA_SESSION_ENCRYPT bit set) was passed to a TPM command that doesn't support encryption of the first response parameter."),
+            BaseError::NoDecryptParam => write!(
+                f,
+                "A session with decrypt set in its SessionAttributes (TPMA_SESSION_DECRYPT bit set) was passed to a TPM command that doesn't support encryption of the first command parameter."
+            ),
+            BaseError::NoEncryptParam => write!(
+                f,
+                "A session with encrypt set in its SessionAttributes (TPMA_SESSION_ENCRYPT bit set) was passed to a TPM command that doesn't support encryption of the first response parameter."
+            ),
             BaseError::BadSize => write!(f, "Size of a parameter is incorrect."),
             BaseError::MalformedResponse => write!(f, "Response is malformed."),
             BaseError::InsufficientContext => write!(f, "Context not large enough."),
@@ -82,8 +88,14 @@ impl std::fmt::Display for BaseReturnCode {
             BaseError::BadTctiStructure => write!(f, "TCTI context is bad."),
             BaseError::Memory => write!(f, "Memory allocation failed."),
             BaseError::BadTr => write!(f, "Invalid ObjectHandle(ESYS_TR handle)."),
-            BaseError::MultipleDecryptSessions => write!(f, "More than one session with decrypt set in SessionAttributes (TPMA_SESSION_DECRYPT bit set)."),
-            BaseError::MultipleEncryptSessions => write!(f, "More than one session with encrypt set in SessionAttributes (TPMA_SESSION_ENCRYPT bit set)."),
+            BaseError::MultipleDecryptSessions => write!(
+                f,
+                "More than one session with decrypt set in SessionAttributes (TPMA_SESSION_DECRYPT bit set)."
+            ),
+            BaseError::MultipleEncryptSessions => write!(
+                f,
+                "More than one session with encrypt set in SessionAttributes (TPMA_SESSION_ENCRYPT bit set)."
+            ),
             BaseError::RspAuthFailed => write!(f, "Authorizing the TPM response failed."),
             BaseError::NoConfig => write!(f, "No config is available."),
             BaseError::BadPath => write!(f, "The provided path is bad."),

@@ -1,6 +1,6 @@
 // Copyright 2022 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
-use crate::{constants::BaseError, error::BaseReturnCode, Error, Result, WrapperErrorKind};
+use crate::{Error, Result, WrapperErrorKind, constants::BaseError, error::BaseReturnCode};
 use log::error;
 use std::convert::TryFrom;
 

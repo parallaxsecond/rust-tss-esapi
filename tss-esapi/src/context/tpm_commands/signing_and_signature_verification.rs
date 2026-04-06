@@ -1,10 +1,10 @@
 // Copyright 2021 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
 use crate::{
+    Context, Result, ReturnCode,
     handles::KeyHandle,
     structures::{Digest, HashcheckTicket, Signature, SignatureScheme, VerifiedTicket},
     tss2_esys::{Esys_Sign, Esys_VerifySignature},
-    Context, Result, ReturnCode,
 };
 use log::error;
 use std::convert::{TryFrom, TryInto};

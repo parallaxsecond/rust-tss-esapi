@@ -2,10 +2,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use crate::{
-    structures::Public,
-    traits::{impl_mu_complex, Marshall, UnMarshall},
-    tss2_esys::{TPM2B_PUBLIC, TPMT_PUBLIC},
     Error, Result, WrapperErrorKind,
+    structures::Public,
+    traits::{Marshall, UnMarshall, impl_mu_complex},
+    tss2_esys::{TPM2B_PUBLIC, TPMT_PUBLIC},
 };
 use log::error;
 use std::{

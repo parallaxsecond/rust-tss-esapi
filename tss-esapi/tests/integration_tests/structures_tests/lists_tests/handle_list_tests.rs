@@ -2,11 +2,11 @@
 // SPDX-License-Identifier: Apache-2.0
 use std::convert::TryFrom;
 use tss_esapi::{
+    Error, WrapperErrorKind,
     constants::tss::{TPM2_PERSISTENT_FIRST, TPM2_TRANSIENT_FIRST},
     handles::{PermanentTpmHandle, PersistentTpmHandle, TpmHandle, TransientTpmHandle},
     structures::HandleList,
     tss2_esys::{TPM2_HANDLE, TPML_HANDLE},
-    Error, WrapperErrorKind,
 };
 
 #[test]

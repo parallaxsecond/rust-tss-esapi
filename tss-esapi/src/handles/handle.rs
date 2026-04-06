@@ -69,8 +69,8 @@ macro_rules! add_constant_handle {
 macro_rules! add_constant_none_handle {
     ($handle_type:ident) => {
         use crate::{
-            handles::handle_conversion::TryIntoNotNone, tss2_esys::ESYS_TR_NONE, Error, Result,
-            WrapperErrorKind as ErrorKind,
+            Error, Result, WrapperErrorKind as ErrorKind,
+            handles::handle_conversion::TryIntoNotNone, tss2_esys::ESYS_TR_NONE,
         };
         use log::error;
 
@@ -187,16 +187,16 @@ macro_rules! impl_multiple_constant_values_handle_conversion {
 pub mod pcr {
     use super::object::ObjectHandle;
     use crate::{
-        tss2_esys::{
-            ESYS_TR, ESYS_TR_PCR0, ESYS_TR_PCR1, ESYS_TR_PCR10, ESYS_TR_PCR11, ESYS_TR_PCR12,
-            ESYS_TR_PCR13, ESYS_TR_PCR14, ESYS_TR_PCR15, ESYS_TR_PCR16, ESYS_TR_PCR17,
-            ESYS_TR_PCR18, ESYS_TR_PCR19, ESYS_TR_PCR2, ESYS_TR_PCR20, ESYS_TR_PCR21,
-            ESYS_TR_PCR22, ESYS_TR_PCR23, ESYS_TR_PCR24, ESYS_TR_PCR25, ESYS_TR_PCR26,
-            ESYS_TR_PCR27, ESYS_TR_PCR28, ESYS_TR_PCR29, ESYS_TR_PCR3, ESYS_TR_PCR30,
-            ESYS_TR_PCR31, ESYS_TR_PCR4, ESYS_TR_PCR5, ESYS_TR_PCR6, ESYS_TR_PCR7, ESYS_TR_PCR8,
-            ESYS_TR_PCR9,
-        },
         Error, Result, WrapperErrorKind,
+        tss2_esys::{
+            ESYS_TR, ESYS_TR_PCR0, ESYS_TR_PCR1, ESYS_TR_PCR2, ESYS_TR_PCR3, ESYS_TR_PCR4,
+            ESYS_TR_PCR5, ESYS_TR_PCR6, ESYS_TR_PCR7, ESYS_TR_PCR8, ESYS_TR_PCR9, ESYS_TR_PCR10,
+            ESYS_TR_PCR11, ESYS_TR_PCR12, ESYS_TR_PCR13, ESYS_TR_PCR14, ESYS_TR_PCR15,
+            ESYS_TR_PCR16, ESYS_TR_PCR17, ESYS_TR_PCR18, ESYS_TR_PCR19, ESYS_TR_PCR20,
+            ESYS_TR_PCR21, ESYS_TR_PCR22, ESYS_TR_PCR23, ESYS_TR_PCR24, ESYS_TR_PCR25,
+            ESYS_TR_PCR26, ESYS_TR_PCR27, ESYS_TR_PCR28, ESYS_TR_PCR29, ESYS_TR_PCR30,
+            ESYS_TR_PCR31,
+        },
     };
 
     use log::error;

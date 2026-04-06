@@ -1,6 +1,6 @@
 // Copyright 2021 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
-use crate::{constants::EccCurveIdentifier, tss2_esys::TPMI_ECC_CURVE, Error, Result};
+use crate::{Error, Result, constants::EccCurveIdentifier, tss2_esys::TPMI_ECC_CURVE};
 use std::convert::TryFrom;
 /// Enum containing the implemented ECC curves
 ///

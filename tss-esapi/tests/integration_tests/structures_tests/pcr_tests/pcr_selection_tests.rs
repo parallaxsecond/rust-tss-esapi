@@ -2,11 +2,11 @@
 // SPDX-License-Identifier: Apache-2.0
 use std::convert::TryFrom;
 use tss_esapi::{
+    Error, WrapperErrorKind,
     constants::tss::{TPM2_ALG_SHA256, TPM2_ALG_SHA512},
     interface_types::algorithm::HashingAlgorithm,
     structures::{PcrSelectSize, PcrSelection, PcrSlot},
     tss2_esys::TPMS_PCR_SELECTION,
-    Error, WrapperErrorKind,
 };
 
 #[test]
@@ -189,10 +189,10 @@ fn test_merge_exact_hashing_algorithm_mismatch_errors() {
     .expect("Failed to create PcrSelection pcr_selection_2");
 
     assert_eq!(
-            Err(Error::WrapperError(WrapperErrorKind::InvalidParam)),
-            pcr_selection_1.merge_exact(&pcr_selection_2),
-            "Merge exact PcrSelections with different hashing algorithm did not produce the expected error",
-        );
+        Err(Error::WrapperError(WrapperErrorKind::InvalidParam)),
+        pcr_selection_1.merge_exact(&pcr_selection_2),
+        "Merge exact PcrSelections with different hashing algorithm did not produce the expected error",
+    );
 }
 
 #[test]
@@ -212,10 +212,10 @@ fn test_merge_exact_size_of_select_mismatch_errors() {
     .expect("Failed to create PcrSelection pcr_selection_2");
 
     assert_eq!(
-            Err(Error::WrapperError(WrapperErrorKind::InvalidParam)),
-            pcr_selection_1.merge_exact(&pcr_selection_2),
-            "Merge exact PcrSelections with different size of select did not produce the expected error",
-        );
+        Err(Error::WrapperError(WrapperErrorKind::InvalidParam)),
+        pcr_selection_1.merge_exact(&pcr_selection_2),
+        "Merge exact PcrSelections with different size of select did not produce the expected error",
+    );
 }
 
 #[test]
@@ -258,10 +258,10 @@ fn test_subtract_exact_hashing_algorithm_mismatch_errors() {
     .expect("Failed to create PcrSelection pcr_selection_2");
 
     assert_eq!(
-            Err(Error::WrapperError(WrapperErrorKind::InconsistentParams)),
-            pcr_selection_1.subtract_exact(&pcr_selection_2),
-            "Subtract exact PcrSelections with different hashing algorithm did not produce the expected error",
-        );
+        Err(Error::WrapperError(WrapperErrorKind::InconsistentParams)),
+        pcr_selection_1.subtract_exact(&pcr_selection_2),
+        "Subtract exact PcrSelections with different hashing algorithm did not produce the expected error",
+    );
 }
 
 #[test]
@@ -281,10 +281,10 @@ fn test_subtract_exact_size_of_select_mismatch_errors() {
     .expect("Failed to create PcrSelection pcr_selection_2");
 
     assert_eq!(
-            Err(Error::WrapperError(WrapperErrorKind::InvalidParam)),
-            pcr_selection_1.subtract_exact(&pcr_selection_2),
-            "Subtract exact PcrSelections with different size of select did not produce the expected error",
-        );
+        Err(Error::WrapperError(WrapperErrorKind::InvalidParam)),
+        pcr_selection_1.subtract_exact(&pcr_selection_2),
+        "Subtract exact PcrSelections with different size of select did not produce the expected error",
+    );
 }
 
 #[test]

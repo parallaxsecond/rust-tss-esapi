@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0
 use std::{convert::TryFrom, ops::Deref};
 use tss_esapi::{
+    Error, WrapperErrorKind,
     structures::{Auth, SensitiveCreate, SensitiveCreateBuffer, SensitiveData},
     tss2_esys::TPM2B_SENSITIVE_CREATE,
-    Error, WrapperErrorKind,
 };
 use tss_esapi_sys::TPM2B_SENSITIVE_DATA;
 

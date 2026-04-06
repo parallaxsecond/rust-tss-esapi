@@ -1,13 +1,13 @@
 // Copyright 2021 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
 use crate::{
+    Context, Result, ReturnCode,
     attributes::{SessionAttributes, SessionAttributesMask},
     ffi::take_from_esys,
     handles::SessionHandle,
     interface_types::session_handles::AuthSession,
     structures::Nonce,
     tss2_esys::{Esys_TRSess_GetAttributes, Esys_TRSess_GetNonceTPM, Esys_TRSess_SetAttributes},
-    Context, Result, ReturnCode,
 };
 use log::error;
 use std::convert::TryInto;

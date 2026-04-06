@@ -1,12 +1,12 @@
 // Copyright 2021 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
 use crate::{
+    Error, Result, WrapperErrorKind,
     interface_types::{
         algorithm::{HashingAlgorithm, SymmetricAlgorithm, SymmetricMode, SymmetricObject},
         key_bits::{AesKeyBits, CamelliaKeyBits, Sm4KeyBits},
     },
     tss2_esys::{TPMT_SYM_DEF, TPMT_SYM_DEF_OBJECT, TPMU_SYM_KEY_BITS, TPMU_SYM_MODE},
-    Error, Result, WrapperErrorKind,
 };
 use std::convert::{TryFrom, TryInto};
 /// Enum representing the symmetric algorithm definition.

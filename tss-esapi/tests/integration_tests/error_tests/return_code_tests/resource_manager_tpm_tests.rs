@@ -15,7 +15,7 @@ fn test_valid_tpm_resmgr_format_zero_response_code() {
 
     if let ReturnCode::TpmResourceManager(actual_tpm_response_code) = actual_rc {
         assert!(
-            matches!(actual_tpm_response_code,TpmResponseCode::FormatZero(_)),
+            matches!(actual_tpm_response_code, TpmResponseCode::FormatZero(_)),
             "TPM2_RC_SEQUENCE in the TPM RESMGR layer did not convert into the expected TpmResponseCode"
         );
     } else {

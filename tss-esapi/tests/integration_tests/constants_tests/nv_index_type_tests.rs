@@ -2,11 +2,11 @@
 // SPDX-License-Identifier: Apache-2.0
 use tss_esapi::{
     constants::{
+        NvIndexType,
         tss::{
             TPM2_NT_BITS, TPM2_NT_COUNTER, TPM2_NT_EXTEND, TPM2_NT_ORDINARY, TPM2_NT_PIN_FAIL,
             TPM2_NT_PIN_PASS,
         },
-        NvIndexType,
     },
     tss2_esys::TPM2_NT,
 };

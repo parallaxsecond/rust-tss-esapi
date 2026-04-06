@@ -1,6 +1,6 @@
 // Copyright 2022 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
-use crate::{tss2_esys::TPM2_PCR_SELECT_MAX, Error, Result, WrapperErrorKind};
+use crate::{Error, Result, WrapperErrorKind, tss2_esys::TPM2_PCR_SELECT_MAX};
 
 use num_derive::{FromPrimitive, ToPrimitive};
 use num_traits::{FromPrimitive, ToPrimitive};
@@ -108,7 +108,9 @@ impl TryFrom<PcrSelectSize> for u8 {
 
     fn try_from(pcr_select_size: PcrSelectSize) -> Result<Self> {
         if pcr_select_size.as_u32() > TPM2_PCR_SELECT_MAX {
-            error!("The number of octets specified by PcrSelectSize value us greater then TPM2_PCR_SELECT_MAX");
+            error!(
+                "The number of octets specified by PcrSelectSize value us greater then TPM2_PCR_SELECT_MAX"
+            );
             return Err(Error::local_error(WrapperErrorKind::InvalidParam));
         }
         Ok(pcr_select_size.as_u8())

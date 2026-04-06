@@ -3,8 +3,8 @@
 
 use std::convert::{TryFrom, TryInto};
 use tss_esapi::{
-    attributes::CommandCodeAttributes, constants::CommandCode,
-    structures::CommandCodeAttributesList, tss2_esys::TPML_CCA, Error, WrapperErrorKind,
+    Error, WrapperErrorKind, attributes::CommandCodeAttributes, constants::CommandCode,
+    structures::CommandCodeAttributesList, tss2_esys::TPML_CCA,
 };
 
 #[test]
@@ -52,10 +52,10 @@ fn test_valid_conversions() {
         .expect("Failed to convert expected_tpml_cca into CommandCodeAttributesList");
 
     assert_eq!(
-            expected_command_code_attributes.len(),
-            command_code_attributes_list_from_tss.len(),
-            "Mismatch in 'len()' between the Vec<CommandCodeAttributes> and the CommandCodeAttributesList(from tss)"
-        );
+        expected_command_code_attributes.len(),
+        command_code_attributes_list_from_tss.len(),
+        "Mismatch in 'len()' between the Vec<CommandCodeAttributes> and the CommandCodeAttributesList(from tss)"
+    );
 
     expected_command_code_attributes
         .iter()
@@ -73,9 +73,15 @@ fn test_valid_conversions() {
 fn test_invalid_conversions() {
     assert_eq!(
         Err(Error::WrapperError(WrapperErrorKind::InvalidParam)),
-        CommandCodeAttributesList::try_from(vec![CommandCodeAttributes::try_from(u32::from(CommandCode::NvUndefineSpaceSpecial)).expect(
-            "Failed to create CommandCodeAttributes using CommandCode::NvUndefineSpaceSpecia",
-        ); CommandCodeAttributesList::MAX_SIZE + 1]),
+        CommandCodeAttributesList::try_from(vec![
+            CommandCodeAttributes::try_from(u32::from(
+                CommandCode::NvUndefineSpaceSpecial
+            ))
+            .expect(
+                "Failed to create CommandCodeAttributes using CommandCode::NvUndefineSpaceSpecia",
+            );
+            CommandCodeAttributesList::MAX_SIZE + 1
+        ]),
         "Converting a vector with to many elements into a CommandCodeAttributesList did not produce the expected error",
     );
 

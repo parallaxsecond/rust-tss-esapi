@@ -1,6 +1,7 @@
 // Copyright 2021 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
 use crate::{
+    Context, Result, ReturnCode,
     constants::SessionType,
     context::handle_manager::HandleDropAction,
     handles::{KeyHandle, ObjectHandle, SessionHandle},
@@ -10,7 +11,6 @@ use crate::{
     },
     structures::{Nonce, SymmetricDefinition},
     tss2_esys::{Esys_PolicyRestart, Esys_StartAuthSession},
-    Context, Result, ReturnCode,
 };
 use log::error;
 use std::{convert::TryInto, ptr::null};

@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 use std::convert::TryFrom;
 use tss_esapi::{
+    Error, WrapperErrorKind,
     constants::AlgorithmIdentifier,
     interface_types::{
         algorithm::{HashingAlgorithm, PublicAlgorithm},
@@ -14,7 +15,6 @@ use tss_esapi::{
         SymmetricCipherParameters, SymmetricDefinitionObject,
     },
     tss2_esys::{TPMT_PUBLIC_PARMS, TPMU_PUBLIC_PARMS},
-    Error, WrapperErrorKind,
 };
 
 #[test]
@@ -40,10 +40,9 @@ fn test_valid_rsa_parameters_conversions() {
 
     if let PublicParameters::Rsa(actual_public_rsa_parameters) = actual_public_parameters {
         assert_eq!(
-        expected_public_rsa_parameters,
-        actual_public_rsa_parameters,
-        "PublicRsaParameters converted from TPMT_PUBLIC_PARMS did not contain the expected values"
-    );
+            expected_public_rsa_parameters, actual_public_rsa_parameters,
+            "PublicRsaParameters converted from TPMT_PUBLIC_PARMS did not contain the expected values"
+        );
     } else {
         panic!("TPMT_PUBLIC_PARMS did not convert into the expected value");
     }
@@ -78,8 +77,7 @@ fn test_valid_ecc_parameters_conversion() {
 
     if let PublicParameters::Ecc(actual_public_ecc_parameters) = actual_public_parameters {
         assert_eq!(
-            expected_public_ecc_parameters,
-            actual_public_ecc_parameters,
+            expected_public_ecc_parameters, actual_public_ecc_parameters,
             "PublicEccParameters converted from TPMT_PUBLIC_PARMS did not contain the expected values"
         );
     } else {
@@ -113,10 +111,9 @@ fn test_valid_keyed_hash_parameters_conversion() {
         actual_public_parameters
     {
         assert_eq!(
-                expected_public_keyed_hash_parameters,
-                actual_public_keyed_hash_parameters,
-                "PublicKeyedHashParameters converted from TPMT_PUBLIC_PARMS did not contain the expected values"
-            );
+            expected_public_keyed_hash_parameters, actual_public_keyed_hash_parameters,
+            "PublicKeyedHashParameters converted from TPMT_PUBLIC_PARMS did not contain the expected values"
+        );
     } else {
         panic!("TPMT_PUBLIC_PARMS did not convert into the expected value");
     }
@@ -146,10 +143,9 @@ fn test_valid_symmetric_cipher_parameters_conversion() {
         actual_public_parameters
     {
         assert_eq!(
-            expected_symmetric_cipher_parameters,
-                actual_public_symmetric_cipher_parameters,
-                "SymmetricCipherParameters converted from TPMT_PUBLIC_PARMS did not contain the expected values"
-            );
+            expected_symmetric_cipher_parameters, actual_public_symmetric_cipher_parameters,
+            "SymmetricCipherParameters converted from TPMT_PUBLIC_PARMS did not contain the expected values"
+        );
     } else {
         panic!("TPMT_PUBLIC_PARMS did not convert into the expected value");
     }

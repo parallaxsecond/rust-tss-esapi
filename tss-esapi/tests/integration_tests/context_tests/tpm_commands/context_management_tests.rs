@@ -176,7 +176,7 @@ mod test_evict_control {
     use crate::common::{create_ctx_without_session, decryption_key_pub};
     use std::convert::TryFrom;
     use tss_esapi::{
-        constants::{tss::TPM2_PERSISTENT_FIRST, CapabilityType},
+        constants::{CapabilityType, tss::TPM2_PERSISTENT_FIRST},
         handles::{ObjectHandle, PersistentTpmHandle, TpmHandle},
         interface_types::{
             data_handles::Persistent,

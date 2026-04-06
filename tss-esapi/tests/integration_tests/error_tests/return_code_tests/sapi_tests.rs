@@ -3,7 +3,9 @@
 
 use std::convert::TryFrom;
 use tss_esapi::{
+    Error, WrapperErrorKind,
     constants::{
+        BaseError,
         tss::{
             TSS2_BASE_RC_ABI_MISMATCH, TSS2_BASE_RC_BAD_REFERENCE, TSS2_BASE_RC_BAD_SEQUENCE,
             TSS2_BASE_RC_BAD_TCTI_STRUCTURE, TSS2_BASE_RC_BAD_TEMPLATE, TSS2_BASE_RC_BAD_VALUE,
@@ -13,11 +15,9 @@ use tss_esapi::{
             TSS2_BASE_RC_MALFORMED_RESPONSE, TSS2_BASE_RC_NO_DECRYPT_PARAM,
             TSS2_BASE_RC_NO_ENCRYPT_PARAM, TSS2_SYS_RC_LAYER,
         },
-        BaseError,
     },
     error::{BaseReturnCode, ReturnCode, SapiReturnCode},
     tss2_esys::TSS2_RC,
-    Error, WrapperErrorKind,
 };
 
 macro_rules! test_valid_conversion {

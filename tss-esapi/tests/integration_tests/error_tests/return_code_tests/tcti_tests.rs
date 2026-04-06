@@ -3,20 +3,20 @@
 
 use std::convert::TryFrom;
 use tss_esapi::{
+    Error, WrapperErrorKind,
     constants::{
+        BaseError,
         tss::{
             TSS2_BASE_RC_ABI_MISMATCH, TSS2_BASE_RC_BAD_CONTEXT, TSS2_BASE_RC_BAD_REFERENCE,
             TSS2_BASE_RC_BAD_SEQUENCE, TSS2_BASE_RC_BAD_TEMPLATE, TSS2_BASE_RC_BAD_VALUE,
             TSS2_BASE_RC_GENERAL_FAILURE, TSS2_BASE_RC_INSUFFICIENT_BUFFER, TSS2_BASE_RC_IO_ERROR,
-            TSS2_BASE_RC_MALFORMED_RESPONSE, TSS2_BASE_RC_NOT_IMPLEMENTED,
-            TSS2_BASE_RC_NOT_PERMITTED, TSS2_BASE_RC_NOT_SUPPORTED, TSS2_BASE_RC_NO_CONNECTION,
+            TSS2_BASE_RC_MALFORMED_RESPONSE, TSS2_BASE_RC_NO_CONNECTION,
+            TSS2_BASE_RC_NOT_IMPLEMENTED, TSS2_BASE_RC_NOT_PERMITTED, TSS2_BASE_RC_NOT_SUPPORTED,
             TSS2_BASE_RC_TRY_AGAIN, TSS2_TCTI_RC_LAYER,
         },
-        BaseError,
     },
     error::{BaseReturnCode, ReturnCode, TctiReturnCode},
     tss2_esys::TSS2_RC,
-    Error, WrapperErrorKind,
 };
 
 macro_rules! test_valid_conversion {

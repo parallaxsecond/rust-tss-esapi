@@ -1,6 +1,7 @@
 // Copyright 2021 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
 use crate::{
+    Error, Result, WrapperErrorKind,
     interface_types::algorithm::{
         EccSchemeAlgorithm, HashingAlgorithm, KeyDerivationFunction, KeyedHashSchemeAlgorithm,
         RsaDecryptAlgorithm, RsaSchemeAlgorithm, SignatureSchemeAlgorithm,
@@ -10,7 +11,6 @@ use crate::{
         TPMT_ECC_SCHEME, TPMT_KDF_SCHEME, TPMT_KEYEDHASH_SCHEME, TPMT_RSA_DECRYPT, TPMT_RSA_SCHEME,
         TPMT_SIG_SCHEME, TPMU_ASYM_SCHEME, TPMU_KDF_SCHEME, TPMU_SCHEME_KEYEDHASH, TPMU_SIG_SCHEME,
     },
-    Error, Result, WrapperErrorKind,
 };
 use log::error;
 use std::convert::{TryFrom, TryInto};
@@ -116,7 +116,9 @@ impl RsaScheme {
             ))),
             RsaSchemeAlgorithm::RsaEs => {
                 if hashing_algorithm.is_some() {
-                    error!("A hashing algorithm shall not be provided when creating RSA scheme of type RSA ES");
+                    error!(
+                        "A hashing algorithm shall not be provided when creating RSA scheme of type RSA ES"
+                    );
                     return Err(Error::local_error(WrapperErrorKind::InconsistentParams));
                 }
                 Ok(RsaScheme::RsaEs)
@@ -137,7 +139,9 @@ impl RsaScheme {
             ))),
             RsaSchemeAlgorithm::Null => {
                 if hashing_algorithm.is_some() {
-                    error!("A hashing algorithm shall not be provided when creating RSA scheme of type Null");
+                    error!(
+                        "A hashing algorithm shall not be provided when creating RSA scheme of type Null"
+                    );
                     return Err(Error::local_error(WrapperErrorKind::InconsistentParams));
                 }
                 Ok(RsaScheme::Null)
@@ -314,7 +318,9 @@ impl EccScheme {
             }
             EccSchemeAlgorithm::EcSchnorr => {
                 if count.is_some() {
-                    error!("`count` should not be provided when creating ECC scheme of type EC SCHNORR.");
+                    error!(
+                        "`count` should not be provided when creating ECC scheme of type EC SCHNORR."
+                    );
                     return Err(Error::local_error(WrapperErrorKind::InconsistentParams));
                 }
 
@@ -350,7 +356,9 @@ impl EccScheme {
                     return Err(Error::local_error(WrapperErrorKind::InconsistentParams));
                 }
                 if hashing_algorithm.is_some() {
-                    error!("A hashing algorithm shall not be provided when creating ECC scheme of type Null.");
+                    error!(
+                        "A hashing algorithm shall not be provided when creating ECC scheme of type Null."
+                    );
                     return Err(Error::local_error(WrapperErrorKind::InconsistentParams));
                 }
                 Ok(EccScheme::Null)

@@ -1,12 +1,12 @@
 // Copyright 2020 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
 use crate::{
+    Error, Result, WrapperErrorKind,
     constants::tss::{
         TPM2_HT_AC, TPM2_HT_HMAC_SESSION, TPM2_HT_NV_INDEX, TPM2_HT_PCR, TPM2_HT_PERMANENT,
         TPM2_HT_PERSISTENT, TPM2_HT_POLICY_SESSION, TPM2_HT_TRANSIENT,
     },
     tss2_esys::TPM2_HANDLE,
-    Error, Result, WrapperErrorKind,
 };
 use log::error;
 use std::convert::{From, TryFrom};

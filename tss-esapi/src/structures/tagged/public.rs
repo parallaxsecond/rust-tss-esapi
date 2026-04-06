@@ -5,12 +5,12 @@ pub mod keyed_hash;
 pub mod rsa;
 
 use crate::{
+    Error, Result, ReturnCode, WrapperErrorKind,
     attributes::ObjectAttributes,
     interface_types::algorithm::{HashingAlgorithm, PublicAlgorithm},
     structures::{Digest, EccPoint, PublicKeyRsa, SymmetricCipherParameters},
-    traits::{impl_mu_standard, Marshall},
+    traits::{Marshall, impl_mu_standard},
     tss2_esys::{TPM2B_PUBLIC, TPMT_PUBLIC},
-    Error, Result, ReturnCode, WrapperErrorKind,
 };
 
 use self::rsa::PublicRsaParameters;

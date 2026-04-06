@@ -3,6 +3,7 @@
 use bitfield::bitfield;
 use std::convert::TryFrom;
 use tss_esapi::{
+    Error, WrapperErrorKind,
     constants::{
         return_code::TpmFormatOneError,
         tss::{
@@ -16,7 +17,6 @@ use tss_esapi::{
             TPM2_RC_VALUE,
         },
     },
-    Error, WrapperErrorKind,
 };
 
 bitfield! {

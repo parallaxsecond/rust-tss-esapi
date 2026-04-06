@@ -2,11 +2,11 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use crate::{
+    Result,
     ffi::data_zeroize::FfiDataZeroize,
     handles::KeyHandle,
     structures::{Auth, Data, PcrSelectionList, Public, SensitiveCreate, SensitiveData},
     tss2_esys::{ESYS_TR, TPM2B_DATA, TPM2B_PUBLIC, TPM2B_SENSITIVE_CREATE, TPML_PCR_SELECTION},
-    Result,
 };
 use std::convert::TryInto;
 use zeroize::Zeroize;

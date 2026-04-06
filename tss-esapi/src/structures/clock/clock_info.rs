@@ -1,7 +1,7 @@
 // Copyright 2021 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::{interface_types::YesNo, tss2_esys::TPMS_CLOCK_INFO, Error, Result};
+use crate::{Error, Result, interface_types::YesNo, tss2_esys::TPMS_CLOCK_INFO};
 use std::convert::TryFrom;
 
 /// Information related to the internal temporal
