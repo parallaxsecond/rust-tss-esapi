@@ -2,10 +2,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use tss_esapi::{
+    Error, WrapperErrorKind,
     interface_types::algorithm::{HashingAlgorithm, SignatureSchemeAlgorithm},
     structures::{EcDaaScheme, HashScheme, HmacScheme, SignatureScheme},
     tss2_esys::{TPMT_SIG_SCHEME, TPMU_SIG_SCHEME},
-    Error, WrapperErrorKind,
 };
 
 use std::convert::TryFrom;

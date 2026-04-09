@@ -69,11 +69,12 @@ mod hashing_algorithm_tests {
     use super::*;
     use tss_esapi::{
         constants::{
-            tss::{
-                TPM2_ALG_NULL, TPM2_ALG_SHA1, TPM2_ALG_SHA256, TPM2_ALG_SHA384, TPM2_ALG_SHA3_256,
-                TPM2_ALG_SHA3_384, TPM2_ALG_SHA3_512, TPM2_ALG_SHA512, TPM2_ALG_SM3_256,
-            },
             AlgorithmIdentifier,
+            tss::{
+                TPM2_ALG_NULL, TPM2_ALG_SHA1, TPM2_ALG_SHA3_256, TPM2_ALG_SHA3_384,
+                TPM2_ALG_SHA3_512, TPM2_ALG_SHA256, TPM2_ALG_SHA384, TPM2_ALG_SHA512,
+                TPM2_ALG_SM3_256,
+            },
         },
         interface_types::algorithm::HashingAlgorithm,
     };
@@ -109,8 +110,8 @@ mod keyed_hash_scheme_tests {
     use super::*;
     use tss_esapi::{
         constants::{
-            tss::{TPM2_ALG_HMAC, TPM2_ALG_NULL, TPM2_ALG_XOR},
             AlgorithmIdentifier,
+            tss::{TPM2_ALG_HMAC, TPM2_ALG_NULL, TPM2_ALG_XOR},
         },
         interface_types::algorithm::KeyedHashSchemeAlgorithm,
     };
@@ -140,8 +141,8 @@ mod key_derivation_function_tests {
     use super::*;
     use tss_esapi::{
         constants::{
-            tss::{TPM2_ALG_KDF1_SP800_108, TPM2_ALG_KDF1_SP800_56A, TPM2_ALG_KDF2, TPM2_ALG_MGF1},
             AlgorithmIdentifier,
+            tss::{TPM2_ALG_KDF1_SP800_56A, TPM2_ALG_KDF1_SP800_108, TPM2_ALG_KDF2, TPM2_ALG_MGF1},
         },
         interface_types::algorithm::KeyDerivationFunction,
     };
@@ -178,11 +179,11 @@ mod symmetric_algorithm_tests {
     use super::*;
     use tss_esapi::{
         constants::{
+            AlgorithmIdentifier,
             tss::{
                 TPM2_ALG_AES, TPM2_ALG_CAMELLIA, TPM2_ALG_NULL, TPM2_ALG_SM4, TPM2_ALG_TDES,
                 TPM2_ALG_XOR,
             },
-            AlgorithmIdentifier,
         },
         interface_types::algorithm::SymmetricAlgorithm,
     };
@@ -215,10 +216,10 @@ mod symmetric_mode_tests {
     use super::*;
     use tss_esapi::{
         constants::{
+            AlgorithmIdentifier,
             tss::{
                 TPM2_ALG_CBC, TPM2_ALG_CFB, TPM2_ALG_CTR, TPM2_ALG_ECB, TPM2_ALG_NULL, TPM2_ALG_OFB,
             },
-            AlgorithmIdentifier,
         },
         interface_types::algorithm::SymmetricMode,
     };
@@ -252,8 +253,8 @@ mod asymmetric_algorithm_tests {
     use super::*;
     use tss_esapi::{
         constants::{
-            tss::{TPM2_ALG_ECC, TPM2_ALG_NULL, TPM2_ALG_RSA},
             AlgorithmIdentifier,
+            tss::{TPM2_ALG_ECC, TPM2_ALG_NULL, TPM2_ALG_RSA},
         },
         interface_types::algorithm::AsymmetricAlgorithm,
     };
@@ -285,11 +286,11 @@ mod signature_scheme_tests {
     use std::convert::TryInto;
     use tss_esapi::{
         constants::{
+            AlgorithmIdentifier,
             tss::{
                 TPM2_ALG_ECDAA, TPM2_ALG_ECDSA, TPM2_ALG_ECSCHNORR, TPM2_ALG_HMAC, TPM2_ALG_NULL,
                 TPM2_ALG_RSAPSS, TPM2_ALG_RSASSA, TPM2_ALG_SM2,
             },
-            AlgorithmIdentifier,
         },
         interface_types::algorithm::{AsymmetricAlgorithm, SignatureSchemeAlgorithm},
     };
@@ -374,8 +375,8 @@ mod symmetric_object_tests {
     use super::*;
     use tss_esapi::{
         constants::{
-            tss::{TPM2_ALG_AES, TPM2_ALG_CAMELLIA, TPM2_ALG_NULL, TPM2_ALG_SM4, TPM2_ALG_TDES},
             AlgorithmIdentifier,
+            tss::{TPM2_ALG_AES, TPM2_ALG_CAMELLIA, TPM2_ALG_NULL, TPM2_ALG_SM4, TPM2_ALG_TDES},
         },
         interface_types::algorithm::SymmetricObject,
     };

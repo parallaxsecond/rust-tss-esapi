@@ -1,7 +1,7 @@
 // Copyright 2021 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::{structures::TimeInfo, tss2_esys::TPMS_TIME_ATTEST_INFO, Error, Result};
+use crate::{Error, Result, structures::TimeInfo, tss2_esys::TPMS_TIME_ATTEST_INFO};
 use std::convert::{TryFrom, TryInto};
 
 /// This type is holding attested data for the command TPM2_GetTime

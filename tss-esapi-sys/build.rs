@@ -172,8 +172,8 @@ pub mod tpm2_tss {
             let builder = bindgen::Builder::default()
                 .size_t_is_usize(false)
                 .rust_target(
-                    bindgen::RustTarget::stable(73, 0)
-                        .expect("Rust version 1.73.0 should be a stable release"),
+                    bindgen::RustTarget::stable(85, 0)
+                        .expect("Rust version 1.85.0 should be a stable release"),
                 ) // lower or equal to MSRV.
                 .clang_arg(self.tss2_esys.include_dir_arg())
                 .clang_arg(self.tss2_tctildr.include_dir_arg())
@@ -373,10 +373,11 @@ pub mod tpm2_tss {
                 }
                 else {
                     let install_path = Self::compile_with_autotools(source_path);
-                    std::env::set_var(
+                    // SAFETY: The build script is not multi threaded so this is safe to do.
+                    unsafe {std::env::set_var(
                         "PKG_CONFIG_PATH",
                         format!("{}", install_path.join("lib").join("pkgconfig").display()),
-                    );
+                    )};
                 }
             }
         }

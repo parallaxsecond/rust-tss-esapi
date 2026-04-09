@@ -1,18 +1,18 @@
 // Copyright 2021 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
 use crate::{
+    Context, Error, Result, ReturnCode, WrapperErrorKind,
     constants::tss::TPM2_RH_UNASSIGNED,
     context::handle_manager::HandleDropAction,
-    ffi::{to_owned_bytes, FfiSizeType},
+    ffi::{FfiSizeType, to_owned_bytes},
     handles::ObjectHandle,
-    handles::{handle_conversion::TryIntoNotNone, TpmHandle},
+    handles::{TpmHandle, handle_conversion::TryIntoNotNone},
     structures::Auth,
     structures::Name,
     tss2_esys::{
         Esys_TR_Close, Esys_TR_Deserialize, Esys_TR_FromTPMPublic, Esys_TR_GetName,
         Esys_TR_Serialize, Esys_TR_SetAuth,
     },
-    Context, Error, Result, ReturnCode, WrapperErrorKind,
 };
 use log::error;
 use std::convert::{TryFrom, TryInto};

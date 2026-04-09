@@ -3,8 +3,8 @@
 use bitfield::bitfield;
 use std::convert::{TryFrom, TryInto};
 use tss_esapi::{
-    attributes::CommandCodeAttributes, constants::CommandCode, tss2_esys::TPMA_CC, Error,
-    WrapperErrorKind,
+    Error, WrapperErrorKind, attributes::CommandCodeAttributes, constants::CommandCode,
+    tss2_esys::TPMA_CC,
 };
 
 bitfield! {
@@ -306,9 +306,9 @@ fn test_builder() {
     );
 
     assert_eq!(
-            expected.0,
-            TPMA_CC::from(actual),
-            "CommandCodeAttributes built using the builder did not convert into the expected TPMA_CC value"
+        expected.0,
+        TPMA_CC::from(actual),
+        "CommandCodeAttributes built using the builder did not convert into the expected TPMA_CC value"
     );
 }
 

@@ -65,8 +65,9 @@
  */
 
 use tss_esapi::{
+    Context, TctiNameConf,
     attributes::{ObjectAttributesBuilder, SessionAttributesBuilder},
-    constants::{tss::TPM2_RH_NULL, SessionType},
+    constants::{SessionType, tss::TPM2_RH_NULL},
     handles::{KeyHandle, SessionHandle},
     interface_types::{
         algorithm::{HashingAlgorithm, PublicAlgorithm},
@@ -79,7 +80,6 @@ use tss_esapi::{
         PublicEccParametersBuilder, PublicKeyedHashParameters, SymmetricDefinition,
         SymmetricDefinitionObject,
     },
-    Context, TctiNameConf,
 };
 
 use std::convert::{TryFrom, TryInto};

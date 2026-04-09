@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use std::convert::TryFrom;
-use tss_esapi::{interface_types::YesNo, tss2_esys::TPMI_YES_NO, Error, WrapperErrorKind};
+use tss_esapi::{Error, WrapperErrorKind, interface_types::YesNo, tss2_esys::TPMI_YES_NO};
 #[test]
 fn test_conversions() {
     let expected_yes_value: TPMI_YES_NO = 1;

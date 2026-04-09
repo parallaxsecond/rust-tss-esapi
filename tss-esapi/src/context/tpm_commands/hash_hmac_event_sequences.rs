@@ -1,13 +1,13 @@
 // Copyright 2021 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
 use crate::{
+    Context, Result, ReturnCode,
     handles::{ObjectHandle, TpmHandle},
     interface_types::{algorithm::HashingAlgorithm, reserved_handles::Hierarchy},
     structures::{Auth, Digest, HashcheckTicket, MaxBuffer},
     tss2_esys::{
         Esys_HMAC_Start, Esys_HashSequenceStart, Esys_SequenceComplete, Esys_SequenceUpdate,
     },
-    Context, Result, ReturnCode,
 };
 use log::error;
 use std::ptr::null_mut;

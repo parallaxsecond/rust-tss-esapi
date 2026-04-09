@@ -2,11 +2,11 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use tss_esapi::{
-    abstraction::{ek, AsymmetricAlgorithmSelection},
+    Error, ReturnCode,
+    abstraction::{AsymmetricAlgorithmSelection, ek},
     constants::return_code::TpmFormatOneError,
     error::TpmResponseCode,
     interface_types::{ecc::EccCurve, key_bits::RsaKeyBits},
-    Error, ReturnCode,
 };
 
 use crate::common::create_ctx_without_session;

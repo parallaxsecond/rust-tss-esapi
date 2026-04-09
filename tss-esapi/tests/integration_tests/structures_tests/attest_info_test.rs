@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 use tss_esapi::{
     constants::AlgorithmIdentifier,
-    interface_types::{algorithm::HashingAlgorithm, YesNo},
+    interface_types::{YesNo, algorithm::HashingAlgorithm},
     structures::{AttestInfo, Digest, MaxNvBuffer, Name, PcrSelectionListBuilder, PcrSlot},
     tss2_esys::{
         TPMS_CERTIFY_INFO, TPMS_CLOCK_INFO, TPMS_COMMAND_AUDIT_INFO, TPMS_CREATION_INFO,

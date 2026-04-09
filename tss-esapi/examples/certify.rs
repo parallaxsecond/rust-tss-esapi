@@ -100,10 +100,11 @@
  */
 
 use tss_esapi::{
+    Context, TctiNameConf,
     abstraction::{
+        AsymmetricAlgorithmSelection,
         ak::{create_ak, load_ak},
         ek::{create_ek_public_from_default_template, retrieve_ek_pubcert},
-        AsymmetricAlgorithmSelection,
     },
     attributes::{ObjectAttributesBuilder, SessionAttributesBuilder},
     constants::SessionType,
@@ -120,7 +121,6 @@ use tss_esapi::{
         SymmetricDefinition, SymmetricDefinitionObject,
     },
     traits::Marshall,
-    Context, TctiNameConf,
 };
 
 use std::convert::{TryFrom, TryInto};

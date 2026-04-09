@@ -3,6 +3,7 @@
 use std::convert::TryFrom;
 use strum::IntoEnumIterator;
 use tss_esapi::{
+    Error, WrapperErrorKind,
     constants::{
         return_code::TpmFormatZeroWarning,
         tss::{
@@ -20,7 +21,6 @@ use tss_esapi::{
         ReturnCode, TpmFormatZeroResponseCode, TpmFormatZeroWarningResponseCode, TpmResponseCode,
     },
     tss2_esys::TSS2_RC,
-    Error, WrapperErrorKind,
 };
 
 macro_rules! test_valid_conversion {

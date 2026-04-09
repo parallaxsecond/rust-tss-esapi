@@ -4,8 +4,10 @@
 use crate::common::{create_ctx_with_session, decryption_key_pub};
 use std::convert::TryFrom;
 use tss_esapi::{
+    Error, WrapperErrorKind,
     attributes::SessionAttributesBuilder,
     constants::{
+        BaseError, SessionType,
         tss::{
             TSS2_BASE_RC_ABI_MISMATCH, TSS2_BASE_RC_BAD_CONTEXT, TSS2_BASE_RC_BAD_REFERENCE,
             TSS2_BASE_RC_BAD_SEQUENCE, TSS2_BASE_RC_BAD_TCTI_STRUCTURE, TSS2_BASE_RC_BAD_TEMPLATE,
@@ -13,17 +15,15 @@ use tss_esapi::{
             TSS2_BASE_RC_INCOMPATIBLE_TCTI, TSS2_BASE_RC_INSUFFICIENT_RESPONSE,
             TSS2_BASE_RC_MALFORMED_RESPONSE, TSS2_BASE_RC_MEMORY,
             TSS2_BASE_RC_MULTIPLE_DECRYPT_SESSIONS, TSS2_BASE_RC_MULTIPLE_ENCRYPT_SESSIONS,
-            TSS2_BASE_RC_NOT_IMPLEMENTED, TSS2_BASE_RC_NOT_SUPPORTED,
-            TSS2_BASE_RC_NO_DECRYPT_PARAM, TSS2_BASE_RC_NO_ENCRYPT_PARAM, TSS2_BASE_RC_TRY_AGAIN,
+            TSS2_BASE_RC_NO_DECRYPT_PARAM, TSS2_BASE_RC_NO_ENCRYPT_PARAM,
+            TSS2_BASE_RC_NOT_IMPLEMENTED, TSS2_BASE_RC_NOT_SUPPORTED, TSS2_BASE_RC_TRY_AGAIN,
             TSS2_ESYS_RC_LAYER,
         },
-        BaseError, SessionType,
     },
     error::{BaseReturnCode, EsapiReturnCode, ReturnCode},
     interface_types::{algorithm::HashingAlgorithm, reserved_handles::Hierarchy},
     structures::{Auth, SymmetricDefinition},
     tss2_esys::TSS2_RC,
-    Error, WrapperErrorKind,
 };
 
 macro_rules! test_valid_conversion {
@@ -174,12 +174,14 @@ fn test_esapi_error_from_context_method() {
         if let Error::TssError(return_code) = error {
             if let ReturnCode::Esapi(esapi_return_code) = return_code {
                 assert_eq!(
-                esapi_return_code.base_error(),
-                BaseError::MultipleEncryptSessions,
-                "Calling 'create_primary' with two encrypt session did not result in the expected ESAPI TSS error",
-            );
+                    esapi_return_code.base_error(),
+                    BaseError::MultipleEncryptSessions,
+                    "Calling 'create_primary' with two encrypt session did not result in the expected ESAPI TSS error",
+                );
             } else {
-                panic!("Calling 'create_primary' with two encrypt session did not result in an ESAPI TSS error");
+                panic!(
+                    "Calling 'create_primary' with two encrypt session did not result in an ESAPI TSS error"
+                );
             }
         } else {
             panic!(

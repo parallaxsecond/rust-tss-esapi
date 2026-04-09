@@ -3,8 +3,8 @@
 
 use std::convert::TryFrom;
 use tss_esapi::{
-    structures::{Public, PublicBuffer},
     Error, WrapperErrorKind,
+    structures::{Public, PublicBuffer},
 };
 
 const PUBLIC_BUFFER_MAX_SIZE: usize = 612;

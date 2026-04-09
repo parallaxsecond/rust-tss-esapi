@@ -3,9 +3,9 @@
 
 use std::convert::TryFrom;
 use tss_esapi::{
-    constants::{tss::*, CommandCode},
-    tss2_esys::TPM2_CC,
     Error, WrapperErrorKind,
+    constants::{CommandCode, tss::*},
+    tss2_esys::TPM2_CC,
 };
 
 macro_rules! test_valid_conversion {

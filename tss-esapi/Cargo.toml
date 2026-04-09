@@ -2,7 +2,7 @@
 name = "tss-esapi"
 version = "8.0.0-alpha.2"
 authors = ["Parsec Project Contributors"]
-edition = "2021"
+edition = "2024"
 description = "Rust-native wrapper around TSS 2.0 Enhanced System API"
 readme = "README.md"
 keywords = ["tpm", "tss", "esys", "esapi"]
@@ -10,7 +10,7 @@ categories = ["api-bindings", "external-ffi-bindings", "cryptography"]
 license = "Apache-2.0"
 repository = "https://github.com/parallaxsecond/rust-tss-esapi"
 documentation = "https://docs.rs/crate/tss-esapi"
-rust-version = "1.76.0"
+rust-version = "1.85.0"
 
 [[example]]
 name = "hmac"

@@ -2,16 +2,16 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use crate::{
-    structures::{EccSignature, Signature},
     Error, Result, WrapperErrorKind,
+    structures::{EccSignature, Signature},
 };
 
 use std::convert::TryFrom;
 
 use ecdsa::SignatureSize;
 use elliptic_curve::{
-    generic_array::{typenum::Unsigned, ArrayLength},
     FieldBytes, FieldBytesSize, PrimeCurve,
+    generic_array::{ArrayLength, typenum::Unsigned},
 };
 
 impl<C> TryFrom<&EccSignature> for ecdsa::Signature<C>

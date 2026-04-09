@@ -3,7 +3,9 @@
 
 use std::convert::TryFrom;
 use tss_esapi::{
+    Error, WrapperErrorKind,
     constants::{
+        PcrPropertyTag,
         tss::{
             TPM2_PT_PCR_AUTH, TPM2_PT_PCR_DRTM_RESET, TPM2_PT_PCR_EXTEND_L0, TPM2_PT_PCR_EXTEND_L1,
             TPM2_PT_PCR_EXTEND_L2, TPM2_PT_PCR_EXTEND_L3, TPM2_PT_PCR_EXTEND_L4,
@@ -11,10 +13,8 @@ use tss_esapi::{
             TPM2_PT_PCR_RESET_L1, TPM2_PT_PCR_RESET_L2, TPM2_PT_PCR_RESET_L3, TPM2_PT_PCR_RESET_L4,
             TPM2_PT_PCR_SAVE,
         },
-        PcrPropertyTag,
     },
     tss2_esys::TPM2_PT_PCR,
-    Error, WrapperErrorKind,
 };
 
 macro_rules! test_valid_conversion {

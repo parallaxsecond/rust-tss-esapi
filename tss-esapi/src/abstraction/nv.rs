@@ -7,11 +7,11 @@ use std::{
 };
 
 use crate::{
-    constants::{tss::*, CapabilityType, PropertyTag},
+    Context, Error, Result, WrapperErrorKind,
+    constants::{CapabilityType, PropertyTag, tss::*},
     handles::{AuthHandle, NvIndexHandle, NvIndexTpmHandle, TpmHandle},
     interface_types::reserved_handles::NvAuth,
     structures::{CapabilityData, MaxNvBuffer, Name, NvPublic},
-    Context, Error, Result, WrapperErrorKind,
 };
 
 /// Allows reading an NV Index completely, regardless of the max TPM NV buffer size

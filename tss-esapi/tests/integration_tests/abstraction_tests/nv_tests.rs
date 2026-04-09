@@ -21,19 +21,23 @@ fn list() {
 
     let nv_index = NvIndexTpmHandle::new(0x01500015).unwrap();
 
-    assert!(!nv::list(&mut context)
-        .unwrap()
-        .iter()
-        .map(|(public, _)| public.nv_index())
-        .any(|x| x == nv_index));
+    assert!(
+        !nv::list(&mut context)
+            .unwrap()
+            .iter()
+            .map(|(public, _)| public.nv_index())
+            .any(|x| x == nv_index)
+    );
 
     let initial_owner_nv_index_handle = write_nv_index(&mut context, nv_index);
 
-    assert!(nv::list(&mut context)
-        .unwrap()
-        .iter()
-        .map(|(public, _)| public.nv_index())
-        .any(|x| x == nv_index));
+    assert!(
+        nv::list(&mut context)
+            .unwrap()
+            .iter()
+            .map(|(public, _)| public.nv_index())
+            .any(|x| x == nv_index)
+    );
 
     // Need to get the ESYS handle again, as it was closed by nv::list above.
     // 1. If this fails with a TssError something is seriously wrong but it

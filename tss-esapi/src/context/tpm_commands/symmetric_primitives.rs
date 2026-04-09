@@ -1,6 +1,7 @@
 // Copyright 2021 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
 use crate::{
+    Context, Result, ReturnCode,
     handles::{KeyHandle, ObjectHandle, TpmHandle},
     interface_types::{
         algorithm::{HashingAlgorithm, SymmetricMode},
@@ -8,7 +9,6 @@ use crate::{
     },
     structures::{Digest, HashcheckTicket, InitialValue, MaxBuffer},
     tss2_esys::{Esys_EncryptDecrypt2, Esys_HMAC, Esys_Hash},
-    Context, Result, ReturnCode,
 };
 use log::error;
 use std::convert::TryFrom;

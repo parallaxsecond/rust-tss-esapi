@@ -2,10 +2,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use crate::{
+    Error, Result, WrapperErrorKind,
     constants::PcrPropertyTag,
     structures::{PcrSlot, TaggedPcrSelect},
     tss2_esys::{TPML_TAGGED_PCR_PROPERTY, TPMS_TAGGED_PCR_SELECT},
-    Error, Result, WrapperErrorKind,
 };
 use log::error;
 use std::{convert::TryFrom, iter::IntoIterator, ops::Deref};
@@ -67,7 +67,10 @@ impl TryFrom<Vec<TaggedPcrSelect>> for TaggedPcrPropertyList {
 
     fn try_from(tagged_pcr_properties: Vec<TaggedPcrSelect>) -> Result<Self> {
         if tagged_pcr_properties.len() > Self::MAX_SIZE {
-            error!("Failed to convert Vec<TaggedPcrSelect> into TaggedPcrPropertyList, to many items (> {})", Self::MAX_SIZE);
+            error!(
+                "Failed to convert Vec<TaggedPcrSelect> into TaggedPcrPropertyList, to many items (> {})",
+                Self::MAX_SIZE
+            );
             return Err(Error::local_error(WrapperErrorKind::InvalidParam));
         }
         Ok(TaggedPcrPropertyList {

@@ -1,6 +1,6 @@
 // Copyright 2021 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
-use crate::{tss2_esys::TPMI_YES_NO, Error, Result, WrapperErrorKind};
+use crate::{Error, Result, WrapperErrorKind, tss2_esys::TPMI_YES_NO};
 use std::convert::TryFrom;
 
 /// Enum representing a yes or no.
@@ -15,11 +15,7 @@ pub enum YesNo {
 
 impl From<bool> for YesNo {
     fn from(value: bool) -> Self {
-        if value {
-            YesNo::Yes
-        } else {
-            YesNo::No
-        }
+        if value { YesNo::Yes } else { YesNo::No }
     }
 }
 

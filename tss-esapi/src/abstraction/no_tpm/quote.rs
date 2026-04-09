@@ -1,8 +1,8 @@
 // Copyright 2021 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
+use crate::WrapperErrorKind;
 use crate::error::Error;
 use crate::error::Result;
-use crate::WrapperErrorKind;
 use crate::{
     interface_types::algorithm::HashingAlgorithm,
     structures::{Attest, AttestInfo, DigestList, PcrSelectionList, Public, QuoteInfo, Signature},
@@ -14,21 +14,21 @@ use digest::{Digest, DynDigest};
 use crate::{abstraction::public::AssociatedTpmCurve, structures::EccSignature};
 #[cfg(any(feature = "p224", feature = "p256", feature = "p384"))]
 use ecdsa::{
-    hazmat::{DigestPrimitive, VerifyPrimitive},
     PrimeCurve, SignatureSize, VerifyingKey,
+    hazmat::{DigestPrimitive, VerifyPrimitive},
 };
 #[cfg(any(feature = "p224", feature = "p256", feature = "p384"))]
 use elliptic_curve::{
+    CurveArithmetic, FieldBytesSize,
     generic_array::ArrayLength,
     point::AffinePoint,
     sec1::{FromEncodedPoint, ModulusSize, ToEncodedPoint},
-    CurveArithmetic, FieldBytesSize,
 };
 #[cfg(any(feature = "p224", feature = "p256", feature = "p384"))]
 use signature::hazmat::PrehashVerifier;
 
 #[cfg(feature = "rsa")]
-use rsa::{pkcs1v15, pss, RsaPublicKey};
+use rsa::{RsaPublicKey, pkcs1v15, pss};
 #[cfg(feature = "rsa")]
 use signature::Verifier;
 

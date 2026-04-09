@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use crate::{
+    Error, Result,
     structures::{MaxNvBuffer, Name},
     tss2_esys::TPMS_NV_CERTIFY_INFO,
-    Error, Result,
 };
 use std::convert::{TryFrom, TryInto};
 /// This  structure  contains  the  Name  and  contents  of  the

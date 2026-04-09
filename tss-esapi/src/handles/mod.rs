@@ -18,6 +18,7 @@ pub(crate) mod handle_conversion {
 }
 mod handle;
 /////////////////////////////////////////////////////////
+pub use tpm::TpmHandle;
 /// TPM Handles
 /////////////////////////////////////////////////////////
 pub use tpm::attached_component::AttachedComponentTpmHandle;
@@ -30,5 +31,4 @@ pub use tpm::persistent::PersistentTpmHandle;
 pub use tpm::policy_session::PolicySessionTpmHandle;
 pub use tpm::saved_session::SavedSessionTpmHandle;
 pub use tpm::transient::TransientTpmHandle;
-pub use tpm::TpmHandle;
 mod tpm;

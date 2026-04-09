@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use crate::{
+    Error, Result,
     structures::{Digest, PcrSelectionList},
     tss2_esys::TPMS_QUOTE_INFO,
-    Error, Result,
 };
 use std::convert::{TryFrom, TryInto};
 /// Structure holding the attested data for TPM2_Quote()

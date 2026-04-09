@@ -7,7 +7,7 @@ use crate::constants::tss::{
     TPM2_ST_CREATION, TPM2_ST_FU_MANIFEST, TPM2_ST_HASHCHECK, TPM2_ST_NO_SESSIONS, TPM2_ST_NULL,
     TPM2_ST_RSP_COMMAND, TPM2_ST_SESSIONS, TPM2_ST_VERIFIED,
 };
-use crate::{tss2_esys::TPM2_ST, Error, Result, WrapperErrorKind};
+use crate::{Error, Result, WrapperErrorKind, tss2_esys::TPM2_ST};
 use log::error;
 use num_derive::{FromPrimitive, ToPrimitive};
 use num_traits::{FromPrimitive, ToPrimitive};

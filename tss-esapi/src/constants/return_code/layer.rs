@@ -1,11 +1,11 @@
 // Copyright 2022 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
 use crate::{
+    Error, Result, WrapperErrorKind,
     constants::tss::{
         TSS2_ESYS_RC_LAYER, TSS2_FEATURE_RC_LAYER, TSS2_MU_RC_LAYER, TSS2_RESMGR_RC_LAYER,
         TSS2_RESMGR_TPM_RC_LAYER, TSS2_SYS_RC_LAYER, TSS2_TCTI_RC_LAYER, TSS2_TPM_RC_LAYER,
     },
-    Error, Result, WrapperErrorKind,
 };
 
 use log::error;

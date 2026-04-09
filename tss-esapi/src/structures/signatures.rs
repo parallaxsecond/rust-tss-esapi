@@ -1,10 +1,10 @@
 // Copyright 2021 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
 use crate::{
+    Error, Result, WrapperErrorKind,
     interface_types::algorithm::HashingAlgorithm,
     structures::{EccParameter, PublicKeyRsa},
     tss2_esys::{TPMS_SIGNATURE_ECC, TPMS_SIGNATURE_RSA},
-    Error, Result, WrapperErrorKind,
 };
 use log::error;
 use std::convert::{TryFrom, TryInto};

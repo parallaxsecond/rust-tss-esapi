@@ -1,7 +1,7 @@
 // Copyright 2021 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
 use std::convert::TryFrom;
-use tss_esapi::{structures::PcrSlot, tss2_esys::TPM2_PCR_SELECT_MAX, Error, WrapperErrorKind};
+use tss_esapi::{Error, WrapperErrorKind, structures::PcrSlot, tss2_esys::TPM2_PCR_SELECT_MAX};
 
 macro_rules! convert_to_u32_test {
     ($value:expr, $slot_number:path) => {

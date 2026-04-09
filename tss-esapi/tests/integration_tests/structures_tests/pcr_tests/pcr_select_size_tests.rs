@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use std::convert::TryFrom;
-use tss_esapi::{structures::PcrSelectSize, Error, WrapperErrorKind};
+use tss_esapi::{Error, WrapperErrorKind, structures::PcrSelectSize};
 
 fn bad_u8_values() -> Vec<u8> {
     let mut bad_values = Vec::<u8>::with_capacity(u8::MAX as usize);

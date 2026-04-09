@@ -1,4 +1,4 @@
-use crate::{tss2_esys::TPMA_OBJECT, Result};
+use crate::{Result, tss2_esys::TPMA_OBJECT};
 use bitfield::bitfield;
 
 bitfield! {

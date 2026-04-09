@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 use std::convert::TryFrom;
 use tss_esapi::structures::MaxBuffer;
-use tss_esapi::tss2_esys::{TPM2B_MAX_BUFFER, TPM2_MAX_DIGEST_BUFFER};
+use tss_esapi::tss2_esys::{TPM2_MAX_DIGEST_BUFFER, TPM2B_MAX_BUFFER};
 
 const ABOVE_MAX: usize = TPM2_MAX_DIGEST_BUFFER as usize + 1;
 

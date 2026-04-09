@@ -8,6 +8,7 @@ use std::{
 };
 
 use tss_esapi::{
+    Context,
     attributes::ObjectAttributes,
     attributes::{NvIndexAttributesBuilder, ObjectAttributesBuilder, SessionAttributesBuilder},
     constants::SessionType,
@@ -29,7 +30,7 @@ use tss_esapi::{
         SymmetricDefinitionObject,
     },
     tcti_ldr::TctiNameConf,
-    utils, Context,
+    utils,
 };
 
 mod marshall;

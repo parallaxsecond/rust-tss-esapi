@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use crate::{
+    Context, Error, Result, WrapperErrorKind,
     abstraction::{AsymmetricAlgorithmSelection, IntoKeyCustomization, KeyCustomization},
     attributes::{ObjectAttributesBuilder, SessionAttributesBuilder},
     constants::{AlgorithmIdentifier, SessionType},
@@ -18,7 +19,6 @@ use crate::{
         Private, Public, PublicBuilder, PublicEccParametersBuilder, PublicKeyRsa,
         PublicRsaParametersBuilder, RsaExponent, RsaScheme, SymmetricDefinitionObject,
     },
-    Context, Error, Result, WrapperErrorKind,
 };
 use std::convert::TryFrom;
 

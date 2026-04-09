@@ -1,6 +1,7 @@
 // Copyright 2022 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
 use tss_esapi::{
+    Error, WrapperErrorKind,
     constants::AlgorithmIdentifier,
     interface_types::{
         algorithm::{HashingAlgorithm, SymmetricAlgorithm, SymmetricMode},
@@ -8,7 +9,6 @@ use tss_esapi::{
     },
     structures::SymmetricDefinition,
     tss2_esys::{TPMT_SYM_DEF, TPMU_SYM_KEY_BITS, TPMU_SYM_MODE},
-    Error, WrapperErrorKind,
 };
 
 use std::convert::TryFrom;
@@ -42,11 +42,17 @@ fn test_valid_aes_conversions() {
 
             if let SymmetricDefinition::Aes { key_bits, mode } = sym_def {
                 assert_eq!(
-                    expected_key_bits, key_bits, "TPMT_SYM_DEF converted into SymmetricDefinition did not contain the correct value for 'key_bits'"
+                    expected_key_bits, key_bits,
+                    "TPMT_SYM_DEF converted into SymmetricDefinition did not contain the correct value for 'key_bits'"
                 );
-                assert_eq!(expected_mode, mode,  "TPMT_SYM_DEF converted into SymmetricDefinition did not contain the correct value for 'mode'");
+                assert_eq!(
+                    expected_mode, mode,
+                    "TPMT_SYM_DEF converted into SymmetricDefinition did not contain the correct value for 'mode'"
+                );
             } else {
-                panic!("SymmetricDefinition converted from TPMT_SYM_DEF did not contain the expected algorithm AES");
+                panic!(
+                    "SymmetricDefinition converted from TPMT_SYM_DEF did not contain the expected algorithm AES"
+                );
             }
 
             let actual_tpmt_sym_def = TPMT_SYM_DEF::try_from(sym_def)
@@ -79,11 +85,17 @@ fn test_valid_sm4_conversions() {
 
         if let SymmetricDefinition::Sm4 { key_bits, mode } = sym_def {
             assert_eq!(
-                    expected_key_bits, key_bits, "TPMT_SYM_DEF converted into SymmetricDefinition did not contain the correct value for 'key_bits'"
-                );
-            assert_eq!(expected_mode, mode,  "TPMT_SYM_DEF converted into SymmetricDefinition did not contain the correct value for 'mode'");
+                expected_key_bits, key_bits,
+                "TPMT_SYM_DEF converted into SymmetricDefinition did not contain the correct value for 'key_bits'"
+            );
+            assert_eq!(
+                expected_mode, mode,
+                "TPMT_SYM_DEF converted into SymmetricDefinition did not contain the correct value for 'mode'"
+            );
         } else {
-            panic!("SymmetricDefinition converted from TPMT_SYM_DEF did not contain the expected algorithm SM4");
+            panic!(
+                "SymmetricDefinition converted from TPMT_SYM_DEF did not contain the expected algorithm SM4"
+            );
         }
 
         let actual_tpmt_sym_def = TPMT_SYM_DEF::try_from(sym_def)
@@ -117,11 +129,17 @@ fn test_valid_camellia_conversions() {
 
             if let SymmetricDefinition::Camellia { key_bits, mode } = sym_def {
                 assert_eq!(
-                    expected_key_bits, key_bits, "TPMT_SYM_DEF converted into SymmetricDefinition did not contain the correct value for 'key_bits'"
+                    expected_key_bits, key_bits,
+                    "TPMT_SYM_DEF converted into SymmetricDefinition did not contain the correct value for 'key_bits'"
                 );
-                assert_eq!(expected_mode, mode,  "TPMT_SYM_DEF converted into SymmetricDefinition did not contain the correct value for 'mode'");
+                assert_eq!(
+                    expected_mode, mode,
+                    "TPMT_SYM_DEF converted into SymmetricDefinition did not contain the correct value for 'mode'"
+                );
             } else {
-                panic!("SymmetricDefinition converted from TPMT_SYM_DEF did not contain the expected algorithm CAMELLIA");
+                panic!(
+                    "SymmetricDefinition converted from TPMT_SYM_DEF did not contain the expected algorithm CAMELLIA"
+                );
             }
 
             let actual_tpmt_sym_def = TPMT_SYM_DEF::try_from(sym_def)
@@ -161,12 +179,13 @@ fn test_valid_xor_conversions() {
 
         if let SymmetricDefinition::Xor { hashing_algorithm } = sym_def {
             assert_eq!(
-                expected_hashing_algorithm,
-                hashing_algorithm,
+                expected_hashing_algorithm, hashing_algorithm,
                 "TPMT_SYM_DEF converted into SymmetricDefinition did not contain the correct value for 'key_bits'",
-                );
+            );
         } else {
-            panic!("SymmetricDefinition converted from TPMT_SYM_DEF did not contain the expected algorithm XOR");
+            panic!(
+                "SymmetricDefinition converted from TPMT_SYM_DEF did not contain the expected algorithm XOR"
+            );
         }
 
         let actual_tpmt_sym_def = TPMT_SYM_DEF::try_from(sym_def)
@@ -188,7 +207,9 @@ fn test_valid_null_conversions() {
         .expect("Failed to convert TPMT_SYM_DEF into SymmetricDefinition");
 
     if sym_def != SymmetricDefinition::Null {
-        panic!("SymmetricDefinition converted from TPMT_SYM_DEF did not contain the expected algorithm NULL");
+        panic!(
+            "SymmetricDefinition converted from TPMT_SYM_DEF did not contain the expected algorithm NULL"
+        );
     }
 
     let actual_tpmt_sym_def = TPMT_SYM_DEF::try_from(sym_def)
@@ -239,6 +260,8 @@ fn test_invalid_xor_with_null_conversions() {
             "Converting SymmetricDefinition with invalid XOR hashing algorithm did not produce the expected error"
         );
     } else {
-        panic!("Converting SymmetricDefinition with invalid XOR hashing algorithm did not produce an error");
+        panic!(
+            "Converting SymmetricDefinition with invalid XOR hashing algorithm did not produce an error"
+        );
     }
 }

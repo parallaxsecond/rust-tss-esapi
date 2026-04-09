@@ -1,9 +1,9 @@
 use tss_esapi::{
+    Error, WrapperErrorKind,
     abstraction::pcr::PcrData,
     interface_types::algorithm::HashingAlgorithm,
     structures::{Digest, DigestList, PcrSelectionListBuilder, PcrSlot},
     tss2_esys::TPML_DIGEST,
-    Error, WrapperErrorKind,
 };
 
 #[test]

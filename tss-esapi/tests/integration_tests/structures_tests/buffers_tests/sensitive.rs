@@ -3,8 +3,8 @@
 
 use std::convert::TryFrom;
 use tss_esapi::{
-    structures::{Sensitive, SensitiveBuffer},
     Error, WrapperErrorKind,
+    structures::{Sensitive, SensitiveBuffer},
 };
 
 const SENSITIVE_BUFFER_MAX_SIZE: usize = 1416;

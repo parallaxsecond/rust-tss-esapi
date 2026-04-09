@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use crate::{
-    interface_types::YesNo, structures::Digest, tss2_esys::TPMS_SESSION_AUDIT_INFO, Error, Result,
+    Error, Result, interface_types::YesNo, structures::Digest, tss2_esys::TPMS_SESSION_AUDIT_INFO,
 };
 use std::convert::{TryFrom, TryInto};
 

@@ -1,7 +1,8 @@
 use crate::common::{create_ctx_with_session, create_ctx_without_session, decryption_key_pub};
 use tss_esapi::{
+    Context, Error,
     attributes::NvIndexAttributesBuilder,
-    constants::{tss::TPM2_NV_INDEX_FIRST, CapabilityType},
+    constants::{CapabilityType, tss::TPM2_NV_INDEX_FIRST},
     handles::{NvIndexHandle, NvIndexTpmHandle, ObjectHandle, PersistentTpmHandle, TpmHandle},
     interface_types::{
         algorithm::HashingAlgorithm,
@@ -11,7 +12,6 @@ use tss_esapi::{
     },
     structures::{Auth, CapabilityData, MaxNvBuffer, NvPublicBuilder},
     tss2_esys::TPM2_HANDLE,
-    Context, Error,
 };
 
 use std::convert::TryFrom;

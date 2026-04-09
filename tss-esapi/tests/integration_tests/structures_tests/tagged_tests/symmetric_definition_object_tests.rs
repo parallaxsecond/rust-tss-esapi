@@ -39,11 +39,17 @@ fn test_valid_aes_conversions() {
 
             if let SymmetricDefinitionObject::Aes { key_bits, mode } = sym_def_object {
                 assert_eq!(
-                    expected_key_bits, key_bits, "TPMT_SYM_DEF_OBJECT converted into SymmetricDefinitionObject did not contain the correct value for 'key_bits'"
+                    expected_key_bits, key_bits,
+                    "TPMT_SYM_DEF_OBJECT converted into SymmetricDefinitionObject did not contain the correct value for 'key_bits'"
                 );
-                assert_eq!(expected_mode, mode,  "TPMT_SYM_DEF_OBJECT converted into SymmetricDefinitionObject did not contain the correct value for 'mode'");
+                assert_eq!(
+                    expected_mode, mode,
+                    "TPMT_SYM_DEF_OBJECT converted into SymmetricDefinitionObject did not contain the correct value for 'mode'"
+                );
             } else {
-                panic!("SymmetricDefinitionObject converted from TPMT_SYM_DEF_OBJECT did not contain the expected algorithm AES");
+                panic!(
+                    "SymmetricDefinitionObject converted from TPMT_SYM_DEF_OBJECT did not contain the expected algorithm AES"
+                );
             }
 
             let actual_tpmt_sym_def_object = TPMT_SYM_DEF_OBJECT::from(sym_def_object);
@@ -75,11 +81,17 @@ fn test_valid_sm4_conversions() {
 
         if let SymmetricDefinitionObject::Sm4 { key_bits, mode } = sym_def_object {
             assert_eq!(
-                    expected_key_bits, key_bits, "TPMT_SYM_DEF_OBJECT converted into SymmetricDefinitionObject did not contain the correct value for 'key_bits'"
-                );
-            assert_eq!(expected_mode, mode,  "TPMT_SYM_DEF_OBJECT converted into SymmetricDefinitionObject did not contain the correct value for 'mode'");
+                expected_key_bits, key_bits,
+                "TPMT_SYM_DEF_OBJECT converted into SymmetricDefinitionObject did not contain the correct value for 'key_bits'"
+            );
+            assert_eq!(
+                expected_mode, mode,
+                "TPMT_SYM_DEF_OBJECT converted into SymmetricDefinitionObject did not contain the correct value for 'mode'"
+            );
         } else {
-            panic!("SymmetricDefinitionObject converted from TPMT_SYM_DEF_OBJECT did not contain the expected algorithm SM4");
+            panic!(
+                "SymmetricDefinitionObject converted from TPMT_SYM_DEF_OBJECT did not contain the expected algorithm SM4"
+            );
         }
 
         let actual_tpmt_sym_def_object = TPMT_SYM_DEF_OBJECT::from(sym_def_object);
@@ -115,11 +127,17 @@ fn test_valid_camellia_conversions() {
 
             if let SymmetricDefinitionObject::Camellia { key_bits, mode } = sym_def_object {
                 assert_eq!(
-                    expected_key_bits, key_bits, "TPMT_SYM_DEF_OBJECT converted into SymmetricDefinitionObject did not contain the correct value for 'key_bits'"
+                    expected_key_bits, key_bits,
+                    "TPMT_SYM_DEF_OBJECT converted into SymmetricDefinitionObject did not contain the correct value for 'key_bits'"
                 );
-                assert_eq!(expected_mode, mode,  "TPMT_SYM_DEF_OBJECT converted into SymmetricDefinitionObject did not contain the correct value for 'mode'");
+                assert_eq!(
+                    expected_mode, mode,
+                    "TPMT_SYM_DEF_OBJECT converted into SymmetricDefinitionObject did not contain the correct value for 'mode'"
+                );
             } else {
-                panic!("SymmetricDefinitionObject converted from TPMT_SYM_DEF_OBJECT did not contain the expected algorithm CAMELLIA");
+                panic!(
+                    "SymmetricDefinitionObject converted from TPMT_SYM_DEF_OBJECT did not contain the expected algorithm CAMELLIA"
+                );
             }
 
             let actual_tpmt_sym_def_object = TPMT_SYM_DEF_OBJECT::from(sym_def_object);
@@ -144,7 +162,9 @@ fn test_valid_null_conversions() {
         .expect("Failed to convert TPMT_SYM_DEF_OBJECT into SymmetricDefinitionObject");
 
     if sym_def_object != SymmetricDefinitionObject::Null {
-        panic!("SymmetricDefinitionObject converted from TPMT_SYM_DEF_OBJECT did not contain the expected algorithm NULL");
+        panic!(
+            "SymmetricDefinitionObject converted from TPMT_SYM_DEF_OBJECT did not contain the expected algorithm NULL"
+        );
     }
 
     let actual_tpmt_sym_def_object = TPMT_SYM_DEF_OBJECT::from(sym_def_object);

@@ -2,12 +2,12 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use crate::{
+    Error, Result, WrapperErrorKind,
     attributes::NvIndexAttributes,
     handles::NvIndexTpmHandle,
     interface_types::algorithm::HashingAlgorithm,
     structures::Digest,
     tss2_esys::{TPM2B_NV_PUBLIC, TPMS_NV_PUBLIC},
-    Error, Result, WrapperErrorKind,
 };
 use log::error;
 use std::{

@@ -3,11 +3,12 @@
 use bitfield::bitfield;
 use std::convert::TryFrom;
 use tss_esapi::{
+    Error, WrapperErrorKind,
     constants::{
         return_code::TpmFormatZeroError,
         tss::{
-            TPM2_RC_AUTHSIZE, TPM2_RC_AUTH_CONTEXT, TPM2_RC_AUTH_MISSING, TPM2_RC_AUTH_TYPE,
-            TPM2_RC_AUTH_UNAVAILABLE, TPM2_RC_BAD_CONTEXT, TPM2_RC_COMMAND_CODE,
+            TPM2_RC_AUTH_CONTEXT, TPM2_RC_AUTH_MISSING, TPM2_RC_AUTH_TYPE,
+            TPM2_RC_AUTH_UNAVAILABLE, TPM2_RC_AUTHSIZE, TPM2_RC_BAD_CONTEXT, TPM2_RC_COMMAND_CODE,
             TPM2_RC_COMMAND_SIZE, TPM2_RC_CPHASH, TPM2_RC_DISABLED, TPM2_RC_EXCLUSIVE,
             TPM2_RC_FAILURE, TPM2_RC_HMAC, TPM2_RC_INITIALIZE, TPM2_RC_NO_RESULT,
             TPM2_RC_NV_AUTHORIZATION, TPM2_RC_NV_DEFINED, TPM2_RC_NV_LOCKED, TPM2_RC_NV_RANGE,
@@ -21,7 +22,6 @@ use tss_esapi::{
         ReturnCode, TpmFormatZeroErrorResponseCode, TpmFormatZeroResponseCode, TpmResponseCode,
     },
     tss2_esys::TSS2_RC,
-    Error, WrapperErrorKind,
 };
 
 macro_rules! test_valid_conversion {
@@ -227,7 +227,10 @@ fn test_display_implementation() {
         "PCR have changed since checked.",
         TpmFormatZeroError::PcrChanged
     );
-    test_display_trait_impl!("For all commands other than TPM2_FieldUpgradeData(), this code indicates that the TPM is in field upgrade mode; for TPM2_FieldUpgradeData(), this code indicates that the TPM is not in field upgrade mode.", TpmFormatZeroError::Upgrade);
+    test_display_trait_impl!(
+        "For all commands other than TPM2_FieldUpgradeData(), this code indicates that the TPM is in field upgrade mode; for TPM2_FieldUpgradeData(), this code indicates that the TPM is not in field upgrade mode.",
+        TpmFormatZeroError::Upgrade
+    );
     test_display_trait_impl!(
         "Context ID counter is at maximum.",
         TpmFormatZeroError::TooManyContexts
@@ -240,14 +243,26 @@ fn test_display_implementation() {
         "A _TPM_Init and Startup(CLEAR) is required before the TPM can resume operation.",
         TpmFormatZeroError::Reboot
     );
-    test_display_trait_impl!("The protection algorithms (hash and symmetric) are not reasonably balanced. The digest size of the hash must be larger than the key size of the symmetric algorithm.", TpmFormatZeroError::Unbalanced);
-    test_display_trait_impl!("Command `commandSize` value is inconsistent with contents of the command buffer; either the size is not the same as the octets loaded by the hardware interface layer or the value is not large enough to hold a command header.", TpmFormatZeroError::CommandSize);
+    test_display_trait_impl!(
+        "The protection algorithms (hash and symmetric) are not reasonably balanced. The digest size of the hash must be larger than the key size of the symmetric algorithm.",
+        TpmFormatZeroError::Unbalanced
+    );
+    test_display_trait_impl!(
+        "Command `commandSize` value is inconsistent with contents of the command buffer; either the size is not the same as the octets loaded by the hardware interface layer or the value is not large enough to hold a command header.",
+        TpmFormatZeroError::CommandSize
+    );
     test_display_trait_impl!(
         "Command code not supported.",
         TpmFormatZeroError::CommandCode
     );
-    test_display_trait_impl!("The value of `authorizationSize` is out of range or the number of octets in the authorization area is greater than required.", TpmFormatZeroError::AuthSize);
-    test_display_trait_impl!("Use of an authorization session with a context command or another command that cannot have an authorization session.", TpmFormatZeroError::AuthContext);
+    test_display_trait_impl!(
+        "The value of `authorizationSize` is out of range or the number of octets in the authorization area is greater than required.",
+        TpmFormatZeroError::AuthSize
+    );
+    test_display_trait_impl!(
+        "Use of an authorization session with a context command or another command that cannot have an authorization session.",
+        TpmFormatZeroError::AuthContext
+    );
     test_display_trait_impl!(
         "NV offset+size is out of range.",
         TpmFormatZeroError::NvRange
@@ -261,7 +276,10 @@ fn test_display_implementation() {
         "NV access authorization fails in command actions.",
         TpmFormatZeroError::NvAuthorization
     );
-    test_display_trait_impl!("An NV Index is used before being initialized or the state saved by TPM2_Shutdown(STATE) could not be restored.", TpmFormatZeroError::NvUninitialized);
+    test_display_trait_impl!(
+        "An NV Index is used before being initialized or the state saved by TPM2_Shutdown(STATE) could not be restored.",
+        TpmFormatZeroError::NvUninitialized
+    );
     test_display_trait_impl!(
         "Insufficient space for NV allocation.",
         TpmFormatZeroError::NvSpace
@@ -283,7 +301,10 @@ fn test_display_implementation() {
         TpmFormatZeroError::Parent
     );
     test_display_trait_impl!("Function needs testing.", TpmFormatZeroError::NeedsTest);
-    test_display_trait_impl!("Function cannot process a request due to an unspecified problem. This code is usually related to invalid parameters that are not properly filtered by the input unmarshaling code.", TpmFormatZeroError::NoResult);
+    test_display_trait_impl!(
+        "Function cannot process a request due to an unspecified problem. This code is usually related to invalid parameters that are not properly filtered by the input unmarshaling code.",
+        TpmFormatZeroError::NoResult
+    );
     test_display_trait_impl!(
         "The sensitive area did not unmarshal correctly after decryption.",
         TpmFormatZeroError::Sensitive

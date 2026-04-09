@@ -10,9 +10,9 @@ mod tcti;
 mod tpm;
 
 use crate::{
+    Error, Result,
     constants::{return_code::ReturnCodeLayer, tss::TSS2_RC_SUCCESS},
     tss2_esys::TSS2_RC,
-    Error, Result,
 };
 pub use base::BaseReturnCode;
 use bitfield::bitfield;

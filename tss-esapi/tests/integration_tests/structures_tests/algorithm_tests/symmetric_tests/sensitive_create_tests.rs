@@ -72,7 +72,10 @@ fn test_tpm2b_senestive_create_conversions() {
     };
     let actual_sensitive_create = SensitiveCreate::try_from(expected_tpm2b_sensitive_create)
         .expect("Failed to convert TPM2B_SENSITIVE_CREATE into SensitiveCreate");
-    assert_eq!(expected_sensitive_create, actual_sensitive_create, "The SensitiveCreate converted from the TPM2b_SENSITIVE_CREATE did not contain the expected values");
+    assert_eq!(
+        expected_sensitive_create, actual_sensitive_create,
+        "The SensitiveCreate converted from the TPM2b_SENSITIVE_CREATE did not contain the expected values"
+    );
     let actual_tpm2b_sensitive_create = TPM2B_SENSITIVE_CREATE::try_from(actual_sensitive_create)
         .expect("Failed to create TPM2b_SENSITIVE_CREATE from SensitiveCreate");
     crate::common::ensure_tpm2b_sensitive_create_equality(

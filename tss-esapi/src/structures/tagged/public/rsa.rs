@@ -1,10 +1,10 @@
 // Copyright 2021 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
 use crate::{
+    Error, Result, WrapperErrorKind,
     interface_types::{algorithm::RsaSchemeAlgorithm, key_bits::RsaKeyBits},
     structures::{RsaScheme, SymmetricDefinitionObject},
     tss2_esys::{TPMS_RSA_PARMS, UINT32},
-    Error, Result, WrapperErrorKind,
 };
 use log::error;
 use std::convert::{TryFrom, TryInto};
@@ -151,16 +151,22 @@ impl PublicRsaParametersBuilder {
         if self.restricted && self.is_decryption_key {
             if let Some(symmetric) = self.symmetric {
                 if symmetric.is_null() {
-                    error!("Found symmetric parameter but it was Null but 'restricted' and 'is_decrypt_key' are set to true");
+                    error!(
+                        "Found symmetric parameter but it was Null but 'restricted' and 'is_decrypt_key' are set to true"
+                    );
                     return Err(Error::local_error(WrapperErrorKind::InconsistentParams));
                 }
             } else {
-                error!("Symmetric parameter was not set but 'restricted' and 'is_decrypt_key' are set to true");
+                error!(
+                    "Symmetric parameter was not set but 'restricted' and 'is_decrypt_key' are set to true"
+                );
                 return Err(Error::local_error(WrapperErrorKind::ParamsMissing));
             }
         } else if let Some(symmetric) = self.symmetric {
             if !symmetric.is_null() {
-                error!("Found symmetric parameter, expected it to be Null or not set at all because 'restricted' or 'is_decrypt_key' are set to false");
+                error!(
+                    "Found symmetric parameter, expected it to be Null or not set at all because 'restricted' or 'is_decrypt_key' are set to false"
+                );
                 return Err(Error::local_error(WrapperErrorKind::InconsistentParams));
             }
         }
@@ -175,12 +181,16 @@ impl PublicRsaParametersBuilder {
                 && rsa_scheme.algorithm() != RsaSchemeAlgorithm::RsaPss
                 && rsa_scheme.algorithm() != RsaSchemeAlgorithm::RsaSsa
             {
-                error!("Invalid rsa scheme algorithm provided with 'restricted' and 'is_signing_key' set to true");
+                error!(
+                    "Invalid rsa scheme algorithm provided with 'restricted' and 'is_signing_key' set to true"
+                );
                 return Err(Error::local_error(WrapperErrorKind::InconsistentParams));
             }
 
             if self.is_decryption_key && rsa_scheme.algorithm() != RsaSchemeAlgorithm::Null {
-                error!("Invalid rsa scheme algorithm provided with 'restricted' and 'is_decryption_key' set to true");
+                error!(
+                    "Invalid rsa scheme algorithm provided with 'restricted' and 'is_decryption_key' set to true"
+                );
                 return Err(Error::local_error(WrapperErrorKind::InconsistentParams));
             }
         } else {
@@ -188,7 +198,9 @@ impl PublicRsaParametersBuilder {
                 && self.is_signing_key
                 && rsa_scheme.algorithm() != RsaSchemeAlgorithm::Null
             {
-                error!("Invalid rsa scheme algorithm provided with 'restricted' set to false and 'is_decryption_key' and 'is_signing_key' set to true");
+                error!(
+                    "Invalid rsa scheme algorithm provided with 'restricted' set to false and 'is_decryption_key' and 'is_signing_key' set to true"
+                );
                 return Err(Error::local_error(WrapperErrorKind::InconsistentParams));
             }
             if self.is_signing_key
@@ -196,7 +208,9 @@ impl PublicRsaParametersBuilder {
                 && rsa_scheme.algorithm() != RsaSchemeAlgorithm::RsaSsa
                 && rsa_scheme.algorithm() != RsaSchemeAlgorithm::Null
             {
-                error!("Invalid rsa scheme algorithm provided with 'restricted' set to false and 'is_signing_key' set to true");
+                error!(
+                    "Invalid rsa scheme algorithm provided with 'restricted' set to false and 'is_signing_key' set to true"
+                );
                 return Err(Error::local_error(WrapperErrorKind::InconsistentParams));
             }
 
@@ -205,7 +219,9 @@ impl PublicRsaParametersBuilder {
                 && rsa_scheme.algorithm() != RsaSchemeAlgorithm::Oaep
                 && rsa_scheme.algorithm() != RsaSchemeAlgorithm::Null
             {
-                error!("Invalid rsa scheme algorithm provided with 'restricted' set to false and 'is_decryption_key' set to true");
+                error!(
+                    "Invalid rsa scheme algorithm provided with 'restricted' set to false and 'is_decryption_key' set to true"
+                );
                 return Err(Error::local_error(WrapperErrorKind::InconsistentParams));
             }
         }

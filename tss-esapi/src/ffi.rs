@@ -3,7 +3,7 @@
 
 pub mod data_zeroize;
 use crate::{
-    ffi::data_zeroize::FfiDataZeroize, tss2_esys::Esys_Free, Error, Result, WrapperErrorKind,
+    Error, Result, WrapperErrorKind, ffi::data_zeroize::FfiDataZeroize, tss2_esys::Esys_Free,
 };
 use log::error;
 use malloced::Malloced;
@@ -19,14 +19,15 @@ pub(crate) unsafe fn take_from_esys<T>(ptr: *mut T) -> Result<T>
 where
     T: FfiDataZeroize + Copy,
 {
-    if ptr.is_null() {
+    let mut valid_ptr: ptr::NonNull<T> = ptr::NonNull::new(ptr).ok_or_else(|| {
         error!("Received null pointer from ESAPI");
-        return Err(Error::local_error(WrapperErrorKind::WrongValueFromTpm));
-    }
+        Error::local_error(WrapperErrorKind::WrongValueFromTpm)
+    })?;
 
-    let out = ptr::read(ptr);
-    (*ptr).ffi_data_zeroize();
-    Esys_Free(ptr.cast::<c_void>());
+    // The pointer has been checked so it is not null
+    let out = unsafe { valid_ptr.read() };
+    unsafe { valid_ptr.as_mut().ffi_data_zeroize() };
+    unsafe { Esys_Free(valid_ptr.cast::<c_void>().as_ptr()) };
 
     Ok(out)
 }

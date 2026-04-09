@@ -2,10 +2,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use crate::{
+    Error, Result, WrapperErrorKind,
     constants::AlgorithmIdentifier,
     structures::AlgorithmProperty,
     tss2_esys::{TPML_ALG_PROPERTY, TPMS_ALG_PROPERTY},
-    Error, Result, WrapperErrorKind,
 };
 use log::error;
 use std::{convert::TryFrom, iter::IntoIterator, ops::Deref};
@@ -61,7 +61,10 @@ impl TryFrom<Vec<AlgorithmProperty>> for AlgorithmPropertyList {
 
     fn try_from(algorithm_properties: Vec<AlgorithmProperty>) -> Result<Self> {
         if algorithm_properties.len() > Self::MAX_SIZE {
-            error!("Failed to convert Vec<AlgorithmProperty> into AlgorithmPropertyList, to many items (> {})", Self::MAX_SIZE);
+            error!(
+                "Failed to convert Vec<AlgorithmProperty> into AlgorithmPropertyList, to many items (> {})",
+                Self::MAX_SIZE
+            );
             return Err(Error::local_error(WrapperErrorKind::InvalidParam));
         }
         Ok(AlgorithmPropertyList {

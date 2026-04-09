@@ -2,13 +2,13 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use crate::{
+    Error, Result,
     attributes::LocalityAttributes,
     constants::AlgorithmIdentifier,
     interface_types::algorithm::HashingAlgorithm,
     structures::{Data, Digest, Name, PcrSelectionList},
     traits::impl_mu_standard,
     tss2_esys::{TPM2B_CREATION_DATA, TPMS_CREATION_DATA},
-    Error, Result,
 };
 use std::convert::{TryFrom, TryInto};
 

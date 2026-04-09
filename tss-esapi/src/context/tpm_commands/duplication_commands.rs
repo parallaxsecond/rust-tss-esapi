@@ -2,10 +2,10 @@
 // SPDX-License-Identifier: Apache-2.0
 use crate::Context;
 use crate::{
+    Result, ReturnCode,
     handles::ObjectHandle,
     structures::{Data, EncryptedSecret, Private, Public, SymmetricDefinitionObject},
     tss2_esys::{Esys_Duplicate, Esys_Import},
-    Result, ReturnCode,
 };
 use log::error;
 

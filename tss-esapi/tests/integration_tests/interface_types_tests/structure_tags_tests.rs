@@ -48,8 +48,8 @@ macro_rules! test_valid_conversions {
 mod attestation_type_tests {
     use std::convert::TryFrom;
     use tss_esapi::{
-        constants::StructureTag, interface_types::structure_tags::AttestationType, Error,
-        WrapperErrorKind,
+        Error, WrapperErrorKind, constants::StructureTag,
+        interface_types::structure_tags::AttestationType,
     };
 
     #[test]
@@ -90,8 +90,8 @@ mod attestation_type_tests {
 mod command_tag_tests {
     use std::convert::TryFrom;
     use tss_esapi::{
-        constants::StructureTag, interface_types::structure_tags::CommandTag, Error,
-        WrapperErrorKind,
+        Error, WrapperErrorKind, constants::StructureTag,
+        interface_types::structure_tags::CommandTag,
     };
 
     #[test]

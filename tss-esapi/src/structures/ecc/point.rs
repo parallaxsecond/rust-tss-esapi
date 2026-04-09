@@ -2,7 +2,7 @@ use tss_esapi_sys::TPM2B_ECC_POINT;
 
 // Copyright 2021 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
-use crate::{structures::EccParameter, tss2_esys::TPMS_ECC_POINT, Error, Result};
+use crate::{Error, Result, structures::EccParameter, tss2_esys::TPMS_ECC_POINT};
 use std::{
     convert::{TryFrom, TryInto},
     mem::size_of,

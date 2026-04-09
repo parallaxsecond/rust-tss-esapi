@@ -1,13 +1,13 @@
 // Copyright 2020 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
 use crate::{
+    Error, Result, WrapperErrorKind,
     constants::CapabilityType,
     structures::{
         AlgorithmPropertyList, CommandCodeAttributesList, CommandCodeList, EccCurveList,
         HandleList, PcrSelectionList, TaggedPcrPropertyList, TaggedTpmPropertyList,
     },
     tss2_esys::{TPM2_CAP, TPM2_MAX_CAP_BUFFER, TPMS_CAPABILITY_DATA, TPMU_CAPABILITIES},
-    Error, Result, WrapperErrorKind,
 };
 use log::error;
 use std::convert::{TryFrom, TryInto};

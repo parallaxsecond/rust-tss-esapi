@@ -5,7 +5,7 @@ mod test_quote {
     use crate::common::create_ctx_with_session;
     use std::convert::TryFrom;
     use tss_esapi::{
-        abstraction::{ak, ek, no_tpm, AsymmetricAlgorithmSelection},
+        abstraction::{AsymmetricAlgorithmSelection, ak, ek, no_tpm},
         handles::PcrHandle,
         interface_types::{
             algorithm::{HashingAlgorithm, SignatureSchemeAlgorithm},
@@ -78,14 +78,16 @@ mod test_quote {
             .unwrap();
 
         let public = ak_res.out_public;
-        assert!(no_tpm::checkquote(
-            &attest,
-            &signature,
-            &public,
-            &Some((pcr_sel.clone(), pcr_data.clone())),
-            &qualifying_data
-        )
-        .unwrap());
+        assert!(
+            no_tpm::checkquote(
+                &attest,
+                &signature,
+                &public,
+                &Some((pcr_sel.clone(), pcr_data.clone())),
+                &qualifying_data
+            )
+            .unwrap()
+        );
         // Test without pcrs
         assert!(no_tpm::checkquote(&attest, &signature, &public, &None, &qualifying_data).unwrap());
 
@@ -102,42 +104,48 @@ mod test_quote {
             None,
         )
         .unwrap();
-        assert!(!no_tpm::checkquote(
-            &attest,
-            &signature,
-            &wrong_ak_res.out_public,
-            &Some((pcr_sel.clone(), pcr_data.clone())),
-            &qualifying_data
-        )
-        .unwrap());
+        assert!(
+            !no_tpm::checkquote(
+                &attest,
+                &signature,
+                &wrong_ak_res.out_public,
+                &Some((pcr_sel.clone(), pcr_data.clone())),
+                &qualifying_data
+            )
+            .unwrap()
+        );
 
         let wrong_selection = PcrSelectionListBuilder::new()
             .with_selection(HashingAlgorithm::Sha1, &[PcrSlot::Slot4])
             .with_selection(HashingAlgorithm::Sha256, &[PcrSlot::Slot2])
             .build()
             .expect("Failed to create PcrSelectionList");
-        assert!(!no_tpm::checkquote(
-            &attest,
-            &signature,
-            &public,
-            &Some((wrong_selection, pcr_data.clone())),
-            &qualifying_data
-        )
-        .unwrap());
+        assert!(
+            !no_tpm::checkquote(
+                &attest,
+                &signature,
+                &public,
+                &Some((wrong_selection, pcr_data.clone())),
+                &qualifying_data
+            )
+            .unwrap()
+        );
 
         let mut wrong_pcr_data = DigestList::new();
         for i in 1..pcr_data.len() {
             wrong_pcr_data.add(pcr_data.value()[i].clone()).unwrap();
         }
         wrong_pcr_data.add(pcr_data.value()[0].clone()).unwrap();
-        assert!(!no_tpm::checkquote(
-            &attest,
-            &signature,
-            &public,
-            &Some((pcr_sel.clone(), wrong_pcr_data)),
-            &qualifying_data
-        )
-        .unwrap());
+        assert!(
+            !no_tpm::checkquote(
+                &attest,
+                &signature,
+                &public,
+                &Some((pcr_sel.clone(), wrong_pcr_data)),
+                &qualifying_data
+            )
+            .unwrap()
+        );
 
         let ecc = match signature {
             Signature::EcDsa(e) => e,
@@ -151,14 +159,16 @@ mod test_quote {
             ecc.signature_r().clone(),
         )
         .unwrap();
-        assert!(!no_tpm::checkquote(
-            &attest,
-            &Signature::EcDsa(wrong_signature),
-            &public,
-            &Some((pcr_sel.clone(), pcr_data.clone())),
-            &qualifying_data
-        )
-        .unwrap());
+        assert!(
+            !no_tpm::checkquote(
+                &attest,
+                &Signature::EcDsa(wrong_signature),
+                &public,
+                &Some((pcr_sel.clone(), pcr_data.clone())),
+                &qualifying_data
+            )
+            .unwrap()
+        );
     }
 
     #[test]
@@ -225,14 +235,16 @@ mod test_quote {
             .execute_without_session(|ctx| ctx.pcr_read(pcr_selection_list))
             .unwrap();
 
-        assert!(no_tpm::checkquote(
-            &attest,
-            &signature,
-            &ak_rsa.out_public,
-            &Some((pcr_sel.clone(), pcr_data.clone())),
-            &qualifying_data
-        )
-        .unwrap());
+        assert!(
+            no_tpm::checkquote(
+                &attest,
+                &signature,
+                &ak_rsa.out_public,
+                &Some((pcr_sel.clone(), pcr_data.clone())),
+                &qualifying_data
+            )
+            .unwrap()
+        );
     }
 
     #[test]

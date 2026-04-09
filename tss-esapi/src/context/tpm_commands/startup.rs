@@ -1,9 +1,9 @@
 // Copyright 2021 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
 use crate::{
+    Context, Result, ReturnCode,
     constants::StartupType,
     tss2_esys::{Esys_Shutdown, Esys_Startup},
-    Context, Result, ReturnCode,
 };
 use log::error;
 

@@ -2,12 +2,12 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use crate::{
+    Error, Result, WrapperErrorKind,
     constants::tss::TPM2_GENERATED_VALUE,
     interface_types::structure_tags::AttestationType,
     structures::{AttestInfo, ClockInfo, Data, Name},
     traits::impl_mu_standard,
     tss2_esys::TPMS_ATTEST,
-    Error, Result, WrapperErrorKind,
 };
 use log::error;
 use std::convert::{TryFrom, TryInto};

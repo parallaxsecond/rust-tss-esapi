@@ -669,12 +669,12 @@ pub use crate::tss2_esys::TSS2_BASE_RC_MALFORMED_RESPONSE; /* Response is malfor
 pub use crate::tss2_esys::TSS2_BASE_RC_MEMORY; /* Memory allocation failed */
 pub use crate::tss2_esys::TSS2_BASE_RC_MULTIPLE_DECRYPT_SESSIONS; /* More than one session with TPMA_SESSION_DECRYPT bit set */
 pub use crate::tss2_esys::TSS2_BASE_RC_MULTIPLE_ENCRYPT_SESSIONS; /* More than one session with TPMA_SESSION_ENCRYPT bit set */
-pub use crate::tss2_esys::TSS2_BASE_RC_NOT_IMPLEMENTED; /* If called functionality isn't implemented */
-pub use crate::tss2_esys::TSS2_BASE_RC_NOT_PERMITTED; /* Operation not permitted. */
-pub use crate::tss2_esys::TSS2_BASE_RC_NOT_SUPPORTED; /* Functionality not supported. */
 pub use crate::tss2_esys::TSS2_BASE_RC_NO_CONNECTION; /* Fails to connect to next lower layer */
 pub use crate::tss2_esys::TSS2_BASE_RC_NO_DECRYPT_PARAM; /* A session with its TPMA_SESSION_DECRYPT bit set was passed to a TPM command that doesn't support encryption of the first command parameter. */
 pub use crate::tss2_esys::TSS2_BASE_RC_NO_ENCRYPT_PARAM; /* A session with its TPMA_SESSION_ENCRYPT bit set was passed to a TPM command that doesn't support encryption of the first response parameter. */
+pub use crate::tss2_esys::TSS2_BASE_RC_NOT_IMPLEMENTED; /* If called functionality isn't implemented */
+pub use crate::tss2_esys::TSS2_BASE_RC_NOT_PERMITTED; /* Operation not permitted. */
+pub use crate::tss2_esys::TSS2_BASE_RC_NOT_SUPPORTED; /* Functionality not supported. */
 pub use crate::tss2_esys::TSS2_BASE_RC_RSP_AUTH_FAILED; /* Authorizing the TPM response failed */
 pub use crate::tss2_esys::TSS2_BASE_RC_TRY_AGAIN; /* Operation timed out; function must be called again to be completed */
 

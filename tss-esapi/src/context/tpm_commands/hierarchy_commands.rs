@@ -1,15 +1,15 @@
 // Copyright 2021 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
 use crate::{
+    Context, Result, ReturnCode,
     context::handle_manager::HandleDropAction,
     handles::{AuthHandle, KeyHandle, ObjectHandle},
-    interface_types::{reserved_handles::Hierarchy, YesNo},
+    interface_types::{YesNo, reserved_handles::Hierarchy},
     structures::{
         Auth, CreatePrimaryKeyResult, CreationData, CreationTicket, Data, Digest, PcrSelectionList,
         Public, SensitiveCreate, SensitiveData,
     },
     tss2_esys::{Esys_Clear, Esys_ClearControl, Esys_CreatePrimary, Esys_HierarchyChangeAuth},
-    Context, Result, ReturnCode,
 };
 use log::error;
 use std::convert::{TryFrom, TryInto};

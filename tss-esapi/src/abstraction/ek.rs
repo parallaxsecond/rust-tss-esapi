@@ -2,7 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use crate::{
-    abstraction::{nv, AsymmetricAlgorithmSelection, IntoKeyCustomization, KeyCustomization},
+    Context, Error, Result, WrapperErrorKind,
+    abstraction::{AsymmetricAlgorithmSelection, IntoKeyCustomization, KeyCustomization, nv},
     attributes::ObjectAttributesBuilder,
     handles::{KeyHandle, NvIndexTpmHandle, TpmHandle},
     interface_types::{
@@ -16,7 +17,6 @@ use crate::{
         PublicEccParametersBuilder, PublicKeyRsa, PublicRsaParametersBuilder, RsaExponent,
         RsaScheme, SymmetricDefinitionObject,
     },
-    Context, Error, Result, WrapperErrorKind,
 };
 use std::convert::TryFrom;
 // Source: TCG EK Credential Profile for TPM Family 2.0; Level 0 Version 2.3 Revision 2

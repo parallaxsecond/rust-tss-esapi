@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use tss_esapi::{
+    Error, WrapperErrorKind,
     attributes::{LocalityAttributes, LocalityAttributesBuilder},
     tss2_esys::TPMA_LOCALITY,
-    Error, WrapperErrorKind,
 };
 
 #[test]

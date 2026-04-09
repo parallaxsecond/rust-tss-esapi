@@ -2,16 +2,16 @@
 // SPDX-License-Identifier: Apache-2.0
 use std::convert::TryFrom;
 use tss_esapi::{
+    Error, WrapperErrorKind,
     constants::{
+        CapabilityType,
         tss::{
             TPM2_CAP_ACT, TPM2_CAP_ALGS, TPM2_CAP_AUDIT_COMMANDS, TPM2_CAP_AUTH_POLICIES,
-            TPM2_CAP_COMMANDS, TPM2_CAP_ECC_CURVES, TPM2_CAP_HANDLES, TPM2_CAP_PCRS,
-            TPM2_CAP_PCR_PROPERTIES, TPM2_CAP_PP_COMMANDS, TPM2_CAP_TPM_PROPERTIES,
+            TPM2_CAP_COMMANDS, TPM2_CAP_ECC_CURVES, TPM2_CAP_HANDLES, TPM2_CAP_PCR_PROPERTIES,
+            TPM2_CAP_PCRS, TPM2_CAP_PP_COMMANDS, TPM2_CAP_TPM_PROPERTIES,
         },
-        CapabilityType,
     },
     tss2_esys::TPM2_CAP,
-    Error, WrapperErrorKind,
 };
 
 #[test]

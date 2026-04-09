@@ -1,9 +1,9 @@
 // Copyright 2020 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
 use crate::{
+    Error, Result,
     structures::{PcrSelectSize, PcrSlot, PcrSlotCollection},
     tss2_esys::TPMS_PCR_SELECT,
-    Error, Result,
 };
 
 use std::convert::TryFrom;

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 mod public_rsa_test {
-    use rsa::{pkcs1, traits::PublicKeyParts, BigUint};
+    use rsa::{BigUint, pkcs1, traits::PublicKeyParts};
     use std::convert::TryFrom;
     use tss_esapi::{
         attributes::ObjectAttributesBuilder,

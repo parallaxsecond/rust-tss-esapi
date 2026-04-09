@@ -6,6 +6,7 @@
  */
 
 use tss_esapi::{
+    Context, TctiNameConf,
     attributes::ObjectAttributesBuilder,
     interface_types::{
         algorithm::{HashingAlgorithm, PublicAlgorithm},
@@ -15,7 +16,6 @@ use tss_esapi::{
         Digest, KeyedHashScheme, MaxBuffer, PublicBuilder, PublicKeyedHashParameters,
         SymmetricCipherParameters, SymmetricDefinitionObject,
     },
-    Context, TctiNameConf,
 };
 
 use std::convert::TryFrom;

@@ -3,7 +3,9 @@
 
 use std::convert::TryFrom;
 use tss_esapi::{
+    Error, WrapperErrorKind,
     constants::{
+        PropertyTag,
         tss::{
             TPM2_PT_ACTIVE_SESSIONS_MAX, TPM2_PT_ALGORITHM_SET, TPM2_PT_AUDIT_COUNTER_0,
             TPM2_PT_AUDIT_COUNTER_1, TPM2_PT_CLOCK_UPDATE, TPM2_PT_CONTEXT_GAP_MAX,
@@ -28,10 +30,8 @@ use tss_esapi::{
             TPM2_PT_VENDOR_STRING_1, TPM2_PT_VENDOR_STRING_2, TPM2_PT_VENDOR_STRING_3,
             TPM2_PT_VENDOR_STRING_4, TPM2_PT_VENDOR_TPM_TYPE, TPM2_PT_YEAR,
         },
-        PropertyTag,
     },
     tss2_esys::TPM2_PT,
-    Error, WrapperErrorKind,
 };
 
 macro_rules! test_valid_conversion {

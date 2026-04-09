@@ -1,8 +1,8 @@
 // Copyright 2021 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
 use tss_esapi::{
-    constants::{tss::TPM2_GENERATED_VALUE, AlgorithmIdentifier},
-    interface_types::{algorithm::HashingAlgorithm, structure_tags::AttestationType, YesNo},
+    constants::{AlgorithmIdentifier, tss::TPM2_GENERATED_VALUE},
+    interface_types::{YesNo, algorithm::HashingAlgorithm, structure_tags::AttestationType},
     structures::{
         Attest, AttestInfo, ClockInfo, Data, Digest, MaxNvBuffer, Name, PcrSelectionListBuilder,
         PcrSlot, TimeAttestInfo,

@@ -59,6 +59,7 @@
  */
 
 use tss_esapi::{
+    Context, TctiNameConf,
     attributes::{ObjectAttributesBuilder, SessionAttributesBuilder},
     constants::SessionType,
     handles::SessionHandle,
@@ -73,7 +74,6 @@ use tss_esapi::{
         PublicEccParametersBuilder, PublicKeyedHashParameters, SymmetricDefinition,
         SymmetricDefinitionObject,
     },
-    Context, TctiNameConf,
 };
 
 use std::convert::{TryFrom, TryInto};

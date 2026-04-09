@@ -1,7 +1,7 @@
 // Copyright 2021 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::{structures::Name, tss2_esys::TPMS_CERTIFY_INFO, Error, Result};
+use crate::{Error, Result, structures::Name, tss2_esys::TPMS_CERTIFY_INFO};
 use std::convert::{TryFrom, TryInto};
 /// This a struct holding the attested data for the command TPM2_Certify
 ///

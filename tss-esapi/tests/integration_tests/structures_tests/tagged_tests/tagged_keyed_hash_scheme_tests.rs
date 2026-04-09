@@ -104,6 +104,8 @@ fn test_keyed_hash_scheme_invalid_conversion() {
     if let Err(actual_error) = KeyedHashScheme::try_from(invalid_tss) {
         assert_eq!(expected_error, actual_error);
     } else {
-        panic!("`TPMT_KEYEDHASH_SCHEME` with invalid values did not result in an error when converted to `KeyedHashScheme`.");
+        panic!(
+            "`TPMT_KEYEDHASH_SCHEME` with invalid values did not result in an error when converted to `KeyedHashScheme`."
+        );
     };
 }

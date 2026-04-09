@@ -400,7 +400,10 @@ fn test_display_implementation() {
     );
     test_display_trait_impl!("Incorrect structure tag", TpmFormatOneError::Tag);
     test_display_trait_impl!("Union selector is incorrect", TpmFormatOneError::Selector);
-    test_display_trait_impl!("The TPM was unable to unmarshal a value because there were not enough octets in the input buffer", TpmFormatOneError::Insufficient);
+    test_display_trait_impl!(
+        "The TPM was unable to unmarshal a value because there were not enough octets in the input buffer",
+        TpmFormatOneError::Insufficient
+    );
     test_display_trait_impl!("The signature is not valid", TpmFormatOneError::Signature);
     test_display_trait_impl!(
         "Key fields are not compatible with the selected use",
@@ -418,7 +421,10 @@ fn test_display_implementation() {
         TpmFormatOneError::BadAuth
     );
     test_display_trait_impl!("The policy has expired", TpmFormatOneError::Expired);
-    test_display_trait_impl!("The `commandCode` in the policy is not the `commandCode` of the command or the command code in a policy command references a command that is not implemented", TpmFormatOneError::PolicyCc);
+    test_display_trait_impl!(
+        "The `commandCode` in the policy is not the `commandCode` of the command or the command code in a policy command references a command that is not implemented",
+        TpmFormatOneError::PolicyCc
+    );
     test_display_trait_impl!(
         "Public and sensitive portions of an object are not cryptographically bound",
         TpmFormatOneError::Binding

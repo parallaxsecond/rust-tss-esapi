@@ -6,8 +6,9 @@ use std::{
     sync::Mutex,
 };
 use tss_esapi::{
+    Error, ReturnCode, TransientKeyContext, WrapperErrorKind as ErrorKind,
     abstraction::transient::{KeyParams, ObjectWrapper, TransientKeyContextBuilder},
-    abstraction::{ek, AsymmetricAlgorithmSelection, EcSigner},
+    abstraction::{AsymmetricAlgorithmSelection, EcSigner, ek},
     constants::return_code::{TpmFormatOneError, TpmFormatZeroError},
     error::{TpmFormatZeroResponseCode, TpmResponseCode},
     interface_types::{
@@ -20,18 +21,17 @@ use tss_esapi::{
         Auth, CreateKeyResult, Digest, EccScheme, Public, PublicKeyRsa, RsaExponent, RsaScheme,
         RsaSignature, Signature, SymmetricDefinitionObject,
     },
-    utils::{create_restricted_decryption_rsa_public, PublicKey},
-    Error, ReturnCode, TransientKeyContext, WrapperErrorKind as ErrorKind,
+    utils::{PublicKey, create_restricted_decryption_rsa_public},
 };
 
 use digest::Digest as _;
-use p256::{ecdsa::VerifyingKey, NistP256};
+use p256::{NistP256, ecdsa::VerifyingKey};
 use sha2::Sha256;
 use sha3::Sha3_256;
 use signature::{DigestSigner, DigestVerifier};
 use x509_cert::{
     builder::{Builder, RequestBuilder},
-    der::{pem::LineEnding, EncodePem},
+    der::{EncodePem, pem::LineEnding},
     name::Name,
 };
 

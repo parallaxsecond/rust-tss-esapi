@@ -1,12 +1,12 @@
 // Copyright 2021 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
 use crate::{
+    Error, Result, WrapperErrorKind,
     constants::tss::{
         TPM2_ECC_BN_P256, TPM2_ECC_BN_P638, TPM2_ECC_NIST_P192, TPM2_ECC_NIST_P224,
         TPM2_ECC_NIST_P256, TPM2_ECC_NIST_P384, TPM2_ECC_NIST_P521, TPM2_ECC_SM2_P256,
     },
     tss2_esys::TPM2_ECC_CURVE,
-    Error, Result, WrapperErrorKind,
 };
 use log::error;
 use num_derive::{FromPrimitive, ToPrimitive};

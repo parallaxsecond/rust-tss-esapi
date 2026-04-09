@@ -1,7 +1,7 @@
 // Copyright 2021 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::{tss2_esys::TPMA_LOCALITY, Error, Result, WrapperErrorKind};
+use crate::{Error, Result, WrapperErrorKind, tss2_esys::TPMA_LOCALITY};
 use bitfield::bitfield;
 use log::error;
 
@@ -45,7 +45,9 @@ impl LocalityAttributes {
         if self.is_extended() {
             Ok(self.0)
         } else {
-            error!("Cannot retrieve LocalityAttributes as extended when the attributes are not indicated to be extended");
+            error!(
+                "Cannot retrieve LocalityAttributes as extended when the attributes are not indicated to be extended"
+            );
             Err(Error::local_error(WrapperErrorKind::InvalidParam))
         }
     }
@@ -97,7 +99,11 @@ impl LocalityAttributesBuilder {
         let mut locality_attributes = LocalityAttributes(0);
         for locality in self.localities {
             if locality_attributes.is_extended() {
-                error!("Locality attribute {new} and locality attribute {prev} cannot be combined because locality attribute {prev} is extended", new=locality, prev=locality_attributes.0);
+                error!(
+                    "Locality attribute {new} and locality attribute {prev} cannot be combined because locality attribute {prev} is extended",
+                    new = locality,
+                    prev = locality_attributes.0
+                );
                 return Err(Error::local_error(WrapperErrorKind::InvalidParam));
             }
             match locality {
@@ -109,13 +115,17 @@ impl LocalityAttributesBuilder {
                 5..=31 => {
                     error!(
                         "Locality attribute {new} is invalid and cannot be combined with other locality attributes",
-                        new=locality
+                        new = locality
                     );
                     return Err(Error::local_error(WrapperErrorKind::InvalidParam));
                 }
                 32..=255 => {
                     if locality_attributes.0 != 0 {
-                        error!("Locality attribute {new} is extended and cannot be combined with locality attribute(s) {old}", new=locality, old=locality_attributes.0);
+                        error!(
+                            "Locality attribute {new} is extended and cannot be combined with locality attribute(s) {old}",
+                            new = locality,
+                            old = locality_attributes.0
+                        );
                         return Err(Error::local_error(WrapperErrorKind::InvalidParam));
                     }
                     locality_attributes.0 = locality;

@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 use std::convert::TryFrom;
 use tss_esapi::{
+    Error, WrapperErrorKind,
     constants::{
         return_code::ReturnCodeLayer,
         tss::{
@@ -10,7 +11,6 @@ use tss_esapi::{
         },
     },
     tss2_esys::TSS2_RC_LAYER_SHIFT,
-    Error, WrapperErrorKind,
 };
 
 macro_rules! test_valid_conversion {

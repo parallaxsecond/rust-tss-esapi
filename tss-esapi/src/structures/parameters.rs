@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use crate::{
-    structures::SymmetricDefinitionObject, tss2_esys::TPMS_SYMCIPHER_PARMS, Error, Result,
+    Error, Result, structures::SymmetricDefinitionObject, tss2_esys::TPMS_SYMCIPHER_PARMS,
 };
 
 use std::convert::{TryFrom, TryInto};

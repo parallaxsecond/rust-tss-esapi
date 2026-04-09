@@ -8,9 +8,9 @@ use crate::{Error, WrapperErrorKind};
 
 use core::convert::TryFrom;
 use elliptic_curve::{
+    AffinePoint, CurveArithmetic, FieldBytesSize, PublicKey,
     generic_array::typenum::Unsigned,
     sec1::{EncodedPoint, FromEncodedPoint, ModulusSize, ToEncodedPoint},
-    AffinePoint, CurveArithmetic, FieldBytesSize, PublicKey,
 };
 
 use x509_cert::spki::SubjectPublicKeyInfoOwned;

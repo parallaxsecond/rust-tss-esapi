@@ -2,11 +2,11 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use crate::{
+    Error, Result, WrapperErrorKind,
     abstraction::pcr::PcrBank,
     interface_types::algorithm::HashingAlgorithm,
     structures::{Digest, DigestList, PcrSelectionList},
     tss2_esys::TPML_DIGEST,
-    Error, Result, WrapperErrorKind,
 };
 use log::error;
 /// Struct holding pcr banks and their associated

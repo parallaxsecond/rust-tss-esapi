@@ -3,7 +3,7 @@
 mod bank;
 mod data;
 
-use crate::{structures::PcrSelectionList, Context, Result};
+use crate::{Context, Result, structures::PcrSelectionList};
 
 pub use bank::PcrBank;
 pub use data::PcrData;

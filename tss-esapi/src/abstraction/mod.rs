@@ -21,10 +21,10 @@ pub use signer::{RsaPkcsSigner, RsaPssSigner};
 use std::convert::TryFrom;
 
 use crate::{
+    Error, WrapperErrorKind,
     attributes::ObjectAttributesBuilder,
     interface_types::{algorithm::AsymmetricAlgorithm, ecc::EccCurve, key_bits::RsaKeyBits},
     structures::PublicBuilder,
-    Error, WrapperErrorKind,
 };
 
 /// KeyCustomizaion allows to adjust how a key is going to be created

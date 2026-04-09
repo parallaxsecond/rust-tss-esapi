@@ -3,17 +3,17 @@
 
 use std::convert::TryFrom;
 use tss_esapi::{
+    Error, WrapperErrorKind,
     constants::{
+        BaseError,
         tss::{
             TSS2_BASE_RC_BAD_REFERENCE, TSS2_BASE_RC_BAD_SIZE, TSS2_BASE_RC_BAD_TEMPLATE,
             TSS2_BASE_RC_BAD_VALUE, TSS2_BASE_RC_GENERAL_FAILURE, TSS2_BASE_RC_INSUFFICIENT_BUFFER,
             TSS2_MU_RC_LAYER,
         },
-        BaseError,
     },
     error::{BaseReturnCode, MuapiReturnCode, ReturnCode},
     tss2_esys::TSS2_RC,
-    Error, WrapperErrorKind,
 };
 
 macro_rules! test_valid_conversion {

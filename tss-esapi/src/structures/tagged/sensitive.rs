@@ -1,11 +1,11 @@
 // Copyright 2022 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
 use crate::{
+    Error, Result, ReturnCode, WrapperErrorKind,
     interface_types::algorithm::PublicAlgorithm,
     structures::{Auth, Digest, EccParameter, PrivateKeyRsa, SensitiveData, SymmetricKey},
-    traits::{impl_mu_standard, Marshall},
+    traits::{Marshall, impl_mu_standard},
     tss2_esys::{TPM2B_SENSITIVE, TPMT_SENSITIVE, TPMU_SENSITIVE_COMPOSITE},
-    Error, Result, ReturnCode, WrapperErrorKind,
 };
 use log::error;
 use std::convert::{TryFrom, TryInto};

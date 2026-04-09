@@ -2,12 +2,12 @@
 // SPDX-License-Identifier: Apache-2.0
 /// This module contains native representations of the TPMI_DH types.
 use crate::{
+    Error, Result, WrapperErrorKind,
     handles::{
         HmacSessionTpmHandle, NvIndexTpmHandle, PcrTpmHandle, PersistentTpmHandle,
         PolicySessionTpmHandle, TpmHandle, TransientTpmHandle,
     },
     tss2_esys::{TPMI_DH_CONTEXT, TPMI_DH_SAVED},
-    Error, Result, WrapperErrorKind,
 };
 use std::convert::TryFrom;
 

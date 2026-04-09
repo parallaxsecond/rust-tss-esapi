@@ -3,11 +3,12 @@
 use bitfield::bitfield;
 use std::convert::TryFrom;
 use tss_esapi::{
+    Error, WrapperErrorKind,
     constants::{
         return_code::TpmFormatZeroError,
         tss::{
-            TPM2_RC_AUTHSIZE, TPM2_RC_AUTH_CONTEXT, TPM2_RC_AUTH_MISSING, TPM2_RC_AUTH_TYPE,
-            TPM2_RC_AUTH_UNAVAILABLE, TPM2_RC_BAD_CONTEXT, TPM2_RC_COMMAND_CODE,
+            TPM2_RC_AUTH_CONTEXT, TPM2_RC_AUTH_MISSING, TPM2_RC_AUTH_TYPE,
+            TPM2_RC_AUTH_UNAVAILABLE, TPM2_RC_AUTHSIZE, TPM2_RC_BAD_CONTEXT, TPM2_RC_COMMAND_CODE,
             TPM2_RC_COMMAND_SIZE, TPM2_RC_CPHASH, TPM2_RC_DISABLED, TPM2_RC_EXCLUSIVE,
             TPM2_RC_FAILURE, TPM2_RC_HMAC, TPM2_RC_INITIALIZE, TPM2_RC_NEEDS_TEST,
             TPM2_RC_NO_RESULT, TPM2_RC_NV_AUTHORIZATION, TPM2_RC_NV_DEFINED, TPM2_RC_NV_LOCKED,
@@ -17,7 +18,6 @@ use tss_esapi::{
             TPM2_RC_UNBALANCED, TPM2_RC_UPGRADE,
         },
     },
-    Error, WrapperErrorKind,
 };
 
 bitfield! {

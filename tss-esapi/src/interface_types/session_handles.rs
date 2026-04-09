@@ -1,8 +1,8 @@
 // Copyright 2021 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
 use crate::{
-    constants::SessionType, handles::SessionHandle, interface_types::algorithm::HashingAlgorithm,
-    Error, Result, WrapperErrorKind,
+    Error, Result, WrapperErrorKind, constants::SessionType, handles::SessionHandle,
+    interface_types::algorithm::HashingAlgorithm,
 };
 use std::convert::TryFrom;
 

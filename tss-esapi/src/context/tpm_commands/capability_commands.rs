@@ -1,11 +1,11 @@
 // Copyright 2021 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
 use crate::{
+    Context, Result, ReturnCode,
     constants::CapabilityType,
     interface_types::YesNo,
     structures::{CapabilityData, PublicParameters},
     tss2_esys::{Esys_GetCapability, Esys_TestParms},
-    Context, Result, ReturnCode,
 };
 use log::{error, warn};
 use std::convert::TryFrom;

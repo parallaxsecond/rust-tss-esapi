@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use crate::{
+    Error, Result, WrapperErrorKind,
     constants::CommandCode,
     tss2_esys::{TPM2_CC, TPMA_CC},
-    Error, Result, WrapperErrorKind,
 };
 use bitfield::bitfield;
 use log::error;

@@ -1,11 +1,11 @@
 // Copyright 2020 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
 use crate::{
+    Error, Result, WrapperErrorKind,
     handles::{
         AttachedComponentTpmHandle, AuthHandle, NvIndexHandle, NvIndexTpmHandle, ObjectHandle,
         PermanentTpmHandle, TpmHandle,
     },
-    Error, Result, WrapperErrorKind,
 };
 use std::convert::TryFrom;
 /// Hierarchy
