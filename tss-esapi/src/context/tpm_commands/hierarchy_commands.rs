@@ -52,7 +52,7 @@ impl Context {
                 Esys_CreatePrimary(
                     self.mut_context(),
                     ObjectHandle::from(primary_handle).into(),
-                    self.optional_session_1(),
+                    self.required_session_1()?,
                     self.optional_session_2(),
                     self.optional_session_3(),
                     &sensitive_create.try_into()?,

@@ -69,7 +69,7 @@ impl Context {
                 Esys_Create(
                     self.mut_context(),
                     input_parameters.ffi_in_parent_handle(),
-                    self.optional_session_1(),
+                    self.required_session_1()?,
                     self.optional_session_2(),
                     self.optional_session_3(),
                     input_parameters.ffi_in_sensitive(),
@@ -104,7 +104,7 @@ impl Context {
                 Esys_Load(
                     self.mut_context(),
                     parent_handle.into(),
-                    self.optional_session_1(),
+                    self.required_session_1()?,
                     self.optional_session_2(),
                     self.optional_session_3(),
                     &private.into(),
@@ -372,7 +372,7 @@ impl Context {
                 Esys_Unseal(
                     self.mut_context(),
                     item_handle.into(),
-                    self.optional_session_1(),
+                    self.required_session_1()?,
                     self.optional_session_2(),
                     self.optional_session_3(),
                     &mut out_data_ptr,
