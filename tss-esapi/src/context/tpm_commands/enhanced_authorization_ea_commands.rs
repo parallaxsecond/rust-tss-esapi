@@ -44,7 +44,7 @@ impl Context {
                     self.mut_context(),
                     auth_object.into(),
                     SessionHandle::from(policy_session).into(),
-                    self.required_session_1()?,
+                    self.optional_session_1(),
                     self.optional_session_2(),
                     self.optional_session_3(),
                     &nonce_tpm.into(),
