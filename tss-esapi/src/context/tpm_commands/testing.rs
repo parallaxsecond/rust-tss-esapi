@@ -40,7 +40,7 @@ impl Context {
     /// test went in the form a [Result].
     ///
     /// If testing of all functions is complete without functional failures then Ok(())
-    /// or else a `TssError` (see [Error](crate::error::Error)) is returned.
+    /// or else a `TssError` (see [Error](crate::Error)) is returned.
     ///
     /// - A [TpmFormatZeroWarningResponseCode](crate::error::TpmFormatZeroWarningResponseCode) with a `Testing`
     ///   [TpmFormatZeroWarning](crate::constants::return_code::TpmFormatZeroWarning) indicates that the test
