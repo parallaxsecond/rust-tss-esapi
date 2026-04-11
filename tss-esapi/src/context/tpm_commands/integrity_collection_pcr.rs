@@ -93,7 +93,7 @@ impl Context {
                 Esys_PCR_Extend(
                     self.mut_context(),
                     pcr_handle.into(),
-                    self.optional_session_1(),
+                    self.required_session_1()?,
                     self.optional_session_2(),
                     self.optional_session_3(),
                     &digests.try_into()?,
@@ -243,7 +243,7 @@ impl Context {
                 Esys_PCR_Reset(
                     self.mut_context(),
                     pcr_handle.into(),
-                    self.optional_session_1(),
+                    self.required_session_1()?,
                     self.optional_session_2(),
                     self.optional_session_3(),
                 )

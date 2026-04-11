@@ -124,7 +124,7 @@ impl Context {
                 Esys_HMAC_Start(
                     self.mut_context(),
                     handle.into(),
-                    self.optional_session_1(),
+                    self.required_session_1()?,
                     self.optional_session_2(),
                     self.optional_session_3(),
                     &auth.unwrap_or_default().into(),
@@ -258,7 +258,7 @@ impl Context {
                 Esys_SequenceUpdate(
                     self.mut_context(),
                     sequence_handle.into(),
-                    self.optional_session_1(),
+                    self.required_session_1()?,
                     self.optional_session_2(),
                     self.optional_session_3(),
                     &data.into(),
@@ -289,7 +289,7 @@ impl Context {
                 Esys_SequenceComplete(
                     self.mut_context(),
                     sequence_handle.into(),
-                    self.optional_session_1(),
+                    self.required_session_1()?,
                     self.optional_session_2(),
                     self.optional_session_3(),
                     &data.into(),

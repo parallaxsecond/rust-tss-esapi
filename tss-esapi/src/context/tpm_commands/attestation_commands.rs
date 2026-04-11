@@ -400,7 +400,7 @@ impl Context {
                 Esys_Quote(
                     self.mut_context(),
                     signing_key_handle.into(),
-                    self.optional_session_1(),
+                    self.required_session_1()?,
                     self.optional_session_2(),
                     self.optional_session_3(),
                     &qualifying_data.into(),
