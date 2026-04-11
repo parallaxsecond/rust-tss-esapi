@@ -3,7 +3,7 @@
 use crate::Context;
 
 impl Context {
-    // Missing function: AC_GetCapability
-    // Missing function: AC_Send
-    // Missing function: Policy_AC_SendSelect
+    // Missing function: AC_GetCapability (requires TPM_AT, TPML_AC_CAPABILITIES wrappers)
+    // Missing function: AC_Send (requires TPMS_AC_OUTPUT wrapper)
+    // Missing function: Policy_AC_SendSelect (requires TPM2B_NAME mutable pointer handling)
 }

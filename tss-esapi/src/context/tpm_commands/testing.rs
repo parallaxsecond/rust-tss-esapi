@@ -1,10 +1,10 @@
 // Copyright 2021 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
 use crate::{
-    Context, Result, ReturnCode,
+    Context, Error, Result, ReturnCode, WrapperErrorKind,
     interface_types::YesNo,
     structures::MaxBuffer,
-    tss2_esys::{Esys_GetTestResult, Esys_SelfTest},
+    tss2_esys::{Esys_GetTestResult, Esys_IncrementalSelfTest, Esys_SelfTest, TPML_ALG},
 };
 use log::error;
 use std::convert::TryFrom;
@@ -29,7 +29,65 @@ impl Context {
         )
     }
 
-    // Missing function: incremental_self_test
+    /// Run an incremental self test on the selected algorithms.
+    ///
+    /// # Arguments
+    ///
+    /// * `to_test` - A list of algorithm IDs to test.
+    ///
+    /// # Details
+    ///
+    /// *From the specification*
+    /// > This command causes the TPM to perform a test of the selected algorithms.
+    ///
+    /// # Returns
+    ///
+    /// A list of algorithm IDs that still need to be tested.
+    ///
+    /// # Example
+    ///
+    /// ```rust, no_run
+    /// # use tss_esapi::{Context, TctiNameConf};
+    /// # let mut context =
+    /// #     Context::new(
+    /// #         TctiNameConf::from_environment_variable().expect("Failed to get TCTI"),
+    /// #     ).expect("Failed to create Context");
+    /// let to_do_list = context.incremental_self_test(&[]).unwrap();
+    /// ```
+    pub fn incremental_self_test(&mut self, to_test: &[u16]) -> Result<Vec<u16>> {
+        let mut tpml_alg = TPML_ALG {
+            count: to_test.len() as u32,
+            ..Default::default()
+        };
+        if to_test.len() > tpml_alg.algorithms.len() {
+            error!(
+                "Too many algorithms to test ({}), maximum is {}",
+                to_test.len(),
+                tpml_alg.algorithms.len()
+            );
+            return Err(Error::local_error(WrapperErrorKind::WrongParamSize));
+        }
+        tpml_alg.algorithms[..to_test.len()].copy_from_slice(to_test);
+
+        let mut to_do_list_ptr = null_mut();
+        ReturnCode::ensure_success(
+            unsafe {
+                Esys_IncrementalSelfTest(
+                    self.mut_context(),
+                    self.optional_session_1(),
+                    self.optional_session_2(),
+                    self.optional_session_3(),
+                    &tpml_alg,
+                    &mut to_do_list_ptr,
+                )
+            },
+            |ret| {
+                error!("Error in incremental self test: {:#010X}", ret);
+            },
+        )?;
+        let to_do_list = Context::ffi_data_to_owned(to_do_list_ptr)?;
+        Ok(to_do_list.algorithms[..to_do_list.count as usize].to_vec())
+    }
 
     /// Get the TPM self test result
     ///

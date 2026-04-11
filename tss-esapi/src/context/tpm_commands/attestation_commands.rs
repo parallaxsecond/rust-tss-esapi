@@ -2,12 +2,15 @@
 // SPDX-License-Identifier: Apache-2.0
 use crate::{
     Context, Result, ReturnCode,
-    handles::{KeyHandle, ObjectHandle},
+    handles::{KeyHandle, ObjectHandle, SessionHandle},
     structures::{
-        Attest, AttestBuffer, CreationTicket, Data, Digest, PcrSelectionList, Signature,
+        Attest, AttestBuffer, CreationTicket, Data, Digest, MaxBuffer, PcrSelectionList, Signature,
         SignatureScheme,
     },
-    tss2_esys::{Esys_Certify, Esys_CertifyCreation, Esys_GetTime, Esys_Quote},
+    tss2_esys::{
+        Esys_Certify, Esys_CertifyCreation, Esys_CertifyX509, Esys_GetCommandAuditDigest,
+        Esys_GetSessionAuditDigest, Esys_GetTime, Esys_Quote,
+    },
 };
 use log::error;
 use std::convert::TryFrom;
@@ -536,7 +539,227 @@ impl Context {
         ))
     }
 
-    // Missing function: GetSessionAuditDigest
-    // Missing function: GestCommandAuditDigest
-    // Missing function: CertifyX509
+    /// Get a signed attestation of a session audit digest.
+    ///
+    /// # Arguments
+    ///
+    /// * `privacy_admin_handle` - An [ObjectHandle] for the privacy administrator (Endorsement).
+    /// * `sign_handle` - A [KeyHandle] of the key used to sign the attestation.
+    /// * `session_handle` - A [SessionHandle] of the session to be audited.
+    /// * `qualifying_data` - [Data] to qualify the signing.
+    /// * `signing_scheme` - The [SignatureScheme] to use.
+    ///
+    /// # Details
+    ///
+    /// *From the specification*
+    /// > This command returns the current value of the session audit digest.
+    ///
+    /// # Returns
+    ///
+    /// A tuple of `(Attest, Signature)`.
+    ///
+    /// # Example
+    ///
+    /// ```rust, no_run
+    /// # use tss_esapi::{Context, TctiNameConf};
+    /// # use tss_esapi::handles::ObjectHandle;
+    /// # use tss_esapi::structures::{Data, SignatureScheme};
+    /// # let mut context =
+    /// #     Context::new(
+    /// #         TctiNameConf::from_environment_variable().expect("Failed to get TCTI"),
+    /// #     ).expect("Failed to create Context");
+    /// # // Assumes sign_handle is a loaded signing key and session_handle is an audit session
+    /// # // let (attest, sig) = context.get_session_audit_digest(
+    /// # //     ObjectHandle::Endorsement, sign_handle, session_handle,
+    /// # //     Data::default(), SignatureScheme::Null,
+    /// # // ).unwrap();
+    /// ```
+    pub fn get_session_audit_digest(
+        &mut self,
+        privacy_admin_handle: ObjectHandle,
+        sign_handle: KeyHandle,
+        session_handle: SessionHandle,
+        qualifying_data: Data,
+        signing_scheme: SignatureScheme,
+    ) -> Result<(Attest, Signature)> {
+        let mut audit_info_ptr = null_mut();
+        let mut signature_ptr = null_mut();
+        ReturnCode::ensure_success(
+            unsafe {
+                Esys_GetSessionAuditDigest(
+                    self.mut_context(),
+                    privacy_admin_handle.into(),
+                    sign_handle.into(),
+                    session_handle.into(),
+                    self.required_session_1()?,
+                    self.required_session_2()?,
+                    self.optional_session_3(),
+                    &qualifying_data.into(),
+                    &signing_scheme.into(),
+                    &mut audit_info_ptr,
+                    &mut signature_ptr,
+                )
+            },
+            |ret| {
+                error!("Error getting session audit digest: {:#010X}", ret);
+            },
+        )?;
+
+        let audit_info = Context::ffi_data_to_owned(audit_info_ptr)?;
+        let signature = Context::ffi_data_to_owned(signature_ptr)?;
+        Ok((
+            Attest::try_from(AttestBuffer::try_from(audit_info)?)?,
+            Signature::try_from(signature)?,
+        ))
+    }
+
+    /// Get a signed attestation of the command audit digest.
+    ///
+    /// # Arguments
+    ///
+    /// * `privacy_handle` - An [ObjectHandle] for the privacy administrator (Endorsement).
+    /// * `sign_handle` - A [KeyHandle] of the key used to sign the attestation.
+    /// * `qualifying_data` - [Data] to qualify the signing.
+    /// * `signing_scheme` - The [SignatureScheme] to use.
+    ///
+    /// # Details
+    ///
+    /// *From the specification*
+    /// > This command returns the current value of the command audit digest,
+    /// > a digest of the commands being audited, and the audit hash algorithm.
+    ///
+    /// # Returns
+    ///
+    /// A tuple of `(Attest, Signature)`.
+    ///
+    /// # Example
+    ///
+    /// ```rust, no_run
+    /// # use tss_esapi::{Context, TctiNameConf};
+    /// # use tss_esapi::handles::ObjectHandle;
+    /// # use tss_esapi::structures::{Data, SignatureScheme};
+    /// # let mut context =
+    /// #     Context::new(
+    /// #         TctiNameConf::from_environment_variable().expect("Failed to get TCTI"),
+    /// #     ).expect("Failed to create Context");
+    /// # // Assumes sign_handle is a loaded signing key
+    /// # // let (attest, sig) = context.get_command_audit_digest(
+    /// # //     ObjectHandle::Endorsement, sign_handle,
+    /// # //     Data::default(), SignatureScheme::Null,
+    /// # // ).unwrap();
+    /// ```
+    pub fn get_command_audit_digest(
+        &mut self,
+        privacy_handle: ObjectHandle,
+        sign_handle: KeyHandle,
+        qualifying_data: Data,
+        signing_scheme: SignatureScheme,
+    ) -> Result<(Attest, Signature)> {
+        let mut audit_info_ptr = null_mut();
+        let mut signature_ptr = null_mut();
+        ReturnCode::ensure_success(
+            unsafe {
+                Esys_GetCommandAuditDigest(
+                    self.mut_context(),
+                    privacy_handle.into(),
+                    sign_handle.into(),
+                    self.required_session_1()?,
+                    self.required_session_2()?,
+                    self.optional_session_3(),
+                    &qualifying_data.into(),
+                    &signing_scheme.into(),
+                    &mut audit_info_ptr,
+                    &mut signature_ptr,
+                )
+            },
+            |ret| {
+                error!("Error getting command audit digest: {:#010X}", ret);
+            },
+        )?;
+
+        let audit_info = Context::ffi_data_to_owned(audit_info_ptr)?;
+        let signature = Context::ffi_data_to_owned(signature_ptr)?;
+        Ok((
+            Attest::try_from(AttestBuffer::try_from(audit_info)?)?,
+            Signature::try_from(signature)?,
+        ))
+    }
+
+    /// Produce a signed X.509 certificate.
+    ///
+    /// # Arguments
+    ///
+    /// * `object_handle` - An [ObjectHandle] of the object to be certified.
+    /// * `sign_handle` - A [KeyHandle] of the key used to sign the certificate.
+    /// * `reserved` - Reserved for future use, should be an empty [Data].
+    /// * `signing_scheme` - The [SignatureScheme] to use.
+    /// * `partial_certificate` - A [MaxBuffer] containing the partial certificate.
+    ///
+    /// # Details
+    ///
+    /// *From the specification*
+    /// > The purpose of this command is to generate an X.509 certificate that
+    /// > proves an object with a specific public key and attributes is loaded
+    /// > in the TPM.
+    ///
+    /// # Returns
+    ///
+    /// A tuple of `(MaxBuffer, Digest, Signature)` containing the added-to-certificate
+    /// data, the TBS digest, and the signature.
+    ///
+    /// # Example
+    ///
+    /// ```rust, no_run
+    /// # use tss_esapi::{Context, TctiNameConf};
+    /// # use tss_esapi::handles::ObjectHandle;
+    /// # use tss_esapi::structures::{Data, MaxBuffer, SignatureScheme};
+    /// # let mut context =
+    /// #     Context::new(
+    /// #         TctiNameConf::from_environment_variable().expect("Failed to get TCTI"),
+    /// #     ).expect("Failed to create Context");
+    /// # // Assumes object_handle and sign_handle are properly set up
+    /// # // let (added, tbs_digest, sig) = context.certify_x509(
+    /// # //     object_handle, sign_handle, Data::default(),
+    /// # //     SignatureScheme::Null, MaxBuffer::default(),
+    /// # // ).unwrap();
+    /// ```
+    pub fn certify_x509(
+        &mut self,
+        object_handle: ObjectHandle,
+        sign_handle: KeyHandle,
+        reserved: Data,
+        signing_scheme: SignatureScheme,
+        partial_certificate: MaxBuffer,
+    ) -> Result<(MaxBuffer, Digest, Signature)> {
+        let mut added_to_certificate_ptr = null_mut();
+        let mut tbs_digest_ptr = null_mut();
+        let mut signature_ptr = null_mut();
+        ReturnCode::ensure_success(
+            unsafe {
+                Esys_CertifyX509(
+                    self.mut_context(),
+                    object_handle.into(),
+                    sign_handle.into(),
+                    self.required_session_1()?,
+                    self.optional_session_2(),
+                    self.optional_session_3(),
+                    &reserved.into(),
+                    &signing_scheme.into(),
+                    &partial_certificate.into(),
+                    &mut added_to_certificate_ptr,
+                    &mut tbs_digest_ptr,
+                    &mut signature_ptr,
+                )
+            },
+            |ret| {
+                error!("Error certifying X.509: {:#010X}", ret);
+            },
+        )?;
+
+        Ok((
+            MaxBuffer::try_from(Context::ffi_data_to_owned(added_to_certificate_ptr)?)?,
+            Digest::try_from(Context::ffi_data_to_owned(tbs_digest_ptr)?)?,
+            Signature::try_from(Context::ffi_data_to_owned(signature_ptr)?)?,
+        ))
+    }
 }

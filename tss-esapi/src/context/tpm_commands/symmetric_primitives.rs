@@ -372,5 +372,5 @@ impl Context {
         Digest::try_from(Context::ffi_data_to_owned(out_hmac_ptr)?)
     }
 
-    // Missing function: MAC
+    // Missing function: MAC (requires TPMI_ALG_MAC_SCHEME wrapper)
 }

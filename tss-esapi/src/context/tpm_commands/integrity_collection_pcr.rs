@@ -2,9 +2,13 @@
 // SPDX-License-Identifier: Apache-2.0
 use crate::{
     Context, Result, ReturnCode,
-    handles::PcrHandle,
-    structures::{DigestList, DigestValues, PcrSelectionList},
-    tss2_esys::{Esys_PCR_Extend, Esys_PCR_Read, Esys_PCR_Reset},
+    handles::{AuthHandle, PcrHandle},
+    interface_types::algorithm::HashingAlgorithm,
+    structures::{Auth, Digest, DigestList, DigestValues, MaxBuffer, PcrSelectionList},
+    tss2_esys::{
+        Esys_PCR_Allocate, Esys_PCR_Event, Esys_PCR_Extend, Esys_PCR_Read, Esys_PCR_Reset,
+        Esys_PCR_SetAuthPolicy, Esys_PCR_SetAuthValue, TPM2B_EVENT,
+    },
 };
 use log::error;
 use std::convert::{TryFrom, TryInto};
@@ -105,7 +109,87 @@ impl Context {
         )
     }
 
-    // Missing function: PCR_Event
+    /// Cause an event to be recorded in a PCR.
+    ///
+    /// # Arguments
+    ///
+    /// * `pcr_handle` - A [PcrHandle] of the PCR slot to extend.
+    /// * `event_data` - A [MaxBuffer] containing the event data.
+    ///
+    /// # Details
+    ///
+    /// *From the specification*
+    /// > This command is used to cause an update to the indicated PCR.
+    /// > The data in eventData is hashed using each of the implemented hash algorithms.
+    /// > For each PCR bank, pcrHandle is extended with the hash of eventData
+    /// > for that bank's algorithm.
+    ///
+    /// # Returns
+    ///
+    /// A [DigestValues] containing the digest of the event data for each implemented algorithm.
+    ///
+    /// # Example
+    ///
+    /// ```rust, no_run
+    /// # use tss_esapi::{Context, TctiNameConf};
+    /// # use tss_esapi::handles::PcrHandle;
+    /// # use tss_esapi::structures::MaxBuffer;
+    /// # let mut context =
+    /// #     Context::new(
+    /// #         TctiNameConf::from_environment_variable().expect("Failed to get TCTI"),
+    /// #     ).expect("Failed to create Context");
+    /// let data = MaxBuffer::from_bytes(&[1, 2, 3, 4]).unwrap();
+    /// let digests = context.pcr_event(PcrHandle::Pcr16, data).unwrap();
+    /// ```
+    pub fn pcr_event(
+        &mut self,
+        pcr_handle: PcrHandle,
+        event_data: MaxBuffer,
+    ) -> Result<DigestValues> {
+        let mut digests_ptr = null_mut();
+        let event_data_bytes = event_data.as_bytes();
+        let mut event = TPM2B_EVENT {
+            size: event_data_bytes.len() as u16,
+            ..Default::default()
+        };
+        event.buffer[..event_data_bytes.len()].copy_from_slice(event_data_bytes);
+        ReturnCode::ensure_success(
+            unsafe {
+                Esys_PCR_Event(
+                    self.mut_context(),
+                    pcr_handle.into(),
+                    self.required_session_1()?,
+                    self.optional_session_2(),
+                    self.optional_session_3(),
+                    &event,
+                    &mut digests_ptr,
+                )
+            },
+            |ret| {
+                error!("Error when performing PCR event: {:#010X}", ret);
+            },
+        )?;
+        let digests = Context::ffi_data_to_owned(digests_ptr)?;
+        let mut digest_values = DigestValues::new();
+        for i in 0..digests.count as usize {
+            let tpmt_ha = digests.digests[i];
+            let algorithm = HashingAlgorithm::try_from(tpmt_ha.hashAlg)?;
+            let digest = match algorithm {
+                HashingAlgorithm::Sha1 => Digest::from(unsafe { tpmt_ha.digest.sha1 }),
+                HashingAlgorithm::Sha256 => Digest::from(unsafe { tpmt_ha.digest.sha256 }),
+                HashingAlgorithm::Sha384 => Digest::from(unsafe { tpmt_ha.digest.sha384 }),
+                HashingAlgorithm::Sha512 => Digest::from(unsafe { tpmt_ha.digest.sha512 }),
+                HashingAlgorithm::Sm3_256 => Digest::from(unsafe { tpmt_ha.digest.sm3_256 }),
+                _ => {
+                    return Err(crate::Error::local_error(
+                        crate::WrapperErrorKind::WrongValueFromTpm,
+                    ));
+                }
+            };
+            digest_values.set(algorithm, digest);
+        }
+        Ok(digest_values)
+    }
 
     /// Reads the values of a PCR.
     ///
@@ -180,9 +264,181 @@ impl Context {
         ))
     }
 
-    // Missing function: PCR_Allocate
-    // Missing function: PCR_SetAuthPolicy
-    // Missing function: PCR_SetAuthValue
+    /// Allocate PCR banks.
+    ///
+    /// # Arguments
+    ///
+    /// * `auth_handle` - An [AuthHandle] for the platform hierarchy.
+    /// * `pcr_allocation` - A [PcrSelectionList] specifying the requested PCR allocation.
+    ///
+    /// # Details
+    ///
+    /// *From the specification*
+    /// > This command is used to set the desired PCR allocation of PCR and algorithms.
+    ///
+    /// # Returns
+    ///
+    /// A tuple of `(bool, u32, u32, u32)` representing:
+    /// * `allocation_success` - Whether the allocation was successful.
+    /// * `max_pcr` - Maximum number of PCR that may be in a bank.
+    /// * `size_needed` - Number of octets required to satisfy the request.
+    /// * `size_available` - Number of octets available (maximum size of NV).
+    ///
+    /// # Example
+    ///
+    /// ```rust, no_run
+    /// # use tss_esapi::{Context, TctiNameConf};
+    /// # use tss_esapi::handles::AuthHandle;
+    /// # use tss_esapi::interface_types::algorithm::HashingAlgorithm;
+    /// # use tss_esapi::structures::{PcrSelectionListBuilder, PcrSlot};
+    /// # let mut context =
+    /// #     Context::new(
+    /// #         TctiNameConf::from_environment_variable().expect("Failed to get TCTI"),
+    /// #     ).expect("Failed to create Context");
+    /// let pcr_allocation = PcrSelectionListBuilder::new()
+    ///     .with_selection(HashingAlgorithm::Sha256, &[PcrSlot::Slot0])
+    ///     .build()
+    ///     .unwrap();
+    /// let (success, max_pcr, size_needed, size_available) = context
+    ///     .pcr_allocate(AuthHandle::Platform, pcr_allocation)
+    ///     .unwrap();
+    /// ```
+    pub fn pcr_allocate(
+        &mut self,
+        auth_handle: AuthHandle,
+        pcr_allocation: PcrSelectionList,
+    ) -> Result<(bool, u32, u32, u32)> {
+        let mut allocation_success: u8 = 0;
+        let mut max_pcr: u32 = 0;
+        let mut size_needed: u32 = 0;
+        let mut size_available: u32 = 0;
+        ReturnCode::ensure_success(
+            unsafe {
+                Esys_PCR_Allocate(
+                    self.mut_context(),
+                    auth_handle.into(),
+                    self.required_session_1()?,
+                    self.optional_session_2(),
+                    self.optional_session_3(),
+                    &pcr_allocation.into(),
+                    &mut allocation_success,
+                    &mut max_pcr,
+                    &mut size_needed,
+                    &mut size_available,
+                )
+            },
+            |ret| {
+                error!("Error when allocating PCR: {:#010X}", ret);
+            },
+        )?;
+        Ok((
+            allocation_success != 0,
+            max_pcr,
+            size_needed,
+            size_available,
+        ))
+    }
+
+    /// Set the authorization policy for a PCR.
+    ///
+    /// # Arguments
+    ///
+    /// * `auth_handle` - An [AuthHandle] for the platform hierarchy.
+    /// * `auth_policy` - A [Digest] representing the authorization policy.
+    /// * `hash_algorithm` - The [HashingAlgorithm] of the policy.
+    /// * `pcr_handle` - A [PcrHandle] of the PCR to set the policy for.
+    ///
+    /// # Details
+    ///
+    /// *From the specification*
+    /// > This command is used to associate a policy with a PCR or group of PCR.
+    ///
+    /// # Example
+    ///
+    /// ```rust, no_run
+    /// # use tss_esapi::{Context, TctiNameConf};
+    /// # use tss_esapi::handles::{AuthHandle, PcrHandle};
+    /// # use tss_esapi::interface_types::algorithm::HashingAlgorithm;
+    /// # use tss_esapi::structures::Digest;
+    /// # let mut context =
+    /// #     Context::new(
+    /// #         TctiNameConf::from_environment_variable().expect("Failed to get TCTI"),
+    /// #     ).expect("Failed to create Context");
+    /// context.pcr_set_auth_policy(
+    ///     AuthHandle::Platform,
+    ///     Digest::default(),
+    ///     HashingAlgorithm::Sha256,
+    ///     PcrHandle::Pcr16,
+    /// ).unwrap();
+    /// ```
+    pub fn pcr_set_auth_policy(
+        &mut self,
+        auth_handle: AuthHandle,
+        auth_policy: Digest,
+        hash_algorithm: HashingAlgorithm,
+        pcr_handle: PcrHandle,
+    ) -> Result<()> {
+        ReturnCode::ensure_success(
+            unsafe {
+                Esys_PCR_SetAuthPolicy(
+                    self.mut_context(),
+                    auth_handle.into(),
+                    self.required_session_1()?,
+                    self.optional_session_2(),
+                    self.optional_session_3(),
+                    &auth_policy.into(),
+                    hash_algorithm.into(),
+                    pcr_handle.into(),
+                )
+            },
+            |ret| {
+                error!("Error when setting PCR auth policy: {:#010X}", ret);
+            },
+        )
+    }
+
+    /// Set the authorization value for a PCR.
+    ///
+    /// # Arguments
+    ///
+    /// * `pcr_handle` - A [PcrHandle] of the PCR to set the auth value for.
+    /// * `auth` - An [Auth] value for the PCR.
+    ///
+    /// # Details
+    ///
+    /// *From the specification*
+    /// > This command changes the authValue of a PCR or group of PCR.
+    ///
+    /// # Example
+    ///
+    /// ```rust, no_run
+    /// # use tss_esapi::{Context, TctiNameConf};
+    /// # use tss_esapi::handles::PcrHandle;
+    /// # use tss_esapi::structures::Auth;
+    /// # let mut context =
+    /// #     Context::new(
+    /// #         TctiNameConf::from_environment_variable().expect("Failed to get TCTI"),
+    /// #     ).expect("Failed to create Context");
+    /// let auth = Auth::from_bytes(&[1, 2, 3, 4]).unwrap();
+    /// context.pcr_set_auth_value(PcrHandle::Pcr16, auth).unwrap();
+    /// ```
+    pub fn pcr_set_auth_value(&mut self, pcr_handle: PcrHandle, auth: Auth) -> Result<()> {
+        ReturnCode::ensure_success(
+            unsafe {
+                Esys_PCR_SetAuthValue(
+                    self.mut_context(),
+                    pcr_handle.into(),
+                    self.required_session_1()?,
+                    self.optional_session_2(),
+                    self.optional_session_3(),
+                    &auth.into(),
+                )
+            },
+            |ret| {
+                error!("Error when setting PCR auth value: {:#010X}", ret);
+            },
+        )
+    }
 
     /// Resets the value in a PCR.
     ///
@@ -254,7 +510,7 @@ impl Context {
         )
     }
 
-    // Missing function: _TPM_Hash_Start
-    // Missing function: _TPM_Hash_Data
-    // Missing function: _TPM_Hash_End
+    // Missing function: _TPM_Hash_Start (platform-level indication, not an ESAPI command)
+    // Missing function: _TPM_Hash_Data (platform-level indication, not an ESAPI command)
+    // Missing function: _TPM_Hash_End (platform-level indication, not an ESAPI command)
 }

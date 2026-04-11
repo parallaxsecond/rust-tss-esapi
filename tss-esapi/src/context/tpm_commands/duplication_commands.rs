@@ -4,8 +4,8 @@ use crate::Context;
 use crate::{
     Result, ReturnCode,
     handles::ObjectHandle,
-    structures::{Data, EncryptedSecret, Private, Public, SymmetricDefinitionObject},
-    tss2_esys::{Esys_Duplicate, Esys_Import},
+    structures::{Data, EncryptedSecret, Name, Private, Public, SymmetricDefinitionObject},
+    tss2_esys::{Esys_Duplicate, Esys_Import, Esys_Rewrap},
 };
 use log::error;
 
@@ -333,7 +333,76 @@ impl Context {
         ))
     }
 
-    // Missing function: Rewrap
+    /// Re-wrap a key that is already duplicated to a new parent.
+    ///
+    /// # Arguments
+    ///
+    /// * `old_parent` - An [ObjectHandle] of the old parent.
+    /// * `new_parent` - An [ObjectHandle] of the new parent.
+    /// * `in_duplicate` - The [Private] data of the duplicated object.
+    /// * `name` - The [Name] of the object being re-wrapped.
+    /// * `in_sym_seed` - The [EncryptedSecret] seed for the symmetric key.
+    ///
+    /// # Details
+    ///
+    /// *From the specification*
+    /// > This command allows the TPM to serve in the role as an MA
+    /// > (Migration Authority).
+    ///
+    /// # Returns
+    ///
+    /// A tuple of `(Private, EncryptedSecret)` with the re-wrapped duplicate and new seed.
+    ///
+    /// # Example
+    ///
+    /// ```rust, no_run
+    /// # use tss_esapi::{Context, TctiNameConf};
+    /// # let mut context =
+    /// #     Context::new(
+    /// #         TctiNameConf::from_environment_variable().expect("Failed to get TCTI"),
+    /// #     ).expect("Failed to create Context");
+    /// # // Assumes old_parent, new_parent, in_duplicate, name, and in_sym_seed
+    /// # // are properly set up from a previous duplicate operation.
+    /// # // let (out_duplicate, out_sym_seed) = context.rewrap(
+    /// # //     old_parent, new_parent, in_duplicate, name, in_sym_seed,
+    /// # // ).unwrap();
+    /// ```
+    pub fn rewrap(
+        &mut self,
+        old_parent: ObjectHandle,
+        new_parent: ObjectHandle,
+        in_duplicate: Private,
+        name: Name,
+        in_sym_seed: EncryptedSecret,
+    ) -> Result<(Private, EncryptedSecret)> {
+        let mut out_duplicate_ptr = null_mut();
+        let mut out_sym_seed_ptr = null_mut();
+        ReturnCode::ensure_success(
+            unsafe {
+                Esys_Rewrap(
+                    self.mut_context(),
+                    old_parent.into(),
+                    new_parent.into(),
+                    self.required_session_1()?,
+                    self.optional_session_2(),
+                    self.optional_session_3(),
+                    &in_duplicate.into(),
+                    &name.into(),
+                    &in_sym_seed.into(),
+                    &mut out_duplicate_ptr,
+                    &mut out_sym_seed_ptr,
+                )
+            },
+            |ret| {
+                error!("Error when performing rewrap: {:#010X}", ret);
+            },
+        )?;
+
+        Ok((
+            Private::try_from(Context::ffi_data_to_owned(out_duplicate_ptr)?)?,
+            EncryptedSecret::try_from(Context::ffi_data_to_owned(out_sym_seed_ptr)?)?,
+        ))
+    }
 
     /// Import attaches imported object to a new parent.
     ///

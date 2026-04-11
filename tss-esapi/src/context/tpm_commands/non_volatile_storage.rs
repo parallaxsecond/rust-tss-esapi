@@ -3,12 +3,16 @@
 use crate::{
     Context, Result, ReturnCode,
     context::handle_manager::HandleDropAction,
-    handles::{AuthHandle, NvIndexHandle, ObjectHandle},
+    handles::{AuthHandle, KeyHandle, NvIndexHandle, ObjectHandle},
     interface_types::reserved_handles::{NvAuth, Provision},
-    structures::{Auth, MaxNvBuffer, Name, NvPublic},
+    structures::{
+        Attest, AttestBuffer, Auth, Data, MaxNvBuffer, Name, NvPublic, Signature, SignatureScheme,
+    },
     tss2_esys::{
-        Esys_NV_DefineSpace, Esys_NV_Extend, Esys_NV_Increment, Esys_NV_Read, Esys_NV_ReadPublic,
-        Esys_NV_UndefineSpace, Esys_NV_UndefineSpaceSpecial, Esys_NV_Write,
+        Esys_NV_Certify, Esys_NV_ChangeAuth, Esys_NV_DefineSpace, Esys_NV_Extend,
+        Esys_NV_GlobalWriteLock, Esys_NV_Increment, Esys_NV_Read, Esys_NV_ReadLock,
+        Esys_NV_ReadPublic, Esys_NV_SetBits, Esys_NV_UndefineSpace, Esys_NV_UndefineSpaceSpecial,
+        Esys_NV_Write, Esys_NV_WriteLock,
     },
 };
 use log::error;
@@ -808,9 +812,145 @@ impl Context {
         )
     }
 
-    // Missing function: NV_SetBits
-    // Missing function: NV_WriteLock
-    // Missing function: NV_GlobalWriteLock
+    /// Set bits in an NV index.
+    ///
+    /// # Arguments
+    ///
+    /// * `auth_handle` - The handle indicating the source of authorization value.
+    /// * `nv_index_handle` - The [NvIndexHandle] of the NV index.
+    /// * `bits` - The data to OR with the current contents.
+    ///
+    /// # Details
+    ///
+    /// *From the specification*
+    /// > This command is used to SET bits in an NV Index that was
+    /// > created as a bit field. Any number of bits from 0 to 64 may
+    /// > be SET. The contents of bits are ORed with the current contents
+    /// > of the NV Index.
+    ///
+    /// # Example
+    ///
+    /// ```rust, no_run
+    /// # use tss_esapi::{Context, TctiNameConf};
+    /// # use tss_esapi::interface_types::reserved_handles::NvAuth;
+    /// # let mut context =
+    /// #     Context::new(
+    /// #         TctiNameConf::from_environment_variable().expect("Failed to get TCTI"),
+    /// #     ).expect("Failed to create Context");
+    /// # // Assumes nv_index_handle is a defined NV index of type Bits
+    /// # // context.nv_set_bits(NvAuth::Owner, nv_index_handle, 0x01).unwrap();
+    /// ```
+    pub fn nv_set_bits(
+        &mut self,
+        auth_handle: NvAuth,
+        nv_index_handle: NvIndexHandle,
+        bits: u64,
+    ) -> Result<()> {
+        ReturnCode::ensure_success(
+            unsafe {
+                Esys_NV_SetBits(
+                    self.mut_context(),
+                    AuthHandle::from(auth_handle).into(),
+                    nv_index_handle.into(),
+                    self.required_session_1()?,
+                    self.optional_session_2(),
+                    self.optional_session_3(),
+                    bits,
+                )
+            },
+            |ret| {
+                error!("Error when setting NV bits: {:#010X}", ret);
+            },
+        )
+    }
+
+    /// Write-lock an NV index.
+    ///
+    /// # Arguments
+    ///
+    /// * `auth_handle` - The handle indicating the source of authorization value.
+    /// * `nv_index_handle` - The [NvIndexHandle] of the NV index.
+    ///
+    /// # Details
+    ///
+    /// *From the specification*
+    /// > If the TPMA_NV_WRITEDEFINE or TPMA_NV_WRITE_STCLEAR attribute of
+    /// > the NV Index is SET, then this command may be used to inhibit
+    /// > further writes of the NV Index.
+    ///
+    /// # Example
+    ///
+    /// ```rust, no_run
+    /// # use tss_esapi::{Context, TctiNameConf};
+    /// # use tss_esapi::interface_types::reserved_handles::NvAuth;
+    /// # let mut context =
+    /// #     Context::new(
+    /// #         TctiNameConf::from_environment_variable().expect("Failed to get TCTI"),
+    /// #     ).expect("Failed to create Context");
+    /// # // Assumes nv_index_handle is a defined NV index with TPMA_NV_WRITE_STCLEAR
+    /// # // context.nv_write_lock(NvAuth::Owner, nv_index_handle).unwrap();
+    /// ```
+    pub fn nv_write_lock(
+        &mut self,
+        auth_handle: NvAuth,
+        nv_index_handle: NvIndexHandle,
+    ) -> Result<()> {
+        ReturnCode::ensure_success(
+            unsafe {
+                Esys_NV_WriteLock(
+                    self.mut_context(),
+                    AuthHandle::from(auth_handle).into(),
+                    nv_index_handle.into(),
+                    self.required_session_1()?,
+                    self.optional_session_2(),
+                    self.optional_session_3(),
+                )
+            },
+            |ret| {
+                error!("Error when write-locking NV index: {:#010X}", ret);
+            },
+        )
+    }
+
+    /// Apply a global lock on NV write.
+    ///
+    /// # Arguments
+    ///
+    /// * `auth_handle` - An [AuthHandle] for the authorization (Platform hierarchy).
+    ///
+    /// # Details
+    ///
+    /// *From the specification*
+    /// > This command will SET TPMA_NV_WRITELOCKED for all indexes that have
+    /// > their TPMA_NV_GLOBALLOCK attribute SET.
+    ///
+    /// # Example
+    ///
+    /// ```rust, no_run
+    /// # use tss_esapi::{Context, TctiNameConf};
+    /// # use tss_esapi::handles::AuthHandle;
+    /// # let mut context =
+    /// #     Context::new(
+    /// #         TctiNameConf::from_environment_variable().expect("Failed to get TCTI"),
+    /// #     ).expect("Failed to create Context");
+    /// context.nv_global_write_lock(AuthHandle::Owner).unwrap();
+    /// ```
+    pub fn nv_global_write_lock(&mut self, auth_handle: AuthHandle) -> Result<()> {
+        ReturnCode::ensure_success(
+            unsafe {
+                Esys_NV_GlobalWriteLock(
+                    self.mut_context(),
+                    auth_handle.into(),
+                    self.required_session_1()?,
+                    self.optional_session_2(),
+                    self.optional_session_3(),
+                )
+            },
+            |ret| {
+                error!("Error when globally write-locking NV: {:#010X}", ret);
+            },
+        )
+    }
 
     /// Reads data from the nv index.
     ///
@@ -937,7 +1077,174 @@ impl Context {
         MaxNvBuffer::try_from(Context::ffi_data_to_owned(data_ptr)?)
     }
 
-    // Missing function: NV_ReadLock
-    // Missing function: NV_ChangeAuth
-    // Missing function: NV_Certify
+    /// Read-lock an NV index.
+    ///
+    /// # Arguments
+    ///
+    /// * `auth_handle` - The handle indicating the source of authorization value.
+    /// * `nv_index_handle` - The [NvIndexHandle] of the NV index.
+    ///
+    /// # Details
+    ///
+    /// *From the specification*
+    /// > If TPMA_NV_READ_STCLEAR is SET in an Index, then this command
+    /// > may be used to prevent further reads of the NV Index until
+    /// > the next TPM2_Startup (TPM_SU_CLEAR).
+    ///
+    /// # Example
+    ///
+    /// ```rust, no_run
+    /// # use tss_esapi::{Context, TctiNameConf};
+    /// # use tss_esapi::interface_types::reserved_handles::NvAuth;
+    /// # let mut context =
+    /// #     Context::new(
+    /// #         TctiNameConf::from_environment_variable().expect("Failed to get TCTI"),
+    /// #     ).expect("Failed to create Context");
+    /// # // Assumes nv_index_handle is a defined NV index with TPMA_NV_READ_STCLEAR
+    /// # // context.nv_read_lock(NvAuth::Owner, nv_index_handle).unwrap();
+    /// ```
+    pub fn nv_read_lock(
+        &mut self,
+        auth_handle: NvAuth,
+        nv_index_handle: NvIndexHandle,
+    ) -> Result<()> {
+        ReturnCode::ensure_success(
+            unsafe {
+                Esys_NV_ReadLock(
+                    self.mut_context(),
+                    AuthHandle::from(auth_handle).into(),
+                    nv_index_handle.into(),
+                    self.required_session_1()?,
+                    self.optional_session_2(),
+                    self.optional_session_3(),
+                )
+            },
+            |ret| {
+                error!("Error when read-locking NV index: {:#010X}", ret);
+            },
+        )
+    }
+
+    /// Change the authorization value for an NV index.
+    ///
+    /// # Arguments
+    ///
+    /// * `nv_index_handle` - The [NvIndexHandle] of the NV index.
+    /// * `new_auth` - The new authorization [Auth] value.
+    ///
+    /// # Details
+    ///
+    /// *From the specification*
+    /// > This command allows the authorization secret for an NV Index
+    /// > to be changed.
+    ///
+    /// # Example
+    ///
+    /// ```rust, no_run
+    /// # use tss_esapi::{Context, TctiNameConf};
+    /// # use tss_esapi::structures::Auth;
+    /// # let mut context =
+    /// #     Context::new(
+    /// #         TctiNameConf::from_environment_variable().expect("Failed to get TCTI"),
+    /// #     ).expect("Failed to create Context");
+    /// # // Assumes nv_index_handle is a defined NV index
+    /// # // let new_auth = Auth::from_bytes(&[1, 2, 3, 4]).unwrap();
+    /// # // context.nv_change_auth(nv_index_handle, new_auth).unwrap();
+    /// ```
+    pub fn nv_change_auth(&mut self, nv_index_handle: NvIndexHandle, new_auth: Auth) -> Result<()> {
+        ReturnCode::ensure_success(
+            unsafe {
+                Esys_NV_ChangeAuth(
+                    self.mut_context(),
+                    nv_index_handle.into(),
+                    self.required_session_1()?,
+                    self.optional_session_2(),
+                    self.optional_session_3(),
+                    &new_auth.into(),
+                )
+            },
+            |ret| {
+                error!("Error when changing NV auth: {:#010X}", ret);
+            },
+        )
+    }
+
+    /// Certify the contents of an NV index.
+    ///
+    /// # Arguments
+    ///
+    /// * `sign_handle` - A [KeyHandle] of the key used to sign the attestation structure.
+    /// * `auth_handle` - The handle indicating the source of authorization value for the NV index.
+    /// * `nv_index_handle` - The [NvIndexHandle] of the NV index to be certified.
+    /// * `qualifying_data` - [Data] to qualify the signing.
+    /// * `signing_scheme` - The [SignatureScheme] to use for signing.
+    /// * `size` - Number of octets to certify.
+    /// * `offset` - Octet offset into the NV area.
+    ///
+    /// # Details
+    ///
+    /// *From the specification*
+    /// > The purpose of this command is to certify the contents of an
+    /// > NV Index or portion of an NV Index.
+    ///
+    /// # Returns
+    ///
+    /// A tuple of `(Attest, Signature)`.
+    ///
+    /// # Example
+    ///
+    /// ```rust, no_run
+    /// # use tss_esapi::{Context, TctiNameConf};
+    /// # use tss_esapi::structures::{Data, SignatureScheme};
+    /// # let mut context =
+    /// #     Context::new(
+    /// #         TctiNameConf::from_environment_variable().expect("Failed to get TCTI"),
+    /// #     ).expect("Failed to create Context");
+    /// # // Assumes sign_handle and nv_index_handle are properly set up
+    /// # // let (attest, sig) = context.nv_certify(
+    /// # //     sign_handle, NvAuth::Owner, nv_index_handle,
+    /// # //     Data::default(), SignatureScheme::Null, 32, 0,
+    /// # // ).unwrap();
+    /// ```
+    // TODO: Fix when compacting the arguments into a struct
+    #[allow(clippy::too_many_arguments)]
+    pub fn nv_certify(
+        &mut self,
+        sign_handle: KeyHandle,
+        auth_handle: NvAuth,
+        nv_index_handle: NvIndexHandle,
+        qualifying_data: Data,
+        signing_scheme: SignatureScheme,
+        size: u16,
+        offset: u16,
+    ) -> Result<(Attest, Signature)> {
+        let mut certify_info_ptr = null_mut();
+        let mut signature_ptr = null_mut();
+        ReturnCode::ensure_success(
+            unsafe {
+                Esys_NV_Certify(
+                    self.mut_context(),
+                    sign_handle.into(),
+                    AuthHandle::from(auth_handle).into(),
+                    nv_index_handle.into(),
+                    self.required_session_1()?,
+                    self.required_session_2()?,
+                    self.optional_session_3(),
+                    &qualifying_data.into(),
+                    &signing_scheme.into(),
+                    size,
+                    offset,
+                    &mut certify_info_ptr,
+                    &mut signature_ptr,
+                )
+            },
+            |ret| {
+                error!("Error when certifying NV: {:#010X}", ret);
+            },
+        )?;
+
+        let certify_info = AttestBuffer::try_from(Context::ffi_data_to_owned(certify_info_ptr)?)?;
+        let signature = Signature::try_from(Context::ffi_data_to_owned(signature_ptr)?)?;
+        Ok((certify_info.try_into()?, signature))
+    }
 }

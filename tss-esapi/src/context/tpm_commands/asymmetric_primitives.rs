@@ -3,9 +3,13 @@
 use crate::{
     Context, Result, ReturnCode,
     handles::KeyHandle,
+    interface_types::{algorithm::EccKeyExchangeAlgorithm, ecc::EccCurve},
     structures::Data,
-    structures::{EccPoint, PublicKeyRsa, RsaDecryptionScheme},
-    tss2_esys::{Esys_ECDH_KeyGen, Esys_ECDH_ZGen, Esys_RSA_Decrypt, Esys_RSA_Encrypt},
+    structures::{EccParameterDetails, EccPoint, PublicKeyRsa, RsaDecryptionScheme},
+    tss2_esys::{
+        Esys_ECC_Parameters, Esys_ECDH_KeyGen, Esys_ECDH_ZGen, Esys_RSA_Decrypt, Esys_RSA_Encrypt,
+        Esys_ZGen_2Phase,
+    },
 };
 use log::error;
 use std::ptr::null_mut;
@@ -603,6 +607,127 @@ impl Context {
         EccPoint::try_from(out_point.point)
     }
 
-    // Missing function: ECC_Parameters
-    // Missing function: ZGen_2Phase
+    /// Get the parameters of an ECC curve.
+    ///
+    /// # Arguments
+    ///
+    /// * `curve` - The [EccCurve] to query.
+    ///
+    /// # Details
+    ///
+    /// *From the specification*
+    /// > This command returns the parameters of an ECC curve identified
+    /// > by its TCG-assigned curveID.
+    ///
+    /// # Returns
+    ///
+    /// An [EccParameterDetails] containing the curve parameters.
+    ///
+    /// # Example
+    ///
+    /// ```rust, no_run
+    /// # use tss_esapi::{Context, TctiNameConf};
+    /// use tss_esapi::interface_types::ecc::EccCurve;
+    /// # let mut context =
+    /// #     Context::new(
+    /// #         TctiNameConf::from_environment_variable().expect("Failed to get TCTI"),
+    /// #     ).expect("Failed to create Context");
+    /// let details = context.ecc_parameters(EccCurve::NistP256).unwrap();
+    /// assert_eq!(details.curve_id(), EccCurve::NistP256);
+    /// assert!(details.key_size() > 0);
+    /// ```
+    pub fn ecc_parameters(&mut self, curve: EccCurve) -> Result<EccParameterDetails> {
+        let mut parameters_ptr = null_mut();
+        ReturnCode::ensure_success(
+            unsafe {
+                Esys_ECC_Parameters(
+                    self.mut_context(),
+                    self.optional_session_1(),
+                    self.optional_session_2(),
+                    self.optional_session_3(),
+                    curve.into(),
+                    &mut parameters_ptr,
+                )
+            },
+            |ret| {
+                error!("Error when getting ECC parameters: {:#010X}", ret);
+            },
+        )?;
+        EccParameterDetails::try_from(Context::ffi_data_to_owned(parameters_ptr)?)
+    }
+
+    /// Perform a two-phase ECC key exchange.
+    ///
+    /// # Arguments
+    ///
+    /// * `key_handle` - A [KeyHandle] of the ECC key (Party A).
+    /// * `in_qs_b` - The static public key of Party B as an [EccPoint].
+    /// * `in_qe_b` - The ephemeral public key of Party B as an [EccPoint].
+    /// * `in_scheme` - The key exchange protocol as an [EccKeyExchangeAlgorithm].
+    /// * `counter` - The commit counter from the TPM.
+    ///
+    /// # Details
+    ///
+    /// *From the specification*
+    /// > This command supports two-phase key exchange protocols. The
+    /// > command is used in combination with TPM2_EC_Ephemeral().
+    ///
+    /// # Returns
+    ///
+    /// A tuple of `(EccPoint, EccPoint)` representing `(outZ1, outZ2)`.
+    ///
+    /// # Example
+    ///
+    /// ```rust, no_run
+    /// # use tss_esapi::{Context, TctiNameConf};
+    /// # let mut context =
+    /// #     Context::new(
+    /// #         TctiNameConf::from_environment_variable().expect("Failed to get TCTI"),
+    /// #     ).expect("Failed to create Context");
+    /// # // Assumes key_handle is a loaded ECC key, in_qs_b and in_qe_b are
+    /// # // Party B's static and ephemeral public keys, and counter is from
+    /// # // a prior ec_ephemeral() call.
+    /// # // let (out_z1, out_z2) = context.zgen_2phase(
+    /// # //     key_handle, in_qs_b, in_qe_b,
+    /// # //     EccKeyExchangeAlgorithm::EcDh, counter,
+    /// # // ).unwrap();
+    /// ```
+    pub fn zgen_2phase(
+        &mut self,
+        key_handle: KeyHandle,
+        in_qs_b: EccPoint,
+        in_qe_b: EccPoint,
+        in_scheme: EccKeyExchangeAlgorithm,
+        counter: u16,
+    ) -> Result<(EccPoint, EccPoint)> {
+        let mut out_z1_ptr = null_mut();
+        let mut out_z2_ptr = null_mut();
+        ReturnCode::ensure_success(
+            unsafe {
+                Esys_ZGen_2Phase(
+                    self.mut_context(),
+                    key_handle.into(),
+                    self.required_session_1()?,
+                    self.optional_session_2(),
+                    self.optional_session_3(),
+                    &in_qs_b.into(),
+                    &in_qe_b.into(),
+                    in_scheme.into(),
+                    counter,
+                    &mut out_z1_ptr,
+                    &mut out_z2_ptr,
+                )
+            },
+            |ret| {
+                error!("Error in ZGen_2Phase: {:#010X}", ret);
+            },
+        )?;
+
+        let out_z1 = Context::ffi_data_to_owned(out_z1_ptr)?;
+        let out_z2 = Context::ffi_data_to_owned(out_z2_ptr)?;
+        Ok((
+            EccPoint::try_from(out_z1.point)?,
+            EccPoint::try_from(out_z2.point)?,
+        ))
+    }
 }

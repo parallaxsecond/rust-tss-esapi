@@ -4,12 +4,15 @@ use crate::{
     Context, Result, ReturnCode,
     context::handle_manager::HandleDropAction,
     handles::{AuthHandle, KeyHandle, ObjectHandle},
-    interface_types::{YesNo, reserved_handles::Hierarchy},
+    interface_types::{YesNo, algorithm::HashingAlgorithm, reserved_handles::Hierarchy},
     structures::{
         Auth, CreatePrimaryKeyResult, CreationData, CreationTicket, Data, Digest, PcrSelectionList,
         Public, SensitiveCreate, SensitiveData,
     },
-    tss2_esys::{Esys_Clear, Esys_ClearControl, Esys_CreatePrimary, Esys_HierarchyChangeAuth},
+    tss2_esys::{
+        Esys_ChangeEPS, Esys_ChangePPS, Esys_Clear, Esys_ClearControl, Esys_CreatePrimary,
+        Esys_HierarchyChangeAuth, Esys_HierarchyControl, Esys_SetPrimaryPolicy,
+    },
 };
 use log::error;
 use std::convert::{TryFrom, TryInto};
@@ -87,10 +90,194 @@ impl Context {
         })
     }
 
-    // Missing function: HierarchyControl
-    // Missing function: SetPrimaryPolicy
-    // Missing function: ChangePPS
-    // Missing function: ChangeEPS
+    /// Enable or disable use of a hierarchy and its associated NV storage.
+    ///
+    /// # Arguments
+    ///
+    /// * `auth_handle` - An [AuthHandle] for the authorization.
+    /// * `enable` - An [ObjectHandle] of the hierarchy to be enabled or disabled.
+    /// * `state` - `true` to enable, `false` to disable.
+    ///
+    /// # Details
+    ///
+    /// *From the specification*
+    /// > This command allows a platform specific hierarchy to be disabled or
+    /// > to enable use of a hierarchy and its associated NV storage.
+    ///
+    /// # Example
+    ///
+    /// ```rust, no_run
+    /// # use tss_esapi::{Context, TctiNameConf};
+    /// # use tss_esapi::handles::AuthHandle;
+    /// # use tss_esapi::interface_types::reserved_handles::Hierarchy;
+    /// # let mut context =
+    /// #     Context::new(
+    /// #         TctiNameConf::from_environment_variable().expect("Failed to get TCTI"),
+    /// #     ).expect("Failed to create Context");
+    /// // Disable the null hierarchy
+    /// context.hierarchy_control(AuthHandle::Platform, Hierarchy::Null.into(), false).unwrap();
+    /// // Re-enable it
+    /// context.hierarchy_control(AuthHandle::Platform, Hierarchy::Null.into(), true).unwrap();
+    /// ```
+    pub fn hierarchy_control(
+        &mut self,
+        auth_handle: AuthHandle,
+        enable: ObjectHandle,
+        state: bool,
+    ) -> Result<()> {
+        ReturnCode::ensure_success(
+            unsafe {
+                Esys_HierarchyControl(
+                    self.mut_context(),
+                    auth_handle.into(),
+                    self.required_session_1()?,
+                    self.optional_session_2(),
+                    self.optional_session_3(),
+                    enable.into(),
+                    YesNo::from(state).into(),
+                )
+            },
+            |ret| {
+                error!("Error in hierarchy control: {:#010X}", ret);
+            },
+        )
+    }
+
+    /// Set the authorization policy for a hierarchy.
+    ///
+    /// # Arguments
+    ///
+    /// * `auth_handle` - An [AuthHandle] for the authorization.
+    /// * `auth_policy` - A [Digest] representing the authorization policy.
+    /// * `hash_algorithm` - The [HashingAlgorithm] used to compute the policy digest.
+    ///
+    /// # Details
+    ///
+    /// *From the specification*
+    /// > This command allows the authorization secret for a hierarchy or lockout
+    /// > to be changed using the current policy.
+    ///
+    /// # Example
+    ///
+    /// ```rust, no_run
+    /// # use tss_esapi::{Context, TctiNameConf};
+    /// # use tss_esapi::handles::AuthHandle;
+    /// # use tss_esapi::interface_types::algorithm::HashingAlgorithm;
+    /// # use tss_esapi::structures::Digest;
+    /// # let mut context =
+    /// #     Context::new(
+    /// #         TctiNameConf::from_environment_variable().expect("Failed to get TCTI"),
+    /// #     ).expect("Failed to create Context");
+    /// context.set_primary_policy(
+    ///     AuthHandle::Platform,
+    ///     Digest::default(),
+    ///     HashingAlgorithm::Sha256,
+    /// ).unwrap();
+    /// ```
+    pub fn set_primary_policy(
+        &mut self,
+        auth_handle: AuthHandle,
+        auth_policy: Digest,
+        hash_algorithm: HashingAlgorithm,
+    ) -> Result<()> {
+        ReturnCode::ensure_success(
+            unsafe {
+                Esys_SetPrimaryPolicy(
+                    self.mut_context(),
+                    auth_handle.into(),
+                    self.required_session_1()?,
+                    self.optional_session_2(),
+                    self.optional_session_3(),
+                    &auth_policy.into(),
+                    hash_algorithm.into(),
+                )
+            },
+            |ret| {
+                error!("Error setting primary policy: {:#010X}", ret);
+            },
+        )
+    }
+
+    /// Change the platform primary seed.
+    ///
+    /// # Arguments
+    ///
+    /// * `auth_handle` - An [AuthHandle] for the platform hierarchy authorization.
+    ///
+    /// # Details
+    ///
+    /// *From the specification*
+    /// > This replaces the current PPS with a value from the RNG and sets
+    /// > platformPolicy to the default initialization value (the Empty Buffer).
+    ///
+    /// # Example
+    ///
+    /// ```rust, no_run
+    /// # use tss_esapi::{Context, TctiNameConf};
+    /// # use tss_esapi::handles::AuthHandle;
+    /// # let mut context =
+    /// #     Context::new(
+    /// #         TctiNameConf::from_environment_variable().expect("Failed to get TCTI"),
+    /// #     ).expect("Failed to create Context");
+    /// context.change_pps(AuthHandle::Platform).unwrap();
+    /// ```
+    pub fn change_pps(&mut self, auth_handle: AuthHandle) -> Result<()> {
+        ReturnCode::ensure_success(
+            unsafe {
+                Esys_ChangePPS(
+                    self.mut_context(),
+                    auth_handle.into(),
+                    self.required_session_1()?,
+                    self.optional_session_2(),
+                    self.optional_session_3(),
+                )
+            },
+            |ret| {
+                error!("Error changing PPS: {:#010X}", ret);
+            },
+        )
+    }
+
+    /// Change the endorsement primary seed.
+    ///
+    /// # Arguments
+    ///
+    /// * `auth_handle` - An [AuthHandle] for the platform hierarchy authorization.
+    ///
+    /// # Details
+    ///
+    /// *From the specification*
+    /// > This replaces the current EPS with a value from the RNG and sets
+    /// > the attributes of the Endorsement hierarchy to their default
+    /// > initialization values.
+    ///
+    /// # Example
+    ///
+    /// ```rust, no_run
+    /// # use tss_esapi::{Context, TctiNameConf};
+    /// # use tss_esapi::handles::AuthHandle;
+    /// # let mut context =
+    /// #     Context::new(
+    /// #         TctiNameConf::from_environment_variable().expect("Failed to get TCTI"),
+    /// #     ).expect("Failed to create Context");
+    /// context.change_eps(AuthHandle::Platform).unwrap();
+    /// ```
+    pub fn change_eps(&mut self, auth_handle: AuthHandle) -> Result<()> {
+        ReturnCode::ensure_success(
+            unsafe {
+                Esys_ChangeEPS(
+                    self.mut_context(),
+                    auth_handle.into(),
+                    self.required_session_1()?,
+                    self.optional_session_2(),
+                    self.optional_session_3(),
+                )
+            },
+            |ret| {
+                error!("Error changing EPS: {:#010X}", ret);
+            },
+        )
+    }
 
     /// Clear all TPM context associated with a specific Owner
     pub fn clear(&mut self, auth_handle: AuthHandle) -> Result<()> {

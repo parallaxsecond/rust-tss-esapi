@@ -5,17 +5,20 @@ use crate::{
     attributes::LocalityAttributes,
     constants::CommandCode,
     handles::{AuthHandle, NvIndexHandle, ObjectHandle, SessionHandle},
-    interface_types::{YesNo, reserved_handles::NvAuth, session_handles::PolicySession},
+    interface_types::{
+        ArithmeticComparison, YesNo, reserved_handles::NvAuth, session_handles::PolicySession,
+    },
     structures::{
         AuthTicket, Digest, DigestList, Name, Nonce, PcrSelectionList, Signature, Timeout,
         VerifiedTicket,
     },
     tss2_esys::{
         Esys_PolicyAuthValue, Esys_PolicyAuthorize, Esys_PolicyAuthorizeNV, Esys_PolicyCommandCode,
-        Esys_PolicyCpHash, Esys_PolicyDuplicationSelect, Esys_PolicyGetDigest, Esys_PolicyLocality,
-        Esys_PolicyNameHash, Esys_PolicyNvWritten, Esys_PolicyOR, Esys_PolicyPCR,
-        Esys_PolicyPassword, Esys_PolicyPhysicalPresence, Esys_PolicySecret, Esys_PolicySigned,
-        Esys_PolicyTemplate,
+        Esys_PolicyCounterTimer, Esys_PolicyCpHash, Esys_PolicyDuplicationSelect,
+        Esys_PolicyGetDigest, Esys_PolicyLocality, Esys_PolicyNV, Esys_PolicyNameHash,
+        Esys_PolicyNvWritten, Esys_PolicyOR, Esys_PolicyPCR, Esys_PolicyPassword,
+        Esys_PolicyPhysicalPresence, Esys_PolicySecret, Esys_PolicySigned, Esys_PolicyTemplate,
+        Esys_PolicyTicket,
     },
 };
 use log::error;
@@ -111,7 +114,69 @@ impl Context {
         ))
     }
 
-    // Missing function: PolicyTicket
+    /// Include a policy ticket in the policy evaluation.
+    ///
+    /// # Arguments
+    ///
+    /// * `policy_session` - The [PolicySession] being extended.
+    /// * `timeout` - The [Timeout] from a previous policy command.
+    /// * `cp_hash_a` - A [Digest] of the command parameters for the command being authorized.
+    /// * `policy_ref` - A [Nonce] associated with the policy.
+    /// * `auth_name` - The [Name] of the entity that provided the authorization.
+    /// * `ticket` - The [AuthTicket] produced by a previous policy command.
+    ///
+    /// # Details
+    ///
+    /// *From the specification*
+    /// > This command is similar to TPM2_PolicySigned() except that it takes a
+    /// > ticket instead of a signed authorization. The ticket represents a
+    /// > verified authorization that had an expiration time associated with it.
+    ///
+    /// # Example
+    ///
+    /// ```rust, no_run
+    /// # use tss_esapi::{Context, TctiNameConf};
+    /// # use tss_esapi::interface_types::session_handles::PolicySession;
+    /// # use tss_esapi::structures::{AuthTicket, Digest, Name, Nonce, Timeout};
+    /// # let mut context =
+    /// #     Context::new(
+    /// #         TctiNameConf::from_environment_variable().expect("Failed to get TCTI"),
+    /// #     ).expect("Failed to create Context");
+    /// # // Assumes policy_session, timeout, and ticket are from a prior policy command
+    /// # // context.policy_ticket(
+    /// # //     policy_session, timeout, Digest::default(),
+    /// # //     Nonce::default(), auth_name, ticket,
+    /// # // ).unwrap();
+    /// ```
+    pub fn policy_ticket(
+        &mut self,
+        policy_session: PolicySession,
+        timeout: Timeout,
+        cp_hash_a: Digest,
+        policy_ref: Nonce,
+        auth_name: Name,
+        ticket: AuthTicket,
+    ) -> Result<()> {
+        ReturnCode::ensure_success(
+            unsafe {
+                Esys_PolicyTicket(
+                    self.mut_context(),
+                    SessionHandle::from(policy_session).into(),
+                    self.optional_session_1(),
+                    self.optional_session_2(),
+                    self.optional_session_3(),
+                    &timeout.into(),
+                    &cp_hash_a.into(),
+                    &policy_ref.into(),
+                    &auth_name.into(),
+                    &ticket.try_into()?,
+                )
+            },
+            |ret| {
+                error!("Error when computing policy ticket: {:#010X}", ret);
+            },
+        )
+    }
 
     /// Cause conditional gating of a policy based on an OR'd condition.
     ///
@@ -216,8 +281,141 @@ impl Context {
         )
     }
 
-    // Missing function: PolicyNV
-    // Missing function: PolicyCounterTimer
+    /// Cause conditional gating of a policy based on the contents of an NV index.
+    ///
+    /// # Arguments
+    ///
+    /// * `policy_session` - The [PolicySession] being extended.
+    /// * `auth_handle` - Handle indicating the source of authorization for the NV index.
+    /// * `nv_index_handle` - The [NvIndexHandle] of the NV index to check.
+    /// * `operand_b` - A [Digest] used as the second operand in the comparison.
+    /// * `offset` - The offset in the NV index for starting the operand.
+    /// * `operation` - The [ArithmeticComparison] operation.
+    ///
+    /// # Details
+    ///
+    /// *From the specification*
+    /// > This command is used to cause conditional gating of a policy based
+    /// > on the contents of an NV Index.
+    ///
+    /// # Example
+    ///
+    /// ```rust, no_run
+    /// # use tss_esapi::{Context, TctiNameConf};
+    /// # use tss_esapi::handles::NvIndexHandle;
+    /// # use tss_esapi::interface_types::{
+    /// #     ArithmeticComparison,
+    /// #     reserved_handles::NvAuth,
+    /// #     session_handles::PolicySession,
+    /// # };
+    /// # use tss_esapi::structures::Digest;
+    /// # let mut context =
+    /// #     Context::new(
+    /// #         TctiNameConf::from_environment_variable().expect("Failed to get TCTI"),
+    /// #     ).expect("Failed to create Context");
+    /// # // Assumes policy_session and nv_index_handle are properly set up
+    /// # // let operand = Digest::try_from(vec![0u8; 8]).unwrap();
+    /// # // context.policy_nv(
+    /// # //     policy_session, NvAuth::Owner, nv_index_handle,
+    /// # //     operand, 0, ArithmeticComparison::UnsignedEq,
+    /// # // ).unwrap();
+    /// ```
+    // TODO: Fix when compacting the arguments into a struct
+    #[allow(clippy::too_many_arguments)]
+    pub fn policy_nv(
+        &mut self,
+        policy_session: PolicySession,
+        auth_handle: NvAuth,
+        nv_index_handle: NvIndexHandle,
+        operand_b: Digest,
+        offset: u16,
+        operation: ArithmeticComparison,
+    ) -> Result<()> {
+        ReturnCode::ensure_success(
+            unsafe {
+                Esys_PolicyNV(
+                    self.mut_context(),
+                    AuthHandle::from(auth_handle).into(),
+                    nv_index_handle.into(),
+                    SessionHandle::from(policy_session).into(),
+                    self.required_session_1()?,
+                    self.optional_session_2(),
+                    self.optional_session_3(),
+                    &operand_b.into(),
+                    offset,
+                    operation.into(),
+                )
+            },
+            |ret| {
+                error!("Error when computing policy NV: {:#010X}", ret);
+            },
+        )
+    }
+
+    /// Cause conditional gating of a policy based on the TPM's counter/timer.
+    ///
+    /// # Arguments
+    ///
+    /// * `policy_session` - The [PolicySession] being extended.
+    /// * `operand_b` - A [Digest] used as the second operand in the comparison.
+    /// * `offset` - The offset in the TPMS_TIME_INFO structure for starting the operand.
+    /// * `operation` - The [ArithmeticComparison] operation.
+    ///
+    /// # Details
+    ///
+    /// *From the specification*
+    /// > This command is used to cause conditional gating of a policy based
+    /// > on the contents of the TPMS_TIME_INFO structure.
+    ///
+    /// # Example
+    ///
+    /// ```rust, no_run
+    /// # use tss_esapi::{Context, TctiNameConf};
+    /// # use tss_esapi::constants::SessionType;
+    /// # use tss_esapi::interface_types::{
+    /// #     algorithm::HashingAlgorithm, ArithmeticComparison,
+    /// #     session_handles::PolicySession,
+    /// # };
+    /// # use tss_esapi::structures::{Digest, SymmetricDefinition};
+    /// # let mut context =
+    /// #     Context::new(
+    /// #         TctiNameConf::from_environment_variable().expect("Failed to get TCTI"),
+    /// #     ).expect("Failed to create Context");
+    /// # let trial_session = context.start_auth_session(
+    /// #     None, None, None, SessionType::Trial,
+    /// #     SymmetricDefinition::AES_256_CFB, HashingAlgorithm::Sha256,
+    /// # ).unwrap().unwrap();
+    /// # let policy_session = PolicySession::try_from(trial_session).unwrap();
+    /// let operand = Digest::try_from(vec![0u8; 8]).unwrap();
+    /// context.policy_counter_timer(
+    ///     policy_session, operand, 0, ArithmeticComparison::UnsignedGe,
+    /// ).unwrap();
+    /// ```
+    pub fn policy_counter_timer(
+        &mut self,
+        policy_session: PolicySession,
+        operand_b: Digest,
+        offset: u16,
+        operation: ArithmeticComparison,
+    ) -> Result<()> {
+        ReturnCode::ensure_success(
+            unsafe {
+                Esys_PolicyCounterTimer(
+                    self.mut_context(),
+                    SessionHandle::from(policy_session).into(),
+                    self.optional_session_1(),
+                    self.optional_session_2(),
+                    self.optional_session_3(),
+                    &operand_b.into(),
+                    offset,
+                    operation.into(),
+                )
+            },
+            |ret| {
+                error!("Error when computing policy counter timer: {:#010X}", ret);
+            },
+        )
+    }
 
     /// Cause conditional gating of a policy based on command code of authorized command.
     ///

@@ -413,5 +413,5 @@ impl Context {
         Private::try_from(Context::ffi_data_to_owned(out_private_ptr)?)
     }
 
-    // Missing function: CreateLoaded
+    // Missing function: CreateLoaded (requires TPM2B_TEMPLATE wrapper and marshalling support)
 }
