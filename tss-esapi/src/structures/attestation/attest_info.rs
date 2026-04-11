@@ -3,8 +3,8 @@
 
 use crate::{
     structures::{
-        CertifyInfo, CommandAuditInfo, CreationInfo, NvCertifyInfo, QuoteInfo, SessionAuditInfo,
-        TimeAttestInfo,
+        CertifyInfo, CommandAuditInfo, CreationInfo, NvCertifyInfo, NvDigestCertifyInfo, QuoteInfo,
+        SessionAuditInfo, TimeAttestInfo,
     },
     tss2_esys::TPMU_ATTEST,
 };
@@ -25,8 +25,7 @@ pub enum AttestInfo {
     Time { info: TimeAttestInfo },
     Creation { info: CreationInfo },
     Nv { info: NvCertifyInfo },
-    // NvDigest, the TPMS_NV_DIGEST_CERTIFY_INFO,
-    // was first added in the 3.1.0 version of the tpm2-tss
+    NvDigest { info: NvDigestCertifyInfo },
 }
 
 impl From<AttestInfo> for TPMU_ATTEST {
@@ -47,6 +46,23 @@ impl From<AttestInfo> for TPMU_ATTEST {
                 creation: info.into(),
             },
             AttestInfo::Nv { info } => TPMU_ATTEST { nv: info.into() },
+            // TPMU_ATTEST does not have a nvDigest field in the current
+            // tpm2-tss bindings (4.1.3). TPMS_NV_DIGEST_CERTIFY_INFO is
+            // smaller than TPMS_NV_CERTIFY_INFO, so reinterpreting via
+            // the `nv` field is safe for marshalling purposes.
+            AttestInfo::NvDigest { info } => {
+                let mut attest = TPMU_ATTEST {
+                    nv: Default::default(),
+                };
+                // Safety: nv is larger than nvDigest, and we are writing
+                // the smaller struct into the beginning of the union.
+                unsafe {
+                    let ptr: *mut crate::tss2_esys::TPMS_NV_DIGEST_CERTIFY_INFO =
+                        std::ptr::from_mut(&mut attest).cast();
+                    *ptr = info.into();
+                }
+                attest
+            }
         }
     }
 }
