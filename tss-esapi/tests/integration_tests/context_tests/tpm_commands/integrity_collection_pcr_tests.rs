@@ -265,3 +265,78 @@ mod test_pcr_read {
         assert_ne!(pcr_selection_list_in, pcr_selection_list_out);
     }
 }
+
+mod test_pcr_event {
+    use crate::common::create_ctx_with_session;
+    use tss_esapi::{handles::PcrHandle, structures::MaxBuffer};
+
+    #[test]
+    fn test_pcr_event() {
+        let mut context = create_ctx_with_session();
+        let data = MaxBuffer::from_bytes(&[0x01, 0x02, 0x03, 0x04]).unwrap();
+        context.pcr_event(PcrHandle::Pcr16, data).unwrap();
+    }
+}
+
+mod test_pcr_allocate {
+    use crate::common::create_ctx_with_session;
+    use tss_esapi::{
+        handles::AuthHandle,
+        interface_types::algorithm::HashingAlgorithm,
+        structures::{PcrSelectionListBuilder, PcrSlot},
+    };
+
+    #[test]
+    fn test_pcr_allocate() {
+        let mut context = create_ctx_with_session();
+        let pcr_allocation = PcrSelectionListBuilder::new()
+            .with_selection(HashingAlgorithm::Sha256, &[PcrSlot::Slot0, PcrSlot::Slot1])
+            .build()
+            .unwrap();
+        let (success, _max_pcr, _size_needed, _size_available) = context
+            .pcr_allocate(AuthHandle::Platform, pcr_allocation)
+            .unwrap();
+        assert!(success);
+    }
+}
+
+mod test_pcr_set_auth_policy {
+    use crate::common::create_ctx_with_session;
+    use tss_esapi::{
+        handles::{AuthHandle, PcrHandle},
+        interface_types::algorithm::HashingAlgorithm,
+        structures::Digest,
+    };
+
+    #[test]
+    fn test_pcr_set_auth_policy() {
+        let mut context = create_ctx_with_session();
+        // Clear policy on PCR 16 (empty digest with Null algorithm)
+        context
+            .pcr_set_auth_policy(
+                AuthHandle::Platform,
+                Digest::default(),
+                HashingAlgorithm::Null,
+                PcrHandle::Pcr16,
+            )
+            .unwrap();
+    }
+}
+
+mod test_pcr_set_auth_value {
+    use crate::common::create_ctx_without_session;
+    use tss_esapi::{
+        handles::PcrHandle, interface_types::session_handles::AuthSession, structures::Auth,
+    };
+
+    #[test]
+    fn test_pcr_set_auth_value() {
+        let mut context = create_ctx_without_session();
+        let auth = Auth::default();
+        context
+            .execute_with_session(Some(AuthSession::Password), |ctx| {
+                ctx.pcr_set_auth_value(PcrHandle::Pcr16, auth)
+            })
+            .unwrap();
+    }
+}

@@ -126,3 +126,59 @@ mod test_change_auth {
             .unwrap();
     }
 }
+
+mod test_hierarchy_control {
+    use crate::common::create_ctx_with_session;
+    use tss_esapi::{handles::AuthHandle, interface_types::reserved_handles::Hierarchy};
+
+    #[test]
+    fn test_hierarchy_control() {
+        let mut context = create_ctx_with_session();
+        // Enable endorsement hierarchy (no-op if already enabled, but tests the API)
+        context
+            .hierarchy_control(AuthHandle::Platform, Hierarchy::Endorsement.into(), true)
+            .unwrap();
+    }
+}
+
+mod test_change_pps {
+    use crate::common::create_ctx_with_session;
+    use tss_esapi::handles::AuthHandle;
+
+    #[test]
+    fn test_change_pps() {
+        let mut context = create_ctx_with_session();
+        context.change_pps(AuthHandle::Platform).unwrap();
+    }
+}
+
+mod test_change_eps {
+    use crate::common::create_ctx_with_session;
+    use tss_esapi::handles::AuthHandle;
+
+    #[test]
+    fn test_change_eps() {
+        let mut context = create_ctx_with_session();
+        context.change_eps(AuthHandle::Platform).unwrap();
+    }
+}
+
+mod test_set_primary_policy {
+    use crate::common::create_ctx_with_session;
+    use tss_esapi::{
+        handles::AuthHandle, interface_types::algorithm::HashingAlgorithm, structures::Digest,
+    };
+
+    #[test]
+    fn test_set_primary_policy() {
+        let mut context = create_ctx_with_session();
+        // Clear policy on platform hierarchy (empty digest with Null algorithm)
+        context
+            .set_primary_policy(
+                AuthHandle::Platform,
+                Digest::default(),
+                HashingAlgorithm::Null,
+            )
+            .unwrap();
+    }
+}

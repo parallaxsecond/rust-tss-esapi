@@ -265,3 +265,140 @@ mod test_quote {
         assert!(matches!(attest.attested(), AttestInfo::Creation { .. }));
     }
 }
+
+mod test_get_session_audit_digest {
+    use crate::common::create_ctx_with_session;
+    use std::convert::TryFrom;
+    use tss_esapi::{
+        attributes::SessionAttributesBuilder,
+        constants::SessionType,
+        handles::{ObjectHandle, SessionHandle},
+        interface_types::{
+            algorithm::{HashingAlgorithm, RsaSchemeAlgorithm},
+            key_bits::RsaKeyBits,
+            reserved_handles::Hierarchy,
+            session_handles::AuthSession,
+        },
+        structures::{Data, RsaExponent, RsaScheme, SignatureScheme, SymmetricDefinition},
+        utils::create_unrestricted_signing_rsa_public,
+    };
+
+    #[test]
+    fn test_get_session_audit_digest() {
+        let mut context = create_ctx_with_session();
+        let signing_key_pub = create_unrestricted_signing_rsa_public(
+            RsaScheme::create(RsaSchemeAlgorithm::RsaSsa, Some(HashingAlgorithm::Sha256))
+                .expect("Failed to create RSA scheme"),
+            RsaKeyBits::Rsa2048,
+            RsaExponent::default(),
+        )
+        .expect("Failed to create signing rsa public structure");
+        let sign_key_handle = context
+            .execute_with_nullauth_session(|ctx| {
+                ctx.create_primary(Hierarchy::Owner, signing_key_pub, None, None, None, None)
+            })
+            .unwrap()
+            .key_handle;
+
+        // Create an audit session with the audit attribute set
+        let audit_session = context
+            .execute_without_session(|ctx| {
+                ctx.start_auth_session(
+                    None,
+                    None,
+                    None,
+                    SessionType::Hmac,
+                    SymmetricDefinition::AES_256_CFB,
+                    HashingAlgorithm::Sha256,
+                )
+            })
+            .expect("Failed to create audit session")
+            .expect("Received invalid handle");
+
+        let (session_attributes, session_attributes_mask) =
+            SessionAttributesBuilder::new().with_audit(true).build();
+        context
+            .tr_sess_set_attributes(audit_session, session_attributes, session_attributes_mask)
+            .expect("Failed to set audit attribute on session");
+
+        let session_handle = SessionHandle::from(audit_session);
+
+        let (_attest, _signature) = context
+            .execute_with_sessions(
+                (
+                    Some(AuthSession::Password),
+                    Some(AuthSession::Password),
+                    None,
+                ),
+                |ctx| {
+                    ctx.get_session_audit_digest(
+                        ObjectHandle::Endorsement,
+                        sign_key_handle,
+                        session_handle,
+                        Data::try_from(vec![0xff; 16]).unwrap(),
+                        SignatureScheme::Null,
+                    )
+                },
+            )
+            .expect("Failed to get session audit digest");
+    }
+}
+
+mod test_certify_x509 {
+    #[test]
+    #[ignore]
+    fn test_certify_x509() {
+        // CertifyX509 requires specific X.509 partial certificate input
+        // and may not be supported by all TPM simulators.
+    }
+}
+
+mod test_get_command_audit_digest {
+    use crate::common::create_ctx_with_session;
+    use std::convert::TryFrom;
+    use tss_esapi::{
+        interface_types::{
+            algorithm::{HashingAlgorithm, RsaSchemeAlgorithm},
+            key_bits::RsaKeyBits,
+            reserved_handles::Hierarchy,
+            session_handles::AuthSession,
+        },
+        structures::{Data, RsaExponent, RsaScheme, SignatureScheme},
+        utils::create_unrestricted_signing_rsa_public,
+    };
+
+    #[test]
+    fn test_get_command_audit_digest() {
+        let mut context = create_ctx_with_session();
+        let signing_key_pub = create_unrestricted_signing_rsa_public(
+            RsaScheme::create(RsaSchemeAlgorithm::RsaSsa, Some(HashingAlgorithm::Sha256))
+                .expect("Failed to create RSA scheme"),
+            RsaKeyBits::Rsa2048,
+            RsaExponent::default(),
+        )
+        .expect("Failed to create an unrestricted signing rsa public structure");
+        let sign_key_handle = context
+            .execute_with_nullauth_session(|ctx| {
+                ctx.create_primary(Hierarchy::Owner, signing_key_pub, None, None, None, None)
+            })
+            .unwrap()
+            .key_handle;
+        let (_attest, _signature) = context
+            .execute_with_sessions(
+                (
+                    Some(AuthSession::Password),
+                    Some(AuthSession::Password),
+                    None,
+                ),
+                |ctx| {
+                    ctx.get_command_audit_digest(
+                        tss_esapi::handles::ObjectHandle::Endorsement,
+                        sign_key_handle,
+                        Data::try_from(vec![0xff; 16]).unwrap(),
+                        SignatureScheme::Null,
+                    )
+                },
+            )
+            .expect("Failed to get command audit digest");
+    }
+}

@@ -303,3 +303,280 @@ mod test_duplicate {
         eprintln!("P: {private:?}");
     }
 }
+
+mod test_rewrap {
+    use crate::common::{create_ctx_with_session, create_ctx_without_session};
+    use std::convert::TryFrom;
+    use std::convert::TryInto;
+    use tss_esapi::attributes::{ObjectAttributesBuilder, SessionAttributesBuilder};
+    use tss_esapi::constants::SessionType;
+    use tss_esapi::handles::ObjectHandle;
+    use tss_esapi::interface_types::{
+        algorithm::{HashingAlgorithm, PublicAlgorithm},
+        ecc::EccCurve,
+        reserved_handles::Hierarchy,
+        session_handles::PolicySession,
+    };
+    use tss_esapi::structures::SymmetricDefinition;
+    use tss_esapi::structures::{
+        EccPoint, EccScheme, KeyDerivationFunctionScheme, PublicBuilder,
+        PublicEccParametersBuilder, SymmetricDefinitionObject,
+    };
+
+    #[test]
+    fn test_rewrap() {
+        let mut context = create_ctx_with_session();
+
+        // Create parent key spec (storage key)
+        let parent_object_attributes = ObjectAttributesBuilder::new()
+            .with_fixed_tpm(true)
+            .with_fixed_parent(true)
+            .with_sensitive_data_origin(true)
+            .with_user_with_auth(true)
+            .with_decrypt(true)
+            .with_sign_encrypt(false)
+            .with_restricted(true)
+            .build()
+            .expect("Attributes to be valid");
+
+        let public_parent = PublicBuilder::new()
+            .with_public_algorithm(PublicAlgorithm::Ecc)
+            .with_name_hashing_algorithm(HashingAlgorithm::Sha256)
+            .with_object_attributes(parent_object_attributes)
+            .with_ecc_parameters(
+                PublicEccParametersBuilder::new()
+                    .with_ecc_scheme(EccScheme::Null)
+                    .with_curve(EccCurve::NistP256)
+                    .with_is_signing_key(false)
+                    .with_is_decryption_key(true)
+                    .with_restricted(true)
+                    .with_symmetric(SymmetricDefinitionObject::AES_128_CFB)
+                    .with_key_derivation_function_scheme(KeyDerivationFunctionScheme::Null)
+                    .build()
+                    .expect("Params to be valid"),
+            )
+            .with_ecc_unique_identifier(EccPoint::default())
+            .build()
+            .expect("public to be valid");
+
+        // Create old parent and new parent
+        let old_parent_handle: ObjectHandle = context
+            .create_primary(
+                Hierarchy::Owner,
+                public_parent.clone(),
+                None,
+                None,
+                None,
+                None,
+            )
+            .unwrap()
+            .key_handle
+            .into();
+
+        let new_parent_handle: ObjectHandle = context
+            .create_primary(
+                Hierarchy::Owner,
+                public_parent.clone(),
+                None,
+                None,
+                None,
+                None,
+            )
+            .unwrap()
+            .key_handle
+            .into();
+
+        let old_parent_name = context.read_public(old_parent_handle.into()).unwrap().1;
+
+        drop(context);
+
+        // Create trial session to get policy digest for duplication
+        let mut context = create_ctx_without_session();
+        let trial_session = context
+            .start_auth_session(
+                None,
+                None,
+                None,
+                SessionType::Trial,
+                SymmetricDefinition::AES_256_CFB,
+                HashingAlgorithm::Sha256,
+            )
+            .expect("Start auth session failed")
+            .expect("Start auth session returned a NONE handle");
+
+        let (attrs, mask) = SessionAttributesBuilder::new()
+            .with_decrypt(true)
+            .with_encrypt(true)
+            .build();
+        context
+            .tr_sess_set_attributes(trial_session, attrs, mask)
+            .expect("tr_sess_set_attributes call failed");
+
+        let policy_session = PolicySession::try_from(trial_session)
+            .expect("Failed to convert auth session into policy session");
+
+        // Allow duplication to old parent (we don't restrict the new parent for rewrap)
+        context
+            .policy_duplication_select(
+                policy_session,
+                Vec::<u8>::new().try_into().unwrap(),
+                old_parent_name,
+                false,
+            )
+            .expect("Policy duplication select");
+
+        let digest = context
+            .policy_get_digest(policy_session)
+            .expect("Could retrieve digest");
+
+        drop(context);
+        let mut context = create_ctx_with_session();
+
+        // Create child key eligible for duplication
+        let object_attributes = ObjectAttributesBuilder::new()
+            .with_fixed_tpm(false)
+            .with_fixed_parent(false)
+            .with_sensitive_data_origin(true)
+            .with_user_with_auth(true)
+            .with_decrypt(true)
+            .with_sign_encrypt(true)
+            .with_restricted(false)
+            .build()
+            .expect("Attributes to be valid");
+
+        let public_child = PublicBuilder::new()
+            .with_public_algorithm(PublicAlgorithm::Ecc)
+            .with_name_hashing_algorithm(HashingAlgorithm::Sha256)
+            .with_object_attributes(object_attributes)
+            .with_auth_policy(digest)
+            .with_ecc_parameters(
+                PublicEccParametersBuilder::new()
+                    .with_ecc_scheme(EccScheme::Null)
+                    .with_curve(EccCurve::NistP256)
+                    .with_is_signing_key(false)
+                    .with_is_decryption_key(true)
+                    .with_restricted(false)
+                    .with_key_derivation_function_scheme(KeyDerivationFunctionScheme::Null)
+                    .build()
+                    .expect("Params to be valid"),
+            )
+            .with_ecc_unique_identifier(EccPoint::default())
+            .build()
+            .expect("public to be valid");
+
+        // Re-create old and new parents (same specs → same keys)
+        let old_parent_handle: ObjectHandle = context
+            .create_primary(
+                Hierarchy::Owner,
+                public_parent.clone(),
+                None,
+                None,
+                None,
+                None,
+            )
+            .unwrap()
+            .key_handle
+            .into();
+
+        let new_parent_handle: ObjectHandle = context
+            .create_primary(Hierarchy::Owner, public_parent, None, None, None, None)
+            .unwrap()
+            .key_handle
+            .into();
+
+        let result = context
+            .create(
+                old_parent_handle.into(),
+                public_child,
+                None,
+                None,
+                None,
+                None,
+            )
+            .unwrap();
+
+        let object_to_duplicate: ObjectHandle = context
+            .load(
+                old_parent_handle.into(),
+                result.out_private,
+                result.out_public,
+            )
+            .unwrap()
+            .into();
+
+        let object_name = context.read_public(object_to_duplicate.into()).unwrap().1;
+        let old_parent_name = context.read_public(old_parent_handle.into()).unwrap().1;
+
+        context.set_sessions((None, None, None));
+
+        // Create real policy session for duplication
+        let policy_auth_session = context
+            .start_auth_session(
+                None,
+                None,
+                None,
+                SessionType::Policy,
+                SymmetricDefinition::AES_256_CFB,
+                HashingAlgorithm::Sha256,
+            )
+            .expect("Start auth session failed")
+            .expect("Start auth session returned a NONE handle");
+        let (attrs, mask) = SessionAttributesBuilder::new()
+            .with_decrypt(true)
+            .with_encrypt(true)
+            .build();
+        context
+            .tr_sess_set_attributes(policy_auth_session, attrs, mask)
+            .expect("tr_sess_set_attributes call failed");
+
+        let policy_session = PolicySession::try_from(policy_auth_session)
+            .expect("Failed to convert auth session into policy session");
+        context
+            .policy_duplication_select(policy_session, object_name, old_parent_name, false)
+            .unwrap();
+        context.set_sessions((Some(policy_auth_session), None, None));
+
+        // Duplicate from old parent (NULL encryption)
+        let (_data, duplicate, secret) = context
+            .duplicate(
+                object_to_duplicate,
+                old_parent_handle,
+                None,
+                SymmetricDefinitionObject::Null,
+            )
+            .unwrap();
+
+        let name = context.read_public(object_to_duplicate.into()).unwrap().1;
+
+        // Set up HMAC session for rewrap
+        let session = context
+            .start_auth_session(
+                None,
+                None,
+                None,
+                SessionType::Hmac,
+                SymmetricDefinition::AES_256_CFB,
+                HashingAlgorithm::Sha256,
+            )
+            .unwrap();
+        let (attrs, mask) = SessionAttributesBuilder::new()
+            .with_decrypt(true)
+            .with_encrypt(true)
+            .build();
+        context
+            .tr_sess_set_attributes(session.unwrap(), attrs, mask)
+            .unwrap();
+        context.set_sessions((session, None, None));
+
+        // Rewrap: move the duplicated object from old parent to new parent
+        let (_out_duplicate, _out_sym_seed) = context
+            .rewrap(
+                old_parent_handle,
+                new_parent_handle,
+                duplicate,
+                name,
+                secret,
+            )
+            .unwrap();
+    }
+}

@@ -106,3 +106,92 @@ mod test_rsa_encrypt_decrypt {
         assert_eq!(z_point.x().as_bytes(), param.x().as_bytes());
     }
 }
+
+mod test_zgen_2phase {
+    use crate::common::create_ctx_with_session;
+    use tss_esapi::{
+        attributes::ObjectAttributesBuilder,
+        interface_types::{
+            algorithm::{EccKeyExchangeAlgorithm, HashingAlgorithm, PublicAlgorithm},
+            ecc::EccCurve,
+            reserved_handles::Hierarchy,
+        },
+        structures::{
+            Auth, EccPoint, EccScheme, HashScheme, KeyDerivationFunctionScheme, PublicBuilder,
+            PublicEccParametersBuilder,
+        },
+    };
+
+    #[test]
+    fn test_zgen_2phase() {
+        let mut context = create_ctx_with_session();
+        let mut random_digest = vec![0u8; 16];
+        getrandom::getrandom(&mut random_digest).unwrap();
+        let key_auth = Auth::from_bytes(random_digest.as_slice()).unwrap();
+
+        let ecc_parms = PublicEccParametersBuilder::new()
+            .with_ecc_scheme(EccScheme::EcDh(HashScheme::new(HashingAlgorithm::Sha256)))
+            .with_curve(EccCurve::NistP256)
+            .with_is_signing_key(false)
+            .with_is_decryption_key(true)
+            .with_restricted(false)
+            .with_key_derivation_function_scheme(KeyDerivationFunctionScheme::Null)
+            .build()
+            .unwrap();
+
+        let object_attributes = ObjectAttributesBuilder::new()
+            .with_fixed_tpm(true)
+            .with_fixed_parent(true)
+            .with_sensitive_data_origin(true)
+            .with_user_with_auth(true)
+            .with_decrypt(true)
+            .with_sign_encrypt(false)
+            .with_restricted(false)
+            .build()
+            .unwrap();
+
+        let public = PublicBuilder::new()
+            .with_public_algorithm(PublicAlgorithm::Ecc)
+            .with_name_hashing_algorithm(HashingAlgorithm::Sha256)
+            .with_object_attributes(object_attributes)
+            .with_ecc_parameters(ecc_parms)
+            .with_ecc_unique_identifier(EccPoint::default())
+            .build()
+            .unwrap();
+
+        let key_handle = context
+            .create_primary(Hierarchy::Owner, public, Some(key_auth), None, None, None)
+            .unwrap()
+            .key_handle;
+
+        // Get ephemeral key and counter
+        let (q_point, counter) = context.ec_ephemeral(EccCurve::NistP256).unwrap();
+
+        // Generate another ephemeral via ecdh_key_gen
+        let (_z_point, pub_point) = context.ecdh_key_gen(key_handle).unwrap();
+
+        // Perform two-phase key exchange
+        let (_out_z1, _out_z2) = context
+            .zgen_2phase(
+                key_handle,
+                pub_point,
+                q_point,
+                EccKeyExchangeAlgorithm::EcDh,
+                counter,
+            )
+            .unwrap();
+    }
+}
+
+mod test_ecc_parameters {
+    use crate::common::create_ctx_without_session;
+    use tss_esapi::interface_types::ecc::EccCurve;
+
+    #[test]
+    fn test_ecc_parameters() {
+        let mut context = create_ctx_without_session();
+        let details = context.ecc_parameters(EccCurve::NistP256).unwrap();
+        assert_eq!(details.curve_id(), EccCurve::NistP256);
+        assert!(details.key_size() > 0);
+    }
+}

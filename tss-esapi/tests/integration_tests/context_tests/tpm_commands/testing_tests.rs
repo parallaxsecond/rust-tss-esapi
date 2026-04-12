@@ -20,3 +20,13 @@ mod test_get_test_result {
         rc.unwrap();
     }
 }
+
+mod test_incremental_self_test {
+    use crate::common::create_ctx_without_session;
+
+    #[test]
+    fn test_incremental_self_test() {
+        let mut context = create_ctx_without_session();
+        let _to_do_list = context.incremental_self_test(&[]).unwrap();
+    }
+}

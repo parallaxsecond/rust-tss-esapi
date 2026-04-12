@@ -911,3 +911,226 @@ mod test_policy_authorize_nv {
         policy_result.unwrap();
     }
 }
+
+mod test_policy_counter_timer {
+    use crate::common::create_ctx_without_session;
+    use std::convert::TryFrom;
+    use tss_esapi::{
+        constants::SessionType,
+        interface_types::{
+            ArithmeticComparison, algorithm::HashingAlgorithm, session_handles::PolicySession,
+        },
+        structures::{Digest, SymmetricDefinition},
+    };
+
+    #[test]
+    fn test_policy_counter_timer() {
+        let mut context = create_ctx_without_session();
+        let trial_session = context
+            .start_auth_session(
+                None,
+                None,
+                None,
+                SessionType::Trial,
+                SymmetricDefinition::AES_256_CFB,
+                HashingAlgorithm::Sha256,
+            )
+            .expect("Failed to create trial session")
+            .expect("Received invalid handle");
+        let policy_session =
+            PolicySession::try_from(trial_session).expect("Failed to convert to policy session");
+
+        // Compare a zero operand at offset 0 (time field) with unsigned GE
+        let operand_b = Digest::try_from(vec![0u8; 8]).unwrap();
+        context
+            .policy_counter_timer(
+                policy_session,
+                operand_b,
+                0,
+                ArithmeticComparison::UnsignedGe,
+            )
+            .unwrap();
+    }
+}
+
+mod test_policy_nv {
+    use crate::common::create_ctx_with_session;
+    use std::convert::TryFrom;
+    use tss_esapi::{
+        attributes::NvIndexAttributesBuilder,
+        constants::SessionType,
+        handles::NvIndexTpmHandle,
+        interface_types::{
+            ArithmeticComparison,
+            algorithm::HashingAlgorithm,
+            reserved_handles::{NvAuth, Provision},
+            session_handles::PolicySession,
+        },
+        structures::{Digest, MaxNvBuffer, NvPublicBuilder, SymmetricDefinition},
+    };
+
+    #[test]
+    fn test_policy_nv() {
+        let mut context = create_ctx_with_session();
+
+        // Define an NV index
+        let nv_index =
+            NvIndexTpmHandle::new(0x01500040).expect("Failed to create NV index tpm handle");
+        let nv_index_attributes = NvIndexAttributesBuilder::new()
+            .with_owner_write(true)
+            .with_owner_read(true)
+            .build()
+            .expect("Failed to create nv index attributes");
+        let nv_public = NvPublicBuilder::new()
+            .with_nv_index(nv_index)
+            .with_index_name_algorithm(HashingAlgorithm::Sha256)
+            .with_index_attributes(nv_index_attributes)
+            .with_data_area_size(8)
+            .build()
+            .expect("Failed to build NvPublic");
+        let nv_index_handle = context
+            .nv_define_space(Provision::Owner, None, nv_public)
+            .expect("Failed to define NV space");
+
+        // Write some data to the NV index
+        let data = MaxNvBuffer::try_from(vec![0u8; 8]).unwrap();
+        context
+            .nv_write(NvAuth::Owner, nv_index_handle, data, 0)
+            .expect("Failed to write NV");
+
+        // Create a trial policy session
+        let trial_session = context
+            .start_auth_session(
+                None,
+                None,
+                None,
+                SessionType::Trial,
+                SymmetricDefinition::AES_256_CFB,
+                HashingAlgorithm::Sha256,
+            )
+            .expect("Failed to create trial session")
+            .expect("Received invalid handle");
+        let policy_session =
+            PolicySession::try_from(trial_session).expect("Failed to convert to policy session");
+
+        // Call policy_nv with an EQ comparison against zeros
+        let operand = Digest::try_from(vec![0u8; 8]).unwrap();
+        context
+            .policy_nv(
+                policy_session,
+                NvAuth::Owner,
+                nv_index_handle,
+                operand,
+                0,
+                ArithmeticComparison::Eq,
+            )
+            .expect("Failed to call policy_nv");
+
+        // Cleanup
+        context
+            .nv_undefine_space(Provision::Owner, nv_index_handle)
+            .expect("Failed to undefine NV space");
+    }
+}
+
+mod test_policy_ticket {
+    use crate::common::create_ctx_with_session;
+    use std::{convert::TryFrom, time::Duration};
+    use tss_esapi::{
+        attributes::SessionAttributesBuilder,
+        constants::SessionType,
+        handles::AuthHandle,
+        interface_types::{algorithm::HashingAlgorithm, session_handles::PolicySession},
+        structures::{Digest, Nonce, SymmetricDefinition},
+    };
+
+    #[test]
+    fn test_policy_ticket() {
+        let mut context = create_ctx_with_session();
+
+        // Create a policy session with a nonce
+        let nonce = Nonce::try_from(vec![1u8; 16]).expect("Failed to create nonce");
+        let policy_auth_session = context
+            .execute_without_session(|ctx| {
+                ctx.start_auth_session(
+                    None,
+                    None,
+                    Some(nonce),
+                    SessionType::Policy,
+                    SymmetricDefinition::AES_256_CFB,
+                    HashingAlgorithm::Sha256,
+                )
+            })
+            .expect("Start auth session failed")
+            .expect("Start auth session returned a NONE handle");
+        let (attrs, mask) = SessionAttributesBuilder::new()
+            .with_decrypt(true)
+            .with_encrypt(true)
+            .build();
+        context
+            .tr_sess_set_attributes(policy_auth_session, attrs, mask)
+            .expect("tr_sess_set_attributes call failed");
+
+        let policy_session = PolicySession::try_from(policy_auth_session)
+            .expect("Failed to convert auth session into policy session");
+
+        // Get the session's nonceTPM to include in the policy_secret call
+        let nonce_tpm = context
+            .tr_sess_get_nonce_tpm(policy_auth_session)
+            .expect("Failed to get nonceTPM");
+        let cp_hash_a = Digest::default();
+        let policy_ref = Nonce::default();
+
+        // Use policy_secret with an expiration and the session nonce to get a ticket
+        let (timeout, ticket) = context
+            .policy_secret(
+                policy_session,
+                AuthHandle::Endorsement,
+                nonce_tpm,
+                cp_hash_a.clone(),
+                policy_ref.clone(),
+                Some(Duration::from_secs(3600)),
+            )
+            .expect("Failed to call policy_secret");
+
+        let auth_name = context
+            .tr_get_name(AuthHandle::Endorsement.into())
+            .expect("Failed to get endorsement name");
+
+        // Create a new policy session and use policy_ticket with the ticket
+        let policy_auth_session_2 = context
+            .execute_without_session(|ctx| {
+                ctx.start_auth_session(
+                    None,
+                    None,
+                    None,
+                    SessionType::Policy,
+                    SymmetricDefinition::AES_256_CFB,
+                    HashingAlgorithm::Sha256,
+                )
+            })
+            .expect("Start auth session failed")
+            .expect("Start auth session returned a NONE handle");
+        let (attrs, mask) = SessionAttributesBuilder::new()
+            .with_decrypt(true)
+            .with_encrypt(true)
+            .build();
+        context
+            .tr_sess_set_attributes(policy_auth_session_2, attrs, mask)
+            .expect("tr_sess_set_attributes call failed");
+
+        let policy_session_2 = PolicySession::try_from(policy_auth_session_2)
+            .expect("Failed to convert auth session into policy session");
+
+        context
+            .policy_ticket(
+                policy_session_2,
+                timeout,
+                cp_hash_a,
+                policy_ref,
+                auth_name,
+                ticket,
+            )
+            .expect("Failed to call policy_ticket");
+    }
+}

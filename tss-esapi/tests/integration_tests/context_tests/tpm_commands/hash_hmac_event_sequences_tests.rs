@@ -155,3 +155,36 @@ mod test_hmac_sequence {
         let _ticket = ticket.expect("HashcheckTicket should be returned");
     }
 }
+
+mod test_event_sequence_complete {
+    use crate::common::create_ctx_with_session;
+    use tss_esapi::{
+        handles::PcrHandle,
+        interface_types::{algorithm::HashingAlgorithm, session_handles::AuthSession},
+        structures::MaxBuffer,
+    };
+
+    #[test]
+    fn test_event_sequence_complete() {
+        let mut context = create_ctx_with_session();
+
+        let handle = context
+            .hash_sequence_start(HashingAlgorithm::Null, None)
+            .unwrap();
+
+        let data = MaxBuffer::from_bytes(&[0x01, 0x02, 0x03, 0x04]).unwrap();
+        context.sequence_update(handle, data).unwrap();
+
+        let last_data = MaxBuffer::from_bytes(&[0x05, 0x06]).unwrap();
+        let _digest_values = context
+            .execute_with_sessions(
+                (
+                    Some(AuthSession::Password),
+                    Some(AuthSession::Password),
+                    None,
+                ),
+                |ctx| ctx.event_sequence_complete(PcrHandle::Pcr16, handle, last_data),
+            )
+            .unwrap();
+    }
+}
