@@ -171,6 +171,7 @@ pub use tagged::{
 // ECC structures
 // //////////////////////////////////////////////////////
 mod ecc;
+pub use ecc::parameter_details::EccParameterDetails;
 pub use ecc::point::EccPoint;
 // //////////////////////////////////////////////////////
 // Signatures structures
