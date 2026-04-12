@@ -6,7 +6,7 @@ use crate::{
     tss2_esys::{
         TPMI_ALG_ASYM, TPMI_ALG_ECC_SCHEME, TPMI_ALG_HASH, TPMI_ALG_KDF, TPMI_ALG_KEYEDHASH_SCHEME,
         TPMI_ALG_PUBLIC, TPMI_ALG_RSA_DECRYPT, TPMI_ALG_RSA_SCHEME, TPMI_ALG_SIG_SCHEME,
-        TPMI_ALG_SYM, TPMI_ALG_SYM_MODE, TPMI_ALG_SYM_OBJECT,
+        TPMI_ALG_SYM, TPMI_ALG_SYM_MODE, TPMI_ALG_SYM_OBJECT, TPMI_ECC_KEY_EXCHANGE,
     },
 };
 use std::convert::TryFrom;
@@ -682,5 +682,56 @@ impl TryFrom<TPMI_ALG_RSA_DECRYPT> for RsaDecryptAlgorithm {
 
     fn try_from(tpmi_alg_rsa_decrypt: TPMI_ALG_RSA_DECRYPT) -> Result<Self> {
         RsaDecryptAlgorithm::try_from(AlgorithmIdentifier::try_from(tpmi_alg_rsa_decrypt)?)
+    }
+}
+
+/// Enum representing the ECC key exchange interface type.
+///
+/// # Details
+/// This corresponds to `TPMI_ECC_KEY_EXCHANGE`.
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
+pub enum EccKeyExchangeAlgorithm {
+    EcDh,
+    EcMqv,
+    Sm2,
+    Null,
+}
+
+impl From<EccKeyExchangeAlgorithm> for AlgorithmIdentifier {
+    fn from(ecc_key_exchange_algorithm: EccKeyExchangeAlgorithm) -> Self {
+        match ecc_key_exchange_algorithm {
+            EccKeyExchangeAlgorithm::EcDh => AlgorithmIdentifier::EcDh,
+            EccKeyExchangeAlgorithm::EcMqv => AlgorithmIdentifier::EcMqv,
+            EccKeyExchangeAlgorithm::Sm2 => AlgorithmIdentifier::Sm2,
+            EccKeyExchangeAlgorithm::Null => AlgorithmIdentifier::Null,
+        }
+    }
+}
+
+impl TryFrom<AlgorithmIdentifier> for EccKeyExchangeAlgorithm {
+    type Error = Error;
+
+    fn try_from(algorithm_identifier: AlgorithmIdentifier) -> Result<Self> {
+        match algorithm_identifier {
+            AlgorithmIdentifier::EcDh => Ok(EccKeyExchangeAlgorithm::EcDh),
+            AlgorithmIdentifier::EcMqv => Ok(EccKeyExchangeAlgorithm::EcMqv),
+            AlgorithmIdentifier::Sm2 => Ok(EccKeyExchangeAlgorithm::Sm2),
+            AlgorithmIdentifier::Null => Ok(EccKeyExchangeAlgorithm::Null),
+            _ => Err(Error::local_error(WrapperErrorKind::InvalidParam)),
+        }
+    }
+}
+
+impl From<EccKeyExchangeAlgorithm> for TPMI_ECC_KEY_EXCHANGE {
+    fn from(ecc_key_exchange_algorithm: EccKeyExchangeAlgorithm) -> Self {
+        AlgorithmIdentifier::from(ecc_key_exchange_algorithm).into()
+    }
+}
+
+impl TryFrom<TPMI_ECC_KEY_EXCHANGE> for EccKeyExchangeAlgorithm {
+    type Error = Error;
+
+    fn try_from(tpmi_ecc_key_exchange: TPMI_ECC_KEY_EXCHANGE) -> Result<Self> {
+        EccKeyExchangeAlgorithm::try_from(AlgorithmIdentifier::try_from(tpmi_ecc_key_exchange)?)
     }
 }

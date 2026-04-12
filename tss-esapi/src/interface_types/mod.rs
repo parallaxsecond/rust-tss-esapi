@@ -3,6 +3,7 @@
 
 //! This module contains the different interface types defined in
 //! the TPM 2.0 specification.
+mod arithmetic_comparison;
 mod yes_no;
 
 pub mod algorithm;
@@ -13,4 +14,5 @@ pub mod reserved_handles;
 pub mod session_handles;
 pub mod structure_tags;
 
+pub use arithmetic_comparison::ArithmeticComparison;
 pub use yes_no::YesNo;
