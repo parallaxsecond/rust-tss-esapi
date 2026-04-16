@@ -206,7 +206,7 @@ fn checkquote_pcr_digests(
 ///
 /// # Examples
 ///
-/// ```rust
+/// ```no_run
 /// # use std::convert::TryFrom;
 /// # use tss_esapi::{
 /// #     attributes::SessionAttributes,

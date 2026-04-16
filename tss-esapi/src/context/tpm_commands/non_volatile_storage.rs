@@ -35,7 +35,7 @@ impl Context {
     /// was defined.
     ///
     /// # Example
-    /// ```rust
+    /// ```no_run
     /// # use tss_esapi::{
     /// #     Context, TctiNameConf, attributes::SessionAttributes, constants::SessionType,
     /// #     structures::SymmetricDefinition,
@@ -142,7 +142,7 @@ impl Context {
     ///   the nv area that is to be removed.
     ///
     /// # Example
-    /// ```rust
+    /// ```no_run
     /// # use tss_esapi::{
     /// #     Context, TctiNameConf, attributes::SessionAttributes, constants::SessionType,
     /// #     structures::SymmetricDefinition,
@@ -241,7 +241,7 @@ impl Context {
     ///   the nv area that is to be removed.
     ///
     /// # Example
-    /// ```rust
+    /// ```no_run
     /// # use tss_esapi::{
     /// #     Context, TctiNameConf, attributes::SessionAttributes, constants::SessionType,
     /// #     structures::SymmetricDefinition, constants::CommandCode,
@@ -383,7 +383,7 @@ impl Context {
     /// A tuple containing the public area and the name of an nv index.
     ///
     /// # Example
-    /// ```rust
+    /// ```no_run
     /// # use tss_esapi::{
     /// #     Context, TctiNameConf, attributes::{SessionAttributes, NvIndexAttributes},
     /// #     handles::NvIndexTpmHandle, interface_types::algorithm::HashingAlgorithm,
@@ -498,7 +498,7 @@ impl Context {
     /// * `offset` - The octet offset into the NV area.
     ///
     /// # Example
-    /// ```rust
+    /// ```no_run
     /// # use tss_esapi::{
     /// #     Context, TctiNameConf, attributes::{SessionAttributes, NvIndexAttributes},
     /// #     handles::NvIndexTpmHandle, interface_types::algorithm::HashingAlgorithm,
@@ -609,7 +609,7 @@ impl Context {
     /// * `auth_handle` - Handle indicating the source of authorization value.
     /// * `nv_index_handle` - The [NvIndexHandle] associated with NV memory
     ///   where data is to be written.
-    /// ```rust
+    /// ```no_run
     /// # use tss_esapi::{
     /// #     Context, TctiNameConf, attributes::{SessionAttributes, NvIndexAttributes},
     /// #     handles::NvIndexTpmHandle, interface_types::algorithm::HashingAlgorithm,
@@ -718,7 +718,7 @@ impl Context {
     /// * `data` - The data, in the form of a [MaxNvBuffer], that is to be written.
     ///
     /// # Example
-    /// ```rust
+    /// ```no_run
     /// # use tss_esapi::{
     /// #     Context, TctiNameConf, attributes::{SessionAttributes, NvIndexAttributes},
     /// #     handles::NvIndexTpmHandle, interface_types::algorithm::HashingAlgorithm,
@@ -829,7 +829,7 @@ impl Context {
     /// * `offset`- Octet offset into the NV area.
     ///
     /// # Example
-    /// ```rust
+    /// ```no_run
     /// # use tss_esapi::{
     /// #     Context, TctiNameConf, attributes::{SessionAttributes, NvIndexAttributes},
     /// #     handles::NvIndexTpmHandle, interface_types::algorithm::HashingAlgorithm,

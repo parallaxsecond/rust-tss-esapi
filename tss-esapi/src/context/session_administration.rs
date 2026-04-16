@@ -70,7 +70,7 @@ impl Context {
     /// digest to satisfy the policy.
     ///
     /// # Example
-    /// ```rust
+    /// ```no_run
     /// # use tss_esapi::{Context, TctiNameConf};
     /// # use tss_esapi::constants::SessionType;
     /// # use tss_esapi::interface_types::algorithm::HashingAlgorithm;

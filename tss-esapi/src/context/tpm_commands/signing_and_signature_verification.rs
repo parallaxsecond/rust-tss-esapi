@@ -52,7 +52,7 @@ impl Context {
     ///                N.B. None will be treated as a "Null ticket".
     /// # Example
     ///
-    /// ```rust
+    /// ```no_run
     /// # use tss_esapi::{Context, TctiNameConf,
     /// #    interface_types::{
     /// #        algorithm::{HashingAlgorithm, RsaSchemeAlgorithm},

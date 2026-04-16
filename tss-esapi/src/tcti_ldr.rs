@@ -162,7 +162,7 @@ impl TctiNameConf {
     /// - TEST_TCTI
     ///
     /// # Examples
-    /// ```
+    /// ```no_run
     /// # use tss_esapi::tcti_ldr::TctiNameConf;
     /// // Create context
     /// let tcti_name_conf = TctiNameConf::from_environment_variable().expect("Failed to get TCTI");

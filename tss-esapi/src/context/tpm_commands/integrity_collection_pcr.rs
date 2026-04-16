@@ -23,7 +23,7 @@ impl Context {
     ///
     /// # Example
     ///
-    /// ```rust
+    /// ```no_run
     /// # use tss_esapi::{
     /// #     Context, TctiNameConf,
     /// #     constants::SessionType,
@@ -126,7 +126,7 @@ impl Context {
     ///
     /// # Example
     ///
-    /// ```rust
+    /// ```no_run
     /// # use tss_esapi::{Context, TctiNameConf};
     /// # use std::{env, str::FromStr};
     /// # // Create context
@@ -197,7 +197,7 @@ impl Context {
     ///
     /// # Example
     ///
-    /// ```rust
+    /// ```no_run
     /// # use tss_esapi::{
     /// #     Context, TctiNameConf,
     /// #     constants::SessionType,

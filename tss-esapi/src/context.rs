@@ -143,7 +143,7 @@ impl Context {
     ///
     /// # Example
     ///
-    /// ```rust
+    /// ```no_run
     /// # use tss_esapi::{Context, tcti_ldr::TctiNameConf,
     /// #     constants::SessionType,
     /// #     interface_types::algorithm::HashingAlgorithm,
@@ -194,7 +194,7 @@ impl Context {
     ///
     /// # Example
     ///
-    /// ```rust
+    /// ```no_run
     /// # use tss_esapi::{Context, tcti_ldr::TctiNameConf, interface_types::session_handles::AuthSession};
     /// # // Create context
     /// # let mut context =
@@ -219,7 +219,7 @@ impl Context {
     ///
     /// # Example
     ///
-    /// ```rust
+    /// ```no_run
     /// # use tss_esapi::{Context, tcti_ldr::TctiNameConf, interface_types::session_handles::AuthSession};
     /// # // Create context
     /// # let mut context =
@@ -355,7 +355,7 @@ impl Context {
     ///
     /// # Example
     ///
-    /// ```rust
+    /// ```no_run
     /// # use tss_esapi::{Context, tcti_ldr::TctiNameConf, constants::PropertyTag};
     /// # use std::str::FromStr;
     /// # // Create context

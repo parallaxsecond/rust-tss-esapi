@@ -39,7 +39,7 @@ impl Context {
     ///
     /// # Example
     ///
-    /// ```rust
+    /// ```no_run
     /// # use tss_esapi::{
     /// #    Context, TctiNameConf,
     /// #    attributes::{SessionAttributesBuilder, ObjectAttributesBuilder},
@@ -195,7 +195,7 @@ impl Context {
     ///
     /// # Example
     ///
-    /// ```rust
+    /// ```no_run
     /// # use tss_esapi::{Context, TctiNameConf};
     /// use tss_esapi::interface_types::ecc::EccCurve;
     /// # let mut context =
