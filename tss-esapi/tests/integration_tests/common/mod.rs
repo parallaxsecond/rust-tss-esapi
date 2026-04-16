@@ -2,8 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 use std::{
     convert::{TryFrom, TryInto},
-    env,
-    str::FromStr,
     sync::Once,
 };
 
@@ -29,13 +27,13 @@ use tss_esapi::{
         Sensitive, Signature, SymmetricCipherParameters, SymmetricDefinition,
         SymmetricDefinitionObject,
     },
-    tcti_ldr::TctiNameConf,
     utils,
 };
 
 mod marshall;
 #[cfg(feature = "serde")]
 mod serde;
+pub mod swtpm;
 mod tpm2b_types_equality_checks;
 mod tpma_types_equality_checks;
 mod tpml_types_equality_checks;
@@ -44,6 +42,7 @@ mod tpmt_types_equality_checks;
 #[cfg(feature = "serde")]
 pub use self::serde::*;
 pub use marshall::*;
+pub use swtpm::{SwtpmSession, create_ctx_with_session, create_ctx_without_session, create_tcti};
 pub use tpm2b_types_equality_checks::*;
 pub use tpma_types_equality_checks::*;
 pub use tpml_types_equality_checks::*;
@@ -185,50 +184,6 @@ pub fn setup_logging() {
     LOG_INIT.call_once(|| {
         env_logger::init();
     });
-}
-
-#[allow(dead_code)]
-pub fn create_tcti() -> TctiNameConf {
-    setup_logging();
-
-    match env::var("TEST_TCTI") {
-        Err(_) => TctiNameConf::Mssim(Default::default()),
-        Ok(tctistr) => TctiNameConf::from_str(&tctistr).expect("Error parsing TEST_TCTI"),
-    }
-}
-
-#[allow(dead_code)]
-pub fn create_ctx_without_session() -> Context {
-    let tcti = create_tcti();
-    Context::new(tcti).unwrap()
-}
-
-#[allow(dead_code)]
-pub fn create_ctx_with_session() -> Context {
-    let mut ctx = create_ctx_without_session();
-    let session = ctx
-        .start_auth_session(
-            None,
-            None,
-            None,
-            SessionType::Hmac,
-            SymmetricDefinition::AES_256_CFB,
-            HashingAlgorithm::Sha256,
-        )
-        .unwrap();
-    let (session_attributes, session_attributes_mask) = SessionAttributesBuilder::new()
-        .with_decrypt(true)
-        .with_encrypt(true)
-        .build();
-    ctx.tr_sess_set_attributes(
-        session.unwrap(),
-        session_attributes,
-        session_attributes_mask,
-    )
-    .unwrap();
-    ctx.set_sessions((session, None, None));
-
-    ctx
 }
 
 #[allow(dead_code)]

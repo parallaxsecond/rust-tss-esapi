@@ -4,5 +4,6 @@ use tss_esapi::tcti_ldr::TctiContext;
 
 #[test]
 fn new_context() {
-    let _context = TctiContext::initialize(crate::tcti_ldr_tests::name_conf()).unwrap();
+    let (_swtpm, name_conf) = crate::tcti_ldr_tests::name_conf();
+    let _context = TctiContext::initialize(name_conf).unwrap();
 }

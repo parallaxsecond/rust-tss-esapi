@@ -9,7 +9,7 @@
 FROM opensuse/tumbleweed:latest
 
 RUN zypper install -y \
-    tpm2-0-tss-devel tpm2.0-tools tpm2.0-abrmd \
+    tpm2-0-tss-devel tpm2.0-tools \
     swtpm \
     cargo \
     clang \

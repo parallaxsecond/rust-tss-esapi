@@ -1,9 +1,10 @@
 // Copyright 2021 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
 mod test_duplicate {
-    use crate::common::{create_ctx_with_session, create_ctx_without_session};
+    use crate::common::SwtpmSession;
     use std::convert::TryFrom;
     use std::convert::TryInto;
+    use tss_esapi::Context;
     use tss_esapi::attributes::{ObjectAttributesBuilder, SessionAttributesBuilder};
     use tss_esapi::constants::SessionType;
     use tss_esapi::handles::ObjectHandle;
@@ -21,7 +22,9 @@ mod test_duplicate {
 
     #[test]
     fn test_duplicate_and_import() {
-        let mut context = create_ctx_with_session();
+        // Use a shared swtpm so all contexts share TPM state (primary key seeds).
+        let swtpm = SwtpmSession::new();
+        let mut context = swtpm.create_session_context();
 
         // First: create a target parent object.
         // The key that we will duplicate will be a child of this target parent.
@@ -77,7 +80,7 @@ mod test_duplicate {
         // Trial session will be used to compute a policy digest.
         // The policy will allow key duplication to one specified target parent.
         // The target parent would be selected using "parent_name".
-        let mut context = create_ctx_without_session();
+        let mut context = Context::new(swtpm.tcti()).unwrap();
 
         let trial_session = context
             .start_auth_session(
@@ -124,7 +127,7 @@ mod test_duplicate {
             .expect("Could retrieve digest");
 
         drop(context);
-        let mut context = create_ctx_with_session();
+        let mut context = swtpm.create_session_context();
 
         // Fixed TPM and Fixed Parent should be "false" for an object
         // to be eligible for duplication

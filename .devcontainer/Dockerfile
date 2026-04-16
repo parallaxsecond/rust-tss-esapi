@@ -23,7 +23,8 @@ RUN apt -y update && apt -y install \
     libltdl-dev \
     libusb-1.0-0-dev \
     libftdi-dev \
-    clang
+    clang \
+    swtpm
 
 WORKDIR /build
 ADD . /build

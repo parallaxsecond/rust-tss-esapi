@@ -1,4 +1,4 @@
-use crate::common::{create_ctx_with_session, create_ctx_without_session, decryption_key_pub};
+use crate::common::{SwtpmSession, create_ctx_without_session, decryption_key_pub};
 use tss_esapi::{
     Context, Error,
     attributes::NvIndexAttributesBuilder,
@@ -454,10 +454,13 @@ mod test_tr_serialize_tr_deserialize {
 
     #[test]
     fn test_tr_serialize_tr_deserialize() -> Result<(), Error> {
+        // Use a shared swtpm so both contexts see the same persistent handles.
+        let swtpm = SwtpmSession::new();
+
         let persistent_addr =
             PersistentTpmHandle::new(u32::from_be_bytes([0x81, 0x00, 0x00, 0x05]))?;
         let persistent = Persistent::Persistent(persistent_addr);
-        let mut context = create_ctx_with_session();
+        let mut context = swtpm.create_session_context();
 
         // Make sure the handle is not already persistent
         if let Ok(clear_handle) =
@@ -482,8 +485,8 @@ mod test_tr_serialize_tr_deserialize {
         let data = context.tr_serialize(persistent_handle)?;
 
         drop(context);
-        // Load handle in a new context
-        let mut new_context = create_ctx_without_session();
+        // Load handle in a new context (same swtpm for persistent handle access)
+        let mut new_context = Context::new(swtpm.tcti())?;
         let new_handle = new_context.tr_deserialize(&data)?.into();
         // Check it is the same key via the public key included in Public
         assert_eq!(public, new_context.read_public(new_handle)?);

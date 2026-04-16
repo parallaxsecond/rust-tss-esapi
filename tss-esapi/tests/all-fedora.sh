@@ -17,28 +17,20 @@ if [[ ! -z ${USE_FROZEN_LOCKFILE:+x} ]]; then
 	cp tests/Cargo.lock.frozen ../Cargo.lock
 fi
 
-############################
-# Run the TPM SWTPM server #
-############################
+########################################
+# Run the TPM SWTPM server for doctest #
+########################################
 mkdir /tmp/tpmdir
 swtpm_setup --tpm2 \
     --tpmstate /tmp/tpmdir \
-    --createek --decryption --create-ek-cert \
-    --create-platform-cert \
     --pcr-banks sha1,sha256 \
     --display
 swtpm socket --tpm2 \
     --tpmstate dir=/tmp/tpmdir \
     --flags startup-clear \
-    --ctrl type=tcp,port=2322 \
-    --server type=tcp,port=2321 \
+    --ctrl type=unixio,path=/tmp/tpmdir/swtpm.sock.ctrl \
+    --server type=unixio,path=/tmp/tpmdir/swtpm.sock \
     --daemon
-tpm2-abrmd \
-    --logger=stdout \
-    --tcti=swtpm: \
-    --allow-root \
-    --session \
-    --flush-all &
 
 ###################
 # Build the crate #
@@ -48,4 +40,8 @@ RUST_BACKTRACE=1 cargo build --features "generate-bindings integration-tests ser
 #################
 # Run the tests #
 #################
-TEST_TCTI=tabrmd:bus_type=session RUST_BACKTRACE=1 RUST_LOG=info cargo test --features "generate-bindings integration-tests serde" --  --test-threads=1 --nocapture
+RUST_BACKTRACE=1 RUST_LOG=info \
+    cargo test --lib --bins --tests --features "generate-bindings integration-tests serde" -- --nocapture
+
+TEST_TCTI="swtpm:path=/tmp/tpmdir/swtpm.sock" RUST_BACKTRACE=1 RUST_LOG=info \
+    cargo test --doc --features "generate-bindings integration-tests serde" -- --test-threads=1 --nocapture
