@@ -3,9 +3,13 @@
 use crate::{
     Context, Result, ReturnCode,
     handles::KeyHandle,
+    interface_types::{algorithm::EccKeyExchangeAlgorithm, ecc::EccCurve},
     structures::Data,
-    structures::{EccPoint, PublicKeyRsa, RsaDecryptionScheme},
-    tss2_esys::{Esys_ECDH_KeyGen, Esys_ECDH_ZGen, Esys_RSA_Decrypt, Esys_RSA_Encrypt},
+    structures::{EccParameterDetails, EccPoint, PublicKeyRsa, RsaDecryptionScheme},
+    tss2_esys::{
+        Esys_ECC_Parameters, Esys_ECDH_KeyGen, Esys_ECDH_ZGen, Esys_RSA_Decrypt, Esys_RSA_Encrypt,
+        Esys_ZGen_2Phase,
+    },
 };
 use log::error;
 use std::ptr::null_mut;
@@ -603,6 +607,210 @@ impl Context {
         EccPoint::try_from(out_point.point)
     }
 
-    // Missing function: ECC_Parameters
-    // Missing function: ZGen_2Phase
+    /// Get the parameters of an ECC curve.
+    ///
+    /// # Arguments
+    ///
+    /// * `curve` - The [EccCurve] to query.
+    ///
+    /// # Details
+    ///
+    /// *From the specification*
+    /// > This command returns the parameters of an ECC curve identified
+    /// > by its TCG-assigned curveID.
+    ///
+    /// # Returns
+    ///
+    /// An [EccParameterDetails] containing the curve parameters.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// # use tss_esapi::{Context, TctiNameConf};
+    /// use tss_esapi::interface_types::ecc::EccCurve;
+    /// # let mut context =
+    /// #     Context::new(
+    /// #         TctiNameConf::from_environment_variable().expect("Failed to get TCTI"),
+    /// #     ).expect("Failed to create Context");
+    /// // Get the parameters of the elliptic curve
+    /// let details = context.ecc_parameters(EccCurve::NistP256).expect("Failed to get ECC parameters");
+    /// ```
+    pub fn ecc_parameters(&mut self, curve: EccCurve) -> Result<EccParameterDetails> {
+        let mut parameters_ptr = null_mut();
+        ReturnCode::ensure_success(
+            unsafe {
+                Esys_ECC_Parameters(
+                    self.mut_context(),
+                    self.optional_session_1(),
+                    self.optional_session_2(),
+                    self.optional_session_3(),
+                    curve.into(),
+                    &mut parameters_ptr,
+                )
+            },
+            |ret| {
+                error!("Error when getting ECC parameters: {:#010X}", ret);
+            },
+        )?;
+        EccParameterDetails::try_from(Context::ffi_data_to_owned(parameters_ptr)?)
+    }
+
+    /// Perform a two-phase ECC key exchange.
+    ///
+    /// # Arguments
+    ///
+    /// * `key_handle` - A [KeyHandle] of the ECC key (Party A).
+    /// * `in_qs_b` - The static public key of Party B as an [EccPoint].
+    /// * `in_qe_b` - The ephemeral public key of Party B as an [EccPoint].
+    /// * `in_scheme` - The key exchange protocol as an [EccKeyExchangeAlgorithm].
+    /// * `counter` - The commit counter from the TPM.
+    ///
+    /// # Details
+    ///
+    /// *From the specification*
+    /// > This command supports two-phase key exchange protocols. The
+    /// > command is used in combination with TPM2_EC_Ephemeral().
+    ///
+    /// # Returns
+    ///
+    /// A tuple of `(EccPoint, EccPoint)` representing `(outZ1, outZ2)`.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// # use tss_esapi::{
+    /// #    Context, TctiNameConf,
+    /// #    attributes::{SessionAttributesBuilder, ObjectAttributesBuilder},
+    /// #    constants::SessionType,
+    /// #    interface_types::{
+    /// #        algorithm::{EccKeyExchangeAlgorithm, HashingAlgorithm, PublicAlgorithm},
+    /// #        ecc::EccCurve,
+    /// #        reserved_handles::Hierarchy,
+    /// #   },
+    /// #   structures::{
+    /// #       Auth, EccPoint, EccScheme, HashScheme, KeyDerivationFunctionScheme,
+    /// #       PublicBuilder, PublicEccParametersBuilder, SymmetricDefinition,
+    /// #    },
+    /// # };
+    /// # let mut context =
+    /// #     Context::new(
+    /// #         TctiNameConf::from_environment_variable().expect("Failed to get TCTI"),
+    /// #     ).expect("Failed to create Context");
+    /// #
+    /// # let session = context
+    /// #     .start_auth_session(
+    /// #         None,
+    /// #         None,
+    /// #         None,
+    /// #         SessionType::Hmac,
+    /// #         SymmetricDefinition::AES_256_CFB,
+    /// #         HashingAlgorithm::Sha256,
+    /// #     )
+    /// #     .expect("Failed to create session")
+    /// #     .expect("Received invalid handle");
+    /// # let (session_attributes, session_attributes_mask) = SessionAttributesBuilder::new()
+    /// #     .with_decrypt(true)
+    /// #     .with_encrypt(true)
+    /// #     .build();
+    /// # context.tr_sess_set_attributes(session, session_attributes, session_attributes_mask)
+    /// #     .expect("Failed to set attributes on session");
+    /// # context.set_sessions((Some(session), None, None));
+    /// # let mut random_digest = vec![0u8; 16];
+    /// # getrandom::getrandom(&mut random_digest).expect("Failed to get random bytes");
+    /// # let key_auth = Auth::from_bytes(random_digest.as_slice()).expect("Failed to create key auth");
+    /// #
+    /// # let ecc_parms = PublicEccParametersBuilder::new()
+    /// #     .with_ecc_scheme(EccScheme::EcDh(HashScheme::new(HashingAlgorithm::Sha256)))
+    /// #     .with_curve(EccCurve::NistP256)
+    /// #     .with_is_signing_key(false)
+    /// #     .with_is_decryption_key(true)
+    /// #     .with_restricted(false)
+    /// #     .with_key_derivation_function_scheme(KeyDerivationFunctionScheme::Null)
+    /// #     .build()
+    /// #     .expect("Failed to build ECC parameters");
+    /// #
+    /// # let object_attributes = ObjectAttributesBuilder::new()
+    /// #     .with_fixed_tpm(true)
+    /// #     .with_fixed_parent(true)
+    /// #     .with_sensitive_data_origin(true)
+    /// #     .with_user_with_auth(true)
+    /// #     .with_decrypt(true)
+    /// #     .with_sign_encrypt(false)
+    /// #     .with_restricted(false)
+    /// #     .build()
+    /// #     .expect("Failed to build object attributes");
+    /// #
+    /// # let public = PublicBuilder::new()
+    /// #     .with_public_algorithm(PublicAlgorithm::Ecc)
+    /// #     .with_name_hashing_algorithm(HashingAlgorithm::Sha256)
+    /// #     .with_object_attributes(object_attributes)
+    /// #     .with_ecc_parameters(ecc_parms)
+    /// #     .with_ecc_unique_identifier(EccPoint::default())
+    /// #     .build()
+    /// #     .expect("Failed to build public key");
+    /// #
+    /// # let key_handle = context
+    /// #     .create_primary(Hierarchy::Owner, public, Some(key_auth), None, None, None)
+    /// #     .expect("Failed to create primary key")
+    /// #     .key_handle;
+    /// #
+    /// // Get ephemeral key and counter
+    /// let (q_point, counter) = context
+    ///     .ec_ephemeral(EccCurve::NistP256)
+    ///     .expect("Failed to create EC ephemeral key");
+    ///
+    /// // Generate another ephemeral via ecdh_key_gen
+    /// let (_z_point, pub_point) = context
+    ///     .ecdh_key_gen(key_handle)
+    ///     .expect("Failed to generate ECDH key");
+    ///
+    /// // Perform two-phase key exchange
+    /// let (_out_z1, _out_z2) = context
+    ///     .zgen_2phase(
+    ///         key_handle,
+    ///         pub_point,
+    ///         q_point,
+    ///         EccKeyExchangeAlgorithm::EcDh,
+    ///         counter,
+    ///     )
+    ///     .expect("Failed to perform ZGen_2Phase");
+    /// ```
+    pub fn zgen_2phase(
+        &mut self,
+        key_handle: KeyHandle,
+        in_qs_b: EccPoint,
+        in_qe_b: EccPoint,
+        in_scheme: EccKeyExchangeAlgorithm,
+        counter: u16,
+    ) -> Result<(EccPoint, EccPoint)> {
+        let mut out_z1_ptr = null_mut();
+        let mut out_z2_ptr = null_mut();
+        ReturnCode::ensure_success(
+            unsafe {
+                Esys_ZGen_2Phase(
+                    self.mut_context(),
+                    key_handle.into(),
+                    self.required_session_1()?,
+                    self.optional_session_2(),
+                    self.optional_session_3(),
+                    &in_qs_b.into(),
+                    &in_qe_b.into(),
+                    in_scheme.into(),
+                    counter,
+                    &mut out_z1_ptr,
+                    &mut out_z2_ptr,
+                )
+            },
+            |ret| {
+                error!("Error in ZGen_2Phase: {:#010X}", ret);
+            },
+        )?;
+
+        let out_z1 = Context::ffi_data_to_owned(out_z1_ptr)?;
+        let out_z2 = Context::ffi_data_to_owned(out_z2_ptr)?;
+        Ok((
+            EccPoint::try_from(out_z1.point)?,
+            EccPoint::try_from(out_z2.point)?,
+        ))
+    }
 }
