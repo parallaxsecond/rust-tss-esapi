@@ -77,6 +77,9 @@ tss-esapi = { path = ".", features = [
 ] }
 x509-cert = { version = "0.2.0", features = ["builder"] }
 
+cipher = { version = "0.4", features = ["block-padding", "alloc"] }
+
+
 [build-dependencies]
 semver = "1.0.7"
 
