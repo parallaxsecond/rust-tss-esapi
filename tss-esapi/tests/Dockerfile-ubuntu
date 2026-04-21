@@ -1,4 +1,4 @@
-FROM ghcr.io/tpm2-software/ubuntu-20.04:latest AS base
+FROM ghcr.io/tpm2-software/ubuntu-22.04:latest AS base
 
 FROM base AS rust-toolchain
 # Install Rust toolchain
