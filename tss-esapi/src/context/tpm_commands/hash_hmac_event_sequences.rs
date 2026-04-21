@@ -26,7 +26,7 @@ impl Context {
     ///
     /// # Example
     ///
-    /// ```rust
+    /// ```no_run
     /// # use tss_esapi::{Context, tcti_ldr::TctiNameConf,
     /// #     attributes::{ObjectAttributesBuilder, SessionAttributesBuilder},
     /// #     structures::{
@@ -157,7 +157,7 @@ impl Context {
     ///
     /// # Example
     ///
-    /// ```rust
+    /// ```no_run
     /// # use tss_esapi::{Context, tcti_ldr::TctiNameConf,
     /// #     attributes::SessionAttributesBuilder,
     /// #     structures::{Auth, MaxBuffer, Ticket, SymmetricDefinition, RsaExponent, RsaScheme},

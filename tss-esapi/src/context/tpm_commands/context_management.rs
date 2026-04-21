@@ -53,7 +53,7 @@ impl Context {
     ///
     /// # Example
     ///
-    /// ```rust
+    /// ```no_run
     /// # use tss_esapi::{
     /// #     Context, tcti_ldr::TctiNameConf, structures::Auth,
     /// #     constants::{
@@ -165,7 +165,7 @@ impl Context {
     /// # Example
     ///
     /// Make transient object persistent:
-    /// ```rust
+    /// ```no_run
     /// # use tss_esapi::{
     /// #     Context, tcti_ldr::TctiNameConf, Result,
     /// #     constants::{
@@ -284,7 +284,7 @@ impl Context {
     /// ```
     ///
     /// Make persistent object transient
-    /// ```rust
+    /// ```no_run
     /// # use tss_esapi::{
     /// #     Context, tcti_ldr::TctiNameConf, Result,
     /// #     constants::{

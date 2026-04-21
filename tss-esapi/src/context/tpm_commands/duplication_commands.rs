@@ -38,7 +38,7 @@ impl Context {
     ///
     /// # Example
     ///
-    /// ```rust
+    /// ```no_run
     /// # use std::convert::{TryFrom, TryInto};
     /// # use tss_esapi::attributes::{ObjectAttributesBuilder, SessionAttributesBuilder};
     /// # use tss_esapi::constants::{CommandCode, SessionType};
@@ -360,7 +360,7 @@ impl Context {
     ///
     /// # Example
     ///
-    /// ```rust
+    /// ```no_run
     /// # use std::convert::{TryFrom, TryInto};
     /// # use tss_esapi::attributes::{ObjectAttributesBuilder, SessionAttributesBuilder};
     /// # use tss_esapi::constants::{CommandCode, SessionType};

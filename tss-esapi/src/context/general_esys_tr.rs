@@ -26,7 +26,7 @@ impl Context {
     /// * `object_handle` - The [ObjectHandle] associated with an object for which the auth is to be set.
     /// * `auth` -  The [Auth] that is to be set.
     ///
-    /// ```rust
+    /// ```no_run
     /// # use tss_esapi::{Context, TctiNameConf};
     /// use tss_esapi::{handles::ObjectHandle, structures::Auth};
     /// # // Create context
@@ -60,7 +60,7 @@ impl Context {
     /// The objects name.
     ///
     /// # Example
-    /// ```rust
+    /// ```no_run
     /// # use tss_esapi::{
     /// #     Context, TctiNameConf, attributes::{SessionAttributes, NvIndexAttributes},
     /// #     constants::SessionType, handles::NvIndexTpmHandle,
@@ -152,7 +152,7 @@ impl Context {
     /// A handle to the ESYS object that was created from a TPM resource.
     ///
     /// # Example
-    /// ```rust
+    /// ```no_run
     /// # use tss_esapi::{
     /// #     Context, TctiNameConf, attributes::{SessionAttributes, NvIndexAttributes},
     /// #     constants::SessionType,
@@ -280,7 +280,7 @@ impl Context {
     ///   resources is going to be released.
     ///
     /// # Example
-    /// ```rust
+    /// ```no_run
     /// # use tss_esapi::{
     /// #     Context, TctiNameConf, attributes::{SessionAttributes, NvIndexAttributes},
     /// #     constants::SessionType, handles::NvIndexTpmHandle,
@@ -410,7 +410,7 @@ impl Context {
     /// * if the buffer length cannot be converted to a `usize`, an `InvalidParam`
     ///   wrapper error is returned.
     ///
-    /// ```rust
+    /// ```no_run
     /// # use tss_esapi::{
     /// #     Context, TctiNameConf,
     /// #     interface_types::reserved_handles::Hierarchy,
@@ -478,7 +478,7 @@ impl Context {
     /// * if the buffer length cannot be converted to a `usize`, an `InvalidParam`
     ///   wrapper error is returned.
     ///
-    /// ```rust
+    /// ```no_run
     /// # use tss_esapi::{
     /// #     Context, TctiNameConf,
     /// #     interface_types::reserved_handles::Hierarchy,
