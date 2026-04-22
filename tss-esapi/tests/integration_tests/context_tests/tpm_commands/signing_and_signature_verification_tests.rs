@@ -12,7 +12,7 @@ mod test_verify_signature {
     fn test_verify_signature() {
         let mut context = create_ctx_with_session();
         let mut random_digest = vec![0u8; 16];
-        getrandom::getrandom(&mut random_digest).unwrap();
+        getrandom::fill(&mut random_digest).unwrap();
         let key_auth = Auth::from_bytes(random_digest.as_slice()).unwrap();
 
         let key_handle = context
@@ -49,7 +49,7 @@ mod test_verify_signature {
     fn test_verify_wrong_signature() {
         let mut context = create_ctx_with_session();
         let mut random_digest = vec![0u8; 16];
-        getrandom::getrandom(&mut random_digest).unwrap();
+        getrandom::fill(&mut random_digest).unwrap();
         let key_auth = Auth::from_bytes(random_digest.as_slice()).unwrap();
 
         let key_handle = context
@@ -98,7 +98,7 @@ mod test_verify_signature {
     fn test_verify_wrong_signature_2() {
         let mut context = create_ctx_with_session();
         let mut random_digest = vec![0u8; 16];
-        getrandom::getrandom(&mut random_digest).unwrap();
+        getrandom::fill(&mut random_digest).unwrap();
         let key_auth = Auth::from_bytes(random_digest.as_slice()).unwrap();
 
         let key_handle = context
@@ -137,7 +137,7 @@ mod test_verify_signature {
     fn test_verify_wrong_signature_3() {
         let mut context = create_ctx_with_session();
         let mut random_digest = vec![0u8; 16];
-        getrandom::getrandom(&mut random_digest).unwrap();
+        getrandom::fill(&mut random_digest).unwrap();
         let key_auth = Auth::from_bytes(random_digest.as_slice()).unwrap();
 
         let key_handle = context
@@ -209,7 +209,7 @@ mod test_sign {
     fn test_sign() {
         let mut context = create_ctx_with_session();
         let mut random_digest = vec![0u8; 16];
-        getrandom::getrandom(&mut random_digest).unwrap();
+        getrandom::fill(&mut random_digest).unwrap();
         let key_auth = Auth::from_bytes(random_digest.as_slice()).unwrap();
 
         let key_handle = context
@@ -238,7 +238,7 @@ mod test_sign {
     fn test_sign_empty_digest() {
         let mut context = create_ctx_with_session();
         let mut random_digest = vec![0u8; 16];
-        getrandom::getrandom(&mut random_digest).unwrap();
+        getrandom::fill(&mut random_digest).unwrap();
         let key_auth = Auth::from_bytes(random_digest.as_slice()).unwrap();
 
         let key_handle = context
@@ -267,7 +267,7 @@ mod test_sign {
     fn test_sign_large_digest() {
         let mut context = create_ctx_with_session();
         let mut random_digest = vec![0u8; 16];
-        getrandom::getrandom(&mut random_digest).unwrap();
+        getrandom::fill(&mut random_digest).unwrap();
         let key_auth = Auth::from_bytes(random_digest.as_slice()).unwrap();
 
         let key_handle = context
@@ -303,7 +303,7 @@ mod test_sign {
 
         let mut context = create_ctx_with_session();
         let mut random_digest = vec![0u8; 16];
-        getrandom::getrandom(&mut random_digest).unwrap();
+        getrandom::fill(&mut random_digest).unwrap();
         let key_auth = Auth::from_bytes(random_digest.as_slice()).unwrap();
 
         let key_handle = context
@@ -312,7 +312,7 @@ mod test_sign {
             .key_handle;
 
         let mut random = vec![0u8; 47];
-        getrandom::getrandom(&mut random).unwrap();
+        getrandom::fill(&mut random).unwrap();
 
         let signer = EcSigner::<NistP256, _>::new((Mutex::new(&mut context), key_handle)).unwrap();
         let verifying_key = signer.verifying_key();
@@ -326,7 +326,7 @@ mod test_sign {
     fn test_sign_signer_rsa_pkcs() {
         let mut context = create_ctx_with_session();
         let mut random_digest = vec![0u8; 16];
-        getrandom::getrandom(&mut random_digest).unwrap();
+        getrandom::fill(&mut random_digest).unwrap();
         let key_auth = Auth::from_bytes(random_digest.as_slice()).unwrap();
 
         let key_handle = context
@@ -342,7 +342,7 @@ mod test_sign {
             .key_handle;
 
         let mut payload = vec![0u8; 47];
-        getrandom::getrandom(&mut payload).unwrap();
+        getrandom::fill(&mut payload).unwrap();
 
         let signer =
             RsaPkcsSigner::<_, sha2::Sha256>::new((Mutex::new(&mut context), key_handle)).unwrap();
@@ -351,8 +351,15 @@ mod test_sign {
 
         verifying_key.verify(&payload, &signature).unwrap();
 
-        let d = sha2::Sha256::new_with_prefix(&payload);
-        verifying_key.verify_digest(d, &signature).unwrap();
+        verifying_key
+            .verify_digest(
+                |d: &mut sha2::Sha256| {
+                    d.update(&payload);
+                    Ok(())
+                },
+                &signature,
+            )
+            .unwrap();
     }
 
     #[cfg(feature = "rsa")]
@@ -360,7 +367,7 @@ mod test_sign {
     fn test_sign_signer_rsa_pss() {
         let mut context = create_ctx_with_session();
         let mut random_digest = vec![0u8; 16];
-        getrandom::getrandom(&mut random_digest).unwrap();
+        getrandom::fill(&mut random_digest).unwrap();
         let key_auth = Auth::from_bytes(random_digest.as_slice()).unwrap();
 
         let rsa_pss = utils::create_unrestricted_signing_rsa_public(
@@ -377,7 +384,7 @@ mod test_sign {
             .key_handle;
 
         let mut payload = vec![0u8; 47];
-        getrandom::getrandom(&mut payload).unwrap();
+        getrandom::fill(&mut payload).unwrap();
 
         let signer =
             RsaPssSigner::<_, sha2::Sha256>::new((Mutex::new(&mut context), key_handle)).unwrap();
@@ -386,7 +393,14 @@ mod test_sign {
 
         verifying_key.verify(&payload, &signature).unwrap();
 
-        let d = sha2::Sha256::new_with_prefix(&payload);
-        verifying_key.verify_digest(d, &signature).unwrap();
+        verifying_key
+            .verify_digest(
+                |d: &mut sha2::Sha256| {
+                    d.update(&payload);
+                    Ok(())
+                },
+                &signature,
+            )
+            .unwrap();
     }
 }
