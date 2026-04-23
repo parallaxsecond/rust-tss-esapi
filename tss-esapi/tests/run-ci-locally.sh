@@ -162,8 +162,9 @@ function job_spelling {
     cd "${CRATE_DIR}"
     if codespell --version &>/dev/null; then
         run_job "Check spelling" \
-            codespell --ignore-words-list "crate,daa,keypair,AcSend" \
-            --skip "*/target,*-sys" "${CRATE_DIR}"
+            codespell --ignore-words-list "crate,daa,keypair,AcSend,ser" \
+            --skip "*/target,*-sys,${CRATE_DIR}/examples/symmetric_file_encrypt_decrypt_example.txt" \
+            "${CRATE_DIR}"
     else
         skip_job "Check spelling" "codespell not installed"
     fi
