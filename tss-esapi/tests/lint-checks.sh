@@ -20,4 +20,9 @@ fi
 ##################
 # Execute clippy #
 ##################
-cargo clippy --all-targets --all-features -- -D clippy::all -D clippy::cargo
+if [[ ! -z ${RUST_TOOLCHAIN_VERSION:+x} ]]; then
+	# MSRV mode: skip generate-bindings (bindgen requires newer rustc)
+	cargo clippy --all-targets -- -D clippy::all -D clippy::cargo
+else
+	cargo clippy --all-targets --all-features -- -D clippy::all -D clippy::cargo
+fi
