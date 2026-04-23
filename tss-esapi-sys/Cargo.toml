@@ -14,7 +14,7 @@ links = "tss2-esys"
 rust-version = "1.66.0"
 
 [build-dependencies]
-bindgen = { version = "0.66.1", optional = true }
+bindgen = { version = "0.72.1", optional = true }
 pkg-config = "0.3.18"
 target-lexicon = "0.12.0"
 
