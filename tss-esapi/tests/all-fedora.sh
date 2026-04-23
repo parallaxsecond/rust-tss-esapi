@@ -20,7 +20,7 @@ fi
 ############################
 # Run the TPM SWTPM server #
 ############################
-mkdir /tmp/tpmdir
+mkdir -p /tmp/tpmdir
 swtpm_setup --tpm2 \
     --tpmstate /tmp/tpmdir \
     --createek --decryption --create-ek-cert \
