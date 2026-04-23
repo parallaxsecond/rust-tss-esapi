@@ -526,8 +526,7 @@ impl TransientKeyContext {
                 .load_external_public(public, Hierarchy::Owner)?
         } else {
             self.context
-                .load(self.root_key_handle, material.private.try_into()?, public)
-                .map(KeyHandle::from)?
+                .load(self.root_key_handle, material.private.try_into()?, public)?
         };
         let key_auth_value = auth.unwrap_or_default();
         if !key_auth_value.is_empty() {

@@ -246,10 +246,9 @@ pub fn create_ak<IKC: IntoKeyCustomization>(
     ak_auth_value: Option<Auth>,
     key_customization: IKC,
 ) -> Result<CreateKeyResult> {
-    let key_alg = AsymmetricAlgorithm::try_from(sign_alg).map_err(|e| {
+    let key_alg = AsymmetricAlgorithm::try_from(sign_alg).inspect_err(|_| {
         // sign_alg is either HMAC or Null.
         error!("Could not retrieve asymmetric algorithm for provided signature scheme");
-        e
     })?;
     create_ak_2(
         context,
