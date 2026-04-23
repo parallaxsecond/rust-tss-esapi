@@ -23,7 +23,7 @@ impl Context {
     /// # Arguments
     /// * `key_handle` -  A [KeyHandle] to the key to be used.
     /// * `decrypt` - A boolean indicating if the data should be decrypted or encrypted.
-    ///               If set to true the data will be decrypted else encrypted.
+    ///   If set to true the data will be decrypted else encrypted.
     /// * `mode` - The [SymmetricMode] to be used.
     /// * `in_data` - The data that is going to be decrypted or encrypted.
     /// * `initial_value_in` - An initial value as required by the algorithm.

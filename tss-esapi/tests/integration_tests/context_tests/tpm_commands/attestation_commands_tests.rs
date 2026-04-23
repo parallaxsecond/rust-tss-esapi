@@ -52,7 +52,10 @@ mod test_quote {
 
         match attest.attested() {
             AttestInfo::Quote { info } => {
-                assert!(info.pcr_digest().len() != 0, "Digest in QuoteInfo is empty");
+                assert!(
+                    !info.pcr_digest().is_empty(),
+                    "Digest in QuoteInfo is empty"
+                );
                 assert_eq!(
                     &pcr_selection_list,
                     info.pcr_selection(),

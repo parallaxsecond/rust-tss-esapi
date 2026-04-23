@@ -95,7 +95,7 @@ impl ObjectAttributesBuilder {
     ///
     /// # Arguments
     /// * `set` - `true` indicates that the attribute should have the value SET.
-    ///           `false`indicates that the attribute should have the value CLEAR.
+    ///   `false`indicates that the attribute should have the value CLEAR.
     pub fn with_fixed_tpm(mut self, set: bool) -> Self {
         self.object_attributes.set_fixed_tpm(set);
         self
@@ -105,7 +105,7 @@ impl ObjectAttributesBuilder {
     ///
     /// # Arguments
     /// * `set` - `true` indicates that the attribute should have the value SET.
-    ///           `false`indicates that the attribute should have the value CLEAR.
+    ///   `false`indicates that the attribute should have the value CLEAR.
     pub fn with_st_clear(mut self, set: bool) -> Self {
         self.object_attributes.set_st_clear(set);
         self
@@ -115,7 +115,7 @@ impl ObjectAttributesBuilder {
     ///
     /// # Arguments
     /// * `set` - `true` indicates that the attribute should have the value SET.
-    ///           `false`indicates that the attribute should have the value CLEAR.
+    ///   `false`indicates that the attribute should have the value CLEAR.
     pub fn with_fixed_parent(mut self, set: bool) -> Self {
         self.object_attributes.set_fixed_parent(set);
         self
@@ -125,7 +125,7 @@ impl ObjectAttributesBuilder {
     ///
     /// # Arguments
     /// * `set` - `true` indicates that the attribute should have the value SET.
-    ///           `false`indicates that the attribute should have the value CLEAR.
+    ///   `false`indicates that the attribute should have the value CLEAR.
     pub fn with_sensitive_data_origin(mut self, set: bool) -> Self {
         self.object_attributes.set_sensitive_data_origin(set);
         self
@@ -135,7 +135,7 @@ impl ObjectAttributesBuilder {
     ///
     /// # Arguments
     /// * `set` - `true` indicates that the attribute should have the value SET.
-    ///           `false`indicates that the attribute should have the value CLEAR.
+    ///   `false`indicates that the attribute should have the value CLEAR.
     pub fn with_user_with_auth(mut self, set: bool) -> Self {
         self.object_attributes.set_user_with_auth(set);
         self
@@ -145,7 +145,7 @@ impl ObjectAttributesBuilder {
     ///
     /// # Arguments
     /// * `set` - `true` indicates that the attribute should have the value SET.
-    ///           `false`indicates that the attribute should have the value CLEAR.
+    ///   `false`indicates that the attribute should have the value CLEAR.
     pub fn with_admin_with_policy(mut self, set: bool) -> Self {
         self.object_attributes.set_admin_with_policy(set);
         self
@@ -155,7 +155,7 @@ impl ObjectAttributesBuilder {
     ///
     /// # Arguments
     /// * `set` - `true` indicates that the attribute should have the value SET.
-    ///           `false`indicates that the attribute should have the value CLEAR.
+    ///   `false`indicates that the attribute should have the value CLEAR.
     pub fn with_no_da(mut self, set: bool) -> Self {
         self.object_attributes.set_no_da(set);
         self
@@ -165,7 +165,7 @@ impl ObjectAttributesBuilder {
     ///
     /// # Arguments
     /// * `set` - `true` indicates that the attribute should have the value SET.
-    ///           `false`indicates that the attribute should have the value CLEAR.
+    ///   `false`indicates that the attribute should have the value CLEAR.
     pub fn with_encrypted_duplication(mut self, set: bool) -> Self {
         self.object_attributes.set_encrypted_duplication(set);
         self
@@ -175,7 +175,7 @@ impl ObjectAttributesBuilder {
     ///
     /// # Arguments
     /// * `set` - `true` indicates that the attribute should have the value SET.
-    ///           `false`indicates that the attribute should have the value CLEAR.
+    ///   `false`indicates that the attribute should have the value CLEAR.
     pub fn with_restricted(mut self, set: bool) -> Self {
         self.object_attributes.set_restricted(set);
         self
@@ -185,7 +185,7 @@ impl ObjectAttributesBuilder {
     ///
     /// # Arguments
     /// * `set` - `true` indicates that the attribute should have the value SET.
-    ///           `false`indicates that the attribute should have the value CLEAR.
+    ///   `false`indicates that the attribute should have the value CLEAR.
     pub fn with_decrypt(mut self, set: bool) -> Self {
         self.object_attributes.set_decrypt(set);
         self
@@ -195,7 +195,7 @@ impl ObjectAttributesBuilder {
     ///
     /// # Arguments
     /// * `set` - `true` indicates that the attribute should have the value SET.
-    ///           `false`indicates that the attribute should have the value CLEAR.
+    ///   `false`indicates that the attribute should have the value CLEAR.
     pub fn with_sign_encrypt(mut self, set: bool) -> Self {
         self.object_attributes.set_sign_encrypt(set);
         self
@@ -205,7 +205,7 @@ impl ObjectAttributesBuilder {
     ///
     /// # Arguments
     /// * `set` - `true` indicates that the attribute should have the value SET.
-    ///           `false`indicates that the attribute should have the value CLEAR.
+    ///   `false`indicates that the attribute should have the value CLEAR.
     pub fn with_x509_sign(mut self, set: bool) -> Self {
         self.object_attributes.set_x509_sign(set);
         self
