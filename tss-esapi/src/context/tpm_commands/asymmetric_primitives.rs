@@ -132,7 +132,7 @@ impl Context {
     /// #     .expect("Failed to set attributes on session");
     /// # context.set_sessions((Some(session), None, None));
     /// # let mut random_digest = vec![0u8; 16];
-    /// # getrandom::getrandom(&mut random_digest).unwrap();
+    /// # getrandom::fill(&mut random_digest).unwrap();
     /// # let key_auth = Auth::try_from(random_digest).unwrap();
     /// #
     /// // Create a key suitable for ECDH key generation
@@ -270,7 +270,7 @@ impl Context {
     /// #     .expect("Failed to set attributes on session");
     /// # context.set_sessions((Some(session), None, None));
     /// # let mut random_digest = vec![0u8; 16];
-    /// # getrandom::getrandom(&mut random_digest).unwrap();
+    /// # getrandom::fill(&mut random_digest).unwrap();
     /// # let key_auth = Auth::try_from(random_digest).unwrap();
     /// #
     /// // Create a key suitable for ECDH key generation

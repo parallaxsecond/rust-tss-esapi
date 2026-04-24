@@ -20,7 +20,7 @@ mod test_rsa_encrypt_decrypt {
     fn test_encrypt_decrypt() {
         let mut context = create_ctx_with_session();
         let mut random_digest = vec![0u8; 16];
-        getrandom::getrandom(&mut random_digest).unwrap();
+        getrandom::fill(&mut random_digest).unwrap();
         let key_auth = Auth::try_from(random_digest).unwrap();
 
         let key_handle = context
@@ -61,7 +61,7 @@ mod test_rsa_encrypt_decrypt {
     fn test_ecdh() {
         let mut context = create_ctx_with_session();
         let mut random_digest = vec![0u8; 16];
-        getrandom::getrandom(&mut random_digest).unwrap();
+        getrandom::fill(&mut random_digest).unwrap();
         let key_auth = Auth::try_from(random_digest).unwrap();
 
         let ecc_parms = PublicEccParametersBuilder::new()

@@ -26,7 +26,7 @@ mod test_encrypt_decrypt_2 {
             .expect("Failed to set auth to empty for owner");
 
         let mut random_digest = vec![0u8; 16];
-        getrandom::getrandom(&mut random_digest).expect("get_rand call failed");
+        getrandom::fill(&mut random_digest).expect("get_rand call failed");
         let primary_key_auth =
             Auth::try_from(random_digest).expect("Failed to create primary key auth");
 
@@ -75,7 +75,7 @@ mod test_encrypt_decrypt_2 {
             .expect("Failed to create public for symmetric key public");
 
         let mut random_digest = vec![0u8; 16];
-        getrandom::getrandom(&mut random_digest).expect("get_rand call failed");
+        getrandom::fill(&mut random_digest).expect("get_rand call failed");
         let symmetric_key_auth =
             Auth::try_from(random_digest).expect("Failed to create symmetric key auth");
 
