@@ -71,7 +71,9 @@ impl Context {
                 self.optional_session_1(),
                 self.optional_session_2(),
                 self.optional_session_3(),
-                potential_tpm2b_nonce.as_ref().map_or_else(null, |v| v),
+                potential_tpm2b_nonce
+                    .as_ref()
+                    .map_or(null(), std::ptr::from_ref),
                 session_type.into(),
                 &symmetric.try_into()?,
                 auth_hash.into(),

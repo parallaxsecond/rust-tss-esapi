@@ -53,9 +53,8 @@ fn get_nv_index_info(
         .and_then(|mut object_handle| {
             context
                 .nv_read_public(NvIndexHandle::from(object_handle))
-                .map_err(|e| {
+                .inspect_err(|_| {
                     let _ = context.tr_close(&mut object_handle);
-                    e
                 })
                 .and_then(|(nv_public, name)| {
                     context.tr_close(&mut object_handle)?;
@@ -202,7 +201,7 @@ impl Read for NvReaderWriter<'_> {
         let res = self
             .context
             .nv_read(self.auth_handle, self.nv_idx, size, self.offset as u16)
-            .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))?;
+            .map_err(std::io::Error::other)?;
         buf[0..size as usize].copy_from_slice(&res);
         self.offset += size as usize;
 
@@ -221,10 +220,10 @@ impl std::io::Write for NvReaderWriter<'_> {
 
         let data = buf[0..size.into()]
             .try_into()
-            .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))?;
+            .map_err(std::io::Error::other)?;
         self.context
             .nv_write(self.auth_handle, self.nv_idx, data, self.offset as u16)
-            .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))?;
+            .map_err(std::io::Error::other)?;
         self.offset += size as usize;
 
         Ok(size.into())

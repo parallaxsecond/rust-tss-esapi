@@ -65,7 +65,7 @@ impl Context {
     /// # Arguments
     /// * `nv_auth` - The [Provision] used for authorization.
     /// * `nv_index_handle`- The [NvIndexHandle] associated with
-    ///                      the nv area that is to be removed.
+    ///   the nv area that is to be removed.
     pub fn nv_undefine_space(
         &mut self,
         nv_auth: Provision,

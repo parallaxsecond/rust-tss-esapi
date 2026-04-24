@@ -341,7 +341,7 @@ impl Context {
     /// * `object_name` - The [name][Name] of the object being duplicated.
     /// * `new_parent_name` - The [name][Name] of the new parent.
     /// * `include_object` - Flag indicating if `object_name` will be included in policy
-    ///                      calculation.
+    ///   calculation.
     ///
     /// # Details
     /// Set `include_object` only when this command is used in conjunction with

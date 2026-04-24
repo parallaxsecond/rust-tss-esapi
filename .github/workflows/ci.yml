@@ -2,6 +2,9 @@ name: Continuous Integration
 
 on: [push, pull_request]
 
+env:
+  MSRV: "1.85.0"
+
 jobs:
   # Use the following command to fix words locally:
   # codespell --ignore-words-list "crate,daa,keypair" --skip "*/target,*-sys" --write-changes
@@ -32,7 +35,7 @@ jobs:
       - name: Build the container
         run: docker build -t ubuntucontainer tss-esapi/tests/ --file tss-esapi/tests/Dockerfile-ubuntu
       - name: Run the container
-        run: docker run -v $(pwd):/tmp/rust-tss-esapi -w /tmp/rust-tss-esapi/tss-esapi --env RUST_TOOLCHAIN_VERSION=1.66.0 ubuntucontainer /tmp/rust-tss-esapi/tss-esapi/tests/all-ubuntu.sh
+        run: docker run -v $(pwd):/tmp/rust-tss-esapi -w /tmp/rust-tss-esapi/tss-esapi --env RUST_TOOLCHAIN_VERSION=${{ env.MSRV }} ubuntucontainer /tmp/rust-tss-esapi/tss-esapi/tests/all-ubuntu.sh
   # All in one job as I think it is a big overhead to build and run the Docker
   # container?
   tests-ubuntu:
@@ -79,7 +82,6 @@ jobs:
       - name: Run the tests
         run: docker run -v $(pwd):/tmp/rust-tss-esapi -w /tmp/rust-tss-esapi/tss-esapi --security-opt seccomp=unconfined fedoracontainer dbus-run-session -- /tmp/rust-tss-esapi/tss-esapi/tests/all-fedora.sh
 
-  # SEE #558 : remove use of 1.82 once 1.84 rolls out;
   tests-valgrind:
     name: Valgrind test run
     runs-on: ubuntu-latest
@@ -88,7 +90,7 @@ jobs:
       - name: Build the container
         run: docker build -t ubuntucontainer tss-esapi/tests/ --file tss-esapi/tests/Dockerfile-ubuntu
       - name: Run the tests
-        run: docker run -v $(pwd):/tmp/rust-tss-esapi -w /tmp/rust-tss-esapi/tss-esapi -e RUST_TOOLCHAIN_VERSION="1.82" ubuntucontainer /tmp/rust-tss-esapi/tss-esapi/tests/valgrind.sh
+        run: docker run -v $(pwd):/tmp/rust-tss-esapi -w /tmp/rust-tss-esapi/tss-esapi -e RUST_TOOLCHAIN_VERSION="${{ env.MSRV }}" ubuntucontainer /tmp/rust-tss-esapi/tss-esapi/tests/valgrind.sh
 
   # Check that the documentation builds as well.
   docs:
@@ -110,6 +112,6 @@ jobs:
       - name: Build the container
         run: docker build -t ubuntucontainer tss-esapi/tests/ --file tss-esapi/tests/Dockerfile-ubuntu  --target tpm2-tss
       - name: Check Clippy lints MSRV
-        run: docker run -v $(pwd):/tmp/rust-tss-esapi -w /tmp/rust-tss-esapi/tss-esapi --env RUST_TOOLCHAIN_VERSION=1.66.0 ubuntucontainer /tmp/rust-tss-esapi/tss-esapi/tests/lint-checks.sh
+        run: docker run -v $(pwd):/tmp/rust-tss-esapi -w /tmp/rust-tss-esapi/tss-esapi --env RUST_TOOLCHAIN_VERSION=${{ env.MSRV }} ubuntucontainer /tmp/rust-tss-esapi/tss-esapi/tests/lint-checks.sh
       - name: Check Clippy lints latest
         run: docker run -v $(pwd):/tmp/rust-tss-esapi -w /tmp/rust-tss-esapi/tss-esapi ubuntucontainer /tmp/rust-tss-esapi/tss-esapi/tests/lint-checks.sh

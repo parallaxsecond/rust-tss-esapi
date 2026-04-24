@@ -157,7 +157,7 @@ impl NvIndexAttributesBuilder {
     ///
     /// # Arguments
     /// * `set` - `true` indicates that the attribute should have the value SET.
-    ///           `false`indicates that the attribute should have the value CLEAR.
+    ///   `false`indicates that the attribute should have the value CLEAR.
     pub fn with_pp_write(mut self, set: bool) -> Self {
         self.nv_index_attributes.set_pp_write(set);
         self
@@ -167,7 +167,7 @@ impl NvIndexAttributesBuilder {
     ///
     /// # Arguments
     /// * `set` - `true` indicates that the attribute should have the value SET.
-    ///           `false`indicates that the attribute should have the value CLEAR.
+    ///   `false`indicates that the attribute should have the value CLEAR.
     pub fn with_owner_write(mut self, set: bool) -> Self {
         self.nv_index_attributes.set_owner_write(set);
         self
@@ -177,7 +177,7 @@ impl NvIndexAttributesBuilder {
     ///
     /// # Arguments
     /// * `set` - `true` indicates that the attribute should have the value SET.
-    ///           `false`indicates that the attribute should have the value CLEAR.
+    ///   `false`indicates that the attribute should have the value CLEAR.
     pub fn with_auth_write(mut self, set: bool) -> Self {
         self.nv_index_attributes.set_auth_write(set);
         self
@@ -187,7 +187,7 @@ impl NvIndexAttributesBuilder {
     ///
     /// # Arguments
     /// * `set` - `true` indicates that the attribute should have the value SET.
-    ///           `false`indicates that the attribute should have the value CLEAR.
+    ///   `false`indicates that the attribute should have the value CLEAR.
     pub fn with_policy_write(mut self, set: bool) -> Self {
         self.nv_index_attributes.set_policy_write(set);
         self
@@ -206,7 +206,7 @@ impl NvIndexAttributesBuilder {
     ///
     /// # Arguments
     /// * `set` - `true` indicates that the attribute should have the value SET.
-    ///           `false`indicates that the attribute should have the value CLEAR.
+    ///   `false`indicates that the attribute should have the value CLEAR.
     pub fn with_policy_delete(mut self, set: bool) -> Self {
         self.nv_index_attributes.set_policy_delete(set);
         self
@@ -216,7 +216,7 @@ impl NvIndexAttributesBuilder {
     ///
     /// # Arguments
     /// * `set` - `true` indicates that the attribute should have the value SET.
-    ///           `false`indicates that the attribute should have the value CLEAR.
+    ///   `false`indicates that the attribute should have the value CLEAR.
     pub fn with_write_locked(mut self, set: bool) -> Self {
         self.nv_index_attributes.set_write_locked(set);
         self
@@ -226,7 +226,7 @@ impl NvIndexAttributesBuilder {
     ///
     /// # Arguments
     /// * `set` - `true` indicates that the attribute should have the value SET.
-    ///           `false`indicates that the attribute should have the value CLEAR.
+    ///   `false`indicates that the attribute should have the value CLEAR.
     pub fn with_write_all(mut self, set: bool) -> Self {
         self.nv_index_attributes.set_write_all(set);
         self
@@ -236,7 +236,7 @@ impl NvIndexAttributesBuilder {
     ///
     /// # Arguments
     /// * `set` - `true` indicates that the attribute should have the value SET.
-    ///           `false`indicates that the attribute should have the value CLEAR.
+    ///   `false`indicates that the attribute should have the value CLEAR.
     pub fn with_write_define(mut self, set: bool) -> Self {
         self.nv_index_attributes.set_write_define(set);
         self
@@ -246,7 +246,7 @@ impl NvIndexAttributesBuilder {
     ///
     /// # Arguments
     /// * `set` - `true` indicates that the attribute should have the value SET.
-    ///           `false`indicates that the attribute should have the value CLEAR.
+    ///   `false`indicates that the attribute should have the value CLEAR.
     pub fn with_write_stclear(mut self, set: bool) -> Self {
         self.nv_index_attributes.set_write_stclear(set);
         self
@@ -256,7 +256,7 @@ impl NvIndexAttributesBuilder {
     ///
     /// # Arguments
     /// * `set` - `true` indicates that the attribute should have the value SET.
-    ///           `false`indicates that the attribute should have the value CLEAR.
+    ///   `false`indicates that the attribute should have the value CLEAR.
     pub fn with_global_lock(mut self, set: bool) -> Self {
         self.nv_index_attributes.set_global_lock(set);
         self
@@ -266,7 +266,7 @@ impl NvIndexAttributesBuilder {
     ///
     /// # Arguments
     /// * `set` - `true` indicates that the attribute should have the value SET.
-    ///           `false`indicates that the attribute should have the value CLEAR.
+    ///   `false`indicates that the attribute should have the value CLEAR.
     pub fn with_pp_read(mut self, set: bool) -> Self {
         self.nv_index_attributes.set_pp_read(set);
         self
@@ -276,7 +276,7 @@ impl NvIndexAttributesBuilder {
     ///
     /// # Arguments
     /// * `set` - `true` indicates that the attribute should have the value SET.
-    ///           `false`indicates that the attribute should have the value CLEAR.
+    ///   `false`indicates that the attribute should have the value CLEAR.
     pub fn with_owner_read(mut self, set: bool) -> Self {
         self.nv_index_attributes.set_owner_read(set);
         self
@@ -286,7 +286,7 @@ impl NvIndexAttributesBuilder {
     ///
     /// # Arguments
     /// * `set` - `true` indicates that the attribute should have the value SET.
-    ///           `false`indicates that the attribute should have the value CLEAR.
+    ///   `false`indicates that the attribute should have the value CLEAR.
     pub fn with_auth_read(mut self, set: bool) -> Self {
         self.nv_index_attributes.set_auth_read(set);
         self
@@ -296,7 +296,7 @@ impl NvIndexAttributesBuilder {
     ///
     /// # Arguments
     /// * `set` - `true` indicates that the attribute should have the value SET.
-    ///           `false`indicates that the attribute should have the value CLEAR.
+    ///   `false`indicates that the attribute should have the value CLEAR.
     pub fn with_policy_read(mut self, set: bool) -> Self {
         self.nv_index_attributes.set_policy_read(set);
         self
@@ -306,7 +306,7 @@ impl NvIndexAttributesBuilder {
     ///
     /// # Arguments
     /// * `set` - `true` indicates that the attribute should have the value SET.
-    ///           `false`indicates that the attribute should have the value CLEAR.
+    ///   `false`indicates that the attribute should have the value CLEAR.
     pub fn with_no_da(mut self, set: bool) -> Self {
         self.nv_index_attributes.set_no_da(set);
         self
@@ -316,7 +316,7 @@ impl NvIndexAttributesBuilder {
     ///
     /// # Arguments
     /// * `set` - `true` indicates that the attribute should have the value SET.
-    ///           `false`indicates that the attribute should have the value CLEAR.
+    ///   `false`indicates that the attribute should have the value CLEAR.
     pub fn with_orderly(mut self, set: bool) -> Self {
         self.nv_index_attributes.set_orderly(set);
         self
@@ -326,7 +326,7 @@ impl NvIndexAttributesBuilder {
     ///
     /// # Arguments
     /// * `set` - `true` indicates that the attribute should have the value SET.
-    ///           `false`indicates that the attribute should have the value CLEAR.
+    ///   `false`indicates that the attribute should have the value CLEAR.
     pub fn with_clear_stclear(mut self, set: bool) -> Self {
         self.nv_index_attributes.set_clear_stclear(set);
         self
@@ -336,7 +336,7 @@ impl NvIndexAttributesBuilder {
     ///
     /// # Arguments
     /// * `set` - `true` indicates that the attribute should have the value SET.
-    ///           `false`indicates that the attribute should have the value CLEAR.
+    ///   `false`indicates that the attribute should have the value CLEAR.
     pub fn with_read_locked(mut self, set: bool) -> Self {
         self.nv_index_attributes.set_read_locked(set);
         self
@@ -346,7 +346,7 @@ impl NvIndexAttributesBuilder {
     ///
     /// # Arguments
     /// * `set` - `true` indicates that the attribute should have the value SET.
-    ///           `false`indicates that the attribute should have the value CLEAR.
+    ///   `false`indicates that the attribute should have the value CLEAR.
     pub fn with_written(mut self, set: bool) -> Self {
         self.nv_index_attributes.set_written(set);
         self
@@ -356,7 +356,7 @@ impl NvIndexAttributesBuilder {
     ///
     /// # Arguments
     /// * `set` - `true` indicates that the attribute should have the value SET.
-    ///           `false`indicates that the attribute should have the value CLEAR.
+    ///   `false`indicates that the attribute should have the value CLEAR.
     pub fn with_platform_create(mut self, set: bool) -> Self {
         self.nv_index_attributes.set_platform_create(set);
         self
@@ -366,7 +366,7 @@ impl NvIndexAttributesBuilder {
     ///
     /// # Arguments
     /// * `set` - `true` indicates that the attribute should have the value SET.
-    ///           `false`indicates that the attribute should have the value CLEAR.
+    ///   `false`indicates that the attribute should have the value CLEAR.
     pub fn with_read_stclear(mut self, set: bool) -> Self {
         self.nv_index_attributes.set_read_stclear(set);
         self
