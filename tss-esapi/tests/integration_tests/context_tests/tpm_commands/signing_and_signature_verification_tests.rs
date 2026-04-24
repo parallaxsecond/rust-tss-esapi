@@ -14,7 +14,7 @@ mod test_verify_signature {
     fn test_verify_signature() {
         let mut context = create_ctx_with_session();
         let mut random_digest = vec![0u8; 16];
-        getrandom::getrandom(&mut random_digest).unwrap();
+        getrandom::fill(&mut random_digest).unwrap();
         let key_auth = Auth::try_from(random_digest).unwrap();
 
         let key_handle = context
@@ -56,7 +56,7 @@ mod test_verify_signature {
     fn test_verify_wrong_signature() {
         let mut context = create_ctx_with_session();
         let mut random_digest = vec![0u8; 16];
-        getrandom::getrandom(&mut random_digest).unwrap();
+        getrandom::fill(&mut random_digest).unwrap();
         let key_auth = Auth::try_from(random_digest).unwrap();
 
         let key_handle = context
@@ -108,7 +108,7 @@ mod test_verify_signature {
     fn test_verify_wrong_signature_2() {
         let mut context = create_ctx_with_session();
         let mut random_digest = vec![0u8; 16];
-        getrandom::getrandom(&mut random_digest).unwrap();
+        getrandom::fill(&mut random_digest).unwrap();
         let key_auth = Auth::try_from(random_digest).unwrap();
 
         let key_handle = context
@@ -145,7 +145,7 @@ mod test_verify_signature {
     fn test_verify_wrong_signature_3() {
         let mut context = create_ctx_with_session();
         let mut random_digest = vec![0u8; 16];
-        getrandom::getrandom(&mut random_digest).unwrap();
+        getrandom::fill(&mut random_digest).unwrap();
         let key_auth = Auth::try_from(random_digest).unwrap();
 
         let key_handle = context
@@ -192,7 +192,7 @@ mod test_sign {
     fn test_sign() {
         let mut context = create_ctx_with_session();
         let mut random_digest = vec![0u8; 16];
-        getrandom::getrandom(&mut random_digest).unwrap();
+        getrandom::fill(&mut random_digest).unwrap();
         let key_auth = Auth::try_from(random_digest).unwrap();
 
         let key_handle = context
@@ -226,7 +226,7 @@ mod test_sign {
     fn test_sign_empty_digest() {
         let mut context = create_ctx_with_session();
         let mut random_digest = vec![0u8; 16];
-        getrandom::getrandom(&mut random_digest).unwrap();
+        getrandom::fill(&mut random_digest).unwrap();
         let key_auth = Auth::try_from(random_digest).unwrap();
 
         let key_handle = context
@@ -260,7 +260,7 @@ mod test_sign {
     fn test_sign_large_digest() {
         let mut context = create_ctx_with_session();
         let mut random_digest = vec![0u8; 16];
-        getrandom::getrandom(&mut random_digest).unwrap();
+        getrandom::fill(&mut random_digest).unwrap();
         let key_auth = Auth::try_from(random_digest).unwrap();
 
         let key_handle = context

@@ -11,7 +11,7 @@ mod test_create_primary {
     fn test_create_primary() {
         let mut context = create_ctx_with_session();
         let mut random_digest = vec![0u8; 16];
-        getrandom::getrandom(&mut random_digest).unwrap();
+        getrandom::fill(&mut random_digest).unwrap();
         let key_auth = Auth::try_from(random_digest).unwrap();
 
         let key_handle = context
@@ -97,7 +97,7 @@ mod test_change_auth {
             .unwrap();
 
         let mut random_digest = vec![0u8; 16];
-        getrandom::getrandom(&mut random_digest).unwrap();
+        getrandom::fill(&mut random_digest).unwrap();
         let new_key_auth = Auth::try_from(random_digest).unwrap();
 
         let new_private = context
@@ -113,7 +113,7 @@ mod test_change_auth {
         let mut context = create_ctx_with_session();
 
         let mut random_digest = vec![0u8; 16];
-        getrandom::getrandom(&mut random_digest).unwrap();
+        getrandom::fill(&mut random_digest).unwrap();
         let new_auth = Auth::try_from(random_digest).unwrap();
 
         // NOTE: If this test failed on your system, you are probably running it against a
