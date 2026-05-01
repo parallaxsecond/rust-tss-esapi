@@ -4,7 +4,8 @@ use tss_esapi::tcti_ldr::TctiInfo;
 
 #[test]
 fn new_info() {
-    let info = TctiInfo::get_info(crate::tcti_ldr_tests::name_conf()).unwrap();
+    let (_swtpm, name_conf) = crate::tcti_ldr_tests::name_conf();
+    let info = TctiInfo::get_info(name_conf).unwrap();
     let _version = info.version();
     let _name = info.name();
     let _description = info.description();

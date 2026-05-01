@@ -314,7 +314,7 @@ mod test_sign {
         let mut random = vec![0u8; 47];
         getrandom::getrandom(&mut random).unwrap();
 
-        let signer = EcSigner::<NistP256, _>::new((Mutex::new(&mut context), key_handle)).unwrap();
+        let signer = EcSigner::<NistP256, _>::new((Mutex::new(&mut *context), key_handle)).unwrap();
         let verifying_key = signer.verifying_key();
         let signature: Signature = signer.sign(&random);
 
@@ -345,7 +345,7 @@ mod test_sign {
         getrandom::getrandom(&mut payload).unwrap();
 
         let signer =
-            RsaPkcsSigner::<_, sha2::Sha256>::new((Mutex::new(&mut context), key_handle)).unwrap();
+            RsaPkcsSigner::<_, sha2::Sha256>::new((Mutex::new(&mut *context), key_handle)).unwrap();
         let verifying_key = signer.verifying_key();
         let signature: pkcs1v15::Signature = signer.sign(&payload);
 
@@ -380,7 +380,7 @@ mod test_sign {
         getrandom::getrandom(&mut payload).unwrap();
 
         let signer =
-            RsaPssSigner::<_, sha2::Sha256>::new((Mutex::new(&mut context), key_handle)).unwrap();
+            RsaPssSigner::<_, sha2::Sha256>::new((Mutex::new(&mut *context), key_handle)).unwrap();
         let verifying_key = signer.verifying_key();
         let signature: pss::Signature = signer.sign(&payload);
 

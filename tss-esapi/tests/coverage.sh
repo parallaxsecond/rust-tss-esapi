@@ -5,15 +5,8 @@
 
 set -euf -o pipefail
 
-#################################
-# Run the TPM simulation server #
-#################################
-tpm_server &
-sleep 5
-tpm2_startup -c -T mssim
-
 #############################
 # Install and run tarpaulin #
 #############################
 cargo install cargo-tarpaulin
-cargo tarpaulin --features "integration-tests serde" --tests --out xml --exclude-files="tests/*,../*" -- --test-threads=1 --nocapture
+cargo tarpaulin --features "integration-tests serde" --tests --out xml --exclude-files="tests/*,../*" -- --nocapture

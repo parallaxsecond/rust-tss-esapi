@@ -25,31 +25,14 @@ fi
 mkdir /tmp/tpmdir
 swtpm_setup --tpm2 \
     --tpmstate /tmp/tpmdir \
-    --createek --decryption --create-ek-cert \
-    --create-platform-cert \
     --pcr-banks sha1,sha256 \
     --display
 swtpm socket --tpm2 \
     --tpmstate dir=/tmp/tpmdir \
     --flags startup-clear \
-    --ctrl type=tcp,port=2322 \
-    --server type=tcp,port=2321 \
+    --ctrl type=unixio,path=/tmp/tpmdir/swtpm.sock.ctrl \
+    --server type=unixio,path=/tmp/tpmdir/swtpm.sock \
     --daemon
-
-####################
-# Start tpm2-abrmd #
-####################
-tpm2-abrmd \
-    --logger=stdout \
-    --tcti=swtpm: \
-    --allow-root \
-    --session \
-    --flush-all &
-
-#################
-# Clear the TPM #
-#################
-tpm2_startup -c -T tabrmd:bus_type=session
 
 ########################
 # Declare the examples #
@@ -72,5 +55,5 @@ export EXAMPLES_INITIAL_DATA_FILE="/tmp/rust-tss-esapi/tss-esapi/examples/symmet
 # Run the examples #
 ####################
 for e in ${examples[@]}; do
-    TEST_TCTI=tabrmd:bus_type=session RUST_BACKTRACE=1 RUST_LOG=info cargo run --example ${e}
+    TEST_TCTI="swtpm:path=/tmp/tpmdir/swtpm.sock" RUST_BACKTRACE=1 RUST_LOG=info cargo run --example ${e}
 done

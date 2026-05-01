@@ -21,6 +21,7 @@ RUN cd tpm2-tss \
 	&& ldconfig
 
 FROM tpm2-tss AS tpm2-tools
+
 # Download and install TPM2 tools
 RUN git clone https://github.com/tpm2-software/tpm2-tools.git --branch 5.7
 RUN cd tpm2-tools \

@@ -32,12 +32,21 @@ fi
 if [[ ! -z ${TPM2_TSS_PATH:+x} ]]; then
 	export LD_LIBRARY_PATH="${TPM2_TSS_PATH}"
 fi
-#################################
-# Run the TPM simulation server #
-#################################
-tpm_server &
-sleep 5
-tpm2_startup -c -T mssim
+
+#############################################
+# Run the TPM simulation server for doctest #
+#############################################
+mkdir /tmp/tpmdir
+swtpm_setup --tpm2 \
+    --tpmstate /tmp/tpmdir \
+    --pcr-banks sha1,sha256 \
+    --display
+swtpm socket --tpm2 \
+    --tpmstate dir=/tmp/tpmdir \
+    --flags startup-clear \
+    --ctrl type=unixio,path=/tmp/tpmdir/swtpm.sock.ctrl \
+    --server type=unixio,path=/tmp/tpmdir/swtpm.sock \
+    --daemon
 
 ###################
 # Build the crate #
@@ -47,4 +56,8 @@ RUST_BACKTRACE=1 cargo build --features "$FEATURES"
 #################
 # Run the tests #
 #################
-TEST_TCTI=mssim: RUST_BACKTRACE=1 RUST_LOG=info cargo test --features "${FEATURES}" -- --test-threads=1 --nocapture
+RUST_BACKTRACE=1 RUST_LOG=info \
+    cargo test --lib --bins --tests --features "generate-bindings integration-tests serde" -- --nocapture
+
+TEST_TCTI="swtpm:path=/tmp/tpmdir/swtpm.sock" RUST_BACKTRACE=1 RUST_LOG=info \
+    cargo test --doc --features "generate-bindings integration-tests serde" -- --test-threads=1 --nocapture

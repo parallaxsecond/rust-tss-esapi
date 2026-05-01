@@ -11,7 +11,12 @@ mod test_ec_ephemeral {
             .ec_ephemeral(EccCurve::NistP256)
             .expect("Failed to create EC ephemeral key");
         assert!(!q_point.x().is_empty());
-        assert!(counter > 0);
+
+        // Call again and verify the counter increments.
+        let (_, counter2) = context
+            .ec_ephemeral(EccCurve::NistP256)
+            .expect("Failed to create second EC ephemeral key");
+        assert_eq!(counter2, counter + 1);
     }
 }
 
@@ -79,6 +84,11 @@ mod test_commit {
         let (_k, _l, _e, counter) = context
             .commit(key_handle, EccPoint::default(), None, None)
             .expect("Failed to perform ECC commit");
-        assert!(counter > 0);
+
+        // Call again and verify the counter increments.
+        let (_k2, _l2, _e2, counter2) = context
+            .commit(key_handle, EccPoint::default(), None, None)
+            .expect("Failed to perform second ECC commit");
+        assert_eq!(counter2, counter + 1);
     }
 }

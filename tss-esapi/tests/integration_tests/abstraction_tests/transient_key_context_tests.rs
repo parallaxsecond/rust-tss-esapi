@@ -35,61 +35,51 @@ use x509_cert::{
     name::Name,
 };
 
-use crate::common::create_tcti;
+use crate::common::{SwtpmSession, create_tcti};
 
 const HASH: [u8; 32] = [
     0x69, 0x3E, 0xDB, 0x1B, 0x22, 0x79, 0x03, 0xF4, 0xC0, 0xBF, 0xD6, 0x91, 0x76, 0x37, 0x84, 0xA2,
     0x94, 0x8E, 0x92, 0x50, 0x35, 0xC2, 0x8C, 0x5C, 0x3C, 0xCA, 0xFE, 0x18, 0xE8, 0x81, 0x37, 0x78,
 ];
 
-fn create_ctx() -> TransientKeyContext {
+fn create_ctx() -> (SwtpmSession, TransientKeyContext) {
+    let (_swtpm, tcti) = create_tcti();
+    let ctx = TransientKeyContextBuilder::new()
+        .with_tcti(tcti)
+        .build()
+        .unwrap();
+    (_swtpm, ctx)
+}
+
+/// Create a TransientKeyContext on an existing swtpm instance.
+fn create_ctx_on(swtpm: &SwtpmSession) -> TransientKeyContext {
     TransientKeyContextBuilder::new()
-        .with_tcti(create_tcti())
+        .with_tcti(swtpm.tcti())
         .build()
         .unwrap()
 }
 
 #[test]
 fn wrong_key_sizes() {
-    assert_eq!(
-        TransientKeyContextBuilder::new()
-            .with_tcti(create_tcti())
-            .with_root_key_size(1023)
-            .build()
-            .unwrap_err(),
-        Error::WrapperError(ErrorKind::InvalidParam)
-    );
-    assert_eq!(
-        TransientKeyContextBuilder::new()
-            .with_tcti(create_tcti())
-            .with_root_key_size(1025)
-            .build()
-            .unwrap_err(),
-        Error::WrapperError(ErrorKind::InvalidParam)
-    );
-    assert_eq!(
-        TransientKeyContextBuilder::new()
-            .with_tcti(create_tcti())
-            .with_root_key_size(2047)
-            .build()
-            .unwrap_err(),
-        Error::WrapperError(ErrorKind::InvalidParam)
-    );
-    assert_eq!(
-        TransientKeyContextBuilder::new()
-            .with_tcti(create_tcti())
-            .with_root_key_size(2049)
-            .build()
-            .unwrap_err(),
-        Error::WrapperError(ErrorKind::InvalidParam)
-    );
+    for bad_size in [1023, 1025, 2047, 2049] {
+        let (_swtpm, tcti) = create_tcti();
+        assert_eq!(
+            TransientKeyContextBuilder::new()
+                .with_tcti(tcti)
+                .with_root_key_size(bad_size)
+                .build()
+                .unwrap_err(),
+            Error::WrapperError(ErrorKind::InvalidParam)
+        );
+    }
 }
 
 #[test]
 fn wrong_auth_size() {
+    let (_swtpm, tcti) = create_tcti();
     assert_eq!(
         TransientKeyContextBuilder::new()
-            .with_tcti(create_tcti())
+            .with_tcti(tcti)
             .with_root_key_auth_size(33)
             .build()
             .unwrap_err(),
@@ -99,7 +89,7 @@ fn wrong_auth_size() {
 
 #[test]
 fn load_bad_sized_key() {
-    let mut ctx = create_ctx();
+    let (_swtpm, mut ctx) = create_ctx();
     let key_params = KeyParams::Rsa {
         size: RsaKeyBits::Rsa1024,
         scheme: RsaScheme::create(RsaSchemeAlgorithm::RsaSsa, Some(HashingAlgorithm::Sha256))
@@ -134,7 +124,7 @@ fn load_with_invalid_params() {
         )
         .expect("Failed to create ecc scheme"),
     };
-    let mut ctx = create_ctx();
+    let (_swtpm, mut ctx) = create_ctx();
     let _ = ctx
         .load_external_public_key(PublicKey::Rsa(pub_key), key_params)
         .unwrap_err();
@@ -182,7 +172,7 @@ fn verify() {
         .expect("Failed to create RSA signature"),
     );
 
-    let mut ctx = create_ctx();
+    let (_swtpm, mut ctx) = create_ctx();
     let key_params = KeyParams::Rsa {
         size: RsaKeyBits::Rsa1024,
         scheme: RsaScheme::create(RsaSchemeAlgorithm::RsaSsa, Some(HashingAlgorithm::Sha256))
@@ -199,7 +189,7 @@ fn verify() {
 
 #[test]
 fn sign_with_bad_auth() {
-    let mut ctx = create_ctx();
+    let (_swtpm, mut ctx) = create_ctx();
     let key_params = KeyParams::Rsa {
         size: RsaKeyBits::Rsa2048,
         scheme: RsaScheme::create(RsaSchemeAlgorithm::RsaSsa, Some(HashingAlgorithm::Sha256))
@@ -221,7 +211,7 @@ fn sign_with_bad_auth() {
 
 #[test]
 fn sign_with_no_auth() {
-    let mut ctx = create_ctx();
+    let (_swtpm, mut ctx) = create_ctx();
     let key_params = KeyParams::Rsa {
         size: RsaKeyBits::Rsa2048,
         scheme: RsaScheme::create(RsaSchemeAlgorithm::RsaSsa, Some(HashingAlgorithm::Sha256))
@@ -240,7 +230,7 @@ fn sign_with_no_auth() {
 
 #[test]
 fn encrypt_decrypt() {
-    let mut ctx = create_ctx();
+    let (_swtpm, mut ctx) = create_ctx();
     let key_params = KeyParams::Rsa {
         size: RsaKeyBits::Rsa2048,
         scheme: RsaScheme::create(RsaSchemeAlgorithm::Oaep, Some(HashingAlgorithm::Sha256))
@@ -272,7 +262,7 @@ fn encrypt_decrypt() {
 
 #[test]
 fn two_signatures_different_digest() {
-    let mut ctx = create_ctx();
+    let (_swtpm, mut ctx) = create_ctx();
     let key_params1 = KeyParams::Rsa {
         size: RsaKeyBits::Rsa2048,
         scheme: RsaScheme::create(RsaSchemeAlgorithm::RsaSsa, Some(HashingAlgorithm::Sha256))
@@ -320,7 +310,7 @@ fn two_signatures_different_digest() {
 
 #[test]
 fn verify_wrong_key() {
-    let mut ctx = create_ctx();
+    let (_swtpm, mut ctx) = create_ctx();
     let key_params1 = KeyParams::Rsa {
         size: RsaKeyBits::Rsa2048,
         scheme: RsaScheme::create(RsaSchemeAlgorithm::RsaSsa, Some(HashingAlgorithm::Sha256))
@@ -367,7 +357,7 @@ fn verify_wrong_key() {
 }
 #[test]
 fn verify_wrong_digest() {
-    let mut ctx = create_ctx();
+    let (_swtpm, mut ctx) = create_ctx();
     let key_params = KeyParams::Rsa {
         size: RsaKeyBits::Rsa2048,
         scheme: RsaScheme::create(RsaSchemeAlgorithm::RsaSsa, Some(HashingAlgorithm::Sha256))
@@ -407,7 +397,7 @@ fn verify_wrong_digest() {
 
 #[test]
 fn full_test() {
-    let mut ctx = create_ctx();
+    let (_swtpm, mut ctx) = create_ctx();
     for _ in 0..4 {
         let key_params = KeyParams::Rsa {
             size: RsaKeyBits::Rsa2048,
@@ -440,7 +430,7 @@ fn full_test() {
 
 #[test]
 fn create_ecc_key() {
-    let mut ctx = create_ctx();
+    let (_swtpm, mut ctx) = create_ctx();
     let _ = ctx
         .create_key(
             KeyParams::Ecc {
@@ -459,7 +449,7 @@ fn create_ecc_key() {
 
 #[test]
 fn create_ecc_key_decryption_scheme() {
-    let mut ctx = create_ctx();
+    let (_swtpm, mut ctx) = create_ctx();
     let _ = ctx
         .create_key(
             KeyParams::Ecc {
@@ -478,7 +468,7 @@ fn create_ecc_key_decryption_scheme() {
 
 #[test]
 fn full_ecc_test() {
-    let mut ctx = create_ctx();
+    let (_swtpm, mut ctx) = create_ctx();
     let key_params = KeyParams::Ecc {
         curve: EccCurve::NistP256,
         scheme: EccScheme::create(
@@ -514,9 +504,12 @@ fn full_ecc_test() {
 
 #[test]
 fn ctx_migration_test() {
+    // Use a shared swtpm so Context and TransientKeyContext share TPM state.
+    let swtpm = SwtpmSession::new();
+
     // Create two key contexts using `Context`, one for an RSA keypair,
     // one for just the public part of the key
-    let mut basic_ctx = crate::common::create_ctx_with_session();
+    let mut basic_ctx = swtpm.create_session_context();
     let mut random_digest = vec![0u8; 16];
     getrandom::getrandom(&mut random_digest).unwrap();
     let key_auth = Auth::from_bytes(random_digest.as_slice()).unwrap();
@@ -566,7 +559,7 @@ fn ctx_migration_test() {
     std::mem::drop(basic_ctx);
 
     // Migrate the keys and attempt to use them
-    let mut ctx = create_ctx();
+    let mut ctx = create_ctx_on(&swtpm);
     let key = ctx
         .migrate_key_from_ctx(key_context, Some(key_auth.clone()))
         .unwrap();
@@ -618,9 +611,12 @@ fn ctx_migration_test() {
 
 #[test]
 fn activate_credential() {
+    // Use a shared swtpm so all contexts share TPM state.
+    let swtpm = SwtpmSession::new();
+
     // create a Transient key context, generate a key and
     // obtain the Make Credential parameters
-    let mut ctx = create_ctx();
+    let mut ctx = create_ctx_on(&swtpm);
     let params = KeyParams::Ecc {
         curve: EccCurve::NistP256,
         scheme: EccScheme::create(
@@ -641,7 +637,7 @@ fn activate_credential() {
     drop(ctx);
 
     // create a normal Context and make the credential
-    let mut basic_ctx = crate::common::create_ctx_with_session();
+    let mut basic_ctx = swtpm.create_session_context();
 
     // the public part of the EK is used, so we retrieve the parameters
     let key_pub = ek::create_ek_public_from_default_template(
@@ -689,7 +685,7 @@ fn activate_credential() {
     drop(basic_ctx);
 
     // Create a new Transient key context and activate the credential
-    let mut ctx = create_ctx();
+    let mut ctx = create_ctx_on(&swtpm);
     let cred_back = ctx
         .activate_credential(
             obj,
@@ -706,7 +702,7 @@ fn activate_credential() {
 fn make_cred_params_name() {
     // create a Transient key context, generate a key and
     // obtain the Make Credential parameters
-    let mut ctx = create_ctx();
+    let (_swtpm, mut ctx) = create_ctx();
     let params = KeyParams::Ecc {
         curve: EccCurve::NistP256,
         scheme: EccScheme::create(
@@ -736,9 +732,12 @@ fn make_cred_params_name() {
 
 #[test]
 fn activate_credential_wrong_key() {
+    // Use a shared swtpm so all contexts share TPM state.
+    let swtpm = SwtpmSession::new();
+
     // create a Transient key context, generate two keys and
     // obtain the Make Credential parameters for the first one
-    let mut ctx = create_ctx();
+    let mut ctx = create_ctx_on(&swtpm);
     let params = KeyParams::Ecc {
         curve: EccCurve::NistP256,
         scheme: EccScheme::create(
@@ -768,7 +767,7 @@ fn activate_credential_wrong_key() {
     drop(ctx);
 
     // create a normal Context and make the credential
-    let mut basic_ctx = crate::common::create_ctx_with_session();
+    let mut basic_ctx = swtpm.create_session_context();
 
     // the public part of the EK is used, so we retrieve the parameters
     let key_pub = ek::create_ek_public_from_default_template(
@@ -818,7 +817,7 @@ fn activate_credential_wrong_key() {
     // Create a new Transient key context and activate the credential
     // Validation fails within the TPM because the credential HMAC is
     // associated with a different object (so the integrity check fails).
-    let mut ctx = create_ctx();
+    let mut ctx = create_ctx_on(&swtpm);
     let e = ctx
         .activate_credential(
             wrong_obj,
@@ -836,7 +835,7 @@ fn activate_credential_wrong_key() {
 
 #[test]
 fn activate_credential_wrong_data() {
-    let mut ctx = create_ctx();
+    let (_swtpm, mut ctx) = create_ctx();
     let params = KeyParams::Ecc {
         curve: EccCurve::NistP256,
         scheme: EccScheme::create(
@@ -884,7 +883,7 @@ fn activate_credential_wrong_data() {
 #[test]
 fn get_random_from_tkc() {
     // Check that we can convert a reference from TKC to Context
-    let mut ctx = create_ctx();
+    let (_swtpm, mut ctx) = create_ctx();
     let _rand_bytes = ctx
         .as_mut()
         .execute_without_session(|ctx| ctx.get_random(16))
@@ -894,7 +893,7 @@ fn get_random_from_tkc() {
 #[test]
 fn sign_csr() {
     // Check that we can convert a reference from TKC to Context
-    let mut ctx = create_ctx();
+    let (_swtpm, mut ctx) = create_ctx();
 
     let key_params = EcSigner::<NistP256, ()>::key_params_default();
     let (tpm_km, _tpm_auth) = ctx.create_key(key_params, 0).expect("create private key");
@@ -919,7 +918,7 @@ fn sign_csr() {
 #[test]
 fn sign_p256_sha2_256() {
     // Check that we can convert a reference from TKC to Context
-    let mut ctx = create_ctx();
+    let (_swtpm, mut ctx) = create_ctx();
 
     let key_params = EcSigner::<NistP256, ()>::key_params::<sha2::Sha256>();
     let (tpm_km, _tpm_auth) = ctx.create_key(key_params, 0).expect("create private key");
@@ -950,7 +949,7 @@ fn sign_p256_sha2_256() {
 #[test]
 fn sign_p256_sha3_256() {
     // Check that we can convert a reference from TKC to Context
-    let mut ctx = create_ctx();
+    let (_swtpm, mut ctx) = create_ctx();
 
     let key_params = EcSigner::<NistP256, ()>::key_params::<Sha3_256>();
     let (tpm_km, _tpm_auth) = ctx.create_key(key_params, 0).expect("create private key");
