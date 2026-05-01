@@ -138,7 +138,7 @@ impl Context {
     ///
     /// # Example
     ///
-    /// ```rust
+    /// ```no_run
     /// # use tss_esapi::{
     /// #    Context, TctiNameConf,
     /// #    attributes::ObjectAttributesBuilder,

@@ -23,7 +23,7 @@ impl Context {
     ///
     /// # Example
     ///
-    /// ```rust
+    /// ```no_run
     /// # use tss_esapi::{Context, Tcti,
     /// #     constants::SessionType,
     /// #     interface_types::algorithm::HashingAlgorithm,

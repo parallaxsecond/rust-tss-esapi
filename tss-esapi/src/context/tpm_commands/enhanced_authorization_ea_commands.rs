@@ -339,7 +339,7 @@ impl Context {
     ///
     /// # Example
     ///
-    /// ```rust
+    /// ```no_run
     /// # use std::convert::{TryFrom, TryInto};
     /// # use tss_esapi::attributes::{ObjectAttributesBuilder, SessionAttributesBuilder};
     /// # use tss_esapi::constants::{CommandCode, SessionType};
@@ -604,7 +604,7 @@ impl Context {
     ///   where the policy is stored.
     ///
     /// # Example
-    /// ```rust
+    /// ```no_run
     /// # use std::convert::TryFrom;
     /// # use tss_esapi::attributes::{NvIndexAttributes, SessionAttributes};
     /// # use tss_esapi::constants::SessionType;

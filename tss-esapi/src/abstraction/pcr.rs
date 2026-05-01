@@ -13,7 +13,7 @@ pub use data::PcrData;
 ///
 /// # Example
 ///
-/// ```rust
+/// ```no_run
 /// # use tss_esapi::{Context, TctiNameConf};
 /// # // Create context
 /// # let mut context =

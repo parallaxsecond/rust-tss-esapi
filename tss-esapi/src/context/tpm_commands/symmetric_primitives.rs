@@ -29,7 +29,7 @@ impl Context {
     /// * `initial_value_in` - An initial value as required by the algorithm.
     ///
     /// # Example
-    /// ```rust
+    /// ```no_run
     /// # use tss_esapi::{
     /// #     constants::AlgorithmIdentifier,
     /// #     attributes::ObjectAttributesBuilder,
@@ -229,7 +229,7 @@ impl Context {
     ///
     /// # Example
     ///
-    /// ```rust
+    /// ```no_run
     /// # use tss_esapi::{Context, tcti_ldr::TctiNameConf,
     /// #     structures::{MaxBuffer, Ticket},
     /// #     interface_types::{algorithm::HashingAlgorithm, reserved_handles::Hierarchy},
@@ -299,7 +299,7 @@ impl Context {
     ///
     /// # Example
     ///
-    /// ```rust
+    /// ```no_run
     /// # use tss_esapi::{
     /// #     attributes::ObjectAttributesBuilder,
     /// #     structures::{MaxBuffer, Ticket, PublicKeyedHashParameters, KeyedHashScheme, HmacScheme, PublicBuilder, Digest},

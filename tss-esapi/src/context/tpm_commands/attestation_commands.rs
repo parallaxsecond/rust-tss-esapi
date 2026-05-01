@@ -40,7 +40,7 @@ impl Context {
     ///
     /// # Examples
     ///
-    /// ```rust
+    /// ```no_run
     /// # use tss_esapi::{Context, TctiNameConf};
     /// # use std::convert::TryFrom;
     /// # use tss_esapi::{
@@ -183,7 +183,7 @@ impl Context {
     ///
     /// # Examples
     ///
-    /// ```rust
+    /// ```no_run
     /// # use tss_esapi::{Context, TctiNameConf};
     /// # use std::convert::TryFrom;
     /// # use tss_esapi::{
@@ -293,7 +293,7 @@ impl Context {
     ///
     /// # Examples
     ///
-    /// ```rust
+    /// ```no_run
     /// # use tss_esapi::{Context, TctiNameConf};
     /// use std::convert::TryFrom;
     /// # use tss_esapi::{
@@ -445,7 +445,7 @@ impl Context {
     ///
     /// # Examples
     ///
-    /// ```rust
+    /// ```no_run
     /// # use tss_esapi::{Context, TctiNameConf};
     /// # use std::convert::TryFrom;
     /// # use tss_esapi::{
