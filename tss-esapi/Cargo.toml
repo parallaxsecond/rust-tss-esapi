@@ -20,7 +20,7 @@ name = "certify"
 required-features = ["abstraction"]
 
 [dependencies]
-bitfield = "0.17.0"
+bitfield = "0.19.4"
 serde = { version = "1.0.115", features = [
     "alloc",
     "derive",
@@ -60,8 +60,8 @@ sm3 = { version = "0.4.2", optional = true }
 digest = { version = "0.10.7", optional = true }
 signature = { version = "2.2.0", features = ["std"], optional = true }
 cfg-if = "1.0.0"
-strum = { version = "0.26.3", optional = true }
-strum_macros = { version = "0.26.4", optional = true }
+strum = { version = "0.28.0", optional = true }
+strum_macros = { version = "0.28.0", optional = true }
 paste = "1.0.14"
 getrandom = "0.2.11"
 
