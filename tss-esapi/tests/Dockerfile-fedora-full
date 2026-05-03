@@ -1,0 +1,38 @@
+# Copyright 2026 Contributors to the Parsec project.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Self-contained Fedora image for run-ci-locally.sh.
+# Includes everything every CI job needs.
+
+FROM fedora:42
+
+RUN dnf install -y \
+    libtool automake autoconf autoconf-archive openssl-devel-engine \
+    swtpm swtpm-tools llvm llvm-devel clang pkg-config \
+    git valgrind codespell tpm2-tools \
+    && dnf builddep -y tpm2-tss \
+    && dnf clean all
+
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs \
+    | bash -s -- -y --default-toolchain stable --profile minimal \
+        --component rustfmt --component clippy
+ENV PATH="/root/.cargo/bin:${PATH}"
+
+RUN rustup toolchain install 1.85.0 --profile minimal \
+        --component rustfmt --component clippy
+
+RUN cargo install cargo-valgrind
+
+# Download and install the TSS library
+ENV TPM2_TSS_BINDINGS_VERSION=4.1.3
+ARG TPM2_TSS_VERSION=$TPM2_TSS_BINDINGS_VERSION
+ENV TPM2_TSS_VERSION=$TPM2_TSS_VERSION
+ENV PKG_CONFIG_PATH=/usr/local/lib/pkgconfig
+
+RUN git clone https://github.com/tpm2-software/tpm2-tss.git --branch $TPM2_TSS_VERSION
+RUN cd tpm2-tss \
+	&& ./bootstrap \
+	&& ./configure \
+	&& make -j$(nproc) \
+	&& make install \
+	&& ldconfig
