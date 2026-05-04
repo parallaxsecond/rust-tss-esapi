@@ -12,13 +12,6 @@ if [[ ! -z ${RUST_TOOLCHAIN_VERSION:+x} ]]; then
 	rustup override set ${RUST_TOOLCHAIN_VERSION}
 fi
 
-##########################
-# Install cargo-valgrind #
-##########################
-apt update
-apt install -y valgrind
-cargo install cargo-valgrind
-
 #############################################
 # Run the TPM simulation server for doctest #
 #############################################
