@@ -19,9 +19,9 @@ apt update
 apt install -y valgrind
 cargo install cargo-valgrind
 
-#################################
-# Run the TPM simulation server #
-#################################
+#############################################
+# Run the TPM simulation server for doctest #
+#############################################
 mkdir /tmp/tpmdir
 swtpm_setup --tpm2 \
     --tpmstate /tmp/tpmdir \
@@ -37,4 +37,8 @@ swtpm socket --tpm2 \
 #################
 # Run the tests #
 #################
-TEST_TCTI="swtpm:path=/tmp/tpmdir/swtpm.sock" RUST_BACKTRACE=1 RUST_LOG=info cargo valgrind test -- --test-threads=1 --nocapture
+RUST_BACKTRACE=1 RUST_LOG=info \
+    cargo valgrind test --all-targets -- --nocapture
+
+TEST_TCTI="swtpm:path=/tmp/tpmdir/swtpm.sock" RUST_BACKTRACE=1 RUST_LOG=info \
+    cargo valgrind test --doc -- -- --test-threads=1 --nocapture
