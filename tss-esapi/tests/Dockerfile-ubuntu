@@ -5,6 +5,10 @@ FROM base AS rust-toolchain
 RUN (curl https://sh.rustup.rs -sSf || exit 1) | bash -s -- -y
 ENV PATH="/root/.cargo/bin:${PATH}"
 
+# Install cargo-valgrind
+RUN apt-get update && apt-get install -y valgrind && rm -rf /var/lib/apt/lists/*
+RUN cargo install cargo-valgrind
+
 FROM rust-toolchain AS tpm2-tss
 # Download and install the TSS library
 ENV TPM2_TSS_BINDINGS_VERSION=4.1.3
