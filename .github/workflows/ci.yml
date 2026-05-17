@@ -2,6 +2,10 @@ name: Continuous Integration
 
 on: [push, pull_request]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   # Use the following command to fix words locally:
   # codespell --write-changes
