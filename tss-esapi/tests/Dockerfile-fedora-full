@@ -9,7 +9,7 @@ FROM fedora:42
 RUN dnf install -y \
     libtool automake autoconf autoconf-archive openssl-devel-engine \
     swtpm swtpm-tools llvm llvm-devel clang pkg-config \
-    git valgrind codespell tpm2-tools \
+    git valgrind codespell tpm2-tools rsync \
     && dnf builddep -y tpm2-tss \
     && dnf clean all
 
@@ -35,4 +35,5 @@ RUN cd tpm2-tss \
 	&& ./configure \
 	&& make -j$(nproc) \
 	&& make install \
-	&& ldconfig
+	&& ldconfig \
+    && rm -rf /tpm2-tss

@@ -11,7 +11,7 @@ RUN apt-get update && apt-get install -y \
     libtool libcmocka0 libcmocka-dev libcurl4-openssl-dev libftdi-dev libini-config-dev \
     libjson-c-dev libltdl-dev libssl-dev libusb-1.0-0-dev uthash-dev uuid-dev \
     swtpm swtpm-tools llvm clang pkg-config \
-    curl git valgrind codespell tpm2-tools \
+    curl git valgrind codespell tpm2-tools rsync \
     && rm -rf /var/lib/apt/lists/*
 
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs \
@@ -36,4 +36,5 @@ RUN cd tpm2-tss \
 	&& ./configure \
 	&& make -j$(nproc) \
 	&& make install \
-	&& ldconfig
+	&& ldconfig \
+    && rm -rf /tpm2-tss

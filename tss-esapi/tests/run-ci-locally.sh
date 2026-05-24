@@ -13,7 +13,9 @@ set -euf -o pipefail
 #################
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_DIR="$(cd "${SCRIPT_DIR}/../.." && pwd)"
-PROJECT_DIR_IN_CONTAINER="/tmp/rust-tss-esapi"
+
+SOURCE_DIR_IN_CONTAINER="/src"
+PROJECT_DIR_IN_CONTAINER="/work"
 CRATE_DIR_IN_CONTAINER="${PROJECT_DIR_IN_CONTAINER}/tss-esapi"
 
 DEFAULT_DOCKERFILE="Dockerfile-fedora-full"
@@ -40,12 +42,15 @@ RESET='\033[0m'
 ###########
 # Helpers #
 ###########
+CONTAINER_BOOTSTRAP="rsync -a --exclude=/target ${SOURCE_DIR_IN_CONTAINER}/ ${PROJECT_DIR_IN_CONTAINER}/ \
+    && cd ${CRATE_DIR_IN_CONTAINER} \
+    && exec \"\$@\""
+
 function in_container {
     "${TSS_ESAPI_CONTAINER_RUNTIME}" run --rm \
-        -v "${PROJECT_DIR}:${PROJECT_DIR_IN_CONTAINER}" \
-        -w "${CRATE_DIR_IN_CONTAINER}" \
+        -v "${PROJECT_DIR}:${SOURCE_DIR_IN_CONTAINER}:ro" \
         "${TSS_ESAPI_IMAGE_TAG}" \
-        "$@"
+        bash -c "${CONTAINER_BOOTSTRAP}" -- "$@"
 }
 
 function in_container_env {
@@ -57,10 +62,9 @@ function in_container_env {
     done
     "${TSS_ESAPI_CONTAINER_RUNTIME}" run --rm \
         "${envs[@]}" \
-        -v "${PROJECT_DIR}:${PROJECT_DIR_IN_CONTAINER}" \
-        -w "${CRATE_DIR_IN_CONTAINER}" \
+        -v "${PROJECT_DIR}:${SOURCE_DIR_IN_CONTAINER}:ro" \
         "${TSS_ESAPI_IMAGE_TAG}" \
-        "$@"
+        bash -c "${CONTAINER_BOOTSTRAP}" -- "$@"
 }
 
 function run_job {
@@ -118,6 +122,7 @@ function check_required_tools {
         "codespell:codespell"
         "pkg-config:pkg-config"
         "clang:Clang/LLVM"
+        "rsync:rsync (used by the in_container bootstrap to stage source)"
     )
 
     local cmd_names=()
@@ -127,13 +132,15 @@ function check_required_tools {
 
     echo -e "${BOLD}Checking required tools in image...${RESET}"
     local missing
-    missing=$(in_container bash -c "
-        for cmd in ${cmd_names[*]}; do
-            if ! command -v \"\$cmd\" >/dev/null 2>&1; then
-                echo \"\$cmd\"
-            fi
-        done
-    " || true)
+    missing=$("${TSS_ESAPI_CONTAINER_RUNTIME}" run --rm \
+        "${TSS_ESAPI_IMAGE_TAG}" \
+        bash -c "
+            for cmd in ${cmd_names[*]}; do
+                if ! command -v \"\$cmd\" >/dev/null 2>&1; then
+                    echo \"\$cmd\"
+                fi
+            done
+        " || true)
 
     if [[ -n "$missing" ]]; then
         echo "ERROR: Missing required tools in image ${TSS_ESAPI_IMAGE_TAG}:"
@@ -176,15 +183,11 @@ function job_formatting {
 }
 
 function job_msrv {
-    local lockfile="${PROJECT_DIR}/Cargo.lock"
-    local backup="${lockfile}.bak"
-    cp -p -- "${lockfile}" "${backup}"
     run_job "MSRV build (${TSS_ESAPI_MSRV})" \
         in_container_env RUST_TOOLCHAIN_VERSION="${TSS_ESAPI_MSRV}" \
             bash -c 'rustup override set "${RUST_TOOLCHAIN_VERSION}" \
                 && cp tests/Cargo.lock.frozen ../Cargo.lock \
                 && cargo build -p tss-esapi'
-    mv -- "${backup}" "${lockfile}"
 }
 
 function job_build {
