@@ -543,3 +543,340 @@ mod test_nv_extend {
             .expect("Call to nv_undefine_space failed");
     }
 }
+
+mod test_nv_set_bits {
+    use crate::common::create_ctx_with_session;
+    use tss_esapi::{
+        attributes::NvIndexAttributesBuilder,
+        constants::nv_index_type::NvIndexType,
+        handles::NvIndexTpmHandle,
+        interface_types::{
+            algorithm::HashingAlgorithm,
+            reserved_handles::{NvAuth, Provision},
+        },
+        structures::NvPublicBuilder,
+    };
+
+    #[test]
+    fn test_nv_set_bits() {
+        let mut context = create_ctx_with_session();
+        let nv_index =
+            NvIndexTpmHandle::new(0x01500030).expect("Failed to create NV index tpm handle");
+        let nv_index_attributes = NvIndexAttributesBuilder::new()
+            .with_owner_write(true)
+            .with_owner_read(true)
+            .with_nv_index_type(NvIndexType::Bits)
+            .build()
+            .expect("Failed to create nv index attributes");
+        let nv_public = NvPublicBuilder::new()
+            .with_nv_index(nv_index)
+            .with_index_name_algorithm(HashingAlgorithm::Sha256)
+            .with_index_attributes(nv_index_attributes)
+            .with_data_area_size(8)
+            .build()
+            .expect("Failed to build NvPublic");
+        let nv_index_handle = context
+            .nv_define_space(Provision::Owner, None, nv_public)
+            .expect("Failed to define NV space");
+        context
+            .nv_set_bits(NvAuth::Owner, nv_index_handle, 0x01)
+            .expect("Failed to set NV bits");
+        context
+            .nv_undefine_space(Provision::Owner, nv_index_handle)
+            .expect("Failed to undefine NV space");
+    }
+}
+
+mod test_nv_write_lock {
+    use crate::common::create_ctx_with_session;
+    use tss_esapi::{
+        attributes::NvIndexAttributesBuilder,
+        handles::NvIndexTpmHandle,
+        interface_types::{
+            algorithm::HashingAlgorithm,
+            reserved_handles::{NvAuth, Provision},
+        },
+        structures::NvPublicBuilder,
+    };
+
+    #[test]
+    fn test_nv_write_lock() {
+        let mut context = create_ctx_with_session();
+        let nv_index =
+            NvIndexTpmHandle::new(0x01500031).expect("Failed to create NV index tpm handle");
+        let nv_index_attributes = NvIndexAttributesBuilder::new()
+            .with_owner_write(true)
+            .with_owner_read(true)
+            .with_write_stclear(true)
+            .build()
+            .expect("Failed to create nv index attributes");
+        let nv_public = NvPublicBuilder::new()
+            .with_nv_index(nv_index)
+            .with_index_name_algorithm(HashingAlgorithm::Sha256)
+            .with_index_attributes(nv_index_attributes)
+            .with_data_area_size(32)
+            .build()
+            .expect("Failed to build NvPublic");
+        let nv_index_handle = context
+            .nv_define_space(Provision::Owner, None, nv_public)
+            .expect("Failed to define NV space");
+        context
+            .nv_write_lock(NvAuth::Owner, nv_index_handle)
+            .expect("Failed to write-lock NV index");
+        context
+            .nv_undefine_space(Provision::Owner, nv_index_handle)
+            .expect("Failed to undefine NV space");
+    }
+}
+
+mod test_nv_read_lock {
+    use crate::common::create_ctx_with_session;
+    use tss_esapi::{
+        attributes::NvIndexAttributesBuilder,
+        handles::NvIndexTpmHandle,
+        interface_types::{
+            algorithm::HashingAlgorithm,
+            reserved_handles::{NvAuth, Provision},
+        },
+        structures::NvPublicBuilder,
+    };
+
+    #[test]
+    fn test_nv_read_lock() {
+        let mut context = create_ctx_with_session();
+        let nv_index =
+            NvIndexTpmHandle::new(0x01500032).expect("Failed to create NV index tpm handle");
+        let nv_index_attributes = NvIndexAttributesBuilder::new()
+            .with_owner_write(true)
+            .with_owner_read(true)
+            .with_read_stclear(true)
+            .build()
+            .expect("Failed to create nv index attributes");
+        let nv_public = NvPublicBuilder::new()
+            .with_nv_index(nv_index)
+            .with_index_name_algorithm(HashingAlgorithm::Sha256)
+            .with_index_attributes(nv_index_attributes)
+            .with_data_area_size(32)
+            .build()
+            .expect("Failed to build NvPublic");
+        let nv_index_handle = context
+            .nv_define_space(Provision::Owner, None, nv_public)
+            .expect("Failed to define NV space");
+        context
+            .nv_read_lock(NvAuth::Owner, nv_index_handle)
+            .expect("Failed to read-lock NV index");
+        context
+            .nv_undefine_space(Provision::Owner, nv_index_handle)
+            .expect("Failed to undefine NV space");
+    }
+}
+
+mod test_nv_change_auth {
+    use crate::common::create_ctx_without_session;
+    use std::convert::TryFrom;
+    use tss_esapi::{
+        attributes::{NvIndexAttributesBuilder, SessionAttributesBuilder},
+        constants::{CommandCode, SessionType},
+        handles::NvIndexTpmHandle,
+        interface_types::{
+            algorithm::HashingAlgorithm,
+            reserved_handles::Provision,
+            session_handles::{AuthSession, PolicySession},
+        },
+        structures::{Auth, NvPublicBuilder, SymmetricDefinition},
+    };
+
+    #[test]
+    fn test_nv_change_auth() {
+        // NV_ChangeAuth uses the index's ADMIN role, which is satisfied by a policy
+        // session whose policy includes the NV_ChangeAuth command code.
+        let mut context = create_ctx_without_session();
+        let (session_attributes, session_attributes_mask) = SessionAttributesBuilder::new()
+            .with_decrypt(true)
+            .with_encrypt(true)
+            .build();
+
+        // Compute the policy digest for NV_ChangeAuth via a trial session.
+        let trial_session = context
+            .start_auth_session(
+                None,
+                None,
+                None,
+                SessionType::Trial,
+                SymmetricDefinition::AES_256_CFB,
+                HashingAlgorithm::Sha256,
+            )
+            .expect("Failed to start trial session")
+            .expect("Received invalid handle");
+        context
+            .tr_sess_set_attributes(trial_session, session_attributes, session_attributes_mask)
+            .expect("Failed to set attributes on trial session");
+        let trial_policy_session =
+            PolicySession::try_from(trial_session).expect("Failed to get trial policy session");
+        context
+            .policy_command_code(trial_policy_session, CommandCode::NvChangeAuth)
+            .expect("Failed to set policy command code on trial session");
+        let digest = context
+            .policy_get_digest(trial_policy_session)
+            .expect("Failed to get policy digest");
+
+        let nv_index =
+            NvIndexTpmHandle::new(0x01500033).expect("Failed to create NV index tpm handle");
+        let nv_index_attributes = NvIndexAttributesBuilder::new()
+            .with_owner_write(true)
+            .with_owner_read(true)
+            .with_policy_write(true)
+            .with_policy_read(true)
+            .build()
+            .expect("Failed to create nv index attributes");
+        let nv_public = NvPublicBuilder::new()
+            .with_nv_index(nv_index)
+            .with_index_name_algorithm(HashingAlgorithm::Sha256)
+            .with_index_attributes(nv_index_attributes)
+            .with_index_auth_policy(digest)
+            .with_data_area_size(32)
+            .build()
+            .expect("Failed to build NvPublic");
+        let nv_index_handle = context
+            .execute_with_session(Some(AuthSession::Password), |ctx| {
+                ctx.nv_define_space(Provision::Owner, None, nv_public)
+            })
+            .expect("Failed to define NV space");
+
+        // Start a real policy session that satisfies the index's authPolicy.
+        let policy_session = context
+            .start_auth_session(
+                None,
+                None,
+                None,
+                SessionType::Policy,
+                SymmetricDefinition::AES_256_CFB,
+                HashingAlgorithm::Sha256,
+            )
+            .expect("Failed to start policy session")
+            .expect("Received invalid handle");
+        context
+            .tr_sess_set_attributes(policy_session, session_attributes, session_attributes_mask)
+            .expect("Failed to set attributes on policy session");
+        context
+            .policy_command_code(
+                PolicySession::try_from(policy_session).expect("Failed to get policy session"),
+                CommandCode::NvChangeAuth,
+            )
+            .expect("Failed to set policy command code");
+
+        let new_auth = Auth::from_bytes(&[1, 2, 3, 4]).unwrap();
+        let change_auth_result = context.execute_with_session(Some(policy_session), |ctx| {
+            ctx.nv_change_auth(nv_index_handle, new_auth)
+        });
+
+        context
+            .execute_with_session(Some(AuthSession::Password), |ctx| {
+                ctx.nv_undefine_space(Provision::Owner, nv_index_handle)
+            })
+            .expect("Failed to undefine NV space");
+
+        change_auth_result.expect("Failed to change NV auth");
+    }
+}
+
+mod test_nv_global_write_lock {
+    use crate::common::create_ctx_with_session;
+    use tss_esapi::handles::AuthHandle;
+
+    #[test]
+    fn test_nv_global_write_lock() {
+        let mut context = create_ctx_with_session();
+        context
+            .nv_global_write_lock(AuthHandle::Owner)
+            .expect("Failed to global write-lock NV");
+    }
+}
+
+mod test_nv_certify {
+    use crate::common::create_ctx_with_session;
+    use std::convert::TryFrom;
+    use tss_esapi::{
+        attributes::NvIndexAttributesBuilder,
+        handles::NvIndexTpmHandle,
+        interface_types::{
+            algorithm::{HashingAlgorithm, RsaSchemeAlgorithm},
+            key_bits::RsaKeyBits,
+            reserved_handles::{Hierarchy, NvAuth, Provision},
+            session_handles::AuthSession,
+        },
+        structures::{Data, MaxNvBuffer, NvPublicBuilder, RsaExponent, RsaScheme, SignatureScheme},
+        utils::create_unrestricted_signing_rsa_public,
+    };
+
+    #[test]
+    fn test_nv_certify() {
+        let mut context = create_ctx_with_session();
+
+        // Create a signing key
+        let signing_key_pub = create_unrestricted_signing_rsa_public(
+            RsaScheme::create(RsaSchemeAlgorithm::RsaSsa, Some(HashingAlgorithm::Sha256))
+                .expect("Failed to create RSA scheme"),
+            RsaKeyBits::Rsa2048,
+            RsaExponent::default(),
+        )
+        .expect("Failed to create signing rsa public structure");
+        let sign_key_handle = context
+            .execute_with_nullauth_session(|ctx| {
+                ctx.create_primary(Hierarchy::Owner, signing_key_pub, None, None, None, None)
+            })
+            .unwrap()
+            .key_handle;
+
+        // Define an NV index and write data
+        let nv_index =
+            NvIndexTpmHandle::new(0x01500050).expect("Failed to create NV index tpm handle");
+        let nv_index_attributes = NvIndexAttributesBuilder::new()
+            .with_owner_write(true)
+            .with_owner_read(true)
+            .build()
+            .expect("Failed to create nv index attributes");
+        let nv_public = NvPublicBuilder::new()
+            .with_nv_index(nv_index)
+            .with_index_name_algorithm(HashingAlgorithm::Sha256)
+            .with_index_attributes(nv_index_attributes)
+            .with_data_area_size(32)
+            .build()
+            .expect("Failed to build NvPublic");
+        let nv_index_handle = context
+            .nv_define_space(Provision::Owner, None, nv_public)
+            .expect("Failed to define NV space");
+
+        let data = MaxNvBuffer::try_from(vec![1, 2, 3, 4, 5, 6, 7, 8]).unwrap();
+        context
+            .nv_write(NvAuth::Owner, nv_index_handle, data, 0)
+            .expect("Failed to write NV");
+
+        // Certify the NV index
+        let (_attest, _signature) = context
+            .execute_with_sessions(
+                (
+                    Some(AuthSession::Password),
+                    Some(AuthSession::Password),
+                    None,
+                ),
+                |ctx| {
+                    ctx.nv_certify(
+                        sign_key_handle,
+                        NvAuth::Owner,
+                        nv_index_handle,
+                        Data::try_from(vec![0xff; 16]).unwrap(),
+                        SignatureScheme::Null,
+                        8,
+                        0,
+                    )
+                },
+            )
+            .expect("Failed to certify NV");
+
+        // Cleanup
+        context
+            .nv_undefine_space(Provision::Owner, nv_index_handle)
+            .expect("Failed to undefine NV space");
+    }
+}

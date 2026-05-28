@@ -3,12 +3,16 @@
 use crate::{
     Context, Result, ReturnCode,
     context::handle_manager::HandleDropAction,
-    handles::{AuthHandle, NvIndexHandle, ObjectHandle},
+    handles::{AuthHandle, KeyHandle, NvIndexHandle, ObjectHandle},
     interface_types::reserved_handles::{NvAuth, Provision},
-    structures::{Auth, MaxNvBuffer, Name, NvPublic},
+    structures::{
+        Attest, AttestBuffer, Auth, Data, MaxNvBuffer, Name, NvPublic, Signature, SignatureScheme,
+    },
     tss2_esys::{
-        Esys_NV_DefineSpace, Esys_NV_Extend, Esys_NV_Increment, Esys_NV_Read, Esys_NV_ReadPublic,
-        Esys_NV_UndefineSpace, Esys_NV_UndefineSpaceSpecial, Esys_NV_Write,
+        Esys_NV_Certify, Esys_NV_ChangeAuth, Esys_NV_DefineSpace, Esys_NV_Extend,
+        Esys_NV_GlobalWriteLock, Esys_NV_Increment, Esys_NV_Read, Esys_NV_ReadLock,
+        Esys_NV_ReadPublic, Esys_NV_SetBits, Esys_NV_UndefineSpace, Esys_NV_UndefineSpaceSpecial,
+        Esys_NV_Write, Esys_NV_WriteLock,
     },
 };
 use log::error;
@@ -808,9 +812,284 @@ impl Context {
         )
     }
 
-    // Missing function: NV_SetBits
-    // Missing function: NV_WriteLock
-    // Missing function: NV_GlobalWriteLock
+    /// Set bits in an NV index.
+    ///
+    /// # Arguments
+    ///
+    /// * `auth_handle` - The handle indicating the source of authorization value.
+    /// * `nv_index_handle` - The [NvIndexHandle] of the NV index.
+    /// * `bits` - The data to OR with the current contents.
+    ///
+    /// # Details
+    ///
+    /// *From the specification*
+    /// > This command is used to SET bits in an NV Index that was
+    /// > created as a bit field. Any number of bits from 0 to 64 may
+    /// > be SET. The contents of bits are ORed with the current contents
+    /// > of the NV Index.
+    ///
+    /// # Example
+    /// ```rust
+    /// # use tss_esapi::{
+    /// #     Context, TctiNameConf, attributes::{SessionAttributes, NvIndexAttributes},
+    /// #     handles::NvIndexTpmHandle, interface_types::algorithm::HashingAlgorithm,
+    /// #     structures::{SymmetricDefinition, NvPublic}, constants::SessionType,
+    /// #     constants::nv_index_type::NvIndexType,
+    /// # };
+    /// use tss_esapi::interface_types::reserved_handles::{Provision, NvAuth};
+    ///
+    /// # // Create context
+    /// # let mut context =
+    /// #     Context::new(
+    /// #         TctiNameConf::from_environment_variable().expect("Failed to get TCTI"),
+    /// #     ).expect("Failed to create Context");
+    /// #
+    /// # let session = context
+    /// #     .start_auth_session(
+    /// #         None,
+    /// #         None,
+    /// #         None,
+    /// #         SessionType::Hmac,
+    /// #         SymmetricDefinition::AES_256_CFB,
+    /// #         HashingAlgorithm::Sha256,
+    /// #     )
+    /// #     .expect("Failed to create session")
+    /// #     .expect("Received invalid handle");
+    /// # let (session_attributes, session_attributes_mask) = SessionAttributes::builder()
+    /// #     .with_decrypt(true)
+    /// #     .with_encrypt(true)
+    /// #     .build();
+    /// # context.tr_sess_set_attributes(session, session_attributes, session_attributes_mask)
+    /// #     .expect("Failed to set attributes on session");
+    /// # context.set_sessions((Some(session), None, None));
+    /// #
+    /// # let nv_index = NvIndexTpmHandle::new(0x01500030)
+    /// #     .expect("Failed to create NV index tpm handle");
+    /// #
+    /// # // Create NV index attributes for a bit field.
+    /// # let owner_nv_index_attributes = NvIndexAttributes::builder()
+    /// #     .with_owner_write(true)
+    /// #     .with_owner_read(true)
+    /// #     .with_nv_index_type(NvIndexType::Bits)
+    /// #     .build()
+    /// #     .expect("Failed to create owner nv index attributes");
+    /// #
+    /// # // Create owner nv public.
+    /// # let owner_nv_public = NvPublic::builder()
+    /// #     .with_nv_index(nv_index)
+    /// #     .with_index_name_algorithm(HashingAlgorithm::Sha256)
+    /// #     .with_index_attributes(owner_nv_index_attributes)
+    /// #     .with_data_area_size(8)
+    /// #     .build()
+    /// #     .expect("Failed to build NvPublic for owner");
+    /// #
+    /// let nv_index_handle = context
+    ///     .nv_define_space(Provision::Owner, None, owner_nv_public)
+    ///     .expect("Call to nv_define_space failed");
+    ///
+    /// let nv_set_bits_result = context.nv_set_bits(NvAuth::Owner, nv_index_handle, 0x01);
+    ///
+    /// context
+    ///     .nv_undefine_space(Provision::Owner, nv_index_handle)
+    ///     .expect("Call to nv_undefine_space failed");
+    ///
+    /// // Process result
+    /// nv_set_bits_result.expect("Call to nv_set_bits failed");
+    /// ```
+    pub fn nv_set_bits(
+        &mut self,
+        auth_handle: NvAuth,
+        nv_index_handle: NvIndexHandle,
+        bits: u64,
+    ) -> Result<()> {
+        ReturnCode::ensure_success(
+            unsafe {
+                Esys_NV_SetBits(
+                    self.mut_context(),
+                    AuthHandle::from(auth_handle).into(),
+                    nv_index_handle.into(),
+                    self.required_session_1()?,
+                    self.optional_session_2(),
+                    self.optional_session_3(),
+                    bits,
+                )
+            },
+            |ret| {
+                error!("Error when setting NV bits: {:#010X}", ret);
+            },
+        )
+    }
+
+    /// Write-lock an NV index.
+    ///
+    /// # Arguments
+    ///
+    /// * `auth_handle` - The handle indicating the source of authorization value.
+    /// * `nv_index_handle` - The [NvIndexHandle] of the NV index.
+    ///
+    /// # Details
+    ///
+    /// *From the specification*
+    /// > If the TPMA_NV_WRITEDEFINE or TPMA_NV_WRITE_STCLEAR attribute of
+    /// > the NV Index is SET, then this command may be used to inhibit
+    /// > further writes of the NV Index.
+    ///
+    /// # Example
+    /// ```rust
+    /// # use tss_esapi::{
+    /// #     Context, TctiNameConf, attributes::{SessionAttributes, NvIndexAttributes},
+    /// #     handles::NvIndexTpmHandle, interface_types::algorithm::HashingAlgorithm,
+    /// #     structures::{SymmetricDefinition, NvPublic}, constants::SessionType,
+    /// # };
+    /// use tss_esapi::interface_types::reserved_handles::{Provision, NvAuth};
+    ///
+    /// # // Create context
+    /// # let mut context =
+    /// #     Context::new(
+    /// #         TctiNameConf::from_environment_variable().expect("Failed to get TCTI"),
+    /// #     ).expect("Failed to create Context");
+    /// #
+    /// # let session = context
+    /// #     .start_auth_session(
+    /// #         None,
+    /// #         None,
+    /// #         None,
+    /// #         SessionType::Hmac,
+    /// #         SymmetricDefinition::AES_256_CFB,
+    /// #         HashingAlgorithm::Sha256,
+    /// #     )
+    /// #     .expect("Failed to create session")
+    /// #     .expect("Received invalid handle");
+    /// # let (session_attributes, session_attributes_mask) = SessionAttributes::builder()
+    /// #     .with_decrypt(true)
+    /// #     .with_encrypt(true)
+    /// #     .build();
+    /// # context.tr_sess_set_attributes(session, session_attributes, session_attributes_mask)
+    /// #     .expect("Failed to set attributes on session");
+    /// # context.set_sessions((Some(session), None, None));
+    /// #
+    /// # let nv_index = NvIndexTpmHandle::new(0x01500031)
+    /// #     .expect("Failed to create NV index tpm handle");
+    /// #
+    /// # // Create NV index attributes that allow the write lock to be set.
+    /// # let owner_nv_index_attributes = NvIndexAttributes::builder()
+    /// #     .with_owner_write(true)
+    /// #     .with_owner_read(true)
+    /// #     .with_write_stclear(true)
+    /// #     .build()
+    /// #     .expect("Failed to create owner nv index attributes");
+    /// #
+    /// # // Create owner nv public.
+    /// # let owner_nv_public = NvPublic::builder()
+    /// #     .with_nv_index(nv_index)
+    /// #     .with_index_name_algorithm(HashingAlgorithm::Sha256)
+    /// #     .with_index_attributes(owner_nv_index_attributes)
+    /// #     .with_data_area_size(32)
+    /// #     .build()
+    /// #     .expect("Failed to build NvPublic for owner");
+    /// #
+    /// let nv_index_handle = context
+    ///     .nv_define_space(Provision::Owner, None, owner_nv_public)
+    ///     .expect("Call to nv_define_space failed");
+    ///
+    /// let nv_write_lock_result = context.nv_write_lock(NvAuth::Owner, nv_index_handle);
+    ///
+    /// context
+    ///     .nv_undefine_space(Provision::Owner, nv_index_handle)
+    ///     .expect("Call to nv_undefine_space failed");
+    ///
+    /// // Process result
+    /// nv_write_lock_result.expect("Call to nv_write_lock failed");
+    /// ```
+    pub fn nv_write_lock(
+        &mut self,
+        auth_handle: NvAuth,
+        nv_index_handle: NvIndexHandle,
+    ) -> Result<()> {
+        ReturnCode::ensure_success(
+            unsafe {
+                Esys_NV_WriteLock(
+                    self.mut_context(),
+                    AuthHandle::from(auth_handle).into(),
+                    nv_index_handle.into(),
+                    self.required_session_1()?,
+                    self.optional_session_2(),
+                    self.optional_session_3(),
+                )
+            },
+            |ret| {
+                error!("Error when write-locking NV index: {:#010X}", ret);
+            },
+        )
+    }
+
+    /// Apply a global lock on NV write.
+    ///
+    /// # Arguments
+    ///
+    /// * `auth_handle` - An [AuthHandle] used for authorization. This command
+    ///   requires either [AuthHandle::Owner] (ownerAuth/ownerPolicy) or
+    ///   [AuthHandle::Platform] (platformAuth/platformPolicy).
+    ///
+    /// # Details
+    ///
+    /// *From the specification*
+    /// > This command will SET TPMA_NV_WRITELOCKED for all indexes that have
+    /// > their TPMA_NV_GLOBALLOCK attribute SET.
+    ///
+    /// # Example
+    /// ```rust
+    /// # use tss_esapi::{
+    /// #     Context, TctiNameConf, attributes::SessionAttributes,
+    /// #     interface_types::algorithm::HashingAlgorithm,
+    /// #     structures::SymmetricDefinition, constants::SessionType,
+    /// # };
+    /// use tss_esapi::handles::AuthHandle;
+    ///
+    /// # // Create context
+    /// # let mut context =
+    /// #     Context::new(
+    /// #         TctiNameConf::from_environment_variable().expect("Failed to get TCTI"),
+    /// #     ).expect("Failed to create Context");
+    /// #
+    /// # let session = context
+    /// #     .start_auth_session(
+    /// #         None,
+    /// #         None,
+    /// #         None,
+    /// #         SessionType::Hmac,
+    /// #         SymmetricDefinition::AES_256_CFB,
+    /// #         HashingAlgorithm::Sha256,
+    /// #     )
+    /// #     .expect("Failed to create session")
+    /// #     .expect("Received invalid handle");
+    /// # let (session_attributes, session_attributes_mask) = SessionAttributes::builder()
+    /// #     .with_decrypt(true)
+    /// #     .with_encrypt(true)
+    /// #     .build();
+    /// # context.tr_sess_set_attributes(session, session_attributes, session_attributes_mask)
+    /// #     .expect("Failed to set attributes on session");
+    /// # context.set_sessions((Some(session), None, None));
+    /// #
+    /// context.nv_global_write_lock(AuthHandle::Owner)
+    ///     .expect("Call to nv_global_write_lock failed");
+    /// ```
+    pub fn nv_global_write_lock(&mut self, auth_handle: AuthHandle) -> Result<()> {
+        ReturnCode::ensure_success(
+            unsafe {
+                Esys_NV_GlobalWriteLock(
+                    self.mut_context(),
+                    auth_handle.into(),
+                    self.required_session_1()?,
+                    self.optional_session_2(),
+                    self.optional_session_3(),
+                )
+            },
+            |ret| {
+                error!("Error when globally write-locking NV: {:#010X}", ret);
+            },
+        )
+    }
 
     /// Reads data from the nv index.
     ///
@@ -937,7 +1216,416 @@ impl Context {
         MaxNvBuffer::try_from(Context::ffi_data_to_owned(data_ptr)?)
     }
 
-    // Missing function: NV_ReadLock
-    // Missing function: NV_ChangeAuth
-    // Missing function: NV_Certify
+    /// Read-lock an NV index.
+    ///
+    /// # Arguments
+    ///
+    /// * `auth_handle` - The handle indicating the source of authorization value.
+    /// * `nv_index_handle` - The [NvIndexHandle] of the NV index.
+    ///
+    /// # Details
+    ///
+    /// *From the specification*
+    /// > If TPMA_NV_READ_STCLEAR is SET in an Index, then this command
+    /// > may be used to prevent further reads of the NV Index until
+    /// > the next TPM2_Startup (TPM_SU_CLEAR).
+    ///
+    /// # Example
+    /// ```rust
+    /// # use tss_esapi::{
+    /// #     Context, TctiNameConf, attributes::{SessionAttributes, NvIndexAttributes},
+    /// #     handles::NvIndexTpmHandle, interface_types::algorithm::HashingAlgorithm,
+    /// #     structures::{SymmetricDefinition, NvPublic}, constants::SessionType,
+    /// # };
+    /// use tss_esapi::interface_types::reserved_handles::{Provision, NvAuth};
+    ///
+    /// # // Create context
+    /// # let mut context =
+    /// #     Context::new(
+    /// #         TctiNameConf::from_environment_variable().expect("Failed to get TCTI"),
+    /// #     ).expect("Failed to create Context");
+    /// #
+    /// # let session = context
+    /// #     .start_auth_session(
+    /// #         None,
+    /// #         None,
+    /// #         None,
+    /// #         SessionType::Hmac,
+    /// #         SymmetricDefinition::AES_256_CFB,
+    /// #         HashingAlgorithm::Sha256,
+    /// #     )
+    /// #     .expect("Failed to create session")
+    /// #     .expect("Received invalid handle");
+    /// # let (session_attributes, session_attributes_mask) = SessionAttributes::builder()
+    /// #     .with_decrypt(true)
+    /// #     .with_encrypt(true)
+    /// #     .build();
+    /// # context.tr_sess_set_attributes(session, session_attributes, session_attributes_mask)
+    /// #     .expect("Failed to set attributes on session");
+    /// # context.set_sessions((Some(session), None, None));
+    /// #
+    /// # let nv_index = NvIndexTpmHandle::new(0x01500032)
+    /// #     .expect("Failed to create NV index tpm handle");
+    /// #
+    /// # // Create NV index attributes that allow the read lock to be set.
+    /// # let owner_nv_index_attributes = NvIndexAttributes::builder()
+    /// #     .with_owner_write(true)
+    /// #     .with_owner_read(true)
+    /// #     .with_read_stclear(true)
+    /// #     .build()
+    /// #     .expect("Failed to create owner nv index attributes");
+    /// #
+    /// # // Create owner nv public.
+    /// # let owner_nv_public = NvPublic::builder()
+    /// #     .with_nv_index(nv_index)
+    /// #     .with_index_name_algorithm(HashingAlgorithm::Sha256)
+    /// #     .with_index_attributes(owner_nv_index_attributes)
+    /// #     .with_data_area_size(32)
+    /// #     .build()
+    /// #     .expect("Failed to build NvPublic for owner");
+    /// #
+    /// let nv_index_handle = context
+    ///     .nv_define_space(Provision::Owner, None, owner_nv_public)
+    ///     .expect("Call to nv_define_space failed");
+    ///
+    /// let nv_read_lock_result = context.nv_read_lock(NvAuth::Owner, nv_index_handle);
+    ///
+    /// context
+    ///     .nv_undefine_space(Provision::Owner, nv_index_handle)
+    ///     .expect("Call to nv_undefine_space failed");
+    ///
+    /// // Process result
+    /// nv_read_lock_result.expect("Call to nv_read_lock failed");
+    /// ```
+    pub fn nv_read_lock(
+        &mut self,
+        auth_handle: NvAuth,
+        nv_index_handle: NvIndexHandle,
+    ) -> Result<()> {
+        ReturnCode::ensure_success(
+            unsafe {
+                Esys_NV_ReadLock(
+                    self.mut_context(),
+                    AuthHandle::from(auth_handle).into(),
+                    nv_index_handle.into(),
+                    self.required_session_1()?,
+                    self.optional_session_2(),
+                    self.optional_session_3(),
+                )
+            },
+            |ret| {
+                error!("Error when read-locking NV index: {:#010X}", ret);
+            },
+        )
+    }
+
+    /// Change the authorization value for an NV index.
+    ///
+    /// # Arguments
+    ///
+    /// * `nv_index_handle` - The [NvIndexHandle] of the NV index.
+    /// * `new_auth` - The new authorization [Auth] value.
+    ///
+    /// # Details
+    ///
+    /// *From the specification*
+    /// > This command allows the authorization secret for an NV Index
+    /// > to be changed.
+    ///
+    /// # Details
+    ///
+    /// NV_ChangeAuth uses the ADMIN role of the NV index. This is satisfied by a
+    /// policy session whose policy includes
+    /// [`CommandCode::NvChangeAuth`](crate::constants::CommandCode::NvChangeAuth),
+    /// so the index must be defined with a matching `authPolicy`.
+    ///
+    /// # Example
+    /// ```rust
+    /// # use tss_esapi::{
+    /// #     Context, TctiNameConf, attributes::{SessionAttributes, NvIndexAttributes},
+    /// #     handles::NvIndexTpmHandle, interface_types::algorithm::HashingAlgorithm,
+    /// #     structures::{SymmetricDefinition, NvPublic, Auth}, constants::SessionType,
+    /// #     interface_types::session_handles::PolicySession,
+    /// # };
+    /// # use std::convert::TryFrom;
+    /// use tss_esapi::{
+    ///     constants::CommandCode,
+    ///     interface_types::{reserved_handles::Provision, session_handles::AuthSession},
+    /// };
+    ///
+    /// # // Create context
+    /// # let mut context =
+    /// #     Context::new(
+    /// #         TctiNameConf::from_environment_variable().expect("Failed to get TCTI"),
+    /// #     ).expect("Failed to create Context");
+    /// #
+    /// # // Trial session to compute the policy digest for NV_ChangeAuth.
+    /// # let trial_session = context
+    /// #     .start_auth_session(
+    /// #         None,
+    /// #         None,
+    /// #         None,
+    /// #         SessionType::Trial,
+    /// #         SymmetricDefinition::AES_256_CFB,
+    /// #         HashingAlgorithm::Sha256,
+    /// #     )
+    /// #     .expect("Failed to create session")
+    /// #     .expect("Received invalid handle");
+    /// # let (session_attributes, session_attributes_mask) = SessionAttributes::builder()
+    /// #     .with_decrypt(true)
+    /// #     .with_encrypt(true)
+    /// #     .build();
+    /// # context.tr_sess_set_attributes(trial_session, session_attributes, session_attributes_mask)
+    /// #     .expect("Failed to set attributes on session");
+    /// # let trial_policy_session = PolicySession::try_from(trial_session)
+    /// #     .expect("Failed to get policy session");
+    /// # context.policy_command_code(trial_policy_session, CommandCode::NvChangeAuth)
+    /// #     .expect("Failed to create trial policy");
+    /// # let digest = context.policy_get_digest(trial_policy_session)
+    /// #     .expect("Failed to get policy digest");
+    /// #
+    /// # let nv_index = NvIndexTpmHandle::new(0x01500033)
+    /// #     .expect("Failed to create NV index tpm handle");
+    /// #
+    /// # // Define the index with the NV_ChangeAuth policy as its authPolicy.
+    /// # let nv_index_attributes = NvIndexAttributes::builder()
+    /// #     .with_owner_write(true)
+    /// #     .with_owner_read(true)
+    /// #     .with_policy_write(true)
+    /// #     .with_policy_read(true)
+    /// #     .build()
+    /// #     .expect("Failed to create nv index attributes");
+    /// #
+    /// let nv_public = NvPublic::builder()
+    ///     .with_nv_index(nv_index)
+    ///     .with_index_name_algorithm(HashingAlgorithm::Sha256)
+    ///     .with_index_attributes(nv_index_attributes)
+    ///     .with_index_auth_policy(digest)
+    ///     .with_data_area_size(32)
+    ///     .build()
+    ///     .expect("Failed to build NvPublic");
+    ///
+    /// let nv_index_handle = context
+    ///     .execute_with_session(Some(AuthSession::Password), |context| {
+    ///         context.nv_define_space(Provision::Owner, None, nv_public)
+    ///     })
+    ///     .expect("Call to nv_define_space failed");
+    ///
+    /// // Start a policy session satisfying the index's NV_ChangeAuth policy.
+    /// let policy_session = context
+    ///     .start_auth_session(
+    ///         None,
+    ///         None,
+    ///         None,
+    ///         SessionType::Policy,
+    ///         SymmetricDefinition::AES_256_CFB,
+    ///         HashingAlgorithm::Sha256,
+    ///     )
+    ///     .expect("Failed to create policy session")
+    ///     .expect("Received invalid handle");
+    /// # context.tr_sess_set_attributes(policy_session, session_attributes, session_attributes_mask)
+    /// #     .expect("Failed to set attributes on session");
+    /// context
+    ///     .policy_command_code(
+    ///         PolicySession::try_from(policy_session).expect("Failed to get policy session"),
+    ///         CommandCode::NvChangeAuth,
+    ///     )
+    ///     .expect("Failed to create policy");
+    ///
+    /// let new_auth = Auth::from_bytes(&[1, 2, 3, 4]).expect("Failed to create new auth");
+    /// let nv_change_auth_result = context.execute_with_session(Some(policy_session), |context| {
+    ///     context.nv_change_auth(nv_index_handle, new_auth)
+    /// });
+    ///
+    /// context
+    ///     .execute_with_session(Some(AuthSession::Password), |context| {
+    ///         context.nv_undefine_space(Provision::Owner, nv_index_handle)
+    ///     })
+    ///     .expect("Call to nv_undefine_space failed");
+    ///
+    /// // Process result
+    /// nv_change_auth_result.expect("Call to nv_change_auth failed");
+    /// ```
+    pub fn nv_change_auth(&mut self, nv_index_handle: NvIndexHandle, new_auth: Auth) -> Result<()> {
+        ReturnCode::ensure_success(
+            unsafe {
+                Esys_NV_ChangeAuth(
+                    self.mut_context(),
+                    nv_index_handle.into(),
+                    self.required_session_1()?,
+                    self.optional_session_2(),
+                    self.optional_session_3(),
+                    &new_auth.into(),
+                )
+            },
+            |ret| {
+                error!("Error when changing NV auth: {:#010X}", ret);
+            },
+        )
+    }
+
+    /// Certify the contents of an NV index.
+    ///
+    /// # Arguments
+    ///
+    /// * `sign_handle` - A [KeyHandle] of the key used to sign the attestation structure.
+    /// * `auth_handle` - The handle indicating the source of authorization value for the NV index.
+    /// * `nv_index_handle` - The [NvIndexHandle] of the NV index to be certified.
+    /// * `qualifying_data` - [Data] to qualify the signing.
+    /// * `signing_scheme` - The [SignatureScheme] to use for signing.
+    /// * `size` - Number of octets to certify.
+    /// * `offset` - Octet offset into the NV area.
+    ///
+    /// # Details
+    ///
+    /// *From the specification*
+    /// > The purpose of this command is to certify the contents of an
+    /// > NV Index or portion of an NV Index.
+    ///
+    /// # Returns
+    ///
+    /// A tuple of `(Attest, Signature)`.
+    ///
+    /// # Example
+    /// ```rust
+    /// # use std::convert::TryFrom;
+    /// # use tss_esapi::{
+    /// #     Context, TctiNameConf, attributes::NvIndexAttributes,
+    /// #     handles::NvIndexTpmHandle, constants::SessionType,
+    /// #     structures::{NvPublic, MaxNvBuffer, RsaExponent, RsaScheme},
+    /// #     utils::create_unrestricted_signing_rsa_public,
+    /// # };
+    /// use tss_esapi::{
+    ///     interface_types::{
+    ///         algorithm::{HashingAlgorithm, RsaSchemeAlgorithm},
+    ///         key_bits::RsaKeyBits,
+    ///         reserved_handles::{Hierarchy, NvAuth, Provision},
+    ///         session_handles::AuthSession,
+    ///     },
+    ///     structures::{Data, SignatureScheme},
+    /// };
+    ///
+    /// # // Create context
+    /// # let mut context =
+    /// #     Context::new(
+    /// #         TctiNameConf::from_environment_variable().expect("Failed to get TCTI"),
+    /// #     ).expect("Failed to create Context");
+    /// #
+    /// // Create a signing key.
+    /// let signing_key_pub = create_unrestricted_signing_rsa_public(
+    ///     RsaScheme::create(RsaSchemeAlgorithm::RsaSsa, Some(HashingAlgorithm::Sha256))
+    ///         .expect("Failed to create RSA scheme"),
+    ///     RsaKeyBits::Rsa2048,
+    ///     RsaExponent::default(),
+    /// )
+    /// .expect("Failed to create signing rsa public structure");
+    /// let sign_key_handle = context
+    ///     .execute_with_nullauth_session(|ctx| {
+    ///         ctx.create_primary(Hierarchy::Owner, signing_key_pub, None, None, None, None)
+    ///     })
+    ///     .expect("Call to create_primary failed")
+    ///     .key_handle;
+    ///
+    /// # let nv_index = NvIndexTpmHandle::new(0x01500050)
+    /// #     .expect("Failed to create NV index tpm handle");
+    /// #
+    /// # let owner_nv_index_attributes = NvIndexAttributes::builder()
+    /// #     .with_owner_write(true)
+    /// #     .with_owner_read(true)
+    /// #     .build()
+    /// #     .expect("Failed to create owner nv index attributes");
+    /// #
+    /// # let owner_nv_public = NvPublic::builder()
+    /// #     .with_nv_index(nv_index)
+    /// #     .with_index_name_algorithm(HashingAlgorithm::Sha256)
+    /// #     .with_index_attributes(owner_nv_index_attributes)
+    /// #     .with_data_area_size(32)
+    /// #     .build()
+    /// #     .expect("Failed to build NvPublic for owner");
+    /// #
+    /// // Define an NV index and write some data to it.
+    /// let nv_index_handle = context
+    ///     .execute_with_session(Some(AuthSession::Password), |ctx| {
+    ///         ctx.nv_define_space(Provision::Owner, None, owner_nv_public)
+    ///     })
+    ///     .expect("Call to nv_define_space failed");
+    ///
+    /// let data = MaxNvBuffer::try_from(vec![1, 2, 3, 4, 5, 6, 7, 8])
+    ///     .expect("Failed to create MaxNvBuffer from vec");
+    /// context
+    ///     .execute_with_session(Some(AuthSession::Password), |ctx| {
+    ///         ctx.nv_write(NvAuth::Owner, nv_index_handle, data, 0)
+    ///     })
+    ///     .expect("Call to nv_write failed");
+    ///
+    /// // Certify the NV index contents.
+    /// let nv_certify_result = context.execute_with_sessions(
+    ///     (
+    ///         Some(AuthSession::Password),
+    ///         Some(AuthSession::Password),
+    ///         None,
+    ///     ),
+    ///     |ctx| {
+    ///         ctx.nv_certify(
+    ///             sign_key_handle,
+    ///             NvAuth::Owner,
+    ///             nv_index_handle,
+    ///             Data::try_from(vec![0xff; 16]).unwrap(),
+    ///             SignatureScheme::Null,
+    ///             8,
+    ///             0,
+    ///         )
+    ///     },
+    /// );
+    ///
+    /// // Clean up the NV index.
+    /// context
+    ///     .execute_with_session(Some(AuthSession::Password), |ctx| {
+    ///         ctx.nv_undefine_space(Provision::Owner, nv_index_handle)
+    ///     })
+    ///     .expect("Call to nv_undefine_space failed");
+    ///
+    /// // Process result
+    /// let (_attest, _signature) = nv_certify_result.expect("Call to nv_certify failed");
+    /// ```
+    #[allow(clippy::too_many_arguments)]
+    pub fn nv_certify(
+        &mut self,
+        sign_handle: KeyHandle,
+        auth_handle: NvAuth,
+        nv_index_handle: NvIndexHandle,
+        qualifying_data: Data,
+        signing_scheme: SignatureScheme,
+        size: u16,
+        offset: u16,
+    ) -> Result<(Attest, Signature)> {
+        let mut certify_info_ptr = null_mut();
+        let mut signature_ptr = null_mut();
+        ReturnCode::ensure_success(
+            unsafe {
+                Esys_NV_Certify(
+                    self.mut_context(),
+                    sign_handle.into(),
+                    AuthHandle::from(auth_handle).into(),
+                    nv_index_handle.into(),
+                    self.required_session_1()?,
+                    self.required_session_2()?,
+                    self.optional_session_3(),
+                    &qualifying_data.into(),
+                    &signing_scheme.into(),
+                    size,
+                    offset,
+                    &mut certify_info_ptr,
+                    &mut signature_ptr,
+                )
+            },
+            |ret| {
+                error!("Error when certifying NV: {:#010X}", ret);
+            },
+        )?;
+
+        let certify_info = AttestBuffer::try_from(Context::ffi_data_to_owned(certify_info_ptr)?)?;
+        let signature = Signature::try_from(Context::ffi_data_to_owned(signature_ptr)?)?;
+        Ok((certify_info.try_into()?, signature))
+    }
 }
