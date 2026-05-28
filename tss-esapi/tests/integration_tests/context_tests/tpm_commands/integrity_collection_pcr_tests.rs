@@ -265,3 +265,101 @@ mod test_pcr_read {
         assert_ne!(pcr_selection_list_in, pcr_selection_list_out);
     }
 }
+
+mod test_pcr_event {
+    use crate::common::create_ctx_with_session;
+    use sha2::{Digest as _, Sha256};
+    use std::convert::TryFrom;
+    use tss_esapi::{
+        handles::PcrHandle, interface_types::algorithm::HashingAlgorithm, structures::Event,
+    };
+
+    #[test]
+    fn test_pcr_event() {
+        let mut context = create_ctx_with_session();
+
+        let event_bytes = vec![0x01, 0x02, 0x03, 0x04];
+        let event_data = Event::try_from(event_bytes.clone()).unwrap();
+
+        // PCR_Event hashes the event data once per allocated PCR bank, extends
+        // PCR16 in each bank with that hash and returns the per-bank digests.
+        let digests = context.pcr_event(PcrHandle::Pcr16, event_data).unwrap();
+
+        // At least one bank (SHA256) must be allocated on the swtpm we test against.
+        assert!(!digests.value().is_empty(), "PCR_Event returned no digests");
+
+        // For the SHA256 bank the returned digest must equal SHA256(event_data).
+        let sha256_digest = digests
+            .value()
+            .get(&HashingAlgorithm::Sha256)
+            .expect("PCR_Event did not return a SHA256 digest");
+        let expected_sha256 = Sha256::digest(&event_bytes);
+        assert_eq!(sha256_digest.as_bytes(), expected_sha256.as_slice());
+    }
+}
+
+mod test_pcr_allocate {
+    use crate::common::create_ctx_with_session;
+    use tss_esapi::{
+        handles::AuthHandle,
+        interface_types::{YesNo, algorithm::HashingAlgorithm},
+        structures::{PcrSelectionListBuilder, PcrSlot},
+    };
+
+    #[test]
+    fn test_pcr_allocate() {
+        let mut context = create_ctx_with_session();
+        let pcr_allocation = PcrSelectionListBuilder::new()
+            .with_selection(HashingAlgorithm::Sha256, &[PcrSlot::Slot0, PcrSlot::Slot1])
+            .build()
+            .unwrap();
+        let result = context
+            .pcr_allocate(AuthHandle::Platform, pcr_allocation)
+            .unwrap();
+        assert!(result.allocation_success == YesNo::Yes);
+    }
+}
+
+mod test_pcr_set_auth_policy {
+    use crate::common::create_ctx_with_session;
+    use tss_esapi::{
+        handles::{AuthHandle, PcrHandle},
+        interface_types::algorithm::HashingAlgorithm,
+        structures::Digest,
+    };
+
+    // This example is marked `no_run` because `PCR_SetAuthPolicy` succeeds only
+    // for PCRs that the TPM platform configuration assigns to a PolicyAuth group.
+    // swtpm/libtpms assigns no PCRs to such a group.
+    // Reference: https://github.com/stefanberger/libtpms/blob/521c51073fe6f7c56023db78e56961fcaf7906e8/src/tpm2/TPMCmd/Platform/src/PlatformPcr.c
+    #[test]
+    #[ignore = "swtpm defines no PCR group with a changeable auth policy"]
+    fn test_pcr_set_auth_policy() {
+        let mut context = create_ctx_with_session();
+        context
+            .pcr_set_auth_policy(
+                AuthHandle::Platform,
+                Digest::default(),
+                HashingAlgorithm::Null,
+                PcrHandle::Pcr16,
+            )
+            .unwrap();
+    }
+}
+
+mod test_pcr_set_auth_value {
+    use crate::common::create_ctx_with_session;
+    use tss_esapi::{handles::PcrHandle, structures::Auth};
+
+    // This example is marked `no_run` because `PCR_SetAuthValue` succeeds only
+    // for PCRs that the TPM platform configuration assigns to an AuthValue group.
+    // swtpm/libtpms assigns no PCRs to such a group.
+    // Reference: https://github.com/stefanberger/libtpms/blob/521c51073fe6f7c56023db78e56961fcaf7906e8/src/tpm2/TPMCmd/Platform/src/PlatformPcr.c
+    #[test]
+    #[ignore = "swtpm defines no PCR group with a changeable auth value (returns TPM_RC_VALUE)"]
+    fn test_pcr_set_auth_value() {
+        let mut context = create_ctx_with_session();
+        let auth = Auth::from_bytes(&[0x01, 0x02, 0x03, 0x04]).unwrap();
+        context.pcr_set_auth_value(PcrHandle::Pcr16, auth).unwrap();
+    }
+}
