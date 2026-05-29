@@ -119,7 +119,7 @@ pub mod tpm2_tss {
                     let lib = pkg_config::Config::new()
                         .atleast_version(self.lib_version)
                         .probe(self.lib_name)
-                        .expect(&format!("The {} of min version of {} is needed for the bundled installation.", self.lib_name, self.lib_version));
+                        .unwrap_or_else(|_| panic!("The {} of min version of {} is needed for the bundled installation.", self.lib_name, self.lib_version));
                     for link_path in lib.link_paths {
                         println!("cargo::rustc-link-search=all={}", link_path.display());
                     }
@@ -129,6 +129,10 @@ pub mod tpm2_tss {
     }
 
     /// All the dependencies of tpm2-tss.
+    ///
+    /// This is not used in all configurations there for
+    /// the `allow(unused)`.
+    #[allow(unused)]
     const DEPENDENCIES: [Dependency; 1] = [Dependency::new(
         "libcrypto",
         "1.1.0",
