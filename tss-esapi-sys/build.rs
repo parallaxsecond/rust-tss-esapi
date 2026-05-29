@@ -111,8 +111,8 @@ pub mod tpm2_tss {
                     if !win_path.exists() {
                         panic!("For the {} the {} must exist.", self.lib_name, self.win_path_str);
                     }
-                    lib_dir: PathBuf = win_path.join("lib");
-                    bin_dir: PathBuf = win_path.join("bin");
+                    let lib_dir: PathBuf = win_path.join("lib");
+                    let bin_dir: PathBuf = win_path.join("bin");
                     println!("cargo:rustc-link-search=all={}", lib_dir.display());
                     println!("cargo:rustc-link-search=all={}", bin_dir.display());
                 } else {
