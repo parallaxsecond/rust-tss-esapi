@@ -84,6 +84,57 @@ pub mod tpm2_tss {
     const MINIMUM_VERSION: &str = "4.1.3";
     const INSTALLATION_PATH_ENV_VAR_NAME: &str = "TPM2_TSS_PATH";
 
+    /// A tpm2-tss dependency
+    pub struct Dependency<'a> {
+        #[allow(unused)]
+        lib_name: &'a str,
+        #[allow(unused)]
+        lib_version: &'a str,
+        #[allow(unused)]
+        win_path_str: &'a str,
+    }
+
+    impl<'a> Dependency<'a> {
+        pub const fn new(lib_name: &'a str, lib_version: &'a str, win_path_str: &'a str) -> Self {
+            Self {
+                lib_name,
+                lib_version,
+                win_path_str,
+            }
+        }
+
+        pub fn probe(&self) {
+            cfg_if::cfg_if! {
+                if #[cfg(windows)] {
+                    // TODO: Find some better way to check dependency.
+                    win_path = Path::new(self.win_path_str):
+                    if !win_path.exists() {
+                        panic!("For the {} the {} must exist.", self.lib_name, self.win_path.display());
+                    }
+                    lib_dir: PathBuf = win_path.join("lib");
+                    bin_dir: PathBuf = win_path.join("bin");
+                    println!("cargo::rustc-link-search=all={}", lib_dir.display());
+                    println!("cargo::rustc-link-search=all={}", bin_dir.display());
+                } else {
+                    let lib = pkg_config::Config::new()
+                        .atleast_version(self.lib_version)
+                        .probe(self.lib_name)
+                        .expect(&format!("The {} of min version of {} is needed for the bundled installation.", self.lib_name, self.lib_version));
+                    for link_path in lib.link_paths {
+                        println!("cargo::rustc-link-search=all={}", link_path.display());
+                    }
+                }
+            }
+        }
+    }
+
+    /// All the dependencies of tpm2-tss.
+    const DEPENDENCIES: [Dependency; 1] = [Dependency::new(
+        "libcrypto",
+        "1.1.0",
+        "C:\\OpenSSL-v11-Win64",
+    )];
+
     /// The installed tpm2-tss libraries that are of
     /// interest.
     pub struct Installation {
@@ -102,6 +153,9 @@ pub mod tpm2_tss {
         #[cfg(feature = "bundled")]
         /// Uses a bundled build for the installation.
         pub fn bundled(out_path: &Path) -> Self {
+            for dep in DEPENDENCIES {
+                dep.probe();
+            }
             let version = Self::version();
             let source_path = Self::source(out_path, &version);
             Self::compile(&source_path);

@@ -21,6 +21,7 @@ are discoverable in this way on your system. Our build script looks for
 `tss2-sys`, `tss2-esys`, `tss2-tctildr` and `tss2-mu`. A minimum version of `4.1.3` is
 required for all of them. On windows `tss2-tcti-tbs` is also required.
 
+
 Having installed the open-source implementation libraries at `/usr/local/lib` (by default), it
 might happen that `pkg-config` can not find them. Run the following command if that is the
 case:
@@ -39,7 +40,7 @@ NOTE: Only a limited set of bindings are committed and their target triplet
 is included in the name of the file - if the triplet you require is not
 available, feel free to raise a Pull Request to add it or to use build-time
 generation of bindings. All the committed bindings **MUST** be generated from
-the library version found under the `vendor` submodule.
+the previous mentioned minimum version.
 
 ## Bundling TPM-TSS
 
@@ -55,6 +56,9 @@ the `TPM2_TSS_SOURCE_VERSION` environment variable.
    having to worry about the `tpm2-tss` library dependencies. But it is still
    necessary to make the shared libraries available to the executable that uses
    the library.
+* The dependencies of `tpm2-tss` needs to be installed and available to find
+  using `pkg-config` on all platform besides Windows, because on Windows it is
+  handled differently. See the [Windows section}(#Windows).
 * On Windows it might be necessary to manually create the `VERSION` file
    when a local source is being used.
 
@@ -105,7 +109,19 @@ brew install libftdi
 ### OpenSUSE / SUSE
 
 ```
-sudo zypper in autoconf autoconf-archive automake libjson-c-devel libtool libtpms-devel gawk make
+sudo zypper in \
+   autoconf \
+   autoconf-archive \
+   automake \
+   gcc-c++ \
+   libusb-devel \
+   libjson-c-devel \
+   libuuid-devel \
+   libopenssl-3-devel \
+   libtool \
+   libtpms-devel \
+   gawk \
+   make
 ```
 
 ## Cross compiling
