@@ -107,21 +107,21 @@ pub mod tpm2_tss {
             cfg_if::cfg_if! {
                 if #[cfg(windows)] {
                     // TODO: Find some better way to check dependency.
-                    win_path = Path::new(self.win_path_str):
+                    let win_path = Path::new(self.win_path_str);
                     if !win_path.exists() {
-                        panic!("For the {} the {} must exist.", self.lib_name, self.win_path.display());
+                        panic!("For the {} the {} must exist.", self.lib_name, self.win_path_str);
                     }
                     lib_dir: PathBuf = win_path.join("lib");
                     bin_dir: PathBuf = win_path.join("bin");
-                    println!("cargo::rustc-link-search=all={}", lib_dir.display());
-                    println!("cargo::rustc-link-search=all={}", bin_dir.display());
+                    println!("cargo:rustc-link-search=all={}", lib_dir.display());
+                    println!("cargo:rustc-link-search=all={}", bin_dir.display());
                 } else {
                     let lib = pkg_config::Config::new()
                         .atleast_version(self.lib_version)
                         .probe(self.lib_name)
                         .unwrap_or_else(|_| panic!("The {} of min version of {} is needed for the bundled installation.", self.lib_name, self.lib_version));
                     for link_path in lib.link_paths {
-                        println!("cargo::rustc-link-search=all={}", link_path.display());
+                        println!("cargo:rustc-link-search=all={}", link_path.display());
                     }
                 }
             }
@@ -130,10 +130,10 @@ pub mod tpm2_tss {
 
     /// All the dependencies of tpm2-tss.
     ///
-    /// This is not used in all configurations there for
+    /// This is not used in all configurations therefore
     /// the `allow(unused)`.
     #[allow(unused)]
-    const DEPENDENCIES: [Dependency; 1] = [Dependency::new(
+    const DEPENDENCIES: [Dependency<'static>; 1] = [Dependency::new(
         "libcrypto",
         "1.1.0",
         "C:\\OpenSSL-v11-Win64",
@@ -157,7 +157,7 @@ pub mod tpm2_tss {
         #[cfg(feature = "bundled")]
         /// Uses a bundled build for the installation.
         pub fn bundled(out_path: &Path) -> Self {
-            for dep in DEPENDENCIES {
+            for dep in DEPENDENCIES.iter() {
                 dep.probe();
             }
             let version = Self::version();
