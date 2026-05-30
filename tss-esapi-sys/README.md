@@ -57,8 +57,8 @@ the `TPM2_TSS_SOURCE_VERSION` environment variable.
    necessary to make the shared libraries available to the executable that uses
    the library.
 * The dependencies of `tpm2-tss` need to be installed and discoverable via
-   `pkg-config` on all platforms except Windows, on Windows this is handled
-    differently. See the [Windows section](#windows).
+  `pkg-config` on all platforms except Windows, on Windows this is handled
+  differently. See the [Windows section](#windows).
 * On Windows it might be necessary to manually create the `VERSION` file
    when a local source is being used.
 
@@ -91,9 +91,9 @@ Compiling for windows requires a bit of setup to work with the bundled feature.
   and windows sdk 10.0 (Other versions of Visual Studio may work but are untested 
   at this point).
 
-NOTE: On Windows there it is also necessary to make the runtime files dependencies
-of `tpm2-tss` discoverable, e.g. the OpenSSL DLLs. See [search order](https://learn.microsoft.com/en-us/windows/win32/dlls/dynamic-link-library-search-order). In order to run an executable that
-depends on this library.
+NOTE: On Windows it is also necessary to ensure the runtime dependencies of `tpm2-tss`
+(e.g. the OpenSSL DLLs) are discoverable. See the Windows DLL
+[search order](https://learn.microsoft.com/en-us/windows/win32/dlls/dynamic-link-library-search-order).
 
 ### MacOS
 

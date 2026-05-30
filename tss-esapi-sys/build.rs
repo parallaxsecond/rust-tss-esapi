@@ -109,7 +109,7 @@ pub mod tpm2_tss {
                     // TODO: Find some better way to check dependency.
                     let win_path = Path::new(self.win_path_str);
                     if !win_path.exists() {
-                        panic!("For the {} the {} must exist.", self.lib_name, self.win_path_str);
+                        panic!("Bundled build requires `{}` to be installed at `{}`.", self.lib_name, self.win_path_str);
                     }
                     let lib_dir: PathBuf = win_path.join("lib");
                     // for linking
@@ -121,7 +121,7 @@ pub mod tpm2_tss {
                         .cargo_metadata(true) // This is on by default but making it explicit here.
                         .atleast_version(self.lib_version)
                         .probe(self.lib_name)
-                        .unwrap_or_else(|e| panic!("The {} of min version of {} is needed for the bundled installation ({}).", self.lib_name, self.lib_version, e));
+                        .unwrap_or_else(|e| panic!("Bundled build requires `{}` >= {} to be discoverable via pkg-config ({}).", self.lib_name, self.lib_version, e));
                 }
             }
         }
@@ -156,13 +156,10 @@ pub mod tpm2_tss {
         #[cfg(feature = "bundled")]
         /// Uses a bundled build for the installation.
         pub fn bundled(out_path: &Path) -> Self {
-            for dep in DEPENDENCIES.iter() {
-                dep.probe();
-            }
             let version = Self::version();
             let source_path = Self::source(out_path, &version);
             Self::compile(&source_path);
-            Self {
+            let result = Self {
                 _tss2_sys: Library::bundled_required("tss2-sys", &source_path, &version, false),
                 tss2_esys: Library::bundled_required("tss2-esys", &source_path, &version, true),
                 tss2_tctildr: Library::bundled_required(
@@ -173,7 +170,11 @@ pub mod tpm2_tss {
                 ),
                 tss2_mu: Library::bundled_required("tss2-mu", &source_path, &version, false),
                 tss2_tcti_tbs: Library::bundled_optional("tss2-tcti-tbs", &source_path, &version),
+            };
+            for dep in DEPENDENCIES.iter() {
+                dep.probe();
             }
+            result
         }
 
         /// Probes the system for an installation.
