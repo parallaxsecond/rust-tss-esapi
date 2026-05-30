@@ -158,8 +158,11 @@ pub mod tpm2_tss {
         pub fn bundled(out_path: &Path) -> Self {
             let version = Self::version();
             let source_path = Self::source(out_path, &version);
+            for dep in DEPENDENCIES.iter() {
+                dep.probe();
+            }
             Self::compile(&source_path);
-            let result = Self {
+            Self {
                 _tss2_sys: Library::bundled_required("tss2-sys", &source_path, &version, false),
                 tss2_esys: Library::bundled_required("tss2-esys", &source_path, &version, true),
                 tss2_tctildr: Library::bundled_required(
@@ -170,11 +173,7 @@ pub mod tpm2_tss {
                 ),
                 tss2_mu: Library::bundled_required("tss2-mu", &source_path, &version, false),
                 tss2_tcti_tbs: Library::bundled_optional("tss2-tcti-tbs", &source_path, &version),
-            };
-            for dep in DEPENDENCIES.iter() {
-                dep.probe();
             }
-            result
         }
 
         /// Probes the system for an installation.
