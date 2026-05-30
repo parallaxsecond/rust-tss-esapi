@@ -91,6 +91,10 @@ Compiling for windows requires a bit of setup to work with the bundled feature.
   and windows sdk 10.0 (Other versions of Visual Studio may work but are untested 
   at this point).
 
+NOTE: On Windows there it is also necessary to make the runtime files dependencies
+of `tpm2-tss` discoverable, e.g. the OpenSSL DLLs. See [search order](https://learn.microsoft.com/en-us/windows/win32/dlls/dynamic-link-library-search-order). In order to run an executable that
+depends on this library.
+
 ### MacOS
 
 Compiling on MacOS requires the bundling feature. This requires dependencies

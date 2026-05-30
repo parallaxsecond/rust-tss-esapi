@@ -112,9 +112,9 @@ pub mod tpm2_tss {
                         panic!("For the {} the {} must exist.", self.lib_name, self.win_path_str);
                     }
                     let lib_dir: PathBuf = win_path.join("lib");
-                    let bin_dir: PathBuf = win_path.join("bin");
+                    // for linking
                     println!("cargo:rustc-link-search=all={}", lib_dir.display());
-                    println!("cargo:rustc-link-search=all={}", bin_dir.display());
+                    println!("cargo:rustc-link-lib={}", self.lib_name);
                 } else {
                     let lib = pkg_config::Config::new()
                         .atleast_version(self.lib_version)
@@ -703,7 +703,7 @@ pub mod tpm2_tss {
             cfg_if::cfg_if! {
                 if #[cfg(windows)] {
                     let include_path = _source_path.join("include").join("tss2");
-                    println!("cargo:rustc-link-lib=dylib={lib_name}");
+                    println!("cargo:rustc-link-lib={lib_name}");
                     Some(Self {
                         header_file: Self::header_file(lib_name, &include_path, true),
                         version: lib_version.to_string(),
