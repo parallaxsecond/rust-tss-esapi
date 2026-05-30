@@ -57,8 +57,8 @@ the `TPM2_TSS_SOURCE_VERSION` environment variable.
    necessary to make the shared libraries available to the executable that uses
    the library.
 * The dependencies of `tpm2-tss` need to be installed and discoverable via
-  `pkg-config` on all platforms except Windows, on Windows this is handled
-   differently. See the [Windows section](#windows).
+   `pkg-config` on all platforms except Windows, on Windows this is handled
+    differently. See the [Windows section](#windows).
 * On Windows it might be necessary to manually create the `VERSION` file
    when a local source is being used.
 

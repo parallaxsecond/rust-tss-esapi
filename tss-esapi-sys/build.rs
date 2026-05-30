@@ -116,13 +116,12 @@ pub mod tpm2_tss {
                     println!("cargo:rustc-link-search=all={}", lib_dir.display());
                     println!("cargo:rustc-link-lib={}", self.lib_name);
                 } else {
-                    let lib = pkg_config::Config::new()
+                    // The cargo meta data will be printed automatically.
+                    let _ = pkg_config::Config::new()
+                        .cargo_metadata(true) // This is on by default but making it explicit here.
                         .atleast_version(self.lib_version)
                         .probe(self.lib_name)
-                        .unwrap_or_else(|_| panic!("The {} of min version of {} is needed for the bundled installation.", self.lib_name, self.lib_version));
-                    for link_path in lib.link_paths {
-                        println!("cargo:rustc-link-search=all={}", link_path.display());
-                    }
+                        .unwrap_or_else(|e| panic!("The {} of min version of {} is needed for the bundled installation ({}).", self.lib_name, self.lib_version, e));
                 }
             }
         }
