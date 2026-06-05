@@ -430,10 +430,19 @@ pub mod tpm2_tss {
                 }
                 else {
                     let install_path = Self::compile_with_autotools(source_path);
+                    // On some systems the files are installed to the lib64 dir
+                    let pkg_config_path = if install_path.join("lib64").is_dir() {
+                        install_path.join("lib64").join("pkgconfig")
+                    } else if install_path.join("lib").is_dir() {
+                        install_path.join("lib").join("pkgconfig")
+                    } else {
+                        panic!("Unable to find location to search for the bundled pkgconfig files.")
+                    };
+
                     // SAFETY: The build script is not multi threaded so this is safe to do.
                     unsafe {std::env::set_var(
                         "PKG_CONFIG_PATH",
-                        format!("{}", install_path.join("lib").join("pkgconfig").display()),
+                        format!("{}", pkg_config_path.display()),
                     )};
                 }
             }
