@@ -439,6 +439,16 @@ pub mod tpm2_tss {
                         panic!("Unable to find location to search for the bundled pkgconfig files.")
                     };
 
+                    // Add the tpm2-tss libraries pkgconfig path first among the paths.
+                    let pkg_config_paths = match std::env::var_os("PKG_CONFIG_PATH") {
+                        Some(existing_paths) => {
+                            let mut paths = vec![tpm2_tss_pkg_config_path];
+                            paths.append(&mut std::env::split_paths(&existing_paths).collect::<Vec<_>>());
+                            std::env::join_paths(paths).expect("Should be possible to join all the pkg config paths into a PATH string.")
+                        },
+                        None => std::env::join_paths(vec![tpm2_tss_pkg_config_path]).expect("Should be possible to convert tpm2-tss pkgconfig path to a PATH str."),
+                    };
+
                     // SAFETY: The build script is not multi threaded so this is safe to do.
                     unsafe {std::env::set_var(
                         "PKG_CONFIG_PATH",
@@ -781,8 +791,15 @@ pub mod tpm2_tss {
             with_header_files: bool,
             lib_version: &str,
         ) -> Option<Self> {
+            // Make PKG config report as much as possible to cargo
+            // so there is no chance of ending up with `undefined references`.
             pkg_config::Config::new()
                 .atleast_version(lib_version)
+                .cargo_metadata(true)
+                .env_metadata(true)
+                .print_system_libs(true)
+                .print_system_cflags(true)
+                .statik(true)
                 .probe(lib_name)
                 .ok()
                 .map(|pkg_config| {
