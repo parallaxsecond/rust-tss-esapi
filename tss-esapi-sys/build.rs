@@ -430,8 +430,9 @@ pub mod tpm2_tss {
                 }
                 else {
                     let install_path = Self::compile_with_autotools(source_path);
+
                     // On some systems the files are installed to the lib64 dir
-                    let pkg_config_path = if install_path.join("lib64").is_dir() {
+                    let tpm2_tss_pkg_config_path = if install_path.join("lib64").is_dir() {
                         install_path.join("lib64").join("pkgconfig")
                     } else if install_path.join("lib").is_dir() {
                         install_path.join("lib").join("pkgconfig")
@@ -444,16 +445,17 @@ pub mod tpm2_tss {
                         Some(existing_paths) => {
                             let mut paths = vec![tpm2_tss_pkg_config_path];
                             paths.append(&mut std::env::split_paths(&existing_paths).collect::<Vec<_>>());
-                            std::env::join_paths(paths).expect("Should be possible to join all the pkg config paths into a PATH string.")
+                            std::env::join_paths(paths)
+                                .expect("Should be possible to join all the pkg config paths into a PATH string.")
                         },
-                        None => std::env::join_paths(vec![tpm2_tss_pkg_config_path]).expect("Should be possible to convert tpm2-tss pkgconfig path to a PATH str."),
+                        None => {
+                            std::env::join_paths(vec![tpm2_tss_pkg_config_path])
+                                .expect("Should be possible to convert tpm2-tss pkgconfig path to a PATH str.")
+                        },
                     };
 
                     // SAFETY: The build script is not multi threaded so this is safe to do.
-                    unsafe {std::env::set_var(
-                        "PKG_CONFIG_PATH",
-                        format!("{}", pkg_config_path.display()),
-                    )};
+                    unsafe {std::env::set_var("PKG_CONFIG_PATH", pkg_config_paths)};
                 }
             }
         }
