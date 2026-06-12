@@ -286,6 +286,12 @@ pub mod encrypted_secret {
     );
 }
 
+pub mod event {
+    use std::mem::size_of;
+    const TPM2B_EVENT_BUFFER_SIZE: usize = size_of::<TPM2B_EVENT>() - size_of::<u16>();
+    buffer_type!(Event, TPM2B_EVENT_BUFFER_SIZE, TPM2B_EVENT);
+}
+
 pub mod id_object {
     use crate::tss2_esys::TPMS_ID_OBJECT;
     use std::mem::size_of;
