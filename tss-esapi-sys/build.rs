@@ -84,6 +84,60 @@ pub mod tpm2_tss {
     const MINIMUM_VERSION: &str = "4.1.3";
     const INSTALLATION_PATH_ENV_VAR_NAME: &str = "TPM2_TSS_PATH";
 
+    /// A tpm2-tss dependency
+    pub struct Dependency<'a> {
+        #[allow(unused)]
+        lib_name: &'a str,
+        #[allow(unused)]
+        lib_version: &'a str,
+        #[allow(unused)]
+        win_path_str: &'a str,
+    }
+
+    impl<'a> Dependency<'a> {
+        pub const fn new(lib_name: &'a str, lib_version: &'a str, win_path_str: &'a str) -> Self {
+            Self {
+                lib_name,
+                lib_version,
+                win_path_str,
+            }
+        }
+
+        pub fn probe(&self) {
+            cfg_if::cfg_if! {
+                if #[cfg(windows)] {
+                    // TODO: Find some better way to check dependency.
+                    let win_path = Path::new(self.win_path_str);
+                    if !win_path.exists() {
+                        panic!("Bundled build requires `{}` to be installed at `{}`.", self.lib_name, self.win_path_str);
+                    }
+                    let lib_dir: PathBuf = win_path.join("lib");
+                    // for linking
+                    println!("cargo:rustc-link-search=all={}", lib_dir.display());
+                    println!("cargo:rustc-link-lib={}", self.lib_name);
+                } else {
+                    // The cargo meta data will be printed automatically.
+                    let _ = pkg_config::Config::new()
+                        .cargo_metadata(true) // This is on by default but making it explicit here.
+                        .atleast_version(self.lib_version)
+                        .probe(self.lib_name)
+                        .unwrap_or_else(|e| panic!("Bundled build requires `{}` >= {} to be discoverable via pkg-config ({}).", self.lib_name, self.lib_version, e));
+                }
+            }
+        }
+    }
+
+    /// All the dependencies of tpm2-tss.
+    ///
+    /// This is not used in all configurations therefore
+    /// the `allow(unused)`.
+    #[allow(unused)]
+    const DEPENDENCIES: [Dependency<'static>; 1] = [Dependency::new(
+        "libcrypto",
+        "1.1.0",
+        "C:\\OpenSSL-v11-Win64",
+    )];
+
     /// The installed tpm2-tss libraries that are of
     /// interest.
     pub struct Installation {
@@ -104,6 +158,9 @@ pub mod tpm2_tss {
         pub fn bundled(out_path: &Path) -> Self {
             let version = Self::version();
             let source_path = Self::source(out_path, &version);
+            for dep in DEPENDENCIES.iter() {
+                dep.probe();
+            }
             Self::compile(&source_path);
             Self {
                 _tss2_sys: Library::bundled_required("tss2-sys", &source_path, &version, false),
@@ -373,11 +430,32 @@ pub mod tpm2_tss {
                 }
                 else {
                     let install_path = Self::compile_with_autotools(source_path);
+
+                    // On some systems the files are installed to the lib64 dir
+                    let tpm2_tss_pkg_config_path = if install_path.join("lib64").is_dir() {
+                        install_path.join("lib64").join("pkgconfig")
+                    } else if install_path.join("lib").is_dir() {
+                        install_path.join("lib").join("pkgconfig")
+                    } else {
+                        panic!("Unable to find location to search for the bundled pkgconfig files.")
+                    };
+
+                    // Add the tpm2-tss libraries pkgconfig path first among the paths.
+                    let pkg_config_paths = match std::env::var_os("PKG_CONFIG_PATH") {
+                        Some(existing_paths) => {
+                            let mut paths = vec![tpm2_tss_pkg_config_path];
+                            paths.append(&mut std::env::split_paths(&existing_paths).collect::<Vec<_>>());
+                            std::env::join_paths(paths)
+                                .expect("Should be possible to join all the pkg config paths into a PATH string.")
+                        },
+                        None => {
+                            std::env::join_paths(vec![tpm2_tss_pkg_config_path])
+                                .expect("Should be possible to convert tpm2-tss pkgconfig path to a PATH str.")
+                        },
+                    };
+
                     // SAFETY: The build script is not multi threaded so this is safe to do.
-                    unsafe {std::env::set_var(
-                        "PKG_CONFIG_PATH",
-                        format!("{}", install_path.join("lib").join("pkgconfig").display()),
-                    )};
+                    unsafe {std::env::set_var("PKG_CONFIG_PATH", pkg_config_paths)};
                 }
             }
         }
@@ -645,7 +723,7 @@ pub mod tpm2_tss {
             cfg_if::cfg_if! {
                 if #[cfg(windows)] {
                     let include_path = _source_path.join("include").join("tss2");
-                    println!("cargo:rustc-link-lib=dylib={lib_name}");
+                    println!("cargo:rustc-link-lib={lib_name}");
                     Some(Self {
                         header_file: Self::header_file(lib_name, &include_path, true),
                         version: lib_version.to_string(),
@@ -715,8 +793,15 @@ pub mod tpm2_tss {
             with_header_files: bool,
             lib_version: &str,
         ) -> Option<Self> {
+            // Make PKG config report as much as possible to cargo
+            // so there is no chance of ending up with `undefined references`.
             pkg_config::Config::new()
                 .atleast_version(lib_version)
+                .cargo_metadata(true)
+                .env_metadata(true)
+                .print_system_libs(true)
+                .print_system_cflags(true)
+                .statik(true)
                 .probe(lib_name)
                 .ok()
                 .map(|pkg_config| {
