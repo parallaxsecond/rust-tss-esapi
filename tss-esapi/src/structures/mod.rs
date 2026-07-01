@@ -23,6 +23,12 @@ pub use self::capability_data::CapabilityData;
 // //////////////////////////////////////////////////////
 mod names;
 pub use names::name::Name;
+#[cfg(feature = "rustcrypto")]
+#[cfg_attr(
+    not(any(feature = "sha1", feature = "sha2", feature = "sha3", feature = "sm3",)),
+    allow(unused)
+)]
+pub(crate) use names::name::make_name;
 // //////////////////////////////////////////////////////
 // The result section
 // //////////////////////////////////////////////////////
