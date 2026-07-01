@@ -518,7 +518,7 @@ mod test_policy_authorize {
     fn test_policy_authorize() {
         let mut context = create_ctx_with_session();
         let mut random_digest = vec![0u8; 16];
-        getrandom::getrandom(&mut random_digest).unwrap();
+        getrandom::fill(&mut random_digest).unwrap();
         let key_auth = Auth::from_bytes(random_digest.as_slice()).unwrap();
 
         let key_handle = context

@@ -57,7 +57,7 @@ impl Context {
     /// #     .expect("Failed to set auth to empty for owner");
     /// # // Create primary key auth
     /// # let mut random_digest = vec![0u8; 16];
-    /// # getrandom::getrandom(&mut random_digest).expect("get_rand call failed");
+    /// # getrandom::fill(&mut random_digest).expect("get_rand call failed");
     /// # let primary_key_auth = Auth::from_bytes(
     /// #     random_digest
     /// #         .as_slice()
@@ -103,7 +103,7 @@ impl Context {
     /// #     .expect("Failed to create public for symmetric key public");
     /// # // Create auth for the symmetric key
     /// # let mut random_digest = vec![0u8; 16];
-    /// # getrandom::getrandom(&mut random_digest).expect("get_rand call failed");
+    /// # getrandom::fill(&mut random_digest).expect("get_rand call failed");
     /// # let symmetric_key_auth = Auth::from_bytes(
     /// #     random_digest
     /// #         .as_slice()
