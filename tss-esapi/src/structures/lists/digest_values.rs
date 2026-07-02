@@ -20,6 +20,10 @@ impl DigestValues {
         }
     }
 
+    pub fn value(&self) -> &HashMap<HashingAlgorithm, Digest> {
+        &self.digests
+    }
+
     pub fn set(&mut self, alg: HashingAlgorithm, dig: Digest) {
         let _ = self.digests.insert(alg, dig);
     }
