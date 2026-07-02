@@ -40,6 +40,10 @@ pub mod session_type;
 /// Constants -> TPM_CAP section of the specification
 pub mod capabilities;
 
+/// Representation of the constants defined in
+/// Constants -> TPM2_CLOCK_ADJUST section of the specification.
+pub mod clock_adjust;
+
 /// Representation of the return code TSS2_RC (TPM_RC)
 pub mod return_code;
 
@@ -60,6 +64,7 @@ pub mod command_code;
 pub mod pcr_property_tag;
 
 pub use capabilities::CapabilityType;
+pub use clock_adjust::ClockAdjust;
 pub use command_code::CommandCode;
 pub use ecc::EccCurveIdentifier;
 pub use nv_index_type::NvIndexType;
