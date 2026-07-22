@@ -370,10 +370,10 @@ pub fn checkquote(
     if qualifying_data != attest.extra_data().as_bytes() {
         return Ok(false);
     }
-    if let Some((selections, digests)) = pcr_data {
-        if !checkquote_pcr_digests(quote, selections, digests, hash_alg)? {
-            return Ok(false);
-        }
+    if let Some((selections, digests)) = pcr_data
+        && !checkquote_pcr_digests(quote, selections, digests, hash_alg)?
+    {
+        return Ok(false);
     }
     Ok(true)
 }

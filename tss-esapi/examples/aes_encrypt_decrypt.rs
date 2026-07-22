@@ -146,7 +146,7 @@ fn main() {
         .unwrap();
 
     // The data is now encrypted.
-    println!("encrypted_data = {:?}", encrypted_data);
+    println!("encrypted_data = {encrypted_data:?}");
     assert_ne!(encrypted_data.as_slice(), padded_data_to_encrypt.as_slice());
 
     // Decryption is the identical process with the "decrypt" flag set to true.
@@ -198,8 +198,8 @@ fn main() {
 
     // END WARNING
 
-    println!("data_to_encrypt = {:?}", data_to_encrypt);
-    println!("decrypted_data = {:?}", decrypted_data);
+    println!("data_to_encrypt = {data_to_encrypt:?}");
+    println!("decrypted_data = {encrypted_data:?}");
     // They are the same!
     assert_eq!(data_to_encrypt, decrypted_data);
 }

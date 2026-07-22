@@ -60,13 +60,12 @@ impl SwtpmSession {
             // Wait for swtpm to be ready by polling the socket.
             let mut connected = false;
             for _ in 0..40 {
-                if let Ok(addr) = SockAddr::unix(&sock_path) {
-                    if let Ok(sock) = Socket::new(Domain::UNIX, Type::STREAM, None) {
-                        if sock.connect(&addr).is_ok() {
-                            connected = true;
-                            break;
-                        }
-                    }
+                if let Ok(addr) = SockAddr::unix(&sock_path)
+                    && let Ok(sock) = Socket::new(Domain::UNIX, Type::STREAM, None)
+                    && sock.connect(&addr).is_ok()
+                {
+                    connected = true;
+                    break;
                 }
                 std::thread::sleep(Duration::from_millis(50));
             }

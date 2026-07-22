@@ -190,18 +190,18 @@ impl TryFrom<TctiNameConf> for CString {
 
         let tcti_conf = match tcti {
             TctiNameConf::Mssim(TpmSimulatorConfig::Tcp { host, port }) => {
-                if let ServerAddress::Hostname(name) = &host {
-                    if !hostname_validator::is_valid(name) {
-                        return Err(Error::WrapperError(WrapperErrorKind::InvalidParam));
-                    }
+                if let ServerAddress::Hostname(name) = &host
+                    && !hostname_validator::is_valid(name)
+                {
+                    return Err(Error::WrapperError(WrapperErrorKind::InvalidParam));
                 }
                 format!("host={host},port={port}")
             }
             TctiNameConf::Swtpm(TpmSimulatorConfig::Tcp { host, port }) => {
-                if let ServerAddress::Hostname(name) = &host {
-                    if !hostname_validator::is_valid(name) {
-                        return Err(Error::WrapperError(WrapperErrorKind::InvalidParam));
-                    }
+                if let ServerAddress::Hostname(name) = &host
+                    && !hostname_validator::is_valid(name)
+                {
+                    return Err(Error::WrapperError(WrapperErrorKind::InvalidParam));
                 }
                 format!("host={host},port={port}")
             }

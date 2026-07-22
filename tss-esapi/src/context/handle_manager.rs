@@ -41,11 +41,11 @@ impl HandleManager {
         }
 
         // The TSS might return the same handle, see #383
-        if let Some(stored_handle_drop_action) = self.open_handles.get(&handle) {
-            if handle_drop_action != *stored_handle_drop_action {
-                error!("Handle drop action inconsistency");
-                return Err(Error::local_error(WrapperErrorKind::InconsistentParams));
-            }
+        if let Some(stored_handle_drop_action) = self.open_handles.get(&handle)
+            && handle_drop_action != *stored_handle_drop_action
+        {
+            error!("Handle drop action inconsistency");
+            return Err(Error::local_error(WrapperErrorKind::InconsistentParams));
         }
 
         log::trace!("add handle {:#010X}", handle.value());
