@@ -79,6 +79,19 @@ tss-esapi = { path = ".", features = [
 ] }
 x509-cert = { version = "0.2.0", features = ["builder"] }
 
+# workaround:
+# Pin the `ignore` crate to a 1.85 compatible version (our MSRV)
+# Context:
+#   https://github.com/BurntSushi/ripgrep/issues/3473
+#   ignore 0.4.30 started using let-chains which were stabilized in 1.88 while retaining
+#   what was effectively a declared MSRV of 1.85.
+#
+# To ensure cargo, or any automated dependency management doesn't pick up 0.4.30,
+# we'll make a direct pin on ignore 0.4.29
+#
+# This is to be dropped when our MSRV bumps at 1.88 or above.
+ignore = { version = "=0.4.29" }
+
 [build-dependencies]
 semver = "1.0.7"
 
