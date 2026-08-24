@@ -75,4 +75,6 @@ pub use return_code::{
 };
 pub use session_type::SessionType;
 pub use startup_type::StartupType;
+pub mod comparison_operation;
+pub use comparison_operation::ComparisonOperation;
 pub use structure_tags::StructureTag;

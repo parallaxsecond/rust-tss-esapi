@@ -911,3 +911,95 @@ mod test_policy_authorize_nv {
         policy_result.unwrap();
     }
 }
+
+mod test_policy_nv {
+    use crate::common::create_ctx_without_session;
+    use std::convert::TryFrom;
+    use tss_esapi::{
+        attributes::{NvIndexAttributesBuilder, SessionAttributesBuilder},
+        constants::{ComparisonOperation, NvIndexType, SessionType},
+        handles::NvIndexTpmHandle,
+        interface_types::{
+            algorithm::HashingAlgorithm,
+            reserved_handles::{NvAuth, Provision},
+            session_handles::PolicySession,
+        },
+        structures::{Digest, NvPublicBuilder, SymmetricDefinition},
+    };
+
+    #[test]
+    fn test_policy_nv() {
+        let mut context = create_ctx_without_session();
+
+        // `TPM2_PolicyNV` reads the index's Name to compute the policy digest, so the index
+        // must exist even for a trial session.
+        let nv_index = NvIndexTpmHandle::new(0x01500401).expect("Failed to create NV index handle");
+        let nv_index_attributes = NvIndexAttributesBuilder::new()
+            .with_nv_index_type(NvIndexType::Ordinary)
+            .with_owner_write(true)
+            .with_owner_read(true)
+            .build()
+            .expect("Failed to build NV index attributes");
+        let nv_public = NvPublicBuilder::new()
+            .with_nv_index(nv_index)
+            .with_index_name_algorithm(HashingAlgorithm::Sha256)
+            .with_index_attributes(nv_index_attributes)
+            .with_data_area_size(8)
+            .build()
+            .expect("Failed to build NV public");
+        let nv_index_handle = context
+            .execute_with_nullauth_session(|ctx| {
+                ctx.nv_define_space(Provision::Owner, None, nv_public)
+            })
+            .expect("Failed to define NV space");
+
+        let trial_policy_auth_session = context
+            .start_auth_session(
+                None,
+                None,
+                None,
+                SessionType::Trial,
+                SymmetricDefinition::AES_256_CFB,
+                HashingAlgorithm::Sha256,
+            )
+            .expect("Start auth session failed")
+            .expect("Start auth session returned a NONE handle");
+        let (trial_policy_auth_session_attributes, trial_policy_auth_session_attributes_mask) =
+            SessionAttributesBuilder::new()
+                .with_decrypt(true)
+                .with_encrypt(true)
+                .build();
+        context
+            .tr_sess_set_attributes(
+                trial_policy_auth_session,
+                trial_policy_auth_session_attributes,
+                trial_policy_auth_session_attributes_mask,
+            )
+            .expect("tr_sess_set_attributes call failed");
+
+        let trial_policy_session = PolicySession::try_from(trial_policy_auth_session)
+            .expect("Failed to convert auth session into policy session");
+
+        let operand_b = Digest::try_from(vec![0u8; 8]).expect("Failed to create operand");
+
+        let result = context.execute_with_nullauth_session(|ctx| {
+            ctx.policy_nv(
+                NvAuth::Owner,
+                nv_index_handle,
+                trial_policy_session,
+                operand_b,
+                0,
+                ComparisonOperation::UnsignedLe,
+            )
+        });
+
+        // Clean up before asserting, so a failure does not leave the index defined.
+        context
+            .execute_with_nullauth_session(|ctx| {
+                ctx.nv_undefine_space(Provision::Owner, nv_index_handle)
+            })
+            .expect("Failed to undefine NV space");
+
+        result.expect("Failed to call policy_nv");
+    }
+}

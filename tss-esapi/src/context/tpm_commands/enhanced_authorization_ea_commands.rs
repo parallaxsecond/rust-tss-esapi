@@ -3,7 +3,7 @@
 use crate::{
     Context, Error, Result, ReturnCode, WrapperErrorKind as ErrorKind,
     attributes::LocalityAttributes,
-    constants::CommandCode,
+    constants::{CommandCode, ComparisonOperation},
     handles::{AuthHandle, NvIndexHandle, ObjectHandle, SessionHandle},
     interface_types::{YesNo, reserved_handles::NvAuth, session_handles::PolicySession},
     structures::{
@@ -13,7 +13,7 @@ use crate::{
     tss2_esys::{
         Esys_PolicyAuthValue, Esys_PolicyAuthorize, Esys_PolicyAuthorizeNV, Esys_PolicyCommandCode,
         Esys_PolicyCpHash, Esys_PolicyDuplicationSelect, Esys_PolicyGetDigest, Esys_PolicyLocality,
-        Esys_PolicyNameHash, Esys_PolicyNvWritten, Esys_PolicyOR, Esys_PolicyPCR,
+        Esys_PolicyNV, Esys_PolicyNameHash, Esys_PolicyNvWritten, Esys_PolicyOR, Esys_PolicyPCR,
         Esys_PolicyPassword, Esys_PolicyPhysicalPresence, Esys_PolicySecret, Esys_PolicySigned,
         Esys_PolicyTemplate,
     },
@@ -216,7 +216,41 @@ impl Context {
         )
     }
 
-    // Missing function: PolicyNV
+    /// Causes conditional gating of a policy based on the contents of an NV Index.
+    ///
+    /// The TPM reads `size` bytes of the NV Index at `offset` and compares them with
+    /// `operand_b` using `operation`. The policy digest is extended only if the comparison
+    /// succeeds, so the condition is evaluated by the TPM itself and cannot be asserted by
+    /// software.
+    pub fn policy_nv(
+        &mut self,
+        auth_handle: NvAuth,
+        nv_index_handle: NvIndexHandle,
+        policy_session: PolicySession,
+        operand_b: Digest,
+        offset: u16,
+        operation: ComparisonOperation,
+    ) -> Result<()> {
+        ReturnCode::ensure_success(
+            unsafe {
+                Esys_PolicyNV(
+                    self.mut_context(),
+                    AuthHandle::from(auth_handle).into(),
+                    nv_index_handle.into(),
+                    SessionHandle::from(policy_session).into(),
+                    self.optional_session_1(),
+                    self.optional_session_2(),
+                    self.optional_session_3(),
+                    &operand_b.into(),
+                    offset,
+                    operation.into(),
+                )
+            },
+            |ret| {
+                error!("Error when computing policy NV: {:#010X}", ret);
+            },
+        )
+    }
     // Missing function: PolicyCounterTimer
 
     /// Cause conditional gating of a policy based on command code of authorized command.
