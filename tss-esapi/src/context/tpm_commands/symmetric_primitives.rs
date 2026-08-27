@@ -4,11 +4,11 @@ use crate::{
     Context, Result, ReturnCode,
     handles::{KeyHandle, ObjectHandle, TpmHandle},
     interface_types::{
-        algorithm::{HashingAlgorithm, SymmetricMode},
+        algorithm::{HashingAlgorithm, MacSchemeAlgorithm, SymmetricMode},
         reserved_handles::Hierarchy,
     },
     structures::{Digest, HashcheckTicket, InitialValue, MaxBuffer},
-    tss2_esys::{Esys_EncryptDecrypt2, Esys_HMAC, Esys_Hash},
+    tss2_esys::{Esys_EncryptDecrypt2, Esys_HMAC, Esys_Hash, Esys_MAC},
 };
 use log::error;
 use std::convert::TryFrom;
@@ -372,5 +372,110 @@ impl Context {
         Digest::try_from(Context::ffi_data_to_owned(out_hmac_ptr)?)
     }
 
-    // Missing function: MAC
+    /// Computes a MAC over `buffer` using the key referenced by `handle`.
+    ///
+    /// A hash algorithm in `scheme` selects HMAC, while [MacSchemeAlgorithm::Cmac] selects a
+    /// symmetric block-cipher MAC. The key must be an unrestricted keyed-hash or symmetric-cipher
+    /// signing key.
+    ///
+    /// # Arguments
+    ///
+    /// * `handle` - An [ObjectHandle] referencing the key used to compute the MAC.
+    /// * `buffer` - The data over which the MAC is computed.
+    /// * `scheme` - The MAC algorithm to use. If the key has a default scheme,
+    ///   [MacSchemeAlgorithm::Null] selects it; otherwise, a non-null scheme must be supplied.
+    ///
+    /// # Returns
+    ///
+    /// The computed MAC as a [Digest].
+    ///
+    /// # Details
+    ///
+    /// *From the specification*
+    /// > This command performs an HMAC or a block cipher MAC on the supplied data using the
+    /// > indicated algorithm.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// # use tss_esapi::{Context, TctiNameConf};
+    /// # use tss_esapi::attributes::ObjectAttributesBuilder;
+    /// # use tss_esapi::interface_types::{
+    /// #     algorithm::{HashingAlgorithm, PublicAlgorithm},
+    /// #     reserved_handles::Hierarchy,
+    /// # };
+    /// # use tss_esapi::structures::{
+    /// #     KeyedHashScheme, PublicBuilder, PublicKeyedHashParameters,
+    /// # };
+    /// use tss_esapi::{
+    ///     interface_types::algorithm::MacSchemeAlgorithm,
+    ///     structures::MaxBuffer,
+    /// };
+    /// # let mut context = Context::new(
+    /// #     TctiNameConf::from_environment_variable().expect("Failed to get TCTI"),
+    /// # )
+    /// # .expect("Failed to create Context");
+    /// # let object_attributes = ObjectAttributesBuilder::new()
+    /// #     .with_sign_encrypt(true)
+    /// #     .with_sensitive_data_origin(true)
+    /// #     .with_user_with_auth(true)
+    /// #     .build()
+    /// #     .expect("Failed to build object attributes");
+    /// # let key_public = PublicBuilder::new()
+    /// #     .with_public_algorithm(PublicAlgorithm::KeyedHash)
+    /// #     .with_name_hashing_algorithm(HashingAlgorithm::Sha256)
+    /// #     .with_object_attributes(object_attributes)
+    /// #     .with_keyed_hash_parameters(PublicKeyedHashParameters::new(
+    /// #         KeyedHashScheme::HMAC_SHA_256,
+    /// #     ))
+    /// #     .with_keyed_hash_unique_identifier(Default::default())
+    /// #     .build()
+    /// #     .expect("Failed to build keyed-hash public area");
+    /// # let key_handle = context
+    /// #     .execute_with_nullauth_session(|ctx| {
+    /// #         ctx.create_primary(Hierarchy::Owner, key_public, None, None, None, None)
+    /// #     })
+    /// #     .expect("Failed to create MAC key")
+    /// #     .key_handle;
+    /// let mac = context
+    ///     .execute_with_nullauth_session(|ctx| {
+    ///         ctx.mac(
+    ///             key_handle.into(),
+    ///             MaxBuffer::from_bytes(b"data to authenticate")
+    ///                 .expect("Failed to create MAC input buffer"),
+    ///             MacSchemeAlgorithm::Sha256,
+    ///         )
+    ///     })
+    ///     .expect("Failed to compute MAC");
+    /// assert_eq!(32, mac.len());
+    /// # context
+    /// #     .flush_context(key_handle.into())
+    /// #     .expect("Failed to flush MAC key");
+    /// ```
+    pub fn mac(
+        &mut self,
+        handle: ObjectHandle,
+        buffer: MaxBuffer,
+        scheme: MacSchemeAlgorithm,
+    ) -> Result<Digest> {
+        let mut out_mac_ptr = null_mut();
+        ReturnCode::ensure_success(
+            unsafe {
+                Esys_MAC(
+                    self.mut_context(),
+                    handle.into(),
+                    self.required_session_1()?,
+                    self.optional_session_2(),
+                    self.optional_session_3(),
+                    &buffer.into(),
+                    scheme.into(),
+                    &mut out_mac_ptr,
+                )
+            },
+            |ret| {
+                error!("Error failed to perform MAC operation: {:#010X}", ret);
+            },
+        )?;
+        Digest::try_from(Context::ffi_data_to_owned(out_mac_ptr)?)
+    }
 }
