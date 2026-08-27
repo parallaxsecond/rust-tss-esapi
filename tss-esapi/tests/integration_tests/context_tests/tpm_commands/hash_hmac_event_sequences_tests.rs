@@ -155,3 +155,127 @@ mod test_hmac_sequence {
         let _ticket = ticket.expect("HashcheckTicket should be returned");
     }
 }
+
+mod test_mac_sequence {
+    use crate::common::create_ctx_with_session;
+    use tss_esapi::{
+        attributes::ObjectAttributesBuilder,
+        interface_types::{
+            algorithm::{HashingAlgorithm, MacSchemeAlgorithm, PublicAlgorithm},
+            reserved_handles::Hierarchy,
+        },
+        structures::{KeyedHashScheme, MaxBuffer, PublicBuilder, PublicKeyedHashParameters},
+    };
+
+    #[test]
+    fn test_mac_sequence_matches_hmac_sequence() {
+        let mut context = create_ctx_with_session();
+        let object_attributes = ObjectAttributesBuilder::new()
+            .with_sign_encrypt(true)
+            .with_sensitive_data_origin(true)
+            .with_user_with_auth(true)
+            .build()
+            .expect("Failed to build object attributes");
+        let key_public = PublicBuilder::new()
+            .with_public_algorithm(PublicAlgorithm::KeyedHash)
+            .with_name_hashing_algorithm(HashingAlgorithm::Sha256)
+            .with_object_attributes(object_attributes)
+            .with_keyed_hash_parameters(PublicKeyedHashParameters::new(
+                KeyedHashScheme::HMAC_SHA_256,
+            ))
+            .with_keyed_hash_unique_identifier(Default::default())
+            .build()
+            .expect("Failed to build public structure for key");
+        let key_handle = context
+            .create_primary(Hierarchy::Owner, key_public, None, None, None, None)
+            .expect("Failed to create primary MAC key")
+            .key_handle;
+        let data = MaxBuffer::from_bytes(b"data authenticated by both sequence commands")
+            .expect("Failed to create MAC input buffer");
+
+        let mac_sequence = context
+            .mac_sequence_start(key_handle.into(), MacSchemeAlgorithm::Sha256, None)
+            .expect("Failed to start MAC sequence");
+        context
+            .sequence_update(mac_sequence, data.clone())
+            .expect("Failed to update MAC sequence");
+        let (mac_result, _) = context
+            .sequence_complete(mac_sequence, MaxBuffer::default(), Hierarchy::Null)
+            .expect("Failed to complete MAC sequence");
+
+        let hmac_sequence = context
+            .hmac_sequence_start(key_handle.into(), HashingAlgorithm::Sha256, None)
+            .expect("Failed to start HMAC sequence");
+        context
+            .sequence_update(hmac_sequence, data)
+            .expect("Failed to update HMAC sequence");
+        let (hmac_result, _) = context
+            .sequence_complete(hmac_sequence, MaxBuffer::default(), Hierarchy::Null)
+            .expect("Failed to complete HMAC sequence");
+
+        assert_eq!(hmac_result, mac_result);
+        context
+            .flush_context(key_handle.into())
+            .expect("Failed to flush MAC key");
+    }
+}
+
+mod test_event_sequence_complete {
+    use crate::common::create_ctx_with_session;
+    use sha2::{Digest as _, Sha256};
+    use tss_esapi::{
+        handles::PcrHandle,
+        interface_types::{algorithm::HashingAlgorithm, session_handles::AuthSession},
+        structures::MaxBuffer,
+    };
+
+    #[test]
+    fn test_event_sequence_complete() {
+        let mut context = create_ctx_with_session();
+        let pcr_session = context.sessions().0;
+        context
+            .execute_with_session(pcr_session, |ctx| ctx.pcr_reset(PcrHandle::Pcr16))
+            .expect("Failed to reset PCR 16 before test");
+
+        let first_data = [0x01, 0x02, 0x03, 0x04];
+        let final_data = [0x05, 0x06];
+        let sequence_handle = context
+            .hash_sequence_start(HashingAlgorithm::Null, None)
+            .expect("Failed to start Event Sequence");
+        context
+            .sequence_update(
+                sequence_handle,
+                MaxBuffer::from_bytes(&first_data).expect("Failed to create first event buffer"),
+            )
+            .expect("Failed to update Event Sequence");
+        let digest_values = context
+            .execute_with_sessions(
+                (
+                    Some(AuthSession::Password),
+                    Some(AuthSession::Password),
+                    None,
+                ),
+                |ctx| {
+                    ctx.event_sequence_complete(
+                        PcrHandle::Pcr16,
+                        sequence_handle,
+                        MaxBuffer::from_bytes(&final_data)
+                            .expect("Failed to create final event buffer"),
+                    )
+                },
+            )
+            .expect("Failed to complete Event Sequence");
+
+        let expected_digest =
+            Sha256::digest([first_data.as_slice(), final_data.as_slice()].concat());
+        let actual_digest = digest_values
+            .value()
+            .get(&HashingAlgorithm::Sha256)
+            .expect("Event Sequence did not return a SHA-256 digest");
+        assert_eq!(&expected_digest[..], actual_digest.as_bytes());
+
+        context
+            .execute_with_session(pcr_session, |ctx| ctx.pcr_reset(PcrHandle::Pcr16))
+            .expect("Failed to reset PCR 16 after test");
+    }
+}
