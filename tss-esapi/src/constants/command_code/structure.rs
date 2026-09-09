@@ -3,39 +3,45 @@
 use crate::{
     Error, Result, WrapperErrorKind,
     constants::tss::{
-        TPM2_CC_AC_GetCapability, TPM2_CC_AC_Send, TPM2_CC_ActivateCredential, TPM2_CC_Certify,
-        TPM2_CC_CertifyCreation, TPM2_CC_ChangeEPS, TPM2_CC_ChangePPS, TPM2_CC_Clear,
-        TPM2_CC_ClearControl, TPM2_CC_ClockRateAdjust, TPM2_CC_ClockSet, TPM2_CC_Commit,
-        TPM2_CC_ContextLoad, TPM2_CC_ContextSave, TPM2_CC_Create, TPM2_CC_CreateLoaded,
-        TPM2_CC_CreatePrimary, TPM2_CC_DictionaryAttackLockReset,
-        TPM2_CC_DictionaryAttackParameters, TPM2_CC_Duplicate, TPM2_CC_EC_Ephemeral,
-        TPM2_CC_ECC_Parameters, TPM2_CC_ECDH_KeyGen, TPM2_CC_ECDH_ZGen, TPM2_CC_EncryptDecrypt,
-        TPM2_CC_EncryptDecrypt2, TPM2_CC_EventSequenceComplete, TPM2_CC_EvictControl,
-        TPM2_CC_FieldUpgradeData, TPM2_CC_FieldUpgradeStart, TPM2_CC_FirmwareRead,
-        TPM2_CC_FlushContext, TPM2_CC_GetCapability, TPM2_CC_GetCommandAuditDigest,
-        TPM2_CC_GetRandom, TPM2_CC_GetSessionAuditDigest, TPM2_CC_GetTestResult, TPM2_CC_GetTime,
-        TPM2_CC_HMAC, TPM2_CC_HMAC_Start, TPM2_CC_Hash, TPM2_CC_HashSequenceStart,
-        TPM2_CC_HierarchyChangeAuth, TPM2_CC_HierarchyControl, TPM2_CC_Import,
-        TPM2_CC_IncrementalSelfTest, TPM2_CC_Load, TPM2_CC_LoadExternal, TPM2_CC_MakeCredential,
-        TPM2_CC_NV_Certify, TPM2_CC_NV_ChangeAuth, TPM2_CC_NV_DefineSpace, TPM2_CC_NV_Extend,
-        TPM2_CC_NV_GlobalWriteLock, TPM2_CC_NV_Increment, TPM2_CC_NV_Read, TPM2_CC_NV_ReadLock,
-        TPM2_CC_NV_ReadPublic, TPM2_CC_NV_SetBits, TPM2_CC_NV_UndefineSpace,
+        TPM2_CC_AC_GetCapability, TPM2_CC_AC_Send, TPM2_CC_ACT_SetTimeout,
+        TPM2_CC_ActivateCredential, TPM2_CC_Certify, TPM2_CC_CertifyCreation, TPM2_CC_CertifyX509,
+        TPM2_CC_ChangeEPS, TPM2_CC_ChangePPS, TPM2_CC_Clear, TPM2_CC_ClearControl,
+        TPM2_CC_ClockRateAdjust, TPM2_CC_ClockSet, TPM2_CC_Commit, TPM2_CC_ContextLoad,
+        TPM2_CC_ContextSave, TPM2_CC_Create, TPM2_CC_CreateLoaded, TPM2_CC_CreatePrimary,
+        TPM2_CC_Decapsulate, TPM2_CC_DictionaryAttackLockReset, TPM2_CC_DictionaryAttackParameters,
+        TPM2_CC_Duplicate, TPM2_CC_EC_Ephemeral, TPM2_CC_ECC_Decrypt, TPM2_CC_ECC_Encrypt,
+        TPM2_CC_ECC_Parameters, TPM2_CC_ECDH_KeyGen, TPM2_CC_ECDH_ZGen, TPM2_CC_Encapsulate,
+        TPM2_CC_EncryptDecrypt, TPM2_CC_EncryptDecrypt2, TPM2_CC_EventSequenceComplete,
+        TPM2_CC_EvictControl, TPM2_CC_FieldUpgradeData, TPM2_CC_FieldUpgradeStart,
+        TPM2_CC_FirmwareRead, TPM2_CC_FlushContext, TPM2_CC_GetCapability,
+        TPM2_CC_GetCommandAuditDigest, TPM2_CC_GetRandom, TPM2_CC_GetSessionAuditDigest,
+        TPM2_CC_GetTestResult, TPM2_CC_GetTime, TPM2_CC_HMAC, TPM2_CC_HMAC_Start, TPM2_CC_Hash,
+        TPM2_CC_HashSequenceStart, TPM2_CC_HierarchyChangeAuth, TPM2_CC_HierarchyControl,
+        TPM2_CC_Import, TPM2_CC_IncrementalSelfTest, TPM2_CC_Load, TPM2_CC_LoadExternal,
+        TPM2_CC_MakeCredential, TPM2_CC_NV_Certify, TPM2_CC_NV_ChangeAuth, TPM2_CC_NV_DefineSpace,
+        TPM2_CC_NV_DefineSpace2, TPM2_CC_NV_Extend, TPM2_CC_NV_GlobalWriteLock,
+        TPM2_CC_NV_Increment, TPM2_CC_NV_Read, TPM2_CC_NV_ReadLock, TPM2_CC_NV_ReadPublic,
+        TPM2_CC_NV_ReadPublic2, TPM2_CC_NV_SetBits, TPM2_CC_NV_UndefineSpace,
         TPM2_CC_NV_UndefineSpaceSpecial, TPM2_CC_NV_Write, TPM2_CC_NV_WriteLock,
         TPM2_CC_ObjectChangeAuth, TPM2_CC_PCR_Allocate, TPM2_CC_PCR_Event, TPM2_CC_PCR_Extend,
         TPM2_CC_PCR_Read, TPM2_CC_PCR_Reset, TPM2_CC_PCR_SetAuthPolicy, TPM2_CC_PCR_SetAuthValue,
         TPM2_CC_PP_Commands, TPM2_CC_Policy_AC_SendSelect, TPM2_CC_PolicyAuthValue,
-        TPM2_CC_PolicyAuthorize, TPM2_CC_PolicyAuthorizeNV, TPM2_CC_PolicyCommandCode,
-        TPM2_CC_PolicyCounterTimer, TPM2_CC_PolicyCpHash, TPM2_CC_PolicyDuplicationSelect,
-        TPM2_CC_PolicyGetDigest, TPM2_CC_PolicyLocality, TPM2_CC_PolicyNV, TPM2_CC_PolicyNameHash,
-        TPM2_CC_PolicyNvWritten, TPM2_CC_PolicyOR, TPM2_CC_PolicyPCR, TPM2_CC_PolicyPassword,
+        TPM2_CC_PolicyAuthorize, TPM2_CC_PolicyAuthorizeNV, TPM2_CC_PolicyCapability,
+        TPM2_CC_PolicyCommandCode, TPM2_CC_PolicyCounterTimer, TPM2_CC_PolicyCpHash,
+        TPM2_CC_PolicyDuplicationSelect, TPM2_CC_PolicyGetDigest, TPM2_CC_PolicyLocality,
+        TPM2_CC_PolicyNV, TPM2_CC_PolicyNameHash, TPM2_CC_PolicyNvWritten, TPM2_CC_PolicyOR,
+        TPM2_CC_PolicyPCR, TPM2_CC_PolicyParameters, TPM2_CC_PolicyPassword,
         TPM2_CC_PolicyPhysicalPresence, TPM2_CC_PolicyRestart, TPM2_CC_PolicySecret,
-        TPM2_CC_PolicySigned, TPM2_CC_PolicyTemplate, TPM2_CC_PolicyTicket, TPM2_CC_Quote,
-        TPM2_CC_RSA_Decrypt, TPM2_CC_RSA_Encrypt, TPM2_CC_ReadClock, TPM2_CC_ReadPublic,
-        TPM2_CC_Rewrap, TPM2_CC_SelfTest, TPM2_CC_SequenceComplete, TPM2_CC_SequenceUpdate,
-        TPM2_CC_SetAlgorithmSet, TPM2_CC_SetCommandCodeAuditStatus, TPM2_CC_SetPrimaryPolicy,
-        TPM2_CC_Shutdown, TPM2_CC_Sign, TPM2_CC_StartAuthSession, TPM2_CC_Startup,
-        TPM2_CC_StirRandom, TPM2_CC_TestParms, TPM2_CC_Unseal, TPM2_CC_VerifySignature,
-        TPM2_CC_ZGen_2Phase,
+        TPM2_CC_PolicySigned, TPM2_CC_PolicyTemplate, TPM2_CC_PolicyTicket,
+        TPM2_CC_PolicyTransportSPDM, TPM2_CC_Quote, TPM2_CC_RSA_Decrypt, TPM2_CC_RSA_Encrypt,
+        TPM2_CC_ReadClock, TPM2_CC_ReadOnlyControl, TPM2_CC_ReadPublic, TPM2_CC_Rewrap,
+        TPM2_CC_SelfTest, TPM2_CC_SequenceComplete, TPM2_CC_SequenceUpdate,
+        TPM2_CC_SetAlgorithmSet, TPM2_CC_SetCapability, TPM2_CC_SetCommandCodeAuditStatus,
+        TPM2_CC_SetPrimaryPolicy, TPM2_CC_Shutdown, TPM2_CC_Sign, TPM2_CC_SignDigest,
+        TPM2_CC_SignSequenceComplete, TPM2_CC_SignSequenceStart, TPM2_CC_StartAuthSession,
+        TPM2_CC_Startup, TPM2_CC_StirRandom, TPM2_CC_TestParms, TPM2_CC_Unseal,
+        TPM2_CC_VerifyDigestSignature, TPM2_CC_VerifySequenceComplete, TPM2_CC_VerifySequenceStart,
+        TPM2_CC_VerifySignature, TPM2_CC_ZGen_2Phase,
     },
     tss2_esys::TPM2_CC,
 };
@@ -211,6 +217,35 @@ impl CommandCodeStructure {
     pub const AC_SEND: CommandCodeStructure = CommandCodeStructure(TPM2_CC_AC_Send);
     pub const POLICY_AC_SEND_SELECT: CommandCodeStructure =
         CommandCodeStructure(TPM2_CC_Policy_AC_SendSelect);
+    pub const CERTIFY_X509: CommandCodeStructure = CommandCodeStructure(TPM2_CC_CertifyX509);
+    pub const ACT_SET_TIMEOUT: CommandCodeStructure = CommandCodeStructure(TPM2_CC_ACT_SetTimeout);
+    pub const ECC_ENCRYPT: CommandCodeStructure = CommandCodeStructure(TPM2_CC_ECC_Encrypt);
+    pub const ECC_DECRYPT: CommandCodeStructure = CommandCodeStructure(TPM2_CC_ECC_Decrypt);
+    pub const POLICY_CAPABILITY: CommandCodeStructure =
+        CommandCodeStructure(TPM2_CC_PolicyCapability);
+    pub const POLICY_PARAMETERS: CommandCodeStructure =
+        CommandCodeStructure(TPM2_CC_PolicyParameters);
+    pub const NV_DEFINE_SPACE_2: CommandCodeStructure =
+        CommandCodeStructure(TPM2_CC_NV_DefineSpace2);
+    pub const NV_READ_PUBLIC_2: CommandCodeStructure = CommandCodeStructure(TPM2_CC_NV_ReadPublic2);
+    pub const SET_CAPABILITY: CommandCodeStructure = CommandCodeStructure(TPM2_CC_SetCapability);
+    pub const READ_ONLY_CONTROL: CommandCodeStructure =
+        CommandCodeStructure(TPM2_CC_ReadOnlyControl);
+    pub const POLICY_TRANSPORT_SPDM: CommandCodeStructure =
+        CommandCodeStructure(TPM2_CC_PolicyTransportSPDM);
+    pub const VERIFY_SEQUENCE_COMPLETE: CommandCodeStructure =
+        CommandCodeStructure(TPM2_CC_VerifySequenceComplete);
+    pub const SIGN_SEQUENCE_COMPLETE: CommandCodeStructure =
+        CommandCodeStructure(TPM2_CC_SignSequenceComplete);
+    pub const VERIFY_DIGEST_SIGNATURE: CommandCodeStructure =
+        CommandCodeStructure(TPM2_CC_VerifyDigestSignature);
+    pub const SIGN_DIGEST: CommandCodeStructure = CommandCodeStructure(TPM2_CC_SignDigest);
+    pub const ENCAPSULATE: CommandCodeStructure = CommandCodeStructure(TPM2_CC_Encapsulate);
+    pub const DECAPSULATE: CommandCodeStructure = CommandCodeStructure(TPM2_CC_Decapsulate);
+    pub const VERIFY_SEQUENCE_START: CommandCodeStructure =
+        CommandCodeStructure(TPM2_CC_VerifySequenceStart);
+    pub const SIGN_SEQUENCE_START: CommandCodeStructure =
+        CommandCodeStructure(TPM2_CC_SignSequenceStart);
 }
 
 impl TryFrom<TPM2_CC> for CommandCodeStructure {

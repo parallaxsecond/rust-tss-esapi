@@ -183,6 +183,40 @@ fn test_valid_conversions() {
         TPM2_CC_Policy_AC_SendSelect,
         CommandCode::PolicyAcSendSelect
     );
+    test_valid_conversion!(TPM2_CC_CertifyX509, CommandCode::CertifyX509);
+    test_valid_conversion!(TPM2_CC_ACT_SetTimeout, CommandCode::ActSetTimeout);
+    test_valid_conversion!(TPM2_CC_ECC_Encrypt, CommandCode::EccEncrypt);
+    test_valid_conversion!(TPM2_CC_ECC_Decrypt, CommandCode::EccDecrypt);
+    test_valid_conversion!(TPM2_CC_PolicyCapability, CommandCode::PolicyCapability);
+    test_valid_conversion!(TPM2_CC_PolicyParameters, CommandCode::PolicyParameters);
+    test_valid_conversion!(TPM2_CC_NV_DefineSpace2, CommandCode::NvDefineSpace2);
+    test_valid_conversion!(TPM2_CC_NV_ReadPublic2, CommandCode::NvReadPublic2);
+    test_valid_conversion!(TPM2_CC_SetCapability, CommandCode::SetCapability);
+    test_valid_conversion!(TPM2_CC_ReadOnlyControl, CommandCode::ReadOnlyControl);
+    test_valid_conversion!(
+        TPM2_CC_PolicyTransportSPDM,
+        CommandCode::PolicyTransportSpdm
+    );
+    test_valid_conversion!(
+        TPM2_CC_VerifySequenceComplete,
+        CommandCode::VerifySequenceComplete
+    );
+    test_valid_conversion!(
+        TPM2_CC_SignSequenceComplete,
+        CommandCode::SignSequenceComplete
+    );
+    test_valid_conversion!(
+        TPM2_CC_VerifyDigestSignature,
+        CommandCode::VerifyDigestSignature
+    );
+    test_valid_conversion!(TPM2_CC_SignDigest, CommandCode::SignDigest);
+    test_valid_conversion!(TPM2_CC_Encapsulate, CommandCode::Encapsulate);
+    test_valid_conversion!(TPM2_CC_Decapsulate, CommandCode::Decapsulate);
+    test_valid_conversion!(
+        TPM2_CC_VerifySequenceStart,
+        CommandCode::VerifySequenceStart
+    );
+    test_valid_conversion!(TPM2_CC_SignSequenceStart, CommandCode::SignSequenceStart);
 }
 
 #[test]
