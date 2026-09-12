@@ -3,12 +3,13 @@
 
 use crate::{
     Error, Result, WrapperErrorKind,
-    structures::{EccSignature, Signature},
+    abstraction::AssociatedHashingAlgorithm,
+    structures::{EccParameter, EccSignature, Signature},
 };
 
 use std::convert::TryFrom;
 
-use ecdsa::SignatureSize;
+use ecdsa::{SignatureSize, hazmat::DigestPrimitive};
 use elliptic_curve::{
     FieldBytes, FieldBytesSize, PrimeCurve,
     generic_array::{ArrayLength, typenum::Unsigned},
@@ -85,5 +86,39 @@ impl TryFrom<&Signature> for rsa::pss::Signature {
 
         Self::try_from(signature.signature().as_bytes())
             .map_err(|_| Error::local_error(WrapperErrorKind::InvalidParam))
+    }
+}
+
+impl<C> TryFrom<&ecdsa::Signature<C>> for EccSignature
+where
+    C: PrimeCurve + DigestPrimitive,
+    C::Digest: AssociatedHashingAlgorithm,
+    SignatureSize<C>: ArrayLength<u8>,
+{
+    type Error = Error;
+
+    fn try_from(signature: &ecdsa::Signature<C>) -> Result<Self> {
+        let (r, s) = signature.split_bytes();
+
+        let signature_r = EccParameter::from_bytes(r.as_slice())
+            .map_err(|_| Error::local_error(WrapperErrorKind::InvalidParam))?;
+        let signature_s = EccParameter::from_bytes(s.as_slice())
+            .map_err(|_| Error::local_error(WrapperErrorKind::InvalidParam))?;
+
+        EccSignature::create(C::Digest::TPM_DIGEST, signature_r, signature_s)
+    }
+}
+
+impl<C> TryFrom<&ecdsa::Signature<C>> for Signature
+where
+    C: PrimeCurve + DigestPrimitive,
+    C::Digest: AssociatedHashingAlgorithm,
+    SignatureSize<C>: ArrayLength<u8>,
+{
+    type Error = Error;
+
+    fn try_from(signature: &ecdsa::Signature<C>) -> Result<Self> {
+        let ecc_signature = EccSignature::try_from(signature)?;
+        Ok(Signature::EcDsa(ecc_signature))
     }
 }
