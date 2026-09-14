@@ -18,7 +18,7 @@ RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs \
         --component rustfmt --component clippy
 ENV PATH="/root/.cargo/bin:${PATH}"
 
-RUN rustup toolchain install 1.85.0 --profile minimal \
+RUN rustup toolchain install 1.88.0 --profile minimal \
         --component rustfmt --component clippy
 
 RUN cargo install cargo-valgrind
