@@ -20,4 +20,10 @@ fi
 ##################
 # Execute clippy #
 ##################
-cargo clippy --all-targets --all-features -- -D clippy::all -D clippy::cargo
+LINTS=""
+LINTS="$LINTS -D clippy::all"
+LINTS="$LINTS -D clippy::cargo"
+# clippy::cargo disallows multiple versions of the crate in the tree
+# We depend on getrandom which itself will depends on both wit-bindgen 0.46 and 0.51
+LINTS="$LINTS -A clippy::multiple-crate-versions"
+cargo clippy --all-targets --all-features -- $LINTS
