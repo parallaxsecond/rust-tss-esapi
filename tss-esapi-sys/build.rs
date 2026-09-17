@@ -426,9 +426,8 @@ pub mod tpm2_tss {
                             .expect("Unable to create version file for tpm2-tss");
                         write!(version_file, "{}", Self::version())
                             .unwrap_or_else(|e| panic!("Failed to write version file: {e}"));
-            }
-                }
-                else {
+                    }
+                } else {
                     let install_path = Self::compile_with_autotools(source_path);
 
                     // On some systems the files are installed to the lib64 dir
