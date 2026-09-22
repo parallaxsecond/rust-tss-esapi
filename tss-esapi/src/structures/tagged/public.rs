@@ -4,24 +4,21 @@ pub mod ecc;
 pub mod keyed_hash;
 pub mod rsa;
 
+use self::rsa::PublicRsaParameters;
+use super::symmetric::SymmetricDefinitionObject;
 use crate::{
     Error, Result, ReturnCode, WrapperErrorKind,
     attributes::ObjectAttributes,
     interface_types::algorithm::{HashingAlgorithm, PublicAlgorithm},
-    structures::{Digest, EccPoint, PublicKeyRsa, SymmetricCipherParameters},
+    structures::{Derive, Digest, EccPoint, PublicKeyRsa, SymmetricCipherParameters},
     traits::{Marshall, impl_mu_standard},
-    tss2_esys::{TPM2B_PUBLIC, TPMT_PUBLIC},
+    tss2_esys::{TPM2B_PUBLIC, TPM2B_TEMPLATE, TPMT_PUBLIC},
 };
-
-use self::rsa::PublicRsaParameters;
 use ecc::PublicEccParameters;
 use keyed_hash::PublicKeyedHashParameters;
-
 use log::error;
 use std::convert::{TryFrom, TryInto};
 use tss_esapi_sys::{TPMU_PUBLIC_ID, TPMU_PUBLIC_PARMS};
-
-use super::symmetric::SymmetricDefinitionObject;
 
 /// A builder for the [Public] type.
 #[derive(Debug, Clone)]
@@ -38,6 +35,7 @@ pub struct PublicBuilder {
     ecc_unique_identifier: Option<EccPoint>,
     symmetric_cipher_parameters: Option<SymmetricCipherParameters>,
     symmetric_cipher_unique_identifier: Option<Digest>,
+    derivation_parameters: Option<Derive>,
 }
 
 impl PublicBuilder {
@@ -61,6 +59,7 @@ impl PublicBuilder {
             ecc_unique_identifier: None,
             symmetric_cipher_parameters: None,
             symmetric_cipher_unique_identifier: None,
+            derivation_parameters: None,
         }
     }
 
@@ -199,6 +198,11 @@ impl PublicBuilder {
         self
     }
 
+    pub fn with_derivation_parameters(mut self, derivation_parameters: Derive) -> Self {
+        self.derivation_parameters = Some(derivation_parameters);
+        self
+    }
+
     /// Builds the [Public] structure.
     ///
     /// # Errors
@@ -225,8 +229,8 @@ impl PublicBuilder {
 
         let auth_policy = self.auth_policy.unwrap_or_default();
 
-        match algorithm {
-            PublicAlgorithm::Rsa => {
+        match (algorithm, self.derivation_parameters) {
+            (PublicAlgorithm::Rsa, None) => {
                 Ok(Public::Rsa {
                     object_attributes,
                     name_hashing_algorithm,
@@ -241,7 +245,7 @@ impl PublicBuilder {
                     })?,
                 })
             },
-            PublicAlgorithm::KeyedHash => {
+            (PublicAlgorithm::KeyedHash, None) => {
                 Ok(Public::KeyedHash {
                     object_attributes,
                     name_hashing_algorithm,
@@ -256,7 +260,7 @@ impl PublicBuilder {
                     })?,
                 })
             },
-            PublicAlgorithm::Ecc => {
+            (PublicAlgorithm::Ecc, None) => {
                 Ok(Public::Ecc {
                     object_attributes,
                     name_hashing_algorithm,
@@ -271,7 +275,7 @@ impl PublicBuilder {
                     })?,
                 })
             }
-            PublicAlgorithm::SymCipher => {
+            (PublicAlgorithm::SymCipher, None) => {
                 Ok(Public::SymCipher {
                     object_attributes,
                     name_hashing_algorithm,
@@ -285,6 +289,24 @@ impl PublicBuilder {
                         Error::local_error(WrapperErrorKind::ParamsMissing)
                     })?,
                 })
+            }
+            (PublicAlgorithm::SymCipher, Some(derive)) => {
+                Ok(Public::DerivedSymCipher {
+                    object_attributes,
+                    name_hashing_algorithm,
+                    auth_policy,
+                    parameters: self.symmetric_cipher_parameters.ok_or_else(|| {
+                        error!("Symmetric cipher parameters have not been set in the Public Builder even though the symmetric cipher algorithm have been selected");
+                        Error::local_error(WrapperErrorKind::ParamsMissing)
+                    })?,
+                    unique: derive,
+                })
+            }
+            (_public_algorithm, Some(_)) => {
+                error!(
+                    "The requested public algorithm can not be used with object derivation."
+                );
+                Err(Error::local_error(WrapperErrorKind::InvalidParam))
             }
         }
     }
@@ -333,6 +355,13 @@ pub enum Public {
         parameters: SymmetricCipherParameters,
         unique: Digest,
     },
+    DerivedSymCipher {
+        object_attributes: ObjectAttributes,
+        name_hashing_algorithm: HashingAlgorithm,
+        auth_policy: Digest,
+        parameters: SymmetricCipherParameters,
+        unique: Derive,
+    },
 }
 
 impl Public {
@@ -349,6 +378,9 @@ impl Public {
                 object_attributes, ..
             }
             | Public::SymCipher {
+                object_attributes, ..
+            }
+            | Public::DerivedSymCipher {
                 object_attributes, ..
             } => *object_attributes,
         }
@@ -372,6 +404,10 @@ impl Public {
             | Public::SymCipher {
                 name_hashing_algorithm,
                 ..
+            }
+            | Public::DerivedSymCipher {
+                name_hashing_algorithm,
+                ..
             } => *name_hashing_algorithm,
         }
     }
@@ -382,7 +418,9 @@ impl Public {
             Public::Rsa { parameters, .. } => Ok(parameters.symmetric_definition_object()),
             Public::KeyedHash { .. } => Err(Error::local_error(WrapperErrorKind::InvalidParam)),
             Public::Ecc { parameters, .. } => Ok(parameters.symmetric_definition_object()),
-            Public::SymCipher { parameters, .. } => Ok(parameters.symmetric_definition_object()),
+            Public::SymCipher { parameters, .. } | Public::DerivedSymCipher { parameters, .. } => {
+                Ok(parameters.symmetric_definition_object())
+            }
         }
     }
 
@@ -392,7 +430,8 @@ impl Public {
             Public::Rsa { auth_policy, .. }
             | Public::KeyedHash { auth_policy, .. }
             | Public::Ecc { auth_policy, .. }
-            | Public::SymCipher { auth_policy, .. } => auth_policy,
+            | Public::SymCipher { auth_policy, .. }
+            | Public::DerivedSymCipher { auth_policy, .. } => auth_policy,
         }
     }
 
@@ -470,6 +509,24 @@ impl From<Public> for TPMT_PUBLIC {
                     symDetail: parameters.into(),
                 },
                 unique: TPMU_PUBLIC_ID { sym: unique.into() },
+            },
+            Public::DerivedSymCipher {
+                object_attributes,
+                name_hashing_algorithm,
+                auth_policy,
+                parameters,
+                unique,
+            } => TPMT_PUBLIC {
+                type_: PublicAlgorithm::SymCipher.into(),
+                nameAlg: name_hashing_algorithm.into(),
+                objectAttributes: object_attributes.into(),
+                authPolicy: auth_policy.into(),
+                parameters: TPMU_PUBLIC_PARMS {
+                    symDetail: parameters.into(),
+                },
+                unique: TPMU_PUBLIC_ID {
+                    derive: unique.into(),
+                },
             },
         }
     }
@@ -583,6 +640,42 @@ impl TryFrom<Public> for TPM2B_PUBLIC {
                 Error::local_error(WrapperErrorKind::InvalidParam)
             })?,
             publicArea: public_area,
+        })
+    }
+}
+
+impl TryFrom<Public> for TPM2B_TEMPLATE {
+    type Error = Error;
+
+    fn try_from(public: Public) -> Result<Self> {
+        let mut size = 0;
+        let mut buffer: [u8; 612usize] = [0; 612];
+        let public_area = TPMT_PUBLIC::from(public);
+
+        ReturnCode::ensure_success(
+            unsafe {
+                crate::tss2_esys::Tss2_MU_TPMT_PUBLIC_Marshal(
+                    &public_area,
+                    buffer.as_mut_ptr(),
+                    Public::BUFFER_SIZE.try_into().map_err(|e| {
+                        error!("Failed to convert size of buffer to TSS size_t type: {}", e);
+                        Error::local_error(WrapperErrorKind::InvalidParam)
+                    })?,
+                    &mut size,
+                )
+            },
+            |ret| error!("Failed to marshal Public: {}", ret),
+        )?;
+
+        Ok(TPM2B_TEMPLATE {
+            size: size.try_into().map_err(|e| {
+                error!(
+                    "Failed to convert size of buffer from TSS size_t type: {}",
+                    e
+                );
+                Error::local_error(WrapperErrorKind::InvalidParam)
+            })?,
+            buffer,
         })
     }
 }
