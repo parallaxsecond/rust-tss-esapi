@@ -150,6 +150,12 @@ pub mod tpm2_tss {
         tss2_mu: Library,
         #[allow(unused)]
         tss2_tcti_tbs: Option<Library>,
+        #[allow(unused)]
+        tss2_tcti_device: Option<Library>,
+        #[allow(unused)]
+        tss2_tcti_swtpm: Option<Library>,
+        #[allow(unused)]
+        tss2_tcti_mssim: Option<Library>,
     }
 
     impl Installation {
@@ -173,6 +179,21 @@ pub mod tpm2_tss {
                 ),
                 tss2_mu: Library::bundled_required("tss2-mu", &source_path, &version, false),
                 tss2_tcti_tbs: Library::bundled_optional("tss2-tcti-tbs", &source_path, &version),
+                tss2_tcti_device: Library::bundled_optional(
+                    "tss2-tcti-device",
+                    &source_path,
+                    &version,
+                ),
+                tss2_tcti_swtpm: Library::bundled_optional(
+                    "tss2-tcti-swtpm",
+                    &source_path,
+                    &version,
+                ),
+                tss2_tcti_mssim: Library::bundled_optional(
+                    "tss2-tcti-mssim",
+                    &source_path,
+                    &version,
+                ),
             }
         }
 
@@ -209,6 +230,14 @@ pub mod tpm2_tss {
                     install_path.as_ref(),
                     with_header_files,
                 ),
+                // When dynamically linked, the TCTI library will dlopen these itself.
+                //
+                // See: the `--enable-nodl` configuration at
+                //
+                // <https://github.com/tpm2-software/tpm2-tss/blob/master/configure.ac#L396>
+                tss2_tcti_device: None,
+                tss2_tcti_swtpm: None,
+                tss2_tcti_mssim: None,
             }
         }
 
@@ -476,6 +505,7 @@ pub mod tpm2_tss {
                 .reconf("-fiv")
                 // skip ./configure if no parameter changes are made
                 .fast_build(true)
+                .enable("nodl", Some("yes"))
                 .enable("esys", None)
                 // Disable fapi as we only use esys
                 .disable("fapi", None)
