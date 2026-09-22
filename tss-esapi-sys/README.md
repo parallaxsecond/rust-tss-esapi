@@ -53,9 +53,7 @@ Github during the build. The version to retrieve can be controlled by setting
 the `TPM2_TSS_SOURCE_VERSION` environment variable.
 [!IMPORTANT]
 * The `bundled` feature will make it possible to build the crate without
-   having to worry about the `tpm2-tss` library dependencies. But it is still
-   necessary to make the shared libraries available to the executable that uses
-   the library.
+   having to worry about the `tpm2-tss` library dependencies. 
 * The dependencies of `tpm2-tss` need to be installed and discoverable via
   `pkg-config` on all platforms except Windows, on Windows this is handled
   differently. See the [Windows section](#windows).
