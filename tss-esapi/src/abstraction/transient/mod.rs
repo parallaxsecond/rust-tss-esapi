@@ -154,7 +154,7 @@ impl TransientKeyContext {
         let key_auth = if auth_size > 0 {
             self.set_session_attrs()?;
             let mut random_bytes = vec![0u8; auth_size];
-            getrandom::getrandom(&mut random_bytes).map_err(|_| {
+            getrandom::fill(&mut random_bytes).map_err(|_| {
                 log::error!("Failed to obtain a random authvalue for key creation");
                 Error::WrapperError(ErrorKind::InternalError)
             })?;
@@ -671,7 +671,7 @@ impl TransientKeyContextBuilder {
 
         let root_key_auth = if self.root_key_auth_size > 0 {
             let mut random = vec![0u8; self.root_key_auth_size];
-            getrandom::getrandom(&mut random).map_err(|_| {
+            getrandom::fill(&mut random).map_err(|_| {
                 log::error!("Failed to obtain a random value for root key authentication");
                 Error::WrapperError(ErrorKind::InternalError)
             })?;

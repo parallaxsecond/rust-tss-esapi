@@ -78,7 +78,7 @@ impl Context {
     /// #     .expect("Failed to set attributes on session");
     /// # context.set_sessions((Some(session), None, None));
     /// # let mut random_digest = vec![0u8; 16];
-    /// # getrandom::getrandom(&mut random_digest).expect("Failed to get random bytes");
+    /// # getrandom::fill(&mut random_digest).expect("Failed to get random bytes");
     /// # let key_auth
     /// #     = Auth::from_bytes(random_digest.as_slice()).expect("Failed to create key auth");
     /// #
