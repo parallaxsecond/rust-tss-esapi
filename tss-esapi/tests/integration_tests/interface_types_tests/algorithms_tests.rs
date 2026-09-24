@@ -106,6 +106,49 @@ mod hashing_algorithm_tests {
     }
 }
 
+mod mac_scheme_algorithm_tests {
+    use super::*;
+    use tss_esapi::{
+        constants::{
+            AlgorithmIdentifier,
+            tss::{
+                TPM2_ALG_CMAC, TPM2_ALG_NULL, TPM2_ALG_SHA1, TPM2_ALG_SHA3_256, TPM2_ALG_SHA3_384,
+                TPM2_ALG_SHA3_512, TPM2_ALG_SHA256, TPM2_ALG_SHA384, TPM2_ALG_SHA512,
+                TPM2_ALG_SM3_256,
+            },
+        },
+        interface_types::algorithm::MacSchemeAlgorithm,
+    };
+
+    #[test]
+    fn test_mac_scheme_algorithm_conversion() {
+        test_conversion!(TPM2_ALG_SHA1, MacSchemeAlgorithm::Sha1);
+        test_conversion!(TPM2_ALG_SHA256, MacSchemeAlgorithm::Sha256);
+        test_conversion!(TPM2_ALG_SHA384, MacSchemeAlgorithm::Sha384);
+        test_conversion!(TPM2_ALG_SHA512, MacSchemeAlgorithm::Sha512);
+        test_conversion!(TPM2_ALG_SM3_256, MacSchemeAlgorithm::Sm3_256);
+        test_conversion!(TPM2_ALG_SHA3_256, MacSchemeAlgorithm::Sha3_256);
+        test_conversion!(TPM2_ALG_SHA3_384, MacSchemeAlgorithm::Sha3_384);
+        test_conversion!(TPM2_ALG_SHA3_512, MacSchemeAlgorithm::Sha3_512);
+        test_conversion!(TPM2_ALG_CMAC, MacSchemeAlgorithm::Cmac);
+        test_conversion!(TPM2_ALG_NULL, MacSchemeAlgorithm::Null);
+    }
+
+    #[test]
+    fn test_conversion_of_incorrect_algorithm() {
+        test_invalid_tpm_alg_conversion!(
+            TPM2_ALG_RSA,
+            MacSchemeAlgorithm,
+            WrapperErrorKind::InvalidParam
+        );
+        test_invalid_algorithm_conversion!(
+            AlgorithmIdentifier::Ecc,
+            MacSchemeAlgorithm,
+            WrapperErrorKind::InvalidParam
+        )
+    }
+}
+
 mod keyed_hash_scheme_tests {
     use super::*;
     use tss_esapi::{
