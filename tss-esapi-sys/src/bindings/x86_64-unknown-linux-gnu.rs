@@ -1817,6 +1817,7 @@ pub union TPMU_ATTEST {
     pub sessionAudit: TPMS_SESSION_AUDIT_INFO,
     pub time: TPMS_TIME_ATTEST_INFO,
     pub nv: TPMS_NV_CERTIFY_INFO,
+    pub nvDigest: TPMS_NV_DIGEST_CERTIFY_INFO,
 }
 #[allow(clippy::unnecessary_operation, clippy::identity_op)]
 const _: () = {
@@ -1833,6 +1834,8 @@ const _: () = {
         [::std::mem::offset_of!(TPMU_ATTEST, sessionAudit) - 0usize];
     ["Offset of field: TPMU_ATTEST::time"][::std::mem::offset_of!(TPMU_ATTEST, time) - 0usize];
     ["Offset of field: TPMU_ATTEST::nv"][::std::mem::offset_of!(TPMU_ATTEST, nv) - 0usize];
+    ["Offset of field: TPMU_ATTEST::nvDigest"]
+        [::std::mem::offset_of!(TPMU_ATTEST, nvDigest) - 0usize];
 };
 impl Default for TPMU_ATTEST {
     fn default() -> Self {

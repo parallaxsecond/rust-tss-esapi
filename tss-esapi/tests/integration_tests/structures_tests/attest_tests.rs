@@ -10,8 +10,8 @@ use tss_esapi::{
     traits::{Marshall, UnMarshall},
     tss2_esys::{
         TPMS_ATTEST, TPMS_CERTIFY_INFO, TPMS_CLOCK_INFO, TPMS_COMMAND_AUDIT_INFO,
-        TPMS_CREATION_INFO, TPMS_NV_CERTIFY_INFO, TPMS_QUOTE_INFO, TPMS_SESSION_AUDIT_INFO,
-        TPMS_TIME_ATTEST_INFO, TPMS_TIME_INFO,
+        TPMS_CREATION_INFO, TPMS_NV_CERTIFY_INFO, TPMS_NV_DIGEST_CERTIFY_INFO, TPMS_QUOTE_INFO,
+        TPMS_SESSION_AUDIT_INFO, TPMS_TIME_ATTEST_INFO, TPMS_TIME_INFO,
     },
 };
 
@@ -311,6 +311,77 @@ fn test_attest_with_nv_creation_info_into_tpm_type_conversions() {
     let actual_tpms_attest: TPMS_ATTEST = attest.into();
 
     crate::common::ensure_tpms_attest_equality(&expected_tpms_attest, &actual_tpms_attest);
+}
+
+#[test]
+fn test_attest_with_nv_digest_info_into_tpm_type_conversions() {
+    let expected_index_name =
+        Name::try_from(vec![0xf0u8; 34]).expect("Failed to create index name");
+    let expected_nv_digest =
+        Digest::try_from(vec![0xfcu8; 32]).expect("Failed to create NV digest");
+    let expected_attest_info = AttestInfo::NvDigest {
+        info: TPMS_NV_DIGEST_CERTIFY_INFO {
+            indexName: expected_index_name.clone().into(),
+            nvDigest: expected_nv_digest.clone().into(),
+        }
+        .try_into()
+        .expect("Failed to convert TPMS_NV_DIGEST_CERTIFY_INFO into NvDigestCertifyInfo"),
+    };
+
+    let (attest, expected_tpms_attest) =
+        create_validated_test_parameters(expected_attest_info, AttestationType::NvDigest);
+
+    if let AttestInfo::NvDigest { info } = attest.attested() {
+        assert_eq!(
+            &expected_index_name,
+            info.index_name(),
+            "NvDigestCertifyInfo did not contain the expected index name",
+        );
+        assert_eq!(
+            &expected_nv_digest,
+            info.nv_digest(),
+            "NvDigestCertifyInfo did not contain the expected NV digest",
+        );
+    } else {
+        panic!("Converted Attest did not contain expected value for 'attest info'");
+    }
+
+    let actual_tpms_attest: TPMS_ATTEST = attest.into();
+
+    crate::common::ensure_tpms_attest_equality(&expected_tpms_attest, &actual_tpms_attest);
+}
+
+#[test]
+fn test_nv_digest_marshall_and_unmarshall() {
+    let expected_index_name =
+        Name::try_from(vec![0xf0u8; 34]).expect("Failed to create index name");
+    let expected_nv_digest =
+        Digest::try_from(vec![0xfcu8; 32]).expect("Failed to create NV digest");
+    let expected_attest_info = AttestInfo::NvDigest {
+        info: TPMS_NV_DIGEST_CERTIFY_INFO {
+            indexName: expected_index_name.clone().into(),
+            nvDigest: expected_nv_digest.clone().into(),
+        }
+        .try_into()
+        .expect("Failed to convert TPMS_NV_DIGEST_CERTIFY_INFO into NvDigestCertifyInfo"),
+    };
+
+    let (attest, _) =
+        create_validated_test_parameters(expected_attest_info, AttestationType::NvDigest);
+    let marshalled_attest = attest.marshall().expect("Failed to marshall Attest");
+    let unmarshalled_attest =
+        Attest::unmarshall(&marshalled_attest).expect("Failed to unmarshall Attest");
+
+    assert_eq!(
+        AttestationType::NvDigest,
+        unmarshalled_attest.attestation_type(),
+    );
+    if let AttestInfo::NvDigest { info } = unmarshalled_attest.attested() {
+        assert_eq!(&expected_index_name, info.index_name());
+        assert_eq!(&expected_nv_digest, info.nv_digest());
+    } else {
+        panic!("Unmarshalled Attest did not contain NvDigest attestation info");
+    }
 }
 
 #[test]

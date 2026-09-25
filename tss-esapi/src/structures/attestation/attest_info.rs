@@ -3,8 +3,8 @@
 
 use crate::{
     structures::{
-        CertifyInfo, CommandAuditInfo, CreationInfo, NvCertifyInfo, QuoteInfo, SessionAuditInfo,
-        TimeAttestInfo,
+        CertifyInfo, CommandAuditInfo, CreationInfo, NvCertifyInfo, NvDigestCertifyInfo, QuoteInfo,
+        SessionAuditInfo, TimeAttestInfo,
     },
     tss2_esys::TPMU_ATTEST,
 };
@@ -25,8 +25,7 @@ pub enum AttestInfo {
     Time { info: TimeAttestInfo },
     Creation { info: CreationInfo },
     Nv { info: NvCertifyInfo },
-    // NvDigest, the TPMS_NV_DIGEST_CERTIFY_INFO,
-    // was first added in the 3.1.0 version of the tpm2-tss
+    NvDigest { info: NvDigestCertifyInfo },
 }
 
 impl From<AttestInfo> for TPMU_ATTEST {
@@ -47,6 +46,9 @@ impl From<AttestInfo> for TPMU_ATTEST {
                 creation: info.into(),
             },
             AttestInfo::Nv { info } => TPMU_ATTEST { nv: info.into() },
+            AttestInfo::NvDigest { info } => TPMU_ATTEST {
+                nvDigest: info.into(),
+            },
         }
     }
 }
