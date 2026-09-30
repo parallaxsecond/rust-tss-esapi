@@ -20,10 +20,25 @@ the corresponding advisories.
 
 ## Reporting a vulnerability
 
-To report a vulnerability, please send an email to
-[cncf-parsec-maintainers@lists.cncf.io](mailto:cncf-parsec-maintainers@lists.cncf.io). We will
-promptly reply to your report and we will strive to keep you in the loop as we try to reach a
-resolution.
+Please report suspected vulnerabilities privately. Do not disclose security
+issues in public issues, pull requests, or discussions until maintainers have
+had an opportunity to investigate and release a fix.
+
+Contact points:
+
+- [Jesper Brynolf](https://github.com/Superhepper) (<jesper.brynolf@gmail.com>)
+- [Hugues de Valon](https://github.com/hug-dev) (<hugues.devalon@gmail.com>)
+- [Wiktor Kwapisiewicz](https://github.com/wiktor-k) (<wiktor@metacode.biz>)
+- [Ionut Mihalcea](https://github.com/ionut-arm) (<ionut.mihalcea@arm.com>)
+
+Please include the affected version or commit, the relevant crate and API,
+the impact, reproduction steps or a proof of concept, and any proposed
+mitigation. Do not include production credentials, private keys, PINs, or
+other sensitive data in a report.
+
+We will acknowledge reports as soon as practical, investigate the issue, and
+coordinate disclosure and remediation with the reporter. The final response
+time may depend on the affected PKCS #11 provider or HSM.
 
 # Security considerations for the use of the software
 
