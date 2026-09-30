@@ -33,12 +33,12 @@ Contact points:
 
 Please include the affected version or commit, the relevant crate and API,
 the impact, reproduction steps or a proof of concept, and any proposed
-mitigation. Do not include production credentials, private keys, PINs, or
+mitigation. Do not include production credentials, private keys, passwords, or
 other sensitive data in a report.
 
 We will acknowledge reports as soon as practical, investigate the issue, and
 coordinate disclosure and remediation with the reporter. The final response
-time may depend on the affected PKCS #11 provider or HSM.
+time may depend on the affected TPM2.0 provider.
 
 # Security considerations for the use of the software
 
