@@ -53,9 +53,7 @@ Github during the build. The version to retrieve can be controlled by setting
 the `TPM2_TSS_SOURCE_VERSION` environment variable.
 [!IMPORTANT]
 * The `bundled` feature will make it possible to build the crate without
-   having to worry about the `tpm2-tss` library dependencies. But it is still
-   necessary to make the shared libraries available to the executable that uses
-   the library.
+   having to worry about the `tpm2-tss` library dependencies. 
 * The dependencies of `tpm2-tss` need to be installed and discoverable via
   `pkg-config` on all platforms except Windows, on Windows this is handled
   differently. See the [Windows section](#windows).
@@ -127,6 +125,25 @@ sudo zypper in \
    gawk \
    make
 ```
+
+## Bundling and Static Linking
+
+When building with the `bundled` feature, the tss-esapi-sys crate makes use of the
+[`--enable-nodl`](https://github.com/tpm2-software/tpm2-tss/blob/be602a5/configure.ac#L396) option
+in `autoconf`. This configures the library such that TCTIs are directly linked via the bundled
+library statically, without any use of `dlopen` to call into these libraries at runtime. As such,
+all TCTIs (swtpm, device, mssim) will be linked statically to the resulting tss-esapi-sys crate, as
+the symbols will be present in the compiled artefacts and `cargo` will need to see them to
+successfully link any TCTI libraries.
+
+This is likely what you want if you want a fully-static bundled installation of the libtss2 library.
+If you want to link to TCTIs dynamically, you should first install a compatible version of libtss2
+and either set up pkg-config to find it, or configure your `TPM2_TSS_PATH` manually.
+
+**NOTE**: On Windows builds, `msbuild` is used instead of `autotools`, and so these assumptions
+should be checked and verified. The `nodl` configuration option should be set to ensure your bundled
+library links fully statically, or you should expect that you will need to have the dynamic TCTI
+libraries present at runtime as they may be called via `dlopen`.
 
 ## Cross compiling
 
