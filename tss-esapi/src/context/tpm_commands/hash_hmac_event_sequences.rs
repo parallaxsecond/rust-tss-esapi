@@ -2,11 +2,15 @@
 // SPDX-License-Identifier: Apache-2.0
 use crate::{
     Context, Result, ReturnCode,
-    handles::{ObjectHandle, TpmHandle},
-    interface_types::{algorithm::HashingAlgorithm, reserved_handles::Hierarchy},
-    structures::{Auth, Digest, HashcheckTicket, MaxBuffer},
+    handles::{ObjectHandle, PcrHandle, TpmHandle},
+    interface_types::{
+        algorithm::{HashingAlgorithm, MacSchemeAlgorithm},
+        reserved_handles::Hierarchy,
+    },
+    structures::{Auth, Digest, DigestValues, HashcheckTicket, MaxBuffer},
     tss2_esys::{
-        Esys_HMAC_Start, Esys_HashSequenceStart, Esys_SequenceComplete, Esys_SequenceUpdate,
+        Esys_EventSequenceComplete, Esys_HMAC_Start, Esys_HashSequenceStart, Esys_MAC_Start,
+        Esys_SequenceComplete, Esys_SequenceUpdate,
     },
 };
 use log::error;
@@ -142,7 +146,132 @@ impl Context {
         Ok(ObjectHandle::from(sequence_handle))
     }
 
-    // Missing function: MAC_Start
+    /// Starts a MAC sequence using the specified key and scheme.
+    ///
+    /// # Arguments
+    ///
+    /// * `handle` - An [ObjectHandle] referencing an unrestricted keyed-hash or symmetric-cipher
+    ///   signing key.
+    /// * `scheme` - The [MacSchemeAlgorithm] to use. A hash algorithm selects HMAC and
+    ///   [MacSchemeAlgorithm::Cmac] selects a symmetric block-cipher MAC. If the key has a default
+    ///   scheme, [MacSchemeAlgorithm::Null] selects it.
+    /// * `auth` - Optional authorization value for subsequent use of the sequence.
+    ///
+    /// # Returns
+    ///
+    /// An [ObjectHandle] referencing the newly created MAC sequence.
+    ///
+    /// # Details
+    ///
+    /// *From the specification*
+    /// > This command starts a MAC sequence. The TPM will create and initialize a MAC sequence
+    /// > structure, assign a handle to the sequence, and set the authValue of the sequence object
+    /// > to the value in auth.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// # use tss_esapi::{Context, TctiNameConf};
+    /// # use tss_esapi::attributes::ObjectAttributesBuilder;
+    /// # use tss_esapi::interface_types::{
+    /// #     algorithm::{HashingAlgorithm, PublicAlgorithm},
+    /// #     reserved_handles::Hierarchy,
+    /// # };
+    /// # use tss_esapi::structures::{
+    /// #     KeyedHashScheme, PublicBuilder, PublicKeyedHashParameters,
+    /// # };
+    /// use tss_esapi::{
+    ///     interface_types::algorithm::MacSchemeAlgorithm,
+    ///     structures::MaxBuffer,
+    /// };
+    /// # let mut context = Context::new(
+    /// #     TctiNameConf::from_environment_variable().expect("Failed to get TCTI"),
+    /// # )
+    /// # .expect("Failed to create Context");
+    /// # let object_attributes = ObjectAttributesBuilder::new()
+    /// #     .with_sign_encrypt(true)
+    /// #     .with_sensitive_data_origin(true)
+    /// #     .with_user_with_auth(true)
+    /// #     .build()
+    /// #     .expect("Failed to build object attributes");
+    /// # let key_public = PublicBuilder::new()
+    /// #     .with_public_algorithm(PublicAlgorithm::KeyedHash)
+    /// #     .with_name_hashing_algorithm(HashingAlgorithm::Sha256)
+    /// #     .with_object_attributes(object_attributes)
+    /// #     .with_keyed_hash_parameters(PublicKeyedHashParameters::new(
+    /// #         KeyedHashScheme::HMAC_SHA_256,
+    /// #     ))
+    /// #     .with_keyed_hash_unique_identifier(Default::default())
+    /// #     .build()
+    /// #     .expect("Failed to build keyed-hash public area");
+    /// # let key_handle = context
+    /// #     .execute_with_nullauth_session(|ctx| {
+    /// #         ctx.create_primary(Hierarchy::Owner, key_public, None, None, None, None)
+    /// #     })
+    /// #     .expect("Failed to create MAC key")
+    /// #     .key_handle;
+    ///
+    /// let sequence_handle = context
+    ///     .execute_with_nullauth_session(|ctx| {
+    ///         ctx.mac_sequence_start(
+    ///             key_handle.into(),
+    ///             MacSchemeAlgorithm::Sha256,
+    ///             None,
+    ///         )
+    ///     })
+    ///     .expect("Failed to start MAC sequence");
+    /// context
+    ///     .execute_with_nullauth_session(|ctx| {
+    ///         ctx.sequence_update(
+    ///             sequence_handle,
+    ///             MaxBuffer::from_bytes(b"data to authenticate")
+    ///                 .expect("Failed to create sequence buffer"),
+    ///         )
+    ///     })
+    ///     .expect("Failed to update MAC sequence");
+    /// let (mac, _ticket) = context
+    ///     .execute_with_nullauth_session(|ctx| {
+    ///         ctx.sequence_complete(
+    ///             sequence_handle,
+    ///             MaxBuffer::default(),
+    ///             Hierarchy::Null,
+    ///         )
+    ///     })
+    ///     .expect("Failed to complete MAC sequence");
+    /// assert_eq!(32, mac.len());
+    /// # context
+    /// #     .flush_context(key_handle.into())
+    /// #     .expect("Failed to flush MAC key");
+    /// ```
+    pub fn mac_sequence_start(
+        &mut self,
+        handle: ObjectHandle,
+        scheme: MacSchemeAlgorithm,
+        auth: Option<Auth>,
+    ) -> Result<ObjectHandle> {
+        let mut sequence_handle = ObjectHandle::None.into();
+        ReturnCode::ensure_success(
+            unsafe {
+                Esys_MAC_Start(
+                    self.mut_context(),
+                    handle.into(),
+                    self.required_session_1()?,
+                    self.optional_session_2(),
+                    self.optional_session_3(),
+                    &auth.unwrap_or_default().into(),
+                    scheme.into(),
+                    &mut sequence_handle,
+                )
+            },
+            |ret| {
+                error!(
+                    "Error failed to perform MAC sequence start operation: {:#010X}",
+                    ret
+                );
+            },
+        )?;
+        Ok(ObjectHandle::from(sequence_handle))
+    }
 
     /// Starts hash sequence of large data (larger than [`MaxBuffer::MAX_SIZE`]) using the specified algorithm.
     ///
@@ -322,5 +451,115 @@ impl Context {
         ))
     }
 
-    // Missing function: EventSequenceComplete
+    /// Completes an Event Sequence and extends a PCR with the resulting digests.
+    ///
+    /// # Arguments
+    ///
+    /// * `pcr_handle` - A [PcrHandle] of the PCR to extend.
+    /// * `sequence_handle` - An [ObjectHandle] referencing the Event Sequence to complete.
+    /// * `buffer` - A [MaxBuffer] containing the final data to include in the event.
+    ///
+    /// # Returns
+    ///
+    /// A [DigestValues] containing one digest for each implemented hash algorithm.
+    ///
+    /// # Details
+    ///
+    /// *From the specification*
+    /// > This command adds the last part of data, if any, to an Event Sequence and returns
+    /// > the result in a digest list. If pcrHandle references a PCR and not TPM_RH_NULL, then
+    /// > the returned digest list is processed in the same manner as the digest list input
+    /// > parameter to TPM2_PCR_Extend(). That is, if a bank contains a PCR associated with
+    /// > pcrHandle, it is extended with the associated digest value from the list.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// # use tss_esapi::{Context, TctiNameConf};
+    /// use tss_esapi::{
+    ///     handles::PcrHandle,
+    ///     interface_types::{
+    ///         algorithm::HashingAlgorithm,
+    ///         session_handles::AuthSession,
+    ///     },
+    ///     structures::MaxBuffer,
+    /// };
+    /// # let mut context = Context::new(
+    /// #     TctiNameConf::from_environment_variable().expect("Failed to get TCTI"),
+    /// # )
+    /// # .expect("Failed to create Context");
+    /// # context
+    /// #     .execute_with_nullauth_session(|ctx| ctx.pcr_reset(PcrHandle::Pcr16))
+    /// #     .expect("Failed to reset PCR 16 before the example");
+    /// let sequence_handle = context
+    ///     .hash_sequence_start(HashingAlgorithm::Null, None)
+    ///     .expect("Failed to start Event Sequence");
+    /// let digests = context
+    ///     .execute_with_sessions(
+    ///         (
+    ///             Some(AuthSession::Password),
+    ///             Some(AuthSession::Password),
+    ///             None,
+    ///         ),
+    ///         |ctx| {
+    ///             ctx.event_sequence_complete(
+    ///                 PcrHandle::Pcr16,
+    ///                 sequence_handle,
+    ///                 MaxBuffer::from_bytes(b"event data")
+    ///                     .expect("Failed to create event buffer"),
+    ///             )
+    ///         },
+    ///     )
+    ///     .expect("Failed to complete Event Sequence");
+    /// assert!(digests.value().contains_key(&HashingAlgorithm::Sha256));
+    /// # context
+    /// #     .execute_with_nullauth_session(|ctx| ctx.pcr_reset(PcrHandle::Pcr16))
+    /// #     .expect("Failed to reset PCR 16 after the example");
+    /// ```
+    pub fn event_sequence_complete(
+        &mut self,
+        pcr_handle: PcrHandle,
+        sequence_handle: ObjectHandle,
+        buffer: MaxBuffer,
+    ) -> Result<DigestValues> {
+        let mut results_ptr = null_mut();
+        ReturnCode::ensure_success(
+            unsafe {
+                Esys_EventSequenceComplete(
+                    self.mut_context(),
+                    pcr_handle.into(),
+                    sequence_handle.into(),
+                    self.required_session_1()?,
+                    self.required_session_2()?,
+                    self.optional_session_3(),
+                    &buffer.into(),
+                    &mut results_ptr,
+                )
+            },
+            |ret| {
+                error!("Error completing event sequence: {:#010X}", ret);
+            },
+        )?;
+
+        let results = Context::ffi_data_to_owned(results_ptr)?;
+        let mut digest_values = DigestValues::new();
+        for index in 0..results.count as usize {
+            let hash = results.digests[index];
+            let algorithm = HashingAlgorithm::try_from(hash.hashAlg)?;
+            let digest = match algorithm {
+                HashingAlgorithm::Sha1 => Digest::from(unsafe { hash.digest.sha1 }),
+                HashingAlgorithm::Sha256 => Digest::from(unsafe { hash.digest.sha256 }),
+                HashingAlgorithm::Sha384 => Digest::from(unsafe { hash.digest.sha384 }),
+                HashingAlgorithm::Sha512 => Digest::from(unsafe { hash.digest.sha512 }),
+                HashingAlgorithm::Sm3_256 => Digest::from(unsafe { hash.digest.sm3_256 }),
+                _ => {
+                    return Err(crate::Error::local_error(
+                        crate::WrapperErrorKind::WrongValueFromTpm,
+                    ));
+                }
+            };
+            digest_values.set(algorithm, digest);
+        }
+        Ok(digest_values)
+    }
 }
