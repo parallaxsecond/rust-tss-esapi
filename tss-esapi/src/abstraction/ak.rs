@@ -171,7 +171,7 @@ pub fn load_ak(
 
     let policy_auth_session = context
         .start_auth_session(
-            None,
+            Some(parent),
             None,
             None,
             SessionType::Policy,
@@ -244,7 +244,7 @@ pub fn create_ak<IKC: IntoKeyCustomization>(
 
     let policy_auth_session = context
         .start_auth_session(
-            None,
+            Some(parent),
             None,
             None,
             SessionType::Policy,
