@@ -11,5 +11,6 @@ mod max_buffer_tests;
 mod nonce_tests;
 mod private;
 mod public;
+mod public_template_tests;
 mod sensitive;
 mod sensitive_create_buffer_tests;
