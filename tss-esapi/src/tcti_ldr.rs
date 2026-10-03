@@ -24,12 +24,34 @@ const TABRMD: &str = "tabrmd";
 const LIBTPMS: &str = "libtpms";
 const TBS: &str = "tbs";
 
+// libc malloc/free, declared inline to avoid a new dependency. Required for
+// Tss2_Tcti_Device_Init, which initialises a caller-
+// provided buffer in place, and on Drop we libc-free it ourselves.
+#[cfg(target_os = "linux")]
+unsafe extern "C" {
+    fn malloc(size: usize) -> *mut std::ffi::c_void;
+    fn free(p: *mut std::ffi::c_void);
+}
+
+#[derive(Debug, Clone, Copy)]
+enum TctiInitMode {
+    /// Allocated and initialized via `Tss2_TctiLdr_Initialize`; clean up
+    /// with the matching `Tss2_TctiLdr_Finalize`.
+    Loader,
+    /// Allocated by us with `malloc` and initialized via
+    /// `Tss2_Tcti_Device_Init`; clean up by calling the context's
+    /// `finalize` fn pointer and then `free`-ing the buffer.
+    #[cfg(target_os = "linux")]
+    Direct,
+}
+
 /// TCTI Context created via a TCTI Loader Library.
 /// Wrapper around the TSS2_TCTI_CONTEXT structure.
 #[derive(Debug)]
 #[allow(missing_copy_implementations)]
 pub struct TctiContext {
     tcti_context: *mut tss_esapi_sys::TSS2_TCTI_CONTEXT,
+    init_mode: TctiInitMode,
 }
 
 impl TctiContext {
@@ -48,7 +70,61 @@ impl TctiContext {
             },
         )?;
 
-        Ok(TctiContext { tcti_context })
+        Ok(TctiContext {
+            tcti_context,
+            init_mode: TctiInitMode::Loader,
+        })
+    }
+
+    /// Allocate and initialize a Device TCTI context by calling
+    /// `Tss2_Tcti_Device_Init` directly, bypassing the dlopen-based
+    /// tctildr loader. Use this when the loader can't dlopen plugin
+    /// shared objects — e.g. a statically-linked glibc binary.
+    ///
+    /// Linux-only: depends on `/dev/tpm0` and on libtss2-tcti-device,
+    /// neither of which exists on other platforms.
+    #[cfg(target_os = "linux")]
+    pub fn initialize_device_direct(device_path: &std::path::Path) -> Result<Self> {
+        let conf = device_path
+            .to_str()
+            .and_then(|s| CString::new(s).ok())
+            .ok_or(Error::WrapperError(WrapperErrorKind::InvalidParam))?;
+
+        unsafe {
+            let mut size: tss_esapi_sys::size_t = 0;
+            let ret = tss_esapi_sys::Tss2_Tcti_Device_Init(null_mut(), &mut size, conf.as_ptr());
+            let ret = Error::from_tss_rc(ret);
+            if !ret.is_success() {
+                error!("Error querying Device TCTI size: {}", ret);
+                return Err(ret);
+            }
+
+            let buf = malloc(size as usize) as *mut tss_esapi_sys::TSS2_TCTI_CONTEXT;
+            if buf.is_null() {
+                return Err(Error::WrapperError(WrapperErrorKind::InternalError));
+            }
+
+            let ret = tss_esapi_sys::Tss2_Tcti_Device_Init(buf, &mut size, conf.as_ptr());
+            let ret = Error::from_tss_rc(ret);
+            if !ret.is_success() {
+                // The TSS2 TCTI spec requires init to be atomic: on a non-
+                // success return, no externally-visible state (file
+                // descriptors, allocations beyond the caller's buffer) is
+                // owned by the partially-initialized context. libtss2's
+                // device TCTI honors this — it closes the fd before
+                // returning the error — so freeing the buffer without
+                // calling the (possibly-uninitialized) finalize fn pointer
+                // is the correct cleanup here.
+                free(buf as *mut std::ffi::c_void);
+                error!("Error initializing Device TCTI: {}", ret);
+                return Err(ret);
+            }
+
+            Ok(TctiContext {
+                tcti_context: buf,
+                init_mode: TctiInitMode::Direct,
+            })
+        }
     }
 
     /// Get access to the inner C pointer
@@ -120,7 +196,25 @@ impl TctiInfo {
 impl Drop for TctiInfo {
     fn drop(&mut self) {
         unsafe {
-            tss_esapi_sys::Tss2_TctiLdr_FreeInfo(&mut self.tcti_info);
+            match self.init_mode {
+                TctiInitMode::Loader => {
+                    tss_esapi_sys::Tss2_TctiLdr_Finalize(&mut self.tcti_context);
+                }
+                #[cfg(target_os = "linux")]
+                TctiInitMode::Direct => {
+                    // Tss2_TctiLdr_Finalize would cast the buffer to a
+                    // TSS2_TCTILDR_CONTEXT and dereference loader-only fields
+                    // that don't exist here, leaking the TPM fd. Use the
+                    // TCTI's own finalize fn pointer (offset is identical in
+                    // V1, V2, and V3 layouts), then libc-free the buffer.
+                    let common =
+                        self.tcti_context as *mut tss_esapi_sys::TSS2_TCTI_CONTEXT_COMMON_V1;
+                    if let Some(finalize) = (*common).finalize {
+                        finalize(self.tcti_context);
+                    }
+                    free(self.tcti_context as *mut std::ffi::c_void);
+                }
+            }
         }
     }
 }
