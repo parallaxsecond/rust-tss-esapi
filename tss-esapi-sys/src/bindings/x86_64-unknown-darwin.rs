@@ -4007,6 +4007,7 @@ pub union TPMU_ATTEST {
     pub sessionAudit: TPMS_SESSION_AUDIT_INFO,
     pub time: TPMS_TIME_ATTEST_INFO,
     pub nv: TPMS_NV_CERTIFY_INFO,
+    pub nvDigest: TPMS_NV_DIGEST_CERTIFY_INFO,
 }
 #[test]
 fn bindgen_test_layout_TPMU_ATTEST() {
@@ -4090,6 +4091,16 @@ fn bindgen_test_layout_TPMU_ATTEST() {
             stringify!(TPMU_ATTEST),
             "::",
             stringify!(nv)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).nvDigest) as usize - ptr as usize },
+        0usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(TPMU_ATTEST),
+            "::",
+            stringify!(nvDigest)
         )
     );
 }

@@ -6,8 +6,8 @@ use tss_esapi::{
     structures::{AttestInfo, Digest, MaxNvBuffer, Name, PcrSelectionListBuilder, PcrSlot},
     tss2_esys::{
         TPMS_CERTIFY_INFO, TPMS_CLOCK_INFO, TPMS_COMMAND_AUDIT_INFO, TPMS_CREATION_INFO,
-        TPMS_NV_CERTIFY_INFO, TPMS_QUOTE_INFO, TPMS_SESSION_AUDIT_INFO, TPMS_TIME_ATTEST_INFO,
-        TPMS_TIME_INFO, TPMU_ATTEST,
+        TPMS_NV_CERTIFY_INFO, TPMS_NV_DIGEST_CERTIFY_INFO, TPMS_QUOTE_INFO,
+        TPMS_SESSION_AUDIT_INFO, TPMS_TIME_ATTEST_INFO, TPMS_TIME_INFO, TPMU_ATTEST,
     },
 };
 
@@ -207,5 +207,31 @@ fn test_nv_into_tpm_type_conversions() {
     crate::common::ensure_tpms_nv_certify_info_equality(
         &expected_tpms_nv_certify_info,
         actual_tpms_nv_certify_info,
+    );
+}
+
+#[test]
+fn test_nv_digest_into_tpm_type_conversions() {
+    let expected_tpms_nv_digest_certify_info = TPMS_NV_DIGEST_CERTIFY_INFO {
+        indexName: Name::try_from(vec![0xf0u8; 34])
+            .expect("Failed to create index name")
+            .into(),
+        nvDigest: Digest::try_from(vec![0xfcu8; 32])
+            .expect("Failed to create NV digest")
+            .into(),
+    };
+
+    let tpmu_attest: TPMU_ATTEST = AttestInfo::NvDigest {
+        info: expected_tpms_nv_digest_certify_info
+            .try_into()
+            .expect("Failed to convert TPMS_NV_DIGEST_CERTIFY_INFO into NvDigestCertifyInfo"),
+    }
+    .into();
+
+    let actual_tpms_nv_digest_certify_info = unsafe { &tpmu_attest.nvDigest };
+
+    crate::common::ensure_tpms_nv_digest_certify_info_equality(
+        &expected_tpms_nv_digest_certify_info,
+        actual_tpms_nv_digest_certify_info,
     );
 }
