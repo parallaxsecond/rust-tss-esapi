@@ -97,6 +97,7 @@ macro_rules! buffer_type {
 }
 
 pub mod attest;
+pub mod nv_public;
 pub mod private;
 pub mod public;
 pub mod sensitive;
