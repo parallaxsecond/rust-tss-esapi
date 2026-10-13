@@ -7,6 +7,7 @@ use crate::{
     handles::NvIndexTpmHandle,
     interface_types::algorithm::HashingAlgorithm,
     structures::Digest,
+    traits::impl_mu_complex,
     tss2_esys::{TPM2B_NV_PUBLIC, TPMS_NV_PUBLIC},
 };
 use log::error;
@@ -65,14 +66,7 @@ impl TryFrom<TPM2B_NV_PUBLIC> for NvPublic {
             error!("Encountered an invalid size of the TPMS_NV_PUBLIC");
             return Err(Error::local_error(WrapperErrorKind::WrongParamSize));
         }
-        // Parse actual data
-        Ok(NvPublic {
-            nv_index: tss_nv_public.nvPublic.nvIndex.try_into()?,
-            name_algorithm: tss_nv_public.nvPublic.nameAlg.try_into()?,
-            attributes: tss_nv_public.nvPublic.attributes.try_into()?,
-            authorization_policy: tss_nv_public.nvPublic.authPolicy.try_into()?,
-            data_size: tss_nv_public.nvPublic.dataSize as usize,
-        })
+        NvPublic::try_from(tss_nv_public.nvPublic)
     }
 }
 
@@ -84,13 +78,33 @@ impl TryFrom<NvPublic> for TPM2B_NV_PUBLIC {
             // The marshalling functionality in TSS will calculate
             // the correct value.
             size: 0,
-            nvPublic: TPMS_NV_PUBLIC {
-                nvIndex: nv_public.nv_index.into(),
-                nameAlg: nv_public.name_algorithm.into(),
-                attributes: nv_public.attributes.try_into()?,
-                authPolicy: nv_public.authorization_policy.into(),
-                dataSize: nv_public.data_size as u16,
-            },
+            nvPublic: nv_public.try_into()?,
+        })
+    }
+}
+
+impl TryFrom<TPMS_NV_PUBLIC> for NvPublic {
+    type Error = Error;
+    fn try_from(tss_nv_public: TPMS_NV_PUBLIC) -> Result<NvPublic> {
+        Ok(NvPublic {
+            nv_index: tss_nv_public.nvIndex.try_into()?,
+            name_algorithm: tss_nv_public.nameAlg.try_into()?,
+            attributes: tss_nv_public.attributes.try_into()?,
+            authorization_policy: tss_nv_public.authPolicy.try_into()?,
+            data_size: tss_nv_public.dataSize as usize,
+        })
+    }
+}
+
+impl TryFrom<NvPublic> for TPMS_NV_PUBLIC {
+    type Error = Error;
+    fn try_from(nv_public: NvPublic) -> Result<TPMS_NV_PUBLIC> {
+        Ok(TPMS_NV_PUBLIC {
+            nvIndex: nv_public.nv_index.into(),
+            nameAlg: nv_public.name_algorithm.into(),
+            attributes: nv_public.attributes.try_into()?,
+            authPolicy: nv_public.authorization_policy.into(),
+            dataSize: nv_public.data_size as u16,
         })
     }
 }
@@ -184,3 +198,5 @@ impl NvPublicBuilder {
         })
     }
 }
+
+impl_mu_complex!(NvPublic, TPMS_NV_PUBLIC);
