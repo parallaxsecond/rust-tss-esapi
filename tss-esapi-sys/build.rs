@@ -81,7 +81,7 @@ pub mod tpm2_tss {
     };
 
     // General constants
-    const MINIMUM_VERSION: &str = "4.1.3";
+    const MINIMUM_VERSION: &str = "4.2.0";
     const INSTALLATION_PATH_ENV_VAR_NAME: &str = "TPM2_TSS_PATH";
 
     /// A tpm2-tss dependency
