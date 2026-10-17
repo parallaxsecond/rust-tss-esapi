@@ -7786,6 +7786,7 @@ unsafe extern "C" {
         objectHandle: *mut ESYS_TR,
         outPrivate: *mut *mut TPM2B_PRIVATE,
         outPublic: *mut *mut TPM2B_PUBLIC,
+        // Is this missing NAME?
     ) -> TSS2_RC;
 }
 unsafe extern "C" {

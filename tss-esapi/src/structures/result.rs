@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use crate::{
-    handles::KeyHandle,
+    handles::{KeyHandle, ObjectHandle},
     interface_types::YesNo,
     structures::{CreationData, CreationTicket, Digest, Private, Public},
 };
@@ -14,6 +14,14 @@ pub struct CreateKeyResult {
     pub creation_data: CreationData,
     pub creation_hash: Digest,
     pub creation_ticket: CreationTicket,
+}
+
+#[allow(missing_debug_implementations)]
+pub struct CreateLoadedKeyResult {
+    pub object_handle: ObjectHandle,
+    pub out_private: Private,
+    pub out_public: Public,
+    // pub out_name: Name,
 }
 
 #[allow(missing_debug_implementations)]

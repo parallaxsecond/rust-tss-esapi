@@ -310,6 +310,14 @@ pub mod initial_value {
     buffer_type!(InitialValue, TPM2B_IV_BUFFER_SIZE, TPM2B_IV);
 }
 
+pub mod label {
+    use crate::tss2_esys::TPMU_HA;
+    use std::mem::size_of;
+
+    const TPM2B_LABEL_MAX_BUFFER: usize = size_of::<TPMU_HA>();
+    buffer_type!(Label, TPM2B_LABEL_MAX_BUFFER, TPM2B_LABEL);
+}
+
 pub mod max_buffer {
     use crate::tss2_esys::TPM2_MAX_DIGEST_BUFFER;
     const TPM2B_MAX_BUFFER_BUFFER_SIZE: usize = TPM2_MAX_DIGEST_BUFFER as usize;
