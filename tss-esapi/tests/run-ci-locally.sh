@@ -21,7 +21,7 @@ CRATE_DIR_IN_CONTAINER="${PROJECT_DIR_IN_CONTAINER}/tss-esapi"
 DEFAULT_DOCKERFILE="Dockerfile-fedora-full"
 DEFAULT_IMAGE_TAG="rust-tss-esapi-fedora:latest"
 
-TSS_ESAPI_MSRV="${TSS_ESAPI_MSRV:-1.85.0}"
+TSS_ESAPI_MSRV="${TSS_ESAPI_MSRV:-1.88.0}"
 TSS_ESAPI_CONTAINER_RUNTIME="${TSS_ESAPI_CONTAINER_RUNTIME:-docker}"
 TSS_ESAPI_DOCKERFILE="${TSS_ESAPI_DOCKERFILE:-${SCRIPT_DIR}/${DEFAULT_DOCKERFILE}}"
 TSS_ESAPI_IMAGE_TAG="${TSS_ESAPI_IMAGE_TAG:-${DEFAULT_IMAGE_TAG}}"
@@ -282,7 +282,7 @@ JOB can be the number, the keyword, or the display name (case-insensitive).
 Multiple jobs may be specified, e.g.: ./tests/run-ci-locally.sh 5 6 docs
 
 Environment variables:
-  TSS_ESAPI_MSRV               MSRV (default: 1.85.0)
+  TSS_ESAPI_MSRV               MSRV (default: 1.88.0)
   TSS_ESAPI_CONTAINER_RUNTIME  Docker-compatible container runtime
                                (default: docker; e.g. podman)
   TSS_ESAPI_DOCKERFILE         Path to the Dockerfile to build from
