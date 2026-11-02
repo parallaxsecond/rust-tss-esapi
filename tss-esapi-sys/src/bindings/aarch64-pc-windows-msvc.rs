@@ -3401,43 +3401,7 @@ impl Default for TPML_INTEL_PTT_PROPERTY {
         }
     }
 }
-pub type UINT = ::std::os::raw::c_uint;
-pub type LONG = ::std::os::raw::c_long;
 pub type HANDLE = *mut ::std::os::raw::c_void;
-#[repr(C)]
-#[derive(Debug, Default, Copy, Clone)]
-pub struct tagRECT {
-    pub left: LONG,
-    pub top: LONG,
-    pub right: LONG,
-    pub bottom: LONG,
-}
-#[allow(clippy::unnecessary_operation, clippy::identity_op)]
-const _: () = {
-    ["Size of tagRECT"][::std::mem::size_of::<tagRECT>() - 16usize];
-    ["Alignment of tagRECT"][::std::mem::align_of::<tagRECT>() - 4usize];
-    ["Offset of field: tagRECT::left"][::std::mem::offset_of!(tagRECT, left) - 0usize];
-    ["Offset of field: tagRECT::top"][::std::mem::offset_of!(tagRECT, top) - 4usize];
-    ["Offset of field: tagRECT::right"][::std::mem::offset_of!(tagRECT, right) - 8usize];
-    ["Offset of field: tagRECT::bottom"][::std::mem::offset_of!(tagRECT, bottom) - 12usize];
-};
-pub type RECT = tagRECT;
-#[repr(C)]
-#[derive(Debug, Default, Copy, Clone)]
-pub struct tagTPMPARAMS {
-    pub cbSize: UINT,
-    pub rcExclude: RECT,
-}
-#[allow(clippy::unnecessary_operation, clippy::identity_op)]
-const _: () = {
-    ["Size of tagTPMPARAMS"][::std::mem::size_of::<tagTPMPARAMS>() - 20usize];
-    ["Alignment of tagTPMPARAMS"][::std::mem::align_of::<tagTPMPARAMS>() - 4usize];
-    ["Offset of field: tagTPMPARAMS::cbSize"]
-        [::std::mem::offset_of!(tagTPMPARAMS, cbSize) - 0usize];
-    ["Offset of field: tagTPMPARAMS::rcExclude"]
-        [::std::mem::offset_of!(tagTPMPARAMS, rcExclude) - 4usize];
-};
-pub type TPMPARAMS = tagTPMPARAMS;
 pub type TSS2_TCTI_POLL_HANDLE = HANDLE;
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]

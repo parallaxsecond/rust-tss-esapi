@@ -71,7 +71,7 @@ fn main() {
         .allowlist_function("(Esys|Tss2)_.*")
         // `_PRIVATE` is the one TPM structure named with a leading underscore.
         .allowlist_type(
-            "(TSS2|ESYS|IESYS|TPM|TPMA|TPMI|TPML|TPMS|TPMT|TPMU|TPM2|TPM2B)_?.*|_PRIVATE",
+            "(TSS2|ESYS|IESYS|TPM|TPMA|TPMI|TPML|TPMS|TPMT|TPMU|TPM2|TPM2B)_.*|_PRIVATE",
         )
         .allowlist_var("(TSS2|ESYS|TPM2|TPMA|TPM|TPM2B|TPMI)_.*");
     b.generate()
