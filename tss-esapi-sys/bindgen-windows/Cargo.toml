@@ -1,0 +1,11 @@
+[package]
+name = "bindgen-windows"
+version = "0.0.0"
+edition = "2024"
+publish = false
+
+# Standalone: not part of the crate's build or workspace.
+[workspace]
+
+[dependencies]
+bindgen = "=0.72.1"

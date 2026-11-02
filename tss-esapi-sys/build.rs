@@ -61,7 +61,9 @@ pub mod target {
             (Architecture::Arm(_), OperatingSystem::Linux)
             | (Architecture::Aarch64(_), OperatingSystem::Linux)
             | (Architecture::X86_64, OperatingSystem::Darwin(_))
-            | (Architecture::X86_64, OperatingSystem::Linux) => {}
+            | (Architecture::X86_64, OperatingSystem::Linux)
+            | (Architecture::X86_64, OperatingSystem::Windows)
+            | (Architecture::Aarch64(_), OperatingSystem::Windows) => {}
             (arch, os) => {
                 panic!(
                     "Compilation target (architecture, OS) tuple ({arch}, {os}) is not part of the \
