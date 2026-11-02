@@ -72,6 +72,10 @@ mod session_administration;
 // Implementation of the general ESAPI ESYS_TR functions
 mod general_esys_tr;
 
+// Crypto backend replacement
+#[cfg(has_esys_set_crypto_callbacks)]
+mod crypto_callbacks;
+
 impl Context {
     /// Create a new ESYS context based on the desired TCTI
     ///
@@ -117,6 +121,9 @@ impl Context {
             handle_manager: HandleManager::new(),
             cached_tpm_properties: HashMap::new(),
         };
+
+        #[cfg(has_esys_set_crypto_callbacks)]
+        context.apply_default_crypto_callbacks()?;
 
         if needs_clear_startup {
             context.startup(StartupType::Clear)?;
