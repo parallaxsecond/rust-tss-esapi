@@ -18,7 +18,7 @@ must therefore link to all of them at build time.
 
 The paths to the libraries are discovered using `pkg-config` - make sure they
 are discoverable in this way on your system. Our build script looks for
-`tss2-sys`, `tss2-esys`, `tss2-tctildr` and `tss2-mu`. A minimum version of `4.1.3` is
+`tss2-sys`, `tss2-esys`, `tss2-tctildr` and `tss2-mu`. A minimum version of `4.2.0` is
 required for all of them. On windows `tss2-tcti-tbs` is also required.
 
 
@@ -67,7 +67,7 @@ cargo build --features=bundled
 ```
 
 ```bash
-TPM2_TSS_VERSION="4.1.3" cargo build --features=bundled
+TPM2_TSS_VERSION="4.2.0" cargo build --features=bundled
 ```
 
 ```bash
