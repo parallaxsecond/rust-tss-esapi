@@ -58,11 +58,8 @@ fn main() {
         println!("cargo:rustc-cfg=has_tpmu_sensitive_create")
     }
 
-    #[cfg(feature = "generate-bindings")]
-    {
-        let has_esys_tr_get_tpm_handle_req = VersionReq::parse(">=2.4.0").unwrap();
-        if has_esys_tr_get_tpm_handle_req.matches(&tss_version) {
-            println!("cargo:rustc-cfg=has_esys_tr_get_tpm_handle")
-        }
+    let has_esys_tr_get_tpm_handle_req = VersionReq::parse(">=2.4.0").unwrap();
+    if has_esys_tr_get_tpm_handle_req.matches(&tss_version) {
+        println!("cargo:rustc-cfg=has_esys_tr_get_tpm_handle")
     }
 }
