@@ -40,7 +40,7 @@ pub use self::buffers::{
     initial_value::InitialValue, max_buffer::MaxBuffer, max_nv_buffer::MaxNvBuffer, nonce::Nonce,
     private::Private, private_key_rsa::PrivateKeyRsa,
     private_vendor_specific::PrivateVendorSpecific, public::PublicBuffer,
-    public_key_rsa::PublicKeyRsa, sensitive::SensitiveBuffer,
+    public_key_rsa::PublicKeyRsa, public_template::PublicTemplate, sensitive::SensitiveBuffer,
     sensitive_create::SensitiveCreateBuffer, sensitive_data::SensitiveData,
     symmetric_key::SymmetricKey, timeout::Timeout, tpm_context_data::TpmContextData,
 };
