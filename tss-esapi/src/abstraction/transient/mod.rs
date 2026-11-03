@@ -280,12 +280,52 @@ impl TransientKeyContext {
     /// Sign a digest with an existing key.
     ///
     /// Takes the key as a set of parameters (`key_material`, `key_params`, `key_auth`), signs and returns the signature.
+    /// Uses the scheme fixed by the key. For a key with a NULL scheme, use
+    /// [`Self::sign_with_scheme`] to supply the signing algorithm and hash.
     pub fn sign(
         &mut self,
         key_material: KeyMaterial,
         key_params: KeyParams,
         key_auth: Option<Auth>,
         digest: Digest,
+    ) -> Result<Signature> {
+        self.sign_with_scheme(
+            key_material,
+            key_params,
+            key_auth,
+            digest,
+            SignatureScheme::Null,
+        )
+    }
+
+    /// Sign using an explicit operation scheme while retaining the stored key template.
+    ///
+    /// `scheme` supplies the signing algorithm and hash for an unrestricted key
+    /// whose public template uses a NULL scheme. Pass `SignatureScheme::Null`
+    /// to use a scheme already fixed by the key, as [`Self::sign`] does.
+    /// The TPM checks compatibility between the key and operation schemes.
+    ///
+    /// # Arguments
+    /// * `key_material`: the key material to load into the TPM.
+    /// * `key_params`: the original public template parameters for that key.
+    /// * `key_auth`: optional authorization value for the loaded key.
+    /// * `digest`: the digest to sign, with the length required by the hash algorithm.
+    /// * `scheme`: the operation scheme, or NULL to use the key's fixed scheme.
+    ///
+    /// Returns the TPM signature on success. The supplied key material and
+    /// template parameters are consumed by the loading operation.
+    ///
+    /// # Errors
+    /// Returns an error if loading the key or signing fails, including when the
+    /// operation scheme conflicts with the key template. Loaded key handles
+    /// are flushed after the signing command on both success and failure.
+    pub fn sign_with_scheme(
+        &mut self,
+        key_material: KeyMaterial,
+        key_params: KeyParams,
+        key_auth: Option<Auth>,
+        digest: Digest,
+        scheme: SignatureScheme,
     ) -> Result<Signature> {
         let key_handle = self.load_key(key_params, key_material, key_auth)?;
 
@@ -297,12 +337,7 @@ impl TransientKeyContext {
         self.set_session_attrs()?;
         let signature = self
             .context
-            .sign(
-                key_handle,
-                digest,
-                SignatureScheme::Null,
-                validation.try_into()?,
-            )
+            .sign(key_handle, digest, scheme, validation.try_into()?)
             .or_else(|e| {
                 self.context.flush_context(key_handle.into())?;
                 Err(e)
