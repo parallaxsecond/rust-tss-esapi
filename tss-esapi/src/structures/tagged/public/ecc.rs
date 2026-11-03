@@ -51,6 +51,10 @@ impl PublicEccParametersBuilder {
     }
 
     /// Create parameters for an unrestricted signing key
+    ///
+    /// `scheme` may be [`EccScheme::Null`] when the signing command supplies
+    /// its algorithm and hash. A restricted signing key requires a non-NULL
+    /// signing scheme.
     pub const fn new_unrestricted_signing_key(scheme: EccScheme, curve: EccCurve) -> Self {
         PublicEccParametersBuilder {
             symmetric: None,
@@ -179,8 +183,9 @@ impl PublicEccParametersBuilder {
             && ecc_scheme.algorithm() != EccSchemeAlgorithm::EcDaa
             && ecc_scheme.algorithm() != EccSchemeAlgorithm::Sm2
             && ecc_scheme.algorithm() != EccSchemeAlgorithm::EcSchnorr
+            && (self.restricted || ecc_scheme.algorithm() != EccSchemeAlgorithm::Null)
         {
-            error!("Signing key can use only EcDsa, EcDaa, Sm2 or EcSchorr schemes");
+            error!("Signing key requires EcDsa, EcDaa, Sm2 or EcSchnorr; an unrestricted key may also use Null");
             return Err(Error::local_error(WrapperErrorKind::InconsistentParams));
         }
 
