@@ -762,3 +762,11 @@ cfg_if::cfg_if! {
         pub const TSS2_BASE_RC_ALREADY_PROVISIONED: u32 = 53; /* Already provisioned */
     }
 }
+
+cfg_if::cfg_if! {
+    if #[cfg(has_tss_base_rc_value_54)] {
+        pub use crate::tss2_esys::TSS2_BASE_RC_CALLBACK_NULL; /* A required callback is not set */
+    } else {
+        pub const TSS2_BASE_RC_CALLBACK_NULL: u32 = 54; /* A required callback is not set */
+    }
+}

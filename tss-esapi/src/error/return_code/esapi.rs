@@ -72,7 +72,8 @@ impl TryFrom<BaseError> for EsapiReturnCode {
             | BaseError::BadTr
             | BaseError::MultipleDecryptSessions
             | BaseError::MultipleEncryptSessions
-            | BaseError::NotSupported => Ok(EsapiReturnCode { base_error }),
+            | BaseError::NotSupported
+            | BaseError::CallbackNull => Ok(EsapiReturnCode { base_error }),
             _ => {
                 error!(
                     "{} is not a valid EsapiReturnCode base error",

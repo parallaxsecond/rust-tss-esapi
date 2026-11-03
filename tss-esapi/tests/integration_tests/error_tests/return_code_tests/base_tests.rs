@@ -10,12 +10,12 @@ use tss_esapi::{
             TSS2_BASE_RC_AUTHORIZATION_UNKNOWN, TSS2_BASE_RC_BAD_CONTEXT, TSS2_BASE_RC_BAD_KEY,
             TSS2_BASE_RC_BAD_PATH, TSS2_BASE_RC_BAD_REFERENCE, TSS2_BASE_RC_BAD_SEQUENCE,
             TSS2_BASE_RC_BAD_SIZE, TSS2_BASE_RC_BAD_TCTI_STRUCTURE, TSS2_BASE_RC_BAD_TEMPLATE,
-            TSS2_BASE_RC_BAD_TR, TSS2_BASE_RC_BAD_VALUE, TSS2_BASE_RC_GENERAL_FAILURE,
-            TSS2_BASE_RC_HASH_MISMATCH, TSS2_BASE_RC_INCOMPATIBLE_TCTI,
-            TSS2_BASE_RC_INSUFFICIENT_BUFFER, TSS2_BASE_RC_INSUFFICIENT_CONTEXT,
-            TSS2_BASE_RC_INSUFFICIENT_RESPONSE, TSS2_BASE_RC_INVALID_SESSIONS,
-            TSS2_BASE_RC_IO_ERROR, TSS2_BASE_RC_KEY_NOT_DUPLICABLE, TSS2_BASE_RC_KEY_NOT_FOUND,
-            TSS2_BASE_RC_MALFORMED_RESPONSE, TSS2_BASE_RC_MEMORY,
+            TSS2_BASE_RC_BAD_TR, TSS2_BASE_RC_BAD_VALUE, TSS2_BASE_RC_CALLBACK_NULL,
+            TSS2_BASE_RC_GENERAL_FAILURE, TSS2_BASE_RC_HASH_MISMATCH,
+            TSS2_BASE_RC_INCOMPATIBLE_TCTI, TSS2_BASE_RC_INSUFFICIENT_BUFFER,
+            TSS2_BASE_RC_INSUFFICIENT_CONTEXT, TSS2_BASE_RC_INSUFFICIENT_RESPONSE,
+            TSS2_BASE_RC_INVALID_SESSIONS, TSS2_BASE_RC_IO_ERROR, TSS2_BASE_RC_KEY_NOT_DUPLICABLE,
+            TSS2_BASE_RC_KEY_NOT_FOUND, TSS2_BASE_RC_MALFORMED_RESPONSE, TSS2_BASE_RC_MEMORY,
             TSS2_BASE_RC_MULTIPLE_DECRYPT_SESSIONS, TSS2_BASE_RC_MULTIPLE_ENCRYPT_SESSIONS,
             TSS2_BASE_RC_NAME_ALREADY_EXISTS, TSS2_BASE_RC_NO_CERT, TSS2_BASE_RC_NO_CONFIG,
             TSS2_BASE_RC_NO_CONNECTION, TSS2_BASE_RC_NO_DECRYPT_PARAM,
@@ -123,6 +123,7 @@ fn test_valid_conversions() {
     test_valid_conversion!(TSS2_BASE_RC_RSP_AUTH_FAILED, BaseError::RspAuthFailed);
     test_valid_conversion!(TSS2_BASE_RC_NO_CONFIG, BaseError::NoConfig);
     test_valid_conversion!(TSS2_BASE_RC_BAD_PATH, BaseError::BadPath);
+    test_valid_conversion!(TSS2_BASE_RC_CALLBACK_NULL, BaseError::CallbackNull);
     test_valid_conversion!(TSS2_BASE_RC_NOT_DELETABLE, BaseError::NotDeletable);
     test_valid_conversion!(
         TSS2_BASE_RC_PATH_ALREADY_EXISTS,
@@ -278,4 +279,5 @@ fn test_display() {
     test_display_trait_impl!("No handle provided.", BaseError::NoHandle);
     test_display_trait_impl!("Provisioning was not executed.", BaseError::NotProvisioned);
     test_display_trait_impl!("Already provisioned.", BaseError::AlreadyProvisioned);
+    test_display_trait_impl!("A required callback is not set.", BaseError::CallbackNull);
 }
