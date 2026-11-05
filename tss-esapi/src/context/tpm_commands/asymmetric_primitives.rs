@@ -87,7 +87,7 @@ impl Context {
     /// #     .expect("Failed to set attributes on session");
     /// # context.set_sessions((Some(session), None, None));
     /// # let mut random_digest = vec![0u8; 16];
-    /// # getrandom::getrandom(&mut random_digest).unwrap();
+    /// # getrandom::fill(&mut random_digest).unwrap();
     /// # let key_auth = Auth::from_bytes(random_digest.as_slice()).unwrap();
     /// #
     /// # let object_attributes = ObjectAttributesBuilder::new()
@@ -248,7 +248,7 @@ impl Context {
     /// #     .expect("Failed to set attributes on session");
     /// # context.set_sessions((Some(session), None, None));
     /// # let mut random_digest = vec![0u8; 16];
-    /// # getrandom::getrandom(&mut random_digest).unwrap();
+    /// # getrandom::fill(&mut random_digest).unwrap();
     /// # let key_auth = Auth::from_bytes(random_digest.as_slice()).unwrap();
     /// #
     /// # let object_attributes = ObjectAttributesBuilder::new()
@@ -396,7 +396,7 @@ impl Context {
     /// #     .expect("Failed to set attributes on session");
     /// # context.set_sessions((Some(session), None, None));
     /// # let mut random_digest = vec![0u8; 16];
-    /// # getrandom::getrandom(&mut random_digest).unwrap();
+    /// # getrandom::fill(&mut random_digest).unwrap();
     /// # let key_auth = Auth::from_bytes(random_digest.as_slice()).unwrap();
     /// #
     /// // Create a key suitable for ECDH key generation
@@ -532,7 +532,7 @@ impl Context {
     /// #     .expect("Failed to set attributes on session");
     /// # context.set_sessions((Some(session), None, None));
     /// # let mut random_digest = vec![0u8; 16];
-    /// # getrandom::getrandom(&mut random_digest).unwrap();
+    /// # getrandom::fill(&mut random_digest).unwrap();
     /// # let key_auth = Auth::from_bytes(random_digest.as_slice()).unwrap();
     /// #
     /// // Create a key suitable for ECDH key generation
@@ -716,7 +716,7 @@ impl Context {
     /// #     .expect("Failed to set attributes on session");
     /// # context.set_sessions((Some(session), None, None));
     /// # let mut random_digest = vec![0u8; 16];
-    /// # getrandom::getrandom(&mut random_digest).expect("Failed to get random bytes");
+    /// # getrandom::fill(&mut random_digest).expect("Failed to get random bytes");
     /// # let key_auth = Auth::from_bytes(random_digest.as_slice()).expect("Failed to create key auth");
     /// #
     /// # let ecc_parms = PublicEccParametersBuilder::new()
