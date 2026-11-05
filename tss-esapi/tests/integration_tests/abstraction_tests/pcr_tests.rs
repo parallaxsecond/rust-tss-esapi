@@ -1,8 +1,9 @@
 // Copyright 2021 Contributors to the Parsec project.
 // SPDX-License-Identifier: Apache-2.0
-use crate::common::create_ctx_without_session;
+use crate::common::{SwtpmSession, create_ctx_without_session};
 
 use tss_esapi::{
+    Context, Error, WrapperErrorKind,
     interface_types::algorithm::HashingAlgorithm,
     structures::{PcrSelectionListBuilder, PcrSlot},
 };
@@ -138,4 +139,37 @@ fn test_pcr_read_all() {
                     assert_eq!(actual, expected);
                 })
         })
+}
+
+#[test]
+fn test_pcr_read_all_unallocated_bank() {
+    // Only the SHA256 bank is allocated, so the TPM will not
+    // return any values for PCRs in the SHA1 bank.
+    let swtpm = SwtpmSession::with_pcr_banks("sha256");
+    let mut context = Context::new(swtpm.tcti()).expect("Failed to create Context");
+
+    let pcr_selection_list = PcrSelectionListBuilder::new()
+        .with_selection(HashingAlgorithm::Sha1, &[PcrSlot::Slot0, PcrSlot::Slot1])
+        .build()
+        .expect("Failed to create PcrSelectionList for read_all call");
+
+    assert_eq!(
+        tss_esapi::abstraction::pcr::read_all(&mut context, pcr_selection_list),
+        Err(Error::WrapperError(WrapperErrorKind::InvalidParam)),
+        "Reading PCRs from an unallocated bank should fail instead of looping forever"
+    );
+
+    // The PCRs in the allocated bank are read but the
+    // remaining ones can still not be read.
+    let pcr_selection_list = PcrSelectionListBuilder::new()
+        .with_selection(HashingAlgorithm::Sha256, &[PcrSlot::Slot0, PcrSlot::Slot1])
+        .with_selection(HashingAlgorithm::Sha1, &[PcrSlot::Slot0, PcrSlot::Slot1])
+        .build()
+        .expect("Failed to create PcrSelectionList for read_all call");
+
+    assert_eq!(
+        tss_esapi::abstraction::pcr::read_all(&mut context, pcr_selection_list),
+        Err(Error::WrapperError(WrapperErrorKind::InvalidParam)),
+        "Reading PCRs partly from an unallocated bank should fail instead of looping forever"
+    );
 }

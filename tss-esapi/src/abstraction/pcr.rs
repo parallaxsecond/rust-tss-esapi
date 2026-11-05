@@ -3,13 +3,27 @@
 mod bank;
 mod data;
 
-use crate::{Context, Result, structures::PcrSelectionList};
+use crate::{
+    Context, Error, Result, WrapperErrorKind,
+    structures::{PcrSelection, PcrSelectionList},
+};
+use log::error;
 
 pub use bank::PcrBank;
 pub use data::PcrData;
 
 /// Function that reads all the PCRs in a selection list and returns
 /// the result as PCR data.
+///
+/// # Details
+/// The TPM returns a limited number of PCR values per `TPM2_PCR_Read`
+/// call, so this function keeps calling [Context::pcr_read] until every
+/// PCR in the selection list has been read.
+///
+/// # Errors
+/// Returns an InvalidParam error if the TPM does not return any of the
+/// PCRs that remain to be read, e.g. because the selection contains a
+/// PCR bank that is not allocated on the TPM.
 ///
 /// # Example
 ///
@@ -65,6 +79,21 @@ pub fn read_all(
     let mut pcr_data = PcrData::new();
     while !pcr_selection_list.is_empty() {
         let (_, pcrs_read, pcr_digests) = context.pcr_read(pcr_selection_list.clone())?;
+        // The TPM silently leaves out PCRs that it cannot read (e.g. those
+        // belonging to banks that are not allocated). If none of the remaining
+        // PCRs were read, nothing would ever be subtracted from the selection
+        // list and the loop would never terminate.
+        if pcrs_read
+            .get_selections()
+            .iter()
+            .all(PcrSelection::is_empty)
+        {
+            error!(
+                "The TPM did not return any of the remaining selected PCRs: {:?}",
+                pcr_selection_list
+            );
+            return Err(Error::local_error(WrapperErrorKind::InvalidParam));
+        }
         pcr_data.add(&pcrs_read, &pcr_digests)?;
         pcr_selection_list.subtract(&pcrs_read)?;
     }
