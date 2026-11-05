@@ -511,7 +511,7 @@ fn ctx_migration_test() {
     // one for just the public part of the key
     let mut basic_ctx = swtpm.create_session_context();
     let mut random_digest = vec![0u8; 16];
-    getrandom::getrandom(&mut random_digest).unwrap();
+    getrandom::fill(&mut random_digest).unwrap();
     let key_auth = Auth::from_bytes(random_digest.as_slice()).unwrap();
     let prim_key_handle = basic_ctx
         .create_primary(
