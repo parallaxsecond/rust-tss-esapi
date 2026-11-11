@@ -59,25 +59,70 @@ fn test_multiple_selection() {
     let pcr_selection_list_size = pcr_selection_list.len();
     let actual: TPML_PCR_SELECTION = pcr_selection_list.into();
     assert_eq!(actual.count as usize, pcr_selection_list_size);
-    for pcr_selection in actual.pcrSelections[..actual.count as usize].iter() {
+    assert_eq!(actual.count, 2);
+    // The selections are in the order in which they were added.
+    let sha256_selection = actual.pcrSelections[0];
+    let sha1_selection = actual.pcrSelections[1];
+    for pcr_selection in [sha256_selection, sha1_selection] {
         assert_eq!(
             pcr_selection.sizeofSelect,
             PcrSelectSize::default().to_u8().unwrap()
         );
-        // The order is not specified.
-        match HashingAlgorithm::try_from(pcr_selection.hash).unwrap() {
-            HashingAlgorithm::Sha256 => {
-                assert_eq!(pcr_selection.pcrSelect[0], 0b0000_0001);
-                assert_eq!(pcr_selection.pcrSelect[1], 0b0000_0001);
-                assert_eq!(pcr_selection.pcrSelect[2], 0b0000_0001);
-            }
-            HashingAlgorithm::Sha1 => {
-                assert_eq!(pcr_selection.pcrSelect[0], 0b0000_0010);
-                assert_eq!(pcr_selection.pcrSelect[1], 0b0000_0101);
-                assert_eq!(pcr_selection.pcrSelect[2], 0b1001_0000);
-            }
-            _ => panic!("Encountered incorrect Hashing Algorithm"),
-        }
+    }
+    assert_eq!(
+        sha256_selection.hash,
+        Into::<TPM2_ALG_ID>::into(HashingAlgorithm::Sha256)
+    );
+    assert_eq!(sha256_selection.pcrSelect[0], 0b0000_0001);
+    assert_eq!(sha256_selection.pcrSelect[1], 0b0000_0001);
+    assert_eq!(sha256_selection.pcrSelect[2], 0b0000_0001);
+    assert_eq!(
+        sha1_selection.hash,
+        Into::<TPM2_ALG_ID>::into(HashingAlgorithm::Sha1)
+    );
+    assert_eq!(sha1_selection.pcrSelect[0], 0b0000_0010);
+    assert_eq!(sha1_selection.pcrSelect[1], 0b0000_0101);
+    assert_eq!(sha1_selection.pcrSelect[2], 0b1001_0000);
+}
+
+#[test]
+fn test_selection_order_is_insertion_order() {
+    let build = || {
+        PcrSelectionListBuilder::new()
+            .with_selection(HashingAlgorithm::Sha384, &[PcrSlot::Slot0])
+            .with_selection(HashingAlgorithm::Sha1, &[PcrSlot::Slot0])
+            .with_selection(HashingAlgorithm::Sha512, &[PcrSlot::Slot0])
+            .with_selection(HashingAlgorithm::Sha256, &[PcrSlot::Slot0])
+            // Adding more slots to an existing selection does not move it.
+            .with_selection(HashingAlgorithm::Sha384, &[PcrSlot::Slot1])
+            .build()
+            .expect("Failed to create PcrSelectionList")
+    };
+
+    let expected = build();
+    assert_eq!(
+        expected
+            .get_selections()
+            .iter()
+            .map(|pcr_selection| pcr_selection.hashing_algorithm())
+            .collect::<Vec<HashingAlgorithm>>(),
+        [
+            HashingAlgorithm::Sha384,
+            HashingAlgorithm::Sha1,
+            HashingAlgorithm::Sha512,
+            HashingAlgorithm::Sha256,
+        ],
+        "The selections are not in the order in which they were added"
+    );
+    assert_eq!(
+        expected.get_selections()[0].selected(),
+        vec![PcrSlot::Slot0, PcrSlot::Slot1]
+    );
+
+    // Building the same selections must always give the same result
+    // (e.g. the order determines the PolicyPCR digest).
+    for _ in 0..16 {
+        assert_eq!(build(), expected);
     }
 }
 

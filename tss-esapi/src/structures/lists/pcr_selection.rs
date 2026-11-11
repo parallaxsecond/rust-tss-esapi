@@ -5,7 +5,6 @@ use crate::structures::{PcrSelectSize, PcrSelection, PcrSlot};
 use crate::tss2_esys::TPML_PCR_SELECTION;
 use crate::{Error, Result, WrapperErrorKind};
 use log::error;
-use std::collections::HashMap;
 use std::convert::TryFrom;
 
 /// A struct representing a pcr selection list. This
@@ -128,7 +127,7 @@ impl TryFrom<TPML_PCR_SELECTION> for PcrSelectionList {
 #[derive(Debug, Default)]
 pub struct PcrSelectionListBuilder {
     size_of_select: Option<PcrSelectSize>,
-    items: HashMap<HashingAlgorithm, Vec<PcrSlot>>,
+    items: Vec<(HashingAlgorithm, Vec<PcrSlot>)>,
 }
 
 impl PcrSelectionListBuilder {
@@ -153,6 +152,9 @@ impl PcrSelectionListBuilder {
     /// This function will not overwrite the values already associated
     /// with a specific HashingAlgorithm only update.
     ///
+    /// The selections in the built [PcrSelectionList] appear in the order
+    /// in which their HashingAlgorithm was first added to the builder.
+    ///
     /// # Arguments
     /// hash_algorithm -- The HashingAlgorithm associated with the pcr selection
     /// pcr_slots      -- The PCR slots in the selection.
@@ -161,14 +163,16 @@ impl PcrSelectionListBuilder {
         hash_algorithm: HashingAlgorithm,
         pcr_slots: &[PcrSlot],
     ) -> Self {
-        // let selected_pcr_slots: BitFlags<PcrSlot> = pcr_slots.iter().cloned().collect();
-        match self.items.get_mut(&hash_algorithm) {
-            Some(previously_selected_pcr_slots) => {
-                // *previously_selected_pcr_slots |= selected_pcr_slots;
+        match self
+            .items
+            .iter_mut()
+            .find(|(selected_hash_algorithm, _)| *selected_hash_algorithm == hash_algorithm)
+        {
+            Some((_, previously_selected_pcr_slots)) => {
                 previously_selected_pcr_slots.extend_from_slice(pcr_slots);
             }
             None => {
-                let _ = self.items.insert(hash_algorithm, pcr_slots.to_vec());
+                self.items.push((hash_algorithm, pcr_slots.to_vec()));
             }
         }
         self
@@ -176,6 +180,10 @@ impl PcrSelectionListBuilder {
 
     /// Builds a PcrSelections with the values that have been
     /// provided.
+    ///
+    /// The selections are ordered by when their HashingAlgorithm was
+    /// first added, so building the same selections always yields the
+    /// same [PcrSelectionList].
     ///
     /// If no size of select have been provided then it will
     /// be defaulted to to the most suitable with regard to TPM2_PCR_SELECT_MAX.
@@ -186,8 +194,8 @@ impl PcrSelectionListBuilder {
         let size_of_select = self.size_of_select.unwrap_or_default();
         self.items
             .iter()
-            .try_fold(Vec::<PcrSelection>::new(), |mut acc, (&k, v)| {
-                PcrSelection::create(k, size_of_select, v.as_slice()).map(|pcr_select| {
+            .try_fold(Vec::<PcrSelection>::new(), |mut acc, (k, v)| {
+                PcrSelection::create(*k, size_of_select, v.as_slice()).map(|pcr_select| {
                     acc.push(pcr_select);
                     acc
                 })
