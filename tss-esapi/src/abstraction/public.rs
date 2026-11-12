@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use crate::interface_types::ecc::EccCurve;
-use crate::structures::Public;
+use crate::structures::{EccParameter, EccPoint, Public};
 use crate::utils::PublicKey as TpmPublicKey;
 use crate::{Error, WrapperErrorKind};
 
@@ -73,6 +73,32 @@ where
             }
             _ => Err(Error::local_error(WrapperErrorKind::UnsupportedParam)),
         }
+    }
+}
+
+impl<C> TryFrom<&PublicKey<C>> for EccPoint
+where
+    C: CurveArithmetic + AssociatedTpmCurve,
+    FieldBytesSize<C>: ModulusSize,
+    AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
+{
+    type Error = Error;
+
+    fn try_from(value: &PublicKey<C>) -> Result<Self, Self::Error> {
+        let affine = value.to_encoded_point(false);
+        let x_bytes = affine
+            .x()
+            .ok_or_else(|| Error::local_error(WrapperErrorKind::InvalidParam))?;
+        let y_bytes = affine
+            .y()
+            .ok_or_else(|| Error::local_error(WrapperErrorKind::InvalidParam))?;
+
+        let x_param = EccParameter::from_bytes(x_bytes.as_slice())
+            .map_err(|_| Error::local_error(WrapperErrorKind::InvalidParam))?;
+        let y_param = EccParameter::from_bytes(y_bytes.as_slice())
+            .map_err(|_| Error::local_error(WrapperErrorKind::InvalidParam))?;
+
+        Ok(EccPoint::new(x_param, y_param))
     }
 }
 
