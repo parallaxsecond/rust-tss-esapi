@@ -42,6 +42,19 @@ available, feel free to raise a Pull Request to add it or to use build-time
 generation of bindings. All the committed bindings **MUST** be generated from
 the previously mentioned minimum version.
 
+The Windows bindings (`x86_64-pc-windows-msvc`, `aarch64-pc-windows-msvc`) are
+generated with the standalone `bindgen-windows` crate, which works from any
+host given a tpm2-tss source tree and a Windows SDK from
+[`cargo xwin`](https://github.com/rust-cross/cargo-xwin). Because
+`tss2_tcti.h` includes `<windows.h>`, they are limited to the TSS API with an
+allowlist. For example:
+
+```bash
+cd bindgen-windows
+cargo run -- <tpm2-tss>/include/tss2 ~/.cache/cargo-xwin/xwin \
+    x86_64-pc-windows-msvc ../src/bindings/x86_64-pc-windows-msvc.rs 4.1.3
+```
+
 ## Bundling TPM-TSS
 
 [`tpm-tss`](https://github.com/tpm2-software/tpm2-tss) is used by this 
