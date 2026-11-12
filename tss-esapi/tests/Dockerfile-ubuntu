@@ -11,7 +11,7 @@ RUN cargo install cargo-valgrind
 
 FROM rust-toolchain AS tpm2-tss
 # Download and install the TSS library
-ENV TPM2_TSS_BINDINGS_VERSION=4.1.3
+ENV TPM2_TSS_BINDINGS_VERSION=4.2.0
 ARG TPM2_TSS_VERSION=$TPM2_TSS_BINDINGS_VERSION
 ENV TPM2_TSS_VERSION=$TPM2_TSS_VERSION
 ENV PKG_CONFIG_PATH=/usr/local/lib/pkgconfig
