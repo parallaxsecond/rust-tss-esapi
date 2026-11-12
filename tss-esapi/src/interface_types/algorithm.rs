@@ -5,8 +5,9 @@ use crate::{
     constants::AlgorithmIdentifier,
     tss2_esys::{
         TPMI_ALG_ASYM, TPMI_ALG_ECC_SCHEME, TPMI_ALG_HASH, TPMI_ALG_KDF, TPMI_ALG_KEYEDHASH_SCHEME,
-        TPMI_ALG_PUBLIC, TPMI_ALG_RSA_DECRYPT, TPMI_ALG_RSA_SCHEME, TPMI_ALG_SIG_SCHEME,
-        TPMI_ALG_SYM, TPMI_ALG_SYM_MODE, TPMI_ALG_SYM_OBJECT, TPMI_ECC_KEY_EXCHANGE,
+        TPMI_ALG_MAC_SCHEME, TPMI_ALG_PUBLIC, TPMI_ALG_RSA_DECRYPT, TPMI_ALG_RSA_SCHEME,
+        TPMI_ALG_SIG_SCHEME, TPMI_ALG_SYM, TPMI_ALG_SYM_MODE, TPMI_ALG_SYM_OBJECT,
+        TPMI_ECC_KEY_EXCHANGE,
     },
 };
 use log::error;
@@ -74,6 +75,88 @@ impl TryFrom<TPMI_ALG_HASH> for HashingAlgorithm {
 
     fn try_from(tpmi_alg_hash: TPMI_ALG_HASH) -> Result<Self> {
         HashingAlgorithm::try_from(AlgorithmIdentifier::try_from(tpmi_alg_hash)?)
+    }
+}
+
+/// Enum containing the supported MAC schemes.
+///
+/// # Details
+/// This corresponds to the `TPMI_ALG_MAC_SCHEME` interface type. Hash algorithms select HMAC,
+/// while [Cmac][MacSchemeAlgorithm::Cmac] selects a symmetric block-cipher MAC.
+///
+/// # Example
+///
+/// ```rust
+/// use tss_esapi::{
+///     constants::AlgorithmIdentifier,
+///     interface_types::algorithm::MacSchemeAlgorithm,
+/// };
+///
+/// let scheme = MacSchemeAlgorithm::Sha256;
+/// assert_eq!(AlgorithmIdentifier::Sha256, scheme.into());
+/// ```
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
+pub enum MacSchemeAlgorithm {
+    Sha1,
+    Sha256,
+    Sha384,
+    Sha512,
+    Sm3_256,
+    Sha3_256,
+    Sha3_384,
+    Sha3_512,
+    Cmac,
+    Null,
+}
+
+impl From<MacSchemeAlgorithm> for AlgorithmIdentifier {
+    fn from(mac_scheme_algorithm: MacSchemeAlgorithm) -> Self {
+        match mac_scheme_algorithm {
+            MacSchemeAlgorithm::Sha1 => AlgorithmIdentifier::Sha1,
+            MacSchemeAlgorithm::Sha256 => AlgorithmIdentifier::Sha256,
+            MacSchemeAlgorithm::Sha384 => AlgorithmIdentifier::Sha384,
+            MacSchemeAlgorithm::Sha512 => AlgorithmIdentifier::Sha512,
+            MacSchemeAlgorithm::Sm3_256 => AlgorithmIdentifier::Sm3_256,
+            MacSchemeAlgorithm::Sha3_256 => AlgorithmIdentifier::Sha3_256,
+            MacSchemeAlgorithm::Sha3_384 => AlgorithmIdentifier::Sha3_384,
+            MacSchemeAlgorithm::Sha3_512 => AlgorithmIdentifier::Sha3_512,
+            MacSchemeAlgorithm::Cmac => AlgorithmIdentifier::Cmac,
+            MacSchemeAlgorithm::Null => AlgorithmIdentifier::Null,
+        }
+    }
+}
+
+impl TryFrom<AlgorithmIdentifier> for MacSchemeAlgorithm {
+    type Error = Error;
+
+    fn try_from(algorithm_identifier: AlgorithmIdentifier) -> Result<Self> {
+        match algorithm_identifier {
+            AlgorithmIdentifier::Sha1 => Ok(MacSchemeAlgorithm::Sha1),
+            AlgorithmIdentifier::Sha256 => Ok(MacSchemeAlgorithm::Sha256),
+            AlgorithmIdentifier::Sha384 => Ok(MacSchemeAlgorithm::Sha384),
+            AlgorithmIdentifier::Sha512 => Ok(MacSchemeAlgorithm::Sha512),
+            AlgorithmIdentifier::Sm3_256 => Ok(MacSchemeAlgorithm::Sm3_256),
+            AlgorithmIdentifier::Sha3_256 => Ok(MacSchemeAlgorithm::Sha3_256),
+            AlgorithmIdentifier::Sha3_384 => Ok(MacSchemeAlgorithm::Sha3_384),
+            AlgorithmIdentifier::Sha3_512 => Ok(MacSchemeAlgorithm::Sha3_512),
+            AlgorithmIdentifier::Cmac => Ok(MacSchemeAlgorithm::Cmac),
+            AlgorithmIdentifier::Null => Ok(MacSchemeAlgorithm::Null),
+            _ => Err(Error::local_error(WrapperErrorKind::InvalidParam)),
+        }
+    }
+}
+
+impl From<MacSchemeAlgorithm> for TPMI_ALG_MAC_SCHEME {
+    fn from(mac_scheme_algorithm: MacSchemeAlgorithm) -> Self {
+        AlgorithmIdentifier::from(mac_scheme_algorithm).into()
+    }
+}
+
+impl TryFrom<TPMI_ALG_MAC_SCHEME> for MacSchemeAlgorithm {
+    type Error = Error;
+
+    fn try_from(tpmi_alg_mac_scheme: TPMI_ALG_MAC_SCHEME) -> Result<Self> {
+        MacSchemeAlgorithm::try_from(AlgorithmIdentifier::try_from(tpmi_alg_mac_scheme)?)
     }
 }
 
