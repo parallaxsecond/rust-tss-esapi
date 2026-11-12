@@ -351,8 +351,15 @@ mod test_sign {
 
         verifying_key.verify(&payload, &signature).unwrap();
 
-        let d = sha2::Sha256::new_with_prefix(&payload);
-        verifying_key.verify_digest(d, &signature).unwrap();
+        verifying_key
+            .verify_digest(
+                |d: &mut sha2::Sha256| {
+                    d.update(&payload);
+                    Ok(())
+                },
+                &signature,
+            )
+            .unwrap();
     }
 
     #[cfg(feature = "rsa")]
@@ -386,7 +393,14 @@ mod test_sign {
 
         verifying_key.verify(&payload, &signature).unwrap();
 
-        let d = sha2::Sha256::new_with_prefix(&payload);
-        verifying_key.verify_digest(d, &signature).unwrap();
+        verifying_key
+            .verify_digest(
+                |d: &mut sha2::Sha256| {
+                    d.update(&payload);
+                    Ok(())
+                },
+                &signature,
+            )
+            .unwrap();
     }
 }
