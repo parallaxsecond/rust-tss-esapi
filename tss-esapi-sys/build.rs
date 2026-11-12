@@ -258,8 +258,8 @@ pub mod tpm2_tss {
             let builder = bindgen::Builder::default()
                 .size_t_is_usize(false)
                 .rust_target(
-                    bindgen::RustTarget::stable(85, 0)
-                        .expect("Rust version 1.85.0 should be a stable release"),
+                    bindgen::RustTarget::stable(88, 0)
+                        .expect("Rust version 1.88.0 should be a stable release"),
                 ) // lower or equal to MSRV.
                 .clang_arg(self.tss2_esys.include_dir_arg())
                 .clang_arg(self.tss2_tctildr.include_dir_arg())
@@ -918,14 +918,12 @@ pub mod tpm2_tss {
 
             let result = hit_iter.next();
             // Ensure it is a unique hit
-            if let Some(hit) = result.as_ref() {
-                if hit_iter.peek().is_some() {
-                    let mut associated_files = hit_iter.collect::<Vec<PathBuf>>();
-                    associated_files.push(hit.clone());
-                    panic!(
-                        "More then one match found for library `{lib_name}`: {associated_files:?}",
-                    );
-                }
+            if let Some(hit) = result.as_ref()
+                && hit_iter.peek().is_some()
+            {
+                let mut associated_files = hit_iter.collect::<Vec<PathBuf>>();
+                associated_files.push(hit.clone());
+                panic!("More then one match found for library `{lib_name}`: {associated_files:?}",);
             }
             result
         }

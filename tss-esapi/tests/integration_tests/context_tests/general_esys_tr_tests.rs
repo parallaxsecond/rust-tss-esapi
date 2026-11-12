@@ -25,23 +25,23 @@ mod test_tr_from_tpm_public {
         while let Ok((capability_data, more_data_available)) =
             context.get_capability(CapabilityType::Handles, property, 1)
         {
-            if let CapabilityData::Handles(nv_index_handles) = capability_data {
-                if let Some(&retrieved_nv_index_tpm_handle) = nv_index_handles.first() {
-                    if retrieved_nv_index_tpm_handle == nv_index_tpm_handle.into() {
-                        let handle = context
-                            .tr_from_tpm_public(nv_index_tpm_handle.into())
-                            .map(NvIndexHandle::from)
-                            .expect("Failed to get nv index from tpm");
-                        context.execute_with_session(Some(AuthSession::Password), |ctx| {
-                            ctx.nv_undefine_space(nv_auth, handle)
-                                .expect("Failed to undefine space");
-                        });
-                        return;
-                    }
+            if let CapabilityData::Handles(nv_index_handles) = capability_data
+                && let Some(&retrieved_nv_index_tpm_handle) = nv_index_handles.first()
+            {
+                if retrieved_nv_index_tpm_handle == nv_index_tpm_handle.into() {
+                    let handle = context
+                        .tr_from_tpm_public(nv_index_tpm_handle.into())
+                        .map(NvIndexHandle::from)
+                        .expect("Failed to get nv index from tpm");
+                    context.execute_with_session(Some(AuthSession::Password), |ctx| {
+                        ctx.nv_undefine_space(nv_auth, handle)
+                            .expect("Failed to undefine space");
+                    });
+                    return;
+                }
 
-                    if more_data_available {
-                        property = TPM2_HANDLE::from(retrieved_nv_index_tpm_handle) + 1;
-                    }
+                if more_data_available {
+                    property = TPM2_HANDLE::from(retrieved_nv_index_tpm_handle) + 1;
                 }
             }
 

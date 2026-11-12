@@ -1,4 +1,4 @@
-msrv = "1.85.0"
+msrv = "1.88.0"
 
 # RustCrypto's rand_core 0.6 still uses getrandom 0.2.
 allowed-duplicate-crates = ["getrandom"]

@@ -62,9 +62,9 @@ mod test_hash_sequence {
             .hash_sequence_start(HashingAlgorithm::Sha256, None)
             .expect("Hash sequence started successfully");
 
-        let chunks = data.chunks_exact(MaxBuffer::MAX_SIZE);
-        let last_chunk = chunks.remainder();
-        for chunk in chunks {
+        let chunks = data.as_chunks::<{ MaxBuffer::MAX_SIZE }>();
+        let last_chunk = chunks.1;
+        for chunk in chunks.0.iter() {
             context
                 .sequence_update(
                     handle,
@@ -133,9 +133,9 @@ mod test_hmac_sequence {
             .hmac_sequence_start(key.key_handle.into(), HashingAlgorithm::Sha256, None)
             .expect("HMAC sequence started successfully");
 
-        let chunks = data.chunks_exact(MaxBuffer::MAX_SIZE);
-        let last_chunk = chunks.remainder();
-        for chunk in chunks {
+        let chunks = data.as_chunks::<{ MaxBuffer::MAX_SIZE }>();
+        let last_chunk = chunks.1;
+        for chunk in chunks.0.iter() {
             context
                 .sequence_update(
                     handle,
