@@ -795,17 +795,24 @@ mod test_nv_global_write_lock {
 
 mod test_nv_certify {
     use crate::common::create_ctx_with_session;
+    use sha2::{Digest as _, Sha256};
     use std::convert::TryFrom;
     use tss_esapi::{
         attributes::NvIndexAttributesBuilder,
+        constants::StructureTag,
         handles::NvIndexTpmHandle,
         interface_types::{
             algorithm::{HashingAlgorithm, RsaSchemeAlgorithm},
             key_bits::RsaKeyBits,
             reserved_handles::{Hierarchy, NvAuth, Provision},
             session_handles::AuthSession,
+            structure_tags::AttestationType,
         },
-        structures::{Data, MaxNvBuffer, NvPublicBuilder, RsaExponent, RsaScheme, SignatureScheme},
+        structures::{
+            AttestInfo, Data, Digest, MaxNvBuffer, NvPublicBuilder, RsaExponent, RsaScheme,
+            SignatureScheme, Ticket,
+        },
+        traits::Marshall,
         utils::create_unrestricted_signing_rsa_public,
     };
 
@@ -847,13 +854,14 @@ mod test_nv_certify {
             .nv_define_space(Provision::Owner, None, nv_public)
             .expect("Failed to define NV space");
 
-        let data = MaxNvBuffer::try_from(vec![1, 2, 3, 4, 5, 6, 7, 8]).unwrap();
+        let written_data = (1u8..=32).collect::<Vec<_>>();
+        let data = MaxNvBuffer::try_from(written_data.clone()).unwrap();
         context
             .nv_write(NvAuth::Owner, nv_index_handle, data, 0)
             .expect("Failed to write NV");
 
-        // Certify the NV index
-        let (_attest, _signature) = context
+        // Certify part of the NV index contents.
+        let (attest, _signature) = context
             .execute_with_sessions(
                 (
                     Some(AuthSession::Password),
@@ -873,6 +881,63 @@ mod test_nv_certify {
                 },
             )
             .expect("Failed to certify NV");
+        assert_eq!(attest.attestation_type(), AttestationType::Nv);
+        assert!(matches!(attest.attested(), AttestInfo::Nv { .. }));
+
+        // A zero size and offset requests an attestation containing a digest of
+        // the complete NV index instead of exposing the contents.
+        let qualifying_data = Data::try_from(vec![0xaau8; 16]).unwrap();
+        let (digest_attest, signature) = context
+            .execute_with_sessions(
+                (
+                    Some(AuthSession::Password),
+                    Some(AuthSession::Password),
+                    None,
+                ),
+                |ctx| {
+                    ctx.nv_certify(
+                        sign_key_handle,
+                        NvAuth::Owner,
+                        nv_index_handle,
+                        qualifying_data.clone(),
+                        SignatureScheme::Null,
+                        0,
+                        0,
+                    )
+                },
+            )
+            .expect("Failed to certify the NV digest");
+
+        assert_eq!(digest_attest.attestation_type(), AttestationType::NvDigest,);
+        assert_eq!(digest_attest.extra_data(), &qualifying_data);
+
+        let (_, expected_index_name) = context
+            .nv_read_public(nv_index_handle)
+            .expect("Failed to read NV public data");
+        let expected_nv_digest = Sha256::digest(&written_data);
+
+        if let AttestInfo::NvDigest { info } = digest_attest.attested() {
+            assert_eq!(info.index_name(), &expected_index_name);
+            assert_eq!(info.nv_digest().as_bytes(), &expected_nv_digest[..]);
+        } else {
+            panic!("NV digest certification did not return NvDigest attestation info");
+        }
+
+        let signed_digest = Digest::try_from(
+            Sha256::digest(
+                digest_attest
+                    .marshall()
+                    .expect("Failed to marshall NV digest attestation"),
+            )
+            .to_vec(),
+        )
+        .expect("Failed to create attestation digest");
+        let ticket = context
+            .execute_with_nullauth_session(|ctx| {
+                ctx.verify_signature(sign_key_handle, signed_digest, signature)
+            })
+            .expect("Failed to verify NV digest attestation signature");
+        assert_eq!(ticket.tag(), StructureTag::Verified);
 
         // Cleanup
         context

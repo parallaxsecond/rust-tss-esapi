@@ -9,7 +9,6 @@ use crate::{
     traits::impl_mu_standard,
     tss2_esys::TPMS_ATTEST,
 };
-use log::error;
 use std::convert::{TryFrom, TryInto};
 
 /// Type for holding attestation data
@@ -109,10 +108,9 @@ impl TryFrom<TPMS_ATTEST> for Attest {
                 AttestationType::Nv => AttestInfo::Nv {
                     info: unsafe { tpms_attest.attested.nv }.try_into()?,
                 },
-                AttestationType::NvDigest => {
-                    error!("NvDigest attestation type is currently not supported");
-                    return Err(Error::local_error(WrapperErrorKind::UnsupportedParam));
-                }
+                AttestationType::NvDigest => AttestInfo::NvDigest {
+                    info: unsafe { tpms_attest.attested.nvDigest }.try_into()?,
+                },
             },
         })
     }

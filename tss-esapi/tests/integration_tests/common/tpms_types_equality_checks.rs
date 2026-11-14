@@ -3,15 +3,17 @@
 use tss_esapi::{
     constants::tss::{
         TPM2_ST_ATTEST_CERTIFY, TPM2_ST_ATTEST_COMMAND_AUDIT, TPM2_ST_ATTEST_CREATION,
-        TPM2_ST_ATTEST_NV, TPM2_ST_ATTEST_QUOTE, TPM2_ST_ATTEST_SESSION_AUDIT, TPM2_ST_ATTEST_TIME,
+        TPM2_ST_ATTEST_NV, TPM2_ST_ATTEST_NV_DIGEST, TPM2_ST_ATTEST_QUOTE,
+        TPM2_ST_ATTEST_SESSION_AUDIT, TPM2_ST_ATTEST_TIME,
     },
     tss2_esys::{
         TPMS_ALG_PROPERTY, TPMS_ATTEST, TPMS_CERTIFY_INFO, TPMS_CLOCK_INFO,
         TPMS_COMMAND_AUDIT_INFO, TPMS_CONTEXT, TPMS_CREATION_INFO, TPMS_ECC_PARMS, TPMS_EMPTY,
-        TPMS_KEYEDHASH_PARMS, TPMS_NV_CERTIFY_INFO, TPMS_PCR_SELECTION, TPMS_QUOTE_INFO,
-        TPMS_RSA_PARMS, TPMS_SCHEME_ECDAA, TPMS_SCHEME_HASH, TPMS_SCHEME_HMAC, TPMS_SCHEME_XOR,
-        TPMS_SENSITIVE_CREATE, TPMS_SESSION_AUDIT_INFO, TPMS_SYMCIPHER_PARMS,
-        TPMS_TAGGED_PCR_SELECT, TPMS_TAGGED_PROPERTY, TPMS_TIME_ATTEST_INFO, TPMS_TIME_INFO,
+        TPMS_KEYEDHASH_PARMS, TPMS_NV_CERTIFY_INFO, TPMS_NV_DIGEST_CERTIFY_INFO,
+        TPMS_PCR_SELECTION, TPMS_QUOTE_INFO, TPMS_RSA_PARMS, TPMS_SCHEME_ECDAA, TPMS_SCHEME_HASH,
+        TPMS_SCHEME_HMAC, TPMS_SCHEME_XOR, TPMS_SENSITIVE_CREATE, TPMS_SESSION_AUDIT_INFO,
+        TPMS_SYMCIPHER_PARMS, TPMS_TAGGED_PCR_SELECT, TPMS_TAGGED_PROPERTY, TPMS_TIME_ATTEST_INFO,
+        TPMS_TIME_INFO,
     },
 };
 
@@ -128,6 +130,14 @@ pub fn ensure_tpms_nv_certify_info_equality(
     crate::common::ensure_tpm2b_max_nv_buffer_equality(&expected.nvContents, &actual.nvContents);
 }
 
+pub fn ensure_tpms_nv_digest_certify_info_equality(
+    expected: &TPMS_NV_DIGEST_CERTIFY_INFO,
+    actual: &TPMS_NV_DIGEST_CERTIFY_INFO,
+) {
+    crate::common::ensure_tpm2b_name_equality(&expected.indexName, &actual.indexName);
+    crate::common::ensure_tpm2b_digest_equality(&expected.nvDigest, &actual.nvDigest);
+}
+
 pub fn ensure_tpms_attest_equality(expected: &TPMS_ATTEST, actual: &TPMS_ATTEST) {
     assert_eq!(
         expected.magic, actual.magic,
@@ -178,6 +188,10 @@ pub fn ensure_tpms_attest_equality(expected: &TPMS_ATTEST, actual: &TPMS_ATTEST)
                 &actual.attested.nv
             })
         }
+        TPM2_ST_ATTEST_NV_DIGEST => ensure_tpms_nv_digest_certify_info_equality(
+            unsafe { &expected.attested.nvDigest },
+            unsafe { &actual.attested.nvDigest },
+        ),
         _ => panic!("'type_' value in TPMS_ATTEST contained invalid or unsupported value"),
     }
 }

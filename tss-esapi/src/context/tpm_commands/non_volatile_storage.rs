@@ -1473,7 +1473,8 @@ impl Context {
     /// * `nv_index_handle` - The [NvIndexHandle] of the NV index to be certified.
     /// * `qualifying_data` - [Data] to qualify the signing.
     /// * `signing_scheme` - The [SignatureScheme] to use for signing.
-    /// * `size` - Number of octets to certify.
+    /// * `size` - Number of octets to certify. When both `size` and `offset` are zero, the TPM
+    ///   certifies a digest of the complete NV index.
     /// * `offset` - Octet offset into the NV area.
     ///
     /// # Details
@@ -1484,7 +1485,10 @@ impl Context {
     ///
     /// # Returns
     ///
-    /// A tuple of `(Attest, Signature)`.
+    /// A tuple of `(Attest, Signature)`. The returned [Attest] contains
+    /// [AttestInfo::NvDigest](crate::structures::AttestInfo::NvDigest) when both `size` and
+    /// `offset` are zero; otherwise it contains
+    /// [AttestInfo::Nv](crate::structures::AttestInfo::Nv).
     ///
     /// # Example
     /// ```rust
@@ -1502,7 +1506,7 @@ impl Context {
     ///         reserved_handles::{Hierarchy, NvAuth, Provision},
     ///         session_handles::AuthSession,
     ///     },
-    ///     structures::{Data, SignatureScheme},
+    ///     structures::{AttestInfo, Data, SignatureScheme},
     /// };
     ///
     /// # // Create context
@@ -1558,7 +1562,7 @@ impl Context {
     ///     })
     ///     .expect("Call to nv_write failed");
     ///
-    /// // Certify the NV index contents.
+    /// // Certify a digest of the complete NV index contents.
     /// let nv_certify_result = context.execute_with_sessions(
     ///     (
     ///         Some(AuthSession::Password),
@@ -1572,7 +1576,7 @@ impl Context {
     ///             nv_index_handle,
     ///             Data::try_from(vec![0xff; 16]).unwrap(),
     ///             SignatureScheme::Null,
-    ///             8,
+    ///             0,
     ///             0,
     ///         )
     ///     },
@@ -1586,7 +1590,8 @@ impl Context {
     ///     .expect("Call to nv_undefine_space failed");
     ///
     /// // Process result
-    /// let (_attest, _signature) = nv_certify_result.expect("Call to nv_certify failed");
+    /// let (attest, _signature) = nv_certify_result.expect("Call to nv_certify failed");
+    /// assert!(matches!(attest.attested(), AttestInfo::NvDigest { .. }));
     /// ```
     #[allow(clippy::too_many_arguments)]
     pub fn nv_certify(
