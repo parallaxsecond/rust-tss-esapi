@@ -134,10 +134,7 @@ impl PcrSlotCollection {
         action: &str,
     ) -> Result<()> {
         if self.pcr_select_size != other.pcr_select_size {
-            error!(
-                "Failed to perform '{}' due to size of select mismatch",
-                action
-            );
+            error!("Failed to perform '{action}' due to size of select mismatch");
             return Err(Error::local_error(WrapperErrorKind::InvalidParam));
         }
         Ok(())
@@ -147,10 +144,7 @@ impl PcrSlotCollection {
     /// already exists in `self`.
     fn ensure_contains_none(&self, pcr_slots: BitFlags<PcrSlot>, action: &str) -> Result<()> {
         if self.pcr_slots.intersects(pcr_slots) {
-            error!(
-                "Failed to perform '{}' because `self` contained the specified pcr slots",
-                action
-            );
+            error!("Failed to perform '{action}' because `self` contained the specified pcr slots");
             return Err(Error::local_error(WrapperErrorKind::InvalidParam));
         }
         Ok(())
@@ -166,8 +160,7 @@ impl PcrSlotCollection {
             Ok(())
         } else {
             error!(
-                "Failed to perform '{}' because `self` did not contain the specified pcr slots",
-                action
+                "Failed to perform '{action}' because `self` did not contain the specified pcr slots"
             );
             Err(Error::local_error(WrapperErrorKind::InvalidParam))
         }
@@ -190,7 +183,7 @@ impl PcrSlotCollection {
             });
 
         BitFlags::<PcrSlot>::try_from(u32::from_le_bytes(octets)).map_err(|e| {
-            error!("Error parsing octets to a BitFlags<PcrSlot>: {}", e);
+            error!("Error parsing octets to a BitFlags<PcrSlot>: {e}");
             Error::local_error(WrapperErrorKind::UnsupportedParam)
         })
     }

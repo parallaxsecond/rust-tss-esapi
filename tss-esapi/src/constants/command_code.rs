@@ -157,7 +157,7 @@ impl TryFrom<TPM2_CC> for CommandCode {
 
     fn try_from(tpm2_cc: TPM2_CC) -> Result<Self> {
         CommandCode::from_u32(CommandCodeStructure::try_from(tpm2_cc)?.0).ok_or_else(|| {
-            error!("Value = {} did not match any Command Code", tpm2_cc);
+            error!("Value = {tpm2_cc} did not match any Command Code");
             Error::local_error(WrapperErrorKind::InvalidParam)
         })
     }

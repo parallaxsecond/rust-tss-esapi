@@ -69,7 +69,7 @@ impl Context {
                 )
             },
             |ret| {
-                error!("Error setting command code audit status: {:#010X}", ret);
+                error!("Error setting command code audit status: {ret:#010X}");
             },
         )
     }

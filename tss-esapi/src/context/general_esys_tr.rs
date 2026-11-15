@@ -46,7 +46,7 @@ impl Context {
             unsafe { Esys_TR_SetAuth(self.mut_context(), object_handle.into(), &auth_value) },
             |ret| {
                 auth_value.buffer.zeroize();
-                error!("Error when setting authentication value: {:#010X}", ret);
+                error!("Error when setting authentication value: {ret:#010X}");
             },
         )
     }
@@ -136,7 +136,7 @@ impl Context {
         ReturnCode::ensure_success(
             unsafe { Esys_TR_GetName(self.mut_context(), object_handle.into(), &mut name_ptr) },
             |ret| {
-                error!("Error in getting name: {:#010X}", ret);
+                error!("Error in getting name: {ret:#010X}");
             },
         )?;
         Name::try_from(Context::ffi_data_to_owned(name_ptr)?)
@@ -254,10 +254,7 @@ impl Context {
                 )
             },
             |ret| {
-                error!(
-                    "Error when getting ESYS handle from TPM handle: {:#010X}",
-                    ret
-                );
+                error!("Error when getting ESYS handle from TPM handle: {ret:#010X}");
             },
         )?;
         self.handle_manager.add_handle(
@@ -365,7 +362,7 @@ impl Context {
         ReturnCode::ensure_success(
             unsafe { Esys_TR_Close(self.mut_context(), &mut rsrc_handle) },
             |ret| {
-                error!("Error when closing an ESYS handle: {:#010X}", ret);
+                error!("Error when closing an ESYS handle: {ret:#010X}");
             },
         )?;
 
@@ -384,10 +381,7 @@ impl Context {
                 Esys_TR_GetTpmHandle(self.mut_context(), object_handle.into(), &mut tpm_handle)
             },
             |ret| {
-                error!(
-                    "Error when getting TPM handle from ESYS handle: {:#010X}",
-                    ret
-                );
+                error!("Error when getting TPM handle from ESYS handle: {ret:#010X}");
             },
         )?;
         TpmHandle::try_from(tpm_handle)
@@ -450,13 +444,13 @@ impl Context {
         ReturnCode::ensure_success(
             unsafe { Esys_TR_Serialize(self.mut_context(), handle.into(), &mut buffer, &mut len) },
             |ret| {
-                error!("Error while serializing handle: {}", ret);
+                error!("Error while serializing handle: {ret}");
             },
         )?;
         Ok(to_owned_bytes(
             buffer,
             len.try_into().map_err(|e| {
-                error!("Failed to convert buffer len to usize: {}", e);
+                error!("Failed to convert buffer len to usize: {e}");
                 Error::local_error(WrapperErrorKind::InvalidParam)
             })?,
         ))
@@ -529,7 +523,7 @@ impl Context {
                 )
             },
             |ret| {
-                error!("Error while deserializing buffer: {}", ret);
+                error!("Error while deserializing buffer: {ret}");
             },
         )?;
         Ok(ObjectHandle::from(handle))

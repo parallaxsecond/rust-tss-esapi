@@ -30,10 +30,7 @@ impl TryFrom<TPM2_SE> for SessionType {
     type Error = Error;
     fn try_from(tpm_session_type: TPM2_SE) -> Result<SessionType> {
         SessionType::from_u8(tpm_session_type).ok_or_else(|| {
-            error!(
-                "value = {} did not match any SessionType.",
-                tpm_session_type
-            );
+            error!("value = {tpm_session_type} did not match any SessionType.");
             Error::local_error(WrapperErrorKind::InvalidParam)
         })
     }

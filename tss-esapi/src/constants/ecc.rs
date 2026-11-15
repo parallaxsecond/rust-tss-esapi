@@ -42,7 +42,7 @@ impl TryFrom<TPM2_ECC_CURVE> for EccCurveIdentifier {
 
     fn try_from(tpm2_ecc_curve: TPM2_ECC_CURVE) -> Result<Self> {
         EccCurveIdentifier::from_u16(tpm2_ecc_curve).ok_or_else(|| {
-            error!("Value = {} did not match any ecc curve.", tpm2_ecc_curve);
+            error!("Value = {tpm2_ecc_curve} did not match any ecc curve.");
             Error::local_error(WrapperErrorKind::InvalidParam)
         })
     }

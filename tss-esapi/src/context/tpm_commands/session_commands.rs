@@ -83,7 +83,7 @@ impl Context {
                 )
             },
             |ret| {
-                error!("Error when creating a session: {:#010X}", ret);
+                error!("Error when creating a session: {ret:#010X}");
             },
         )?;
 
@@ -109,7 +109,7 @@ impl Context {
                 )
             },
             |ret| {
-                error!("Error restarting policy: {:#010X}", ret);
+                error!("Error restarting policy: {ret:#010X}");
             },
         )
     }

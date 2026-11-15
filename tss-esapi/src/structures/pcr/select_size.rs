@@ -43,10 +43,7 @@ impl PcrSelectSize {
     /// Parses the u8 value as PcrSelectSize
     pub fn try_parse_u8(value: u8) -> Result<Self> {
         PcrSelectSize::from_u8(value).ok_or_else(|| {
-            error!(
-                "Error converting sizeofSelect to a SelectSize: Invalid value {}",
-                value
-            );
+            error!("Error converting sizeofSelect to a SelectSize: Invalid value {value}");
             Error::local_error(WrapperErrorKind::InvalidParam)
         })
     }
@@ -54,10 +51,7 @@ impl PcrSelectSize {
     /// Parses the u32 value as PcrSelectSize
     pub fn try_parse_u32(value: u32) -> Result<Self> {
         PcrSelectSize::from_u32(value).ok_or_else(|| {
-            error!(
-                "Error converting sizeofSelect to a SelectSize: Invalid value {}",
-                value
-            );
+            error!("Error converting sizeofSelect to a SelectSize: Invalid value {value}");
             Error::local_error(WrapperErrorKind::InvalidParam)
         })
     }
@@ -65,10 +59,7 @@ impl PcrSelectSize {
     /// Parses the usize value as PcrSelectSize
     pub fn try_parse_usize(value: usize) -> Result<Self> {
         PcrSelectSize::from_usize(value).ok_or_else(|| {
-            error!(
-                "Error converting sizeofSelect to a SelectSize: Invalid value {}",
-                value
-            );
+            error!("Error converting sizeofSelect to a SelectSize: Invalid value {value}");
             Error::local_error(WrapperErrorKind::InvalidParam)
         })
     }
@@ -93,8 +84,7 @@ impl TryFrom<u8> for PcrSelectSize {
     fn try_from(value: u8) -> Result<Self> {
         if u32::from(value) > TPM2_PCR_SELECT_MAX {
             error!(
-                "Found size of select value(= {}) that is larger then TPM2_PCR_SELECT_MAX(={}",
-                value, TPM2_PCR_SELECT_MAX
+                "Found size of select value(= {value}) that is larger then TPM2_PCR_SELECT_MAX(={TPM2_PCR_SELECT_MAX}",
             );
             return Err(Error::local_error(WrapperErrorKind::InvalidParam));
         }

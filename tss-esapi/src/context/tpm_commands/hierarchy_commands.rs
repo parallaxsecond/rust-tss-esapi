@@ -74,7 +74,7 @@ impl Context {
                 )
             },
             |ret| {
-                error!("Error in creating primary key: {:#010X}", ret);
+                error!("Error in creating primary key: {ret:#010X}");
             },
         )?;
         let out_public_owned = Context::ffi_data_to_owned(out_public_ptr)?;
@@ -139,7 +139,7 @@ impl Context {
                 )
             },
             |ret| {
-                error!("Error controlling hierarchy: {:#010X}", ret);
+                error!("Error controlling hierarchy: {ret:#010X}");
             },
         )
     }
@@ -201,7 +201,7 @@ impl Context {
                 )
             },
             |ret| {
-                error!("Error setting primary policy: {:#010X}", ret);
+                error!("Error setting primary policy: {ret:#010X}");
             },
         )
     }
@@ -245,7 +245,7 @@ impl Context {
                 )
             },
             |ret| {
-                error!("Error changing platform primary seed: {:#010X}", ret);
+                error!("Error changing platform primary seed: {ret:#010X}");
             },
         )
     }
@@ -292,7 +292,7 @@ impl Context {
                 )
             },
             |ret| {
-                error!("Error changing endorsement primary seed: {:#010X}", ret);
+                error!("Error changing endorsement primary seed: {ret:#010X}");
             },
         )
     }
@@ -310,7 +310,7 @@ impl Context {
                 )
             },
             |ret| {
-                error!("Error in clearing TPM hierarchy: {:#010X}", ret);
+                error!("Error in clearing TPM hierarchy: {ret:#010X}");
             },
         )
     }
@@ -329,7 +329,7 @@ impl Context {
                 )
             },
             |ret| {
-                error!("Error in controlling clear command: {:#010X}", ret);
+                error!("Error in controlling clear command: {ret:#010X}");
             },
         )
     }
@@ -348,7 +348,7 @@ impl Context {
                 )
             },
             |ret| {
-                error!("Error changing hierarchy auth: {:#010X}", ret);
+                error!("Error changing hierarchy auth: {ret:#010X}");
             },
         )
     }

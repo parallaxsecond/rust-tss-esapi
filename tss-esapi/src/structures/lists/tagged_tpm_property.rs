@@ -81,10 +81,7 @@ impl TryFrom<TPML_TAGGED_TPM_PROPERTY> for TaggedTpmPropertyList {
 
     fn try_from(tpml_tagged_tpm_property: TPML_TAGGED_TPM_PROPERTY) -> Result<Self> {
         let count = usize::try_from(tpml_tagged_tpm_property.count).map_err(|e| {
-            error!(
-                "Failed to parse count in TPML_TAGGED_TPM_PROPERTY as usize: {}",
-                e
-            );
+            error!("Failed to parse count in TPML_TAGGED_TPM_PROPERTY as usize: {e}");
             Error::local_error(WrapperErrorKind::InvalidParam)
         })?;
 

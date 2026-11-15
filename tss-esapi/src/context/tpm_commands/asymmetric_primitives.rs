@@ -173,7 +173,7 @@ impl Context {
                 )
             },
             |ret| {
-                error!("Error when performing RSA encryption: {:#010X}", ret);
+                error!("Error when performing RSA encryption: {ret:#010X}");
             },
         )?;
         PublicKeyRsa::try_from(Context::ffi_data_to_owned(out_data_ptr)?)
@@ -334,7 +334,7 @@ impl Context {
                 )
             },
             |ret| {
-                error!("Error when performing RSA decryption: {:#010X}", ret);
+                error!("Error when performing RSA decryption: {ret:#010X}");
             },
         )?;
         PublicKeyRsa::try_from(Context::ffi_data_to_owned(message_ptr)?)
@@ -463,7 +463,7 @@ impl Context {
                 )
             },
             |ret| {
-                error!("Error when generating ECDH key pair: {:#010X}", ret);
+                error!("Error when generating ECDH key pair: {ret:#010X}");
             },
         )?;
 
@@ -600,7 +600,7 @@ impl Context {
                 )
             },
             |ret| {
-                error!("Error when performing ECDH ZGen: {:#010X}", ret);
+                error!("Error when performing ECDH ZGen: {ret:#010X}");
             },
         )?;
         let out_point = Context::ffi_data_to_owned(out_point_ptr)?;
@@ -649,7 +649,7 @@ impl Context {
                 )
             },
             |ret| {
-                error!("Error when getting ECC parameters: {:#010X}", ret);
+                error!("Error when getting ECC parameters: {ret:#010X}");
             },
         )?;
         EccParameterDetails::try_from(Context::ffi_data_to_owned(parameters_ptr)?)
@@ -802,7 +802,7 @@ impl Context {
                 )
             },
             |ret| {
-                error!("Error in ZGen_2Phase: {:#010X}", ret);
+                error!("Error in ZGen_2Phase: {ret:#010X}");
             },
         )?;
 

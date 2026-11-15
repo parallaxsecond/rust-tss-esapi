@@ -137,7 +137,7 @@ impl TryFrom<TPMS_PCR_SELECTION> for PcrSelection {
         // Parse hashing algorithm.
         let hashing_algorithm =
             HashingAlgorithm::try_from(tss_pcr_selection.hash).map_err(|e| {
-                error!("Error converting hash to a HashingAlgorithm: {}", e);
+                error!("Error converting hash to a HashingAlgorithm: {e}");
                 Error::local_error(WrapperErrorKind::InvalidParam)
             })?;
 

@@ -87,21 +87,18 @@ impl TryFrom<SensitiveCreate> for TPM2B_SENSITIVE_CREATE {
                     &sensitive,
                     buffer.as_mut_ptr(),
                     SensitiveCreate::BUFFER_SIZE.try_into().map_err(|e| {
-                        error!("Failed to convert size of buffer to TSS size_t type: {}", e);
+                        error!("Failed to convert size of buffer to TSS size_t type: {e}");
                         Error::local_error(WrapperErrorKind::InvalidParam)
                     })?,
                     &mut size,
                 )
             },
-            |ret| error!("Failed to marshal SensitiveCreate: {}", ret),
+            |ret| error!("Failed to marshal SensitiveCreate: {ret}"),
         )?;
 
         Ok(TPM2B_SENSITIVE_CREATE {
             size: size.try_into().map_err(|e| {
-                error!(
-                    "Failed to convert size of buffer from TSS size_t type: {}",
-                    e
-                );
+                error!("Failed to convert size of buffer from TSS size_t type: {e}");
                 Error::local_error(WrapperErrorKind::InvalidParam)
             })?,
             sensitive,

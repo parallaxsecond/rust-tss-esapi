@@ -137,10 +137,7 @@ impl Context {
                 )
             },
             |ret| {
-                error!(
-                    "Error failed to perform HMAC sequence start operation: {:#010X}",
-                    ret
-                );
+                error!("Error failed to perform HMAC sequence start operation: {ret:#010X}");
             },
         )?;
         Ok(ObjectHandle::from(sequence_handle))
@@ -264,10 +261,7 @@ impl Context {
                 )
             },
             |ret| {
-                error!(
-                    "Error failed to perform MAC sequence start operation: {:#010X}",
-                    ret
-                );
+                error!("Error failed to perform MAC sequence start operation: {ret:#010X}");
             },
         )?;
         Ok(ObjectHandle::from(sequence_handle))
@@ -365,10 +359,7 @@ impl Context {
                 )
             },
             |ret| {
-                error!(
-                    "Error failed to perform hash sequence start operation: {:#010X}",
-                    ret
-                );
+                error!("Error failed to perform hash sequence start operation: {ret:#010X}");
             },
         )?;
         Ok(ObjectHandle::from(sequence_handle))
@@ -394,10 +385,7 @@ impl Context {
                 )
             },
             |ret| {
-                error!(
-                    "Error failed to perform sequence update operation: {:#010X}",
-                    ret
-                );
+                error!("Error failed to perform sequence update operation: {ret:#010X}");
             },
         )
     }
@@ -432,10 +420,7 @@ impl Context {
                 )
             },
             |ret| {
-                error!(
-                    "Error failed to perform sequence complete operation: {:#010X}",
-                    ret
-                );
+                error!("Error failed to perform sequence complete operation: {ret:#010X}");
             },
         )?;
         Ok((
@@ -537,7 +522,7 @@ impl Context {
                 )
             },
             |ret| {
-                error!("Error completing event sequence: {:#010X}", ret);
+                error!("Error completing event sequence: {ret:#010X}");
             },
         )?;
 

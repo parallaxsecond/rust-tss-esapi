@@ -44,7 +44,7 @@ impl PcrBank {
                 if data.insert(pcr_slot, digest).is_none() {
                     Ok(data)
                 } else {
-                    error!("Error trying to insert data into PcrSlot {:?} where data have already been inserted", pcr_slot);
+                    error!("Error trying to insert data into PcrSlot {pcr_slot:?} where data have already been inserted");
                     Err(Error::local_error(WrapperErrorKind::InconsistentParams))
                 }
             })
@@ -114,10 +114,7 @@ impl PcrBank {
     /// Returns an error if a [Digest] for [PcrSlot] already exists in the bank
     fn ensure_non_existing(&self, pcr_slot: PcrSlot, error_msg: &str) -> Result<()> {
         if self.has_digest(pcr_slot) {
-            error!(
-                "{}, a digest already for PcrSlot {:?} exists in the bank",
-                error_msg, pcr_slot
-            );
+            error!("{error_msg}, a digest already for PcrSlot {pcr_slot:?} exists in the bank");
             return Err(Error::local_error(WrapperErrorKind::InvalidParam));
         }
         Ok(())

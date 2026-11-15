@@ -79,7 +79,7 @@ impl Context {
                 )
             },
             |ret| {
-                error!("Error changing Physical Presence commands: {:#010X}", ret);
+                error!("Error changing Physical Presence commands: {ret:#010X}");
             },
         )
     }
@@ -142,7 +142,7 @@ impl Context {
                 )
             },
             |ret| {
-                error!("Error setting the algorithm set: {:#010X}", ret);
+                error!("Error setting the algorithm set: {ret:#010X}");
             },
         )
     }

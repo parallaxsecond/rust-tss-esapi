@@ -161,7 +161,7 @@ impl Context {
                 )
             },
             |ret| {
-                error!("Error when performing ECC commit: {:#010X}", ret);
+                error!("Error when performing ECC commit: {ret:#010X}");
             },
         )?;
 
@@ -223,7 +223,7 @@ impl Context {
                 )
             },
             |ret| {
-                error!("Error when creating EC ephemeral key: {:#010X}", ret);
+                error!("Error when creating EC ephemeral key: {ret:#010X}");
             },
         )?;
 

@@ -24,7 +24,7 @@ impl Context {
                 )
             },
             |ret| {
-                error!("Error in self-test: {:#010X}", ret);
+                error!("Error in self-test: {ret:#010X}");
             },
         )
     }
@@ -71,7 +71,7 @@ impl Context {
                 )
             },
             |ret| {
-                error!("Error getting test result: {:#010X}", ret);
+                error!("Error getting test result: {ret:#010X}");
             },
         )?;
         Ok((

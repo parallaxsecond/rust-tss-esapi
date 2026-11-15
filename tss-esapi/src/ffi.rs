@@ -75,7 +75,7 @@ impl TryFrom<usize> for FfiSizeType {
         crate::tss2_esys::size_t::try_from(native)
             .map(FfiSizeType)
             .map_err(|err| {
-                error!("Failed to convert `usize` to `size_t`: {}", err);
+                error!("Failed to convert `usize` to `size_t`: {err}");
                 Error::local_error(WrapperErrorKind::UnsupportedParam)
             })
     }
@@ -85,7 +85,7 @@ impl TryFrom<FfiSizeType> for usize {
     type Error = Error;
     fn try_from(ffi: FfiSizeType) -> Result<usize> {
         usize::try_from(ffi.0).map_err(|err| {
-            error!("Failed to convert `size_t` to `usize`: {}", err);
+            error!("Failed to convert `size_t` to `usize`: {err}");
             Error::local_error(WrapperErrorKind::UnsupportedParam)
         })
     }

@@ -30,7 +30,7 @@ impl Context {
                 )
             },
             |ret| {
-                error!("Error in getting random bytes: {:#010X}", ret);
+                error!("Error in getting random bytes: {ret:#010X}");
             },
         )?;
         Digest::try_from(Context::ffi_data_to_owned(random_bytes_ptr)?)
@@ -49,7 +49,7 @@ impl Context {
                 )
             },
             |ret| {
-                error!("Error stirring random: {:#010X}", ret);
+                error!("Error stirring random: {ret:#010X}");
             },
         )
     }

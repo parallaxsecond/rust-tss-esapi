@@ -146,7 +146,7 @@ impl Context {
                 )
             },
             |ret| {
-                error!("Error in certifying: {:#010X}", ret);
+                error!("Error in certifying: {ret:#010X}");
             },
         )?;
 
@@ -271,7 +271,7 @@ impl Context {
                 )
             },
             |ret| {
-                error!("Error in certifying creation: {:#010X}", ret);
+                error!("Error in certifying creation: {ret:#010X}");
             },
         )?;
 
@@ -414,7 +414,7 @@ impl Context {
                 )
             },
             |ret| {
-                error!("Error in quoting PCR: {:#010X}", ret);
+                error!("Error in quoting PCR: {ret:#010X}");
             },
         )?;
 
@@ -527,7 +527,7 @@ impl Context {
                 )
             },
             |ret| {
-                error!("Error in GetTime: {:#010X}", ret);
+                error!("Error in GetTime: {ret:#010X}");
             },
         )?;
 
@@ -659,7 +659,7 @@ impl Context {
                 )
             },
             |ret| {
-                error!("Error getting session audit digest: {:#010X}", ret);
+                error!("Error getting session audit digest: {ret:#010X}");
             },
         )?;
 
@@ -765,7 +765,7 @@ impl Context {
                 )
             },
             |ret| {
-                error!("Error getting command audit digest: {:#010X}", ret);
+                error!("Error getting command audit digest: {ret:#010X}");
             },
         )?;
 
@@ -941,7 +941,7 @@ impl Context {
                 )
             },
             |ret| {
-                error!("Error certifying X.509: {:#010X}", ret);
+                error!("Error certifying X.509: {ret:#010X}");
             },
         )?;
 
