@@ -192,8 +192,7 @@ impl Context {
         )?;
         let digests = Context::ffi_data_to_owned(digests_ptr)?;
         let mut digest_values = DigestValues::new();
-        for i in 0..digests.count as usize {
-            let tpmt_ha = digests.digests[i];
+        for tpmt_ha in digests.digests.iter().take(digests.count as usize) {
             let algorithm = HashingAlgorithm::try_from(tpmt_ha.hashAlg)?;
             let digest = match algorithm {
                 HashingAlgorithm::Sha1 => Digest::from(unsafe { tpmt_ha.digest.sha1 }),

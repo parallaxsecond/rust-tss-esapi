@@ -528,8 +528,7 @@ impl Context {
 
         let results = Context::ffi_data_to_owned(results_ptr)?;
         let mut digest_values = DigestValues::new();
-        for index in 0..results.count as usize {
-            let hash = results.digests[index];
+        for hash in results.digests.iter().take(results.count as usize) {
             let algorithm = HashingAlgorithm::try_from(hash.hashAlg)?;
             let digest = match algorithm {
                 HashingAlgorithm::Sha1 => Digest::from(unsafe { hash.digest.sha1 }),
