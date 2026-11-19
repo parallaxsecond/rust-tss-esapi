@@ -5,6 +5,7 @@ use crate::{
     constants::StructureTag,
     handles::TpmHandle,
     interface_types::reserved_handles::Hierarchy,
+    traits::impl_mu_complex,
     tss2_esys::{
         TPM2B_DIGEST, TPMT_TK_AUTH, TPMT_TK_CREATION, TPMT_TK_HASHCHECK, TPMT_TK_VERIFIED,
     },
@@ -90,7 +91,7 @@ pub trait Ticket {
     fn digest(&self) -> &[u8];
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct AuthTicket {
     tag: StructureTag,
     hierarchy: Hierarchy,
@@ -119,8 +120,9 @@ impl Ticket for AuthTicket {
 }
 
 impl_ticket_try_froms!(AuthTicket, TPMT_TK_AUTH);
+impl_mu_complex!(AuthTicket, TPMT_TK_AUTH);
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct HashcheckTicket {
     tag: StructureTag,
     hierarchy: Hierarchy,
@@ -159,9 +161,10 @@ impl Ticket for HashcheckTicket {
 }
 
 impl_ticket_try_froms!(HashcheckTicket, TPMT_TK_HASHCHECK);
+impl_mu_complex!(HashcheckTicket, TPMT_TK_HASHCHECK);
 
 /// Rust native wrapper for `TPMT_TK_VERIFIED` objects.
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct VerifiedTicket {
     tag: StructureTag,
     hierarchy: Hierarchy,
@@ -187,9 +190,10 @@ impl Ticket for VerifiedTicket {
 }
 
 impl_ticket_try_froms!(VerifiedTicket, TPMT_TK_VERIFIED);
+impl_mu_complex!(VerifiedTicket, TPMT_TK_VERIFIED);
 
 /// Rust native wrapper for `TPMT_TK_CREATION` objects.
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct CreationTicket {
     tag: StructureTag,
     hierarchy: Hierarchy,
@@ -217,3 +221,4 @@ impl Ticket for CreationTicket {
 }
 
 impl_ticket_try_froms!(CreationTicket, TPMT_TK_CREATION);
+impl_mu_complex!(CreationTicket, TPMT_TK_CREATION);

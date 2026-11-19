@@ -19,6 +19,7 @@ mod session_audit_info_tests;
 mod tagged_pcr_select_tests;
 mod tagged_property_tests;
 mod tagged_tests;
+mod tickets_tests;
 mod time_attest_info_tests;
 mod time_info_tests;
 mod tpm_context_tests;
