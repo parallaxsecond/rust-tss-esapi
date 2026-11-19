@@ -69,10 +69,7 @@ impl TryFrom<u8> for TpmFormatZeroError {
 
     fn try_from(value: u8) -> Result<Self> {
         TpmFormatZeroError::from_u8(value).ok_or_else(|| {
-            error!(
-                "Value 0x{:02X} is not a valid TPM format zero error.",
-                value
-            );
+            error!("Value 0x{value:02X} is not a valid TPM format zero error.");
             Error::local_error(WrapperErrorKind::InvalidParam)
         })
     }

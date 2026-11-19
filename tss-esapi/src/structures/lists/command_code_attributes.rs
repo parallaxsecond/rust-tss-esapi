@@ -80,7 +80,7 @@ impl TryFrom<TPML_CCA> for CommandCodeAttributesList {
 
     fn try_from(tpml_cca: TPML_CCA) -> Result<Self> {
         let count = usize::try_from(tpml_cca.count).map_err(|e| {
-            error!("Failed to parse count in TPML_CCA as usize: {}", e);
+            error!("Failed to parse count in TPML_CCA as usize: {e}");
             Error::local_error(WrapperErrorKind::InvalidParam)
         })?;
 

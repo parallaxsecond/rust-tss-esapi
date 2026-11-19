@@ -122,7 +122,7 @@ impl Context {
                 )
             },
             |ret| {
-                error!("Error when defining NV space: {:#010X}", ret);
+                error!("Error when defining NV space: {ret:#010X}");
             },
         )?;
 
@@ -223,7 +223,7 @@ impl Context {
                 )
             },
             |ret| {
-                error!("Error when undefining NV space: {:#010X}", ret);
+                error!("Error when undefining NV space: {ret:#010X}");
             },
         )?;
 
@@ -367,7 +367,7 @@ impl Context {
                 )
             },
             |ret| {
-                error!("Error when undefining NV space: {:#010X}", ret);
+                error!("Error when undefining NV space: {ret:#010X}");
             },
         )?;
 
@@ -475,7 +475,7 @@ impl Context {
                 )
             },
             |ret| {
-                error!("Error when reading NV public: {:#010X}", ret);
+                error!("Error when reading NV public: {ret:#010X}");
             },
         )?;
 
@@ -595,7 +595,7 @@ impl Context {
                 )
             },
             |ret| {
-                error!("Error when writing NV: {:#010X}", ret);
+                error!("Error when writing NV: {ret:#010X}");
             },
         )
     }
@@ -698,7 +698,7 @@ impl Context {
                     self.optional_session_3(),
                 )
             },
-            |ret| error!("Error when incrementing NV: {:#010X}", ret),
+            |ret| error!("Error when incrementing NV: {ret:#010X}"),
         )
     }
 
@@ -808,7 +808,7 @@ impl Context {
                     &data.into(),
                 )
             },
-            |ret| error!("Error when extending NV: {:#010X}", ret),
+            |ret| error!("Error when extending NV: {ret:#010X}"),
         )
     }
 
@@ -915,7 +915,7 @@ impl Context {
                 )
             },
             |ret| {
-                error!("Error when setting NV bits: {:#010X}", ret);
+                error!("Error when setting NV bits: {ret:#010X}");
             },
         )
     }
@@ -1018,7 +1018,7 @@ impl Context {
                 )
             },
             |ret| {
-                error!("Error when write-locking NV index: {:#010X}", ret);
+                error!("Error when write-locking NV index: {ret:#010X}");
             },
         )
     }
@@ -1086,7 +1086,7 @@ impl Context {
                 )
             },
             |ret| {
-                error!("Error when globally write-locking NV: {:#010X}", ret);
+                error!("Error when globally write-locking NV: {ret:#010X}");
             },
         )
     }
@@ -1210,7 +1210,7 @@ impl Context {
                 )
             },
             |ret| {
-                error!("Error when reading NV: {:#010X}", ret);
+                error!("Error when reading NV: {ret:#010X}");
             },
         )?;
         MaxNvBuffer::try_from(Context::ffi_data_to_owned(data_ptr)?)
@@ -1314,7 +1314,7 @@ impl Context {
                 )
             },
             |ret| {
-                error!("Error when read-locking NV index: {:#010X}", ret);
+                error!("Error when read-locking NV index: {ret:#010X}");
             },
         )
     }
@@ -1459,7 +1459,7 @@ impl Context {
                 )
             },
             |ret| {
-                error!("Error when changing NV auth: {:#010X}", ret);
+                error!("Error when changing NV auth: {ret:#010X}");
             },
         )
     }
@@ -1620,7 +1620,7 @@ impl Context {
                 )
             },
             |ret| {
-                error!("Error when certifying NV: {:#010X}", ret);
+                error!("Error when certifying NV: {ret:#010X}");
             },
         )?;
 

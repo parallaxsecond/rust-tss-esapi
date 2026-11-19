@@ -565,21 +565,18 @@ impl TryFrom<Public> for TPM2B_PUBLIC {
                     &public_area,
                     buffer.as_mut_ptr(),
                     Public::BUFFER_SIZE.try_into().map_err(|e| {
-                        error!("Failed to convert size of buffer to TSS size_t type: {}", e);
+                        error!("Failed to convert size of buffer to TSS size_t type: {e}");
                         Error::local_error(WrapperErrorKind::InvalidParam)
                     })?,
                     &mut size,
                 )
             },
-            |ret| error!("Failed to marshal Public: {}", ret),
+            |ret| error!("Failed to marshal Public: {ret}"),
         )?;
 
         Ok(TPM2B_PUBLIC {
             size: size.try_into().map_err(|e| {
-                error!(
-                    "Failed to convert size of buffer from TSS size_t type: {}",
-                    e
-                );
+                error!("Failed to convert size of buffer from TSS size_t type: {e}");
                 Error::local_error(WrapperErrorKind::InvalidParam)
             })?,
             publicArea: public_area,

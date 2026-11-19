@@ -137,10 +137,7 @@ impl Context {
                 )
             },
             |ret| {
-                error!(
-                    "Error failed to perform HMAC sequence start operation: {:#010X}",
-                    ret
-                );
+                error!("Error failed to perform HMAC sequence start operation: {ret:#010X}");
             },
         )?;
         Ok(ObjectHandle::from(sequence_handle))
@@ -264,10 +261,7 @@ impl Context {
                 )
             },
             |ret| {
-                error!(
-                    "Error failed to perform MAC sequence start operation: {:#010X}",
-                    ret
-                );
+                error!("Error failed to perform MAC sequence start operation: {ret:#010X}");
             },
         )?;
         Ok(ObjectHandle::from(sequence_handle))
@@ -365,10 +359,7 @@ impl Context {
                 )
             },
             |ret| {
-                error!(
-                    "Error failed to perform hash sequence start operation: {:#010X}",
-                    ret
-                );
+                error!("Error failed to perform hash sequence start operation: {ret:#010X}");
             },
         )?;
         Ok(ObjectHandle::from(sequence_handle))
@@ -394,10 +385,7 @@ impl Context {
                 )
             },
             |ret| {
-                error!(
-                    "Error failed to perform sequence update operation: {:#010X}",
-                    ret
-                );
+                error!("Error failed to perform sequence update operation: {ret:#010X}");
             },
         )
     }
@@ -432,10 +420,7 @@ impl Context {
                 )
             },
             |ret| {
-                error!(
-                    "Error failed to perform sequence complete operation: {:#010X}",
-                    ret
-                );
+                error!("Error failed to perform sequence complete operation: {ret:#010X}");
             },
         )?;
         Ok((
@@ -537,14 +522,13 @@ impl Context {
                 )
             },
             |ret| {
-                error!("Error completing event sequence: {:#010X}", ret);
+                error!("Error completing event sequence: {ret:#010X}");
             },
         )?;
 
         let results = Context::ffi_data_to_owned(results_ptr)?;
         let mut digest_values = DigestValues::new();
-        for index in 0..results.count as usize {
-            let hash = results.digests[index];
+        for hash in results.digests.iter().take(results.count as usize) {
             let algorithm = HashingAlgorithm::try_from(hash.hashAlg)?;
             let digest = match algorithm {
                 HashingAlgorithm::Sha1 => Digest::from(unsafe { hash.digest.sha1 }),

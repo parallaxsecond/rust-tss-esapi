@@ -175,7 +175,7 @@ impl TryFrom<u16> for BaseError {
 
     fn try_from(value: u16) -> Result<BaseError> {
         BaseError::from_u16(value).ok_or_else(|| {
-            error!("Value = {} did not match any TSS base return code", value);
+            error!("Value = {value} did not match any TSS base return code");
             Error::local_error(WrapperErrorKind::InvalidParam)
         })
     }

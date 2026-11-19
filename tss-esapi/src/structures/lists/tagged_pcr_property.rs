@@ -93,10 +93,7 @@ impl TryFrom<TPML_TAGGED_PCR_PROPERTY> for TaggedPcrPropertyList {
 
     fn try_from(tpml_tagged_pcr_property: TPML_TAGGED_PCR_PROPERTY) -> Result<Self> {
         let count = usize::try_from(tpml_tagged_pcr_property.count).map_err(|e| {
-            error!(
-                "Failed to parse count in TPML_TAGGED_PCR_PROPERTY as usize: {}",
-                e
-            );
+            error!("Failed to parse count in TPML_TAGGED_PCR_PROPERTY as usize: {e}");
             Error::local_error(WrapperErrorKind::InvalidParam)
         })?;
 

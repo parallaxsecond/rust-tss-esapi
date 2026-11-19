@@ -105,7 +105,7 @@ impl Context {
                 )
             },
             |ret| {
-                error!("Error when creating a new context: {:#010X}", ret);
+                error!("Error when creating a new context: {ret:#010X}");
             },
         )?;
 
@@ -475,7 +475,7 @@ impl Drop for Context {
         for handle in self.handle_manager.handles_to_flush() {
             debug!("Flushing handle {}", ESYS_TR::from(handle));
             if let Err(e) = self.flush_context(handle) {
-                error!("Error when dropping the context: {}", e);
+                error!("Error when dropping the context: {e}");
             }
         }
 
@@ -483,7 +483,7 @@ impl Drop for Context {
         for handle in self.handle_manager.handles_to_close().iter_mut() {
             debug!("Closing handle {}", ESYS_TR::from(*handle));
             if let Err(e) = self.tr_close(handle) {
-                error!("Error when dropping context: {}.", e);
+                error!("Error when dropping context: {e}.");
             }
         }
 

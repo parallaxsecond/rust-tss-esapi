@@ -44,7 +44,7 @@ impl TctiContext {
                 tss_esapi_sys::Tss2_TctiLdr_Initialize(tcti_name_conf.as_ptr(), &mut tcti_context)
             },
             |ret| {
-                error!("Error when creating a TCTI context: {}", ret);
+                error!("Error when creating a TCTI context: {ret}");
             },
         )?;
 
@@ -89,7 +89,7 @@ impl TctiInfo {
         ReturnCode::ensure_success(
             unsafe { tss_esapi_sys::Tss2_TctiLdr_GetInfo(tcti_name_conf.as_ptr(), &mut tcti_info) },
             |ret| {
-                error!("Error when getting the TCTI_INFO structure: {}", ret);
+                error!("Error when getting the TCTI_INFO structure: {ret}");
             },
         )?;
 

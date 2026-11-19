@@ -46,7 +46,7 @@ impl Context {
                 )
             },
             |ret| {
-                error!("Error reading clock: {:#010X}", ret);
+                error!("Error reading clock: {ret:#010X}");
             },
         )?;
         TimeInfo::try_from(Context::ffi_data_to_owned(current_time_ptr)?)
@@ -96,7 +96,7 @@ impl Context {
                 )
             },
             |ret| {
-                error!("Error setting clock: {:#010X}", ret);
+                error!("Error setting clock: {ret:#010X}");
             },
         )
     }
@@ -150,7 +150,7 @@ impl Context {
                 )
             },
             |ret| {
-                error!("Error adjusting clock rate: {:#010X}", ret);
+                error!("Error adjusting clock rate: {ret:#010X}");
             },
         )
     }

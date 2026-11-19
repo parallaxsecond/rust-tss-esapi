@@ -95,7 +95,7 @@ impl TryFrom<TPM2_HANDLE> for TpmHandle {
                 attached_component::AttachedComponentTpmHandle::new(tss_tpm_handle)?,
             )),
             _ => {
-                error!("Invalid TPM handle type {}", most_significant_byte);
+                error!("Invalid TPM handle type {most_significant_byte}");
                 Err(Error::local_error(WrapperErrorKind::InvalidParam))
             }
         }

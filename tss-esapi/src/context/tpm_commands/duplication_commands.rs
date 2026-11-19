@@ -322,7 +322,7 @@ impl Context {
                 )
             },
             |ret| {
-                error!("Error when performing duplication: {:#010X}", ret);
+                error!("Error when performing duplication: {ret:#010X}");
             },
         )?;
 
@@ -595,7 +595,7 @@ impl Context {
                 )
             },
             |ret| {
-                error!("Error when performing rewrap: {:#010X}", ret);
+                error!("Error when performing rewrap: {ret:#010X}");
             },
         )?;
 
@@ -950,7 +950,7 @@ impl Context {
                 )
             },
             |ret| {
-                error!("Error when performing import: {:#010X}", ret);
+                error!("Error when performing import: {ret:#010X}");
             },
         )?;
         Private::try_from(Context::ffi_data_to_owned(out_private_ptr)?)

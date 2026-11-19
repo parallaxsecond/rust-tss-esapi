@@ -94,7 +94,7 @@ impl TryFrom<TPM2_PT> for PropertyTag {
     type Error = Error;
     fn try_from(tpm_pt: TPM2_PT) -> Result<PropertyTag> {
         PropertyTag::from_u32(tpm_pt).ok_or_else(|| {
-            error!("value = {} did not match any PropertyTag.", tpm_pt);
+            error!("value = {tpm_pt} did not match any PropertyTag.");
             Error::local_error(WrapperErrorKind::InvalidParam)
         })
     }

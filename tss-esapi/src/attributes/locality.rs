@@ -114,8 +114,7 @@ impl LocalityAttributesBuilder {
                 4 => locality_attributes.set_locality_four(true),
                 5..=31 => {
                     error!(
-                        "Locality attribute {new} is invalid and cannot be combined with other locality attributes",
-                        new = locality
+                        "Locality attribute {locality} is invalid and cannot be combined with other locality attributes"
                     );
                     return Err(Error::local_error(WrapperErrorKind::InvalidParam));
                 }

@@ -44,10 +44,7 @@ impl TryFrom<TPM2_ST> for StructureTag {
     type Error = Error;
     fn try_from(tpm_structure_tag: TPM2_ST) -> Result<Self> {
         StructureTag::from_u16(tpm_structure_tag).ok_or_else(|| {
-            error!(
-                "value = {} did not match any StructureTag.",
-                tpm_structure_tag
-            );
+            error!("value = {tpm_structure_tag} did not match any StructureTag.");
             Error::local_error(WrapperErrorKind::InvalidParam)
         })
     }

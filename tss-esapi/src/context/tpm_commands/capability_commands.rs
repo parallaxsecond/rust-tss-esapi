@@ -64,7 +64,7 @@ impl Context {
                 )
             },
             |ret| {
-                error!("Error when getting capabilities: {:#010X}", ret);
+                error!("Error when getting capabilities: {ret:#010X}");
             },
         )?;
 
@@ -91,10 +91,7 @@ impl Context {
                 )
             },
             |ret| {
-                warn!(
-                    "Parameters under test could not be unmarshalled: {:#010X}",
-                    ret
-                );
+                warn!("Parameters under test could not be unmarshalled: {ret:#010X}");
             },
         )
     }

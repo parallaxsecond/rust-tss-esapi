@@ -57,7 +57,7 @@ impl TryFrom<u32> for PcrSlot {
 
     fn try_from(value: u32) -> Result<PcrSlot> {
         PcrSlot::from_u32(value).ok_or_else(|| {
-            error!("{} is not valid PcrSlot value", value);
+            error!("{value} is not valid PcrSlot value");
             Error::local_error(WrapperErrorKind::InvalidParam)
         })
     }

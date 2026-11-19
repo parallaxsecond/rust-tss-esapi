@@ -106,7 +106,7 @@ impl Context {
                 )
             },
             |ret| {
-                error!("Error when extending PCR: {:#010X}", ret);
+                error!("Error when extending PCR: {ret:#010X}");
             },
         )
     }
@@ -187,13 +187,12 @@ impl Context {
                 )
             },
             |ret| {
-                error!("Error when performing PCR event: {:#010X}", ret);
+                error!("Error when performing PCR event: {ret:#010X}");
             },
         )?;
         let digests = Context::ffi_data_to_owned(digests_ptr)?;
         let mut digest_values = DigestValues::new();
-        for i in 0..digests.count as usize {
-            let tpmt_ha = digests.digests[i];
+        for tpmt_ha in digests.digests.iter().take(digests.count as usize) {
             let algorithm = HashingAlgorithm::try_from(tpmt_ha.hashAlg)?;
             let digest = match algorithm {
                 HashingAlgorithm::Sha1 => Digest::from(unsafe { tpmt_ha.digest.sha1 }),
@@ -274,7 +273,7 @@ impl Context {
                 )
             },
             |ret| {
-                error!("Error when reading PCR: {:#010X}", ret);
+                error!("Error when reading PCR: {ret:#010X}");
             },
         )?;
 
@@ -378,7 +377,7 @@ impl Context {
                 )
             },
             |ret| {
-                error!("Error when allocating PCR: {:#010X}", ret);
+                error!("Error when allocating PCR: {ret:#010X}");
             },
         )?;
         Ok(PcrAllocateResult {
@@ -478,7 +477,7 @@ impl Context {
                 )
             },
             |ret| {
-                error!("Error when setting PCR auth policy: {:#010X}", ret);
+                error!("Error when setting PCR auth policy: {ret:#010X}");
             },
         )
     }
@@ -555,7 +554,7 @@ impl Context {
                 )
             },
             |ret| {
-                error!("Error when setting PCR auth value: {:#010X}", ret);
+                error!("Error when setting PCR auth value: {ret:#010X}");
             },
         )
     }
@@ -625,7 +624,7 @@ impl Context {
                 )
             },
             |ret| {
-                error!("Error when resetting PCR: {:#010X}", ret);
+                error!("Error when resetting PCR: {ret:#010X}");
             },
         )
     }

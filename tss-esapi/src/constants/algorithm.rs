@@ -68,10 +68,7 @@ impl TryFrom<TPM2_ALG_ID> for AlgorithmIdentifier {
     type Error = Error;
     fn try_from(tpm_alg_id: TPM2_ALG_ID) -> Result<AlgorithmIdentifier> {
         AlgorithmIdentifier::from_u16(tpm_alg_id).ok_or_else(|| {
-            error!(
-                "Value = {} did not match any algorithm identifier",
-                tpm_alg_id
-            );
+            error!("Value = {tpm_alg_id} did not match any algorithm identifier");
             Error::local_error(WrapperErrorKind::InvalidParam)
         })
     }

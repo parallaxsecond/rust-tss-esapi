@@ -82,7 +82,7 @@ impl TryFrom<TPM2_EO> for ArithmeticComparison {
             TPM2_EO_BITSET => Ok(ArithmeticComparison::BitSet),
             TPM2_EO_BITCLEAR => Ok(ArithmeticComparison::BitClear),
             _ => {
-                error!("Invalid TPM2_EO value: {}", tpm2_eo);
+                error!("Invalid TPM2_EO value: {tpm2_eo}");
                 Err(Error::local_error(WrapperErrorKind::InvalidParam))
             }
         }

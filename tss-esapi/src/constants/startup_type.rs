@@ -28,10 +28,7 @@ impl TryFrom<TPM2_SU> for StartupType {
     type Error = Error;
     fn try_from(tpm_startup_type: TPM2_SU) -> Result<StartupType> {
         StartupType::from_u16(tpm_startup_type).ok_or_else(|| {
-            error!(
-                "value = {} did not match any StartupType.",
-                tpm_startup_type
-            );
+            error!("value = {tpm_startup_type} did not match any StartupType.");
             Error::local_error(WrapperErrorKind::InvalidParam)
         })
     }

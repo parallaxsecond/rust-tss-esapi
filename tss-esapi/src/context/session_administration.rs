@@ -30,7 +30,7 @@ impl Context {
                 )
             },
             |ret| {
-                error!("Error when setting session attributes: {:#010X}", ret);
+                error!("Error when setting session attributes: {ret:#010X}");
             },
         )
     }
@@ -47,7 +47,7 @@ impl Context {
                 )
             },
             |ret| {
-                error!("Error when getting session attributes: {:#010X}", ret);
+                error!("Error when getting session attributes: {ret:#010X}");
             },
         )?;
         Ok(SessionAttributes(flags))
@@ -105,7 +105,7 @@ impl Context {
                 )
             },
             |ret| {
-                error!("Error when getting session nonceTPM: {:#010X}", ret);
+                error!("Error when getting session nonceTPM: {ret:#010X}");
             },
         )?;
 

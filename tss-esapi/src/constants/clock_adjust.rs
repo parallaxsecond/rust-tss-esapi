@@ -62,7 +62,7 @@ impl TryFrom<TPM2_CLOCK_ADJUST> for ClockAdjust {
             TPM2_CLOCK_MEDIUM_FASTER => Ok(ClockAdjust::MediumFaster),
             TPM2_CLOCK_COARSE_FASTER => Ok(ClockAdjust::CoarseFaster),
             _ => {
-                error!("Invalid TPM2_CLOCK_ADJUST value: {}", tpm2_clock_adjust);
+                error!("Invalid TPM2_CLOCK_ADJUST value: {tpm2_clock_adjust}");
                 Err(Error::local_error(WrapperErrorKind::InvalidParam))
             }
         }

@@ -802,10 +802,7 @@ impl TryFrom<AlgorithmIdentifier> for EccKeyExchangeAlgorithm {
             AlgorithmIdentifier::Sm2 => Ok(EccKeyExchangeAlgorithm::Sm2),
             AlgorithmIdentifier::Null => Ok(EccKeyExchangeAlgorithm::Null),
             _ => {
-                error!(
-                    "Invalid AlgorithmIdentifier value: {:?}",
-                    algorithm_identifier
-                );
+                error!("Invalid AlgorithmIdentifier value: {algorithm_identifier:?}");
                 Err(Error::local_error(WrapperErrorKind::InvalidParam))
             }
         }

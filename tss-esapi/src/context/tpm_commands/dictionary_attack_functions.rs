@@ -49,7 +49,7 @@ impl Context {
                 )
             },
             |ret| {
-                error!("Error resetting dictionary attack lockout: {:#010X}", ret);
+                error!("Error resetting dictionary attack lockout: {ret:#010X}");
             },
         )
     }
@@ -124,7 +124,7 @@ impl Context {
                 )
             },
             |ret| {
-                error!("Error setting dictionary attack parameters: {:#010X}", ret);
+                error!("Error setting dictionary attack parameters: {ret:#010X}");
             },
         )
     }

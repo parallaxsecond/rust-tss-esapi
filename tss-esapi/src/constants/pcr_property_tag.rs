@@ -49,7 +49,7 @@ impl TryFrom<TPM2_PT_PCR> for PcrPropertyTag {
 
     fn try_from(tpm_pt_pcr: TPM2_PT_PCR) -> Result<Self> {
         PcrPropertyTag::from_u32(tpm_pt_pcr).ok_or_else(|| {
-            error!("value = {} did not match any PcrPropertyTag.", tpm_pt_pcr);
+            error!("value = {tpm_pt_pcr} did not match any PcrPropertyTag.");
             Error::local_error(WrapperErrorKind::InvalidParam)
         })
     }

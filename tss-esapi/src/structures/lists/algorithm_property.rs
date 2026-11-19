@@ -84,7 +84,7 @@ impl TryFrom<TPML_ALG_PROPERTY> for AlgorithmPropertyList {
 
     fn try_from(tpml_alg_property: TPML_ALG_PROPERTY) -> Result<Self> {
         let count = usize::try_from(tpml_alg_property.count).map_err(|e| {
-            error!("Failed to parse count in TPML_ALG_PROPERTY as usize: {}", e);
+            error!("Failed to parse count in TPML_ALG_PROPERTY as usize: {e}");
             Error::local_error(WrapperErrorKind::InvalidParam)
         })?;
 
