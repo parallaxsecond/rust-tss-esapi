@@ -34,8 +34,29 @@ pub struct SwtpmSession {
 impl SwtpmSession {
     /// Start a new swtpm instance using a Unix domain socket.
     pub fn new() -> Self {
+        Self::start(None)
+    }
+
+    /// Start a new swtpm instance with only the given PCR banks
+    /// (a comma separated list, e.g. "sha256") allocated.
+    pub fn with_pcr_banks(pcr_banks: &str) -> Self {
+        Self::start(Some(pcr_banks))
+    }
+
+    fn start(pcr_banks: Option<&str>) -> Self {
         for attempt in 0..MAX_SWTPM_RETRIES {
             let tmp = TempDir::new().expect("failed to create temp dir");
+            if let Some(pcr_banks) = pcr_banks {
+                let status = std::process::Command::new("swtpm_setup")
+                    .args(["--tpm2", "--tpmstate"])
+                    .arg(tmp.path())
+                    .args(["--pcr-banks", pcr_banks])
+                    .stdout(Stdio::null())
+                    .stderr(Stdio::null())
+                    .status()
+                    .expect("failed to run swtpm_setup — is it installed?");
+                assert!(status.success(), "swtpm_setup failed: {status}");
+            }
             let sock_path = tmp.path().join("swtpm.sock");
             let ctrl_path = tmp.path().join("swtpm.sock.ctrl");
 
