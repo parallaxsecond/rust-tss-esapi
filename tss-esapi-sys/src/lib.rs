@@ -43,6 +43,17 @@ include!(concat!(
 
 #[cfg(all(
     not(feature = "generate-bindings"),
+    target_arch = "riscv64",
+    target_os = "linux",
+    target_env = "gnu"
+))]
+include!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/src/bindings/riscv64gc-unknown-linux-gnu.rs"
+));
+
+#[cfg(all(
+    not(feature = "generate-bindings"),
     target_arch = "arm",
     target_os = "linux"
 ))]

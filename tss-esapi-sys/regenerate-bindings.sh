@@ -3,7 +3,7 @@
 # Copyright 2021 Contributors to the Parsec project.
 # SPDX-License-Identifier: Apache-2.0
 
-# Cross compile the `tss-esapi` crate (and its dependencies) for Armv7 and Aarch64
+# Cross compile the `tss-esapi` crate (and its dependencies) for Armv7, Aarch64 and RISC-V
 # In order to cross-compile the TSS library we need to also cross-compile OpenSSL
 
 set -euf -o pipefail
@@ -60,6 +60,7 @@ sudo apt update
 sudo apt install -y gcc-multilib
 sudo apt install -y gcc-arm-linux-gnueabi
 sudo apt install -y gcc-aarch64-linux-gnu
+sudo apt install -y gcc-riscv64-linux-gnu
 
 # Download development version for tpm2-tss
 sudo apt install -y libtss2-dev
@@ -104,3 +105,15 @@ rustup target add armv7-unknown-linux-gnueabi
 cargo clean
 cargo build --features generate-bindings --target armv7-unknown-linux-gnueabi
 find ../target -name tss_esapi_bindings.rs -exec cp {} ./src/bindings/arm-unknown-linux-gnueabi.rs \;
+
+# Clean and prepare SYSROOT
+prepare_sysroot
+
+# Regenerate bindings for riscv64gc-unknown-linux-gnu
+cross-compile-openssl riscv64-linux-gnu linux-generic64
+cross-compile-tpm2-tss riscv64-linux-gnu
+
+rustup target add riscv64gc-unknown-linux-gnu
+cargo clean
+cargo build --features generate-bindings --target riscv64gc-unknown-linux-gnu
+find ../target -name tss_esapi_bindings.rs -exec cp {} ./src/bindings/riscv64gc-unknown-linux-gnu.rs \;

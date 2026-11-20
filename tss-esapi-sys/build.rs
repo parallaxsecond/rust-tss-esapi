@@ -48,7 +48,7 @@ fn main() {
 
 pub mod target {
     use std::str::FromStr;
-    use target_lexicon::{Architecture, OperatingSystem, Triple};
+    use target_lexicon::{Architecture, Environment, OperatingSystem, Triple};
     const TARGET_ENV_VAR_NAME: &str = "TARGET";
 
     /// Ensures that the `TARGET` is valid for cross compilation.
@@ -64,6 +64,8 @@ pub mod target {
             | (Architecture::X86_64, OperatingSystem::Linux)
             | (Architecture::X86_64, OperatingSystem::Windows)
             | (Architecture::Aarch64(_), OperatingSystem::Windows) => {}
+            (Architecture::Riscv64(_), OperatingSystem::Linux)
+                if target.environment == Environment::Gnu => {}
             (arch, os) => {
                 panic!(
                     "Compilation target (architecture, OS) tuple ({arch}, {os}) is not part of the \
@@ -274,6 +276,13 @@ pub mod tpm2_tss {
                 .generate_comments(false)
                 .blocklist_type("max_align_t")
                 .derive_default(true);
+            let builder = if std::env::var("TARGET").as_deref() == Ok("riscv64gc-unknown-linux-gnu")
+            {
+                // glibc's allocator declarations conflict with Rust's runtime signatures.
+                builder.allowlist_file(r".*/tss2/tss2_[^/]+\.h")
+            } else {
+                builder
+            };
             // Add platform specific args.
             self.add_platform_args(builder)
         }
