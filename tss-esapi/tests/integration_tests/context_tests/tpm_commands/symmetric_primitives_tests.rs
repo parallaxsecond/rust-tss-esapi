@@ -222,3 +222,55 @@ mod test_hmac {
             .unwrap();
     }
 }
+
+mod test_mac {
+    use crate::common::create_ctx_with_session;
+    use tss_esapi::{
+        attributes::ObjectAttributesBuilder,
+        interface_types::{
+            algorithm::{HashingAlgorithm, MacSchemeAlgorithm, PublicAlgorithm},
+            reserved_handles::Hierarchy,
+        },
+        structures::{KeyedHashScheme, MaxBuffer, PublicBuilder, PublicKeyedHashParameters},
+    };
+
+    #[test]
+    fn test_mac_with_hmac_key() {
+        let mut context = create_ctx_with_session();
+
+        let object_attributes = ObjectAttributesBuilder::new()
+            .with_sign_encrypt(true)
+            .with_sensitive_data_origin(true)
+            .with_user_with_auth(true)
+            .build()
+            .expect("Failed to build object attributes");
+
+        let key_public = PublicBuilder::new()
+            .with_public_algorithm(PublicAlgorithm::KeyedHash)
+            .with_name_hashing_algorithm(HashingAlgorithm::Sha256)
+            .with_object_attributes(object_attributes)
+            .with_keyed_hash_parameters(PublicKeyedHashParameters::new(
+                KeyedHashScheme::HMAC_SHA_256,
+            ))
+            .with_keyed_hash_unique_identifier(Default::default())
+            .build()
+            .expect("Failed to build public structure for key");
+
+        let key_handle = context
+            .create_primary(Hierarchy::Owner, key_public, None, None, None, None)
+            .expect("Failed to create MAC key")
+            .key_handle;
+        let input = MaxBuffer::from_bytes(b"data to authenticate")
+            .expect("Failed to create MAC input buffer");
+
+        let mac = context
+            .mac(key_handle.into(), input.clone(), MacSchemeAlgorithm::Sha256)
+            .expect("Failed to compute MAC");
+        let hmac = context
+            .hmac(key_handle.into(), input, HashingAlgorithm::Sha256)
+            .expect("Failed to compute HMAC");
+
+        assert_eq!(32, mac.len());
+        assert_eq!(hmac, mac);
+    }
+}
