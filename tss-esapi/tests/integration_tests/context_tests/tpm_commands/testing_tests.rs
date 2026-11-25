@@ -20,3 +20,25 @@ mod test_get_test_result {
         rc.unwrap();
     }
 }
+
+mod test_incremental_self_test {
+    use crate::common::create_ctx_without_session;
+    use tss_esapi::constants::AlgorithmIdentifier;
+
+    #[test]
+    fn test_incremental_self_test() {
+        let mut context = create_ctx_without_session();
+
+        let _to_do_list = context
+            .incremental_self_test(&[AlgorithmIdentifier::Sha256])
+            .expect("Failed to perform incremental self-test");
+    }
+
+    #[test]
+    fn test_incremental_self_test_rejects_too_many_algorithms() {
+        let mut context = create_ctx_without_session();
+
+        let too_many_algorithms = vec![AlgorithmIdentifier::Sha256; 129];
+        assert!(context.incremental_self_test(&too_many_algorithms).is_err());
+    }
+}
