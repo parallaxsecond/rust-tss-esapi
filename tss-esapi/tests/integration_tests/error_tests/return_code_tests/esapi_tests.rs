@@ -11,13 +11,13 @@ use tss_esapi::{
         tss::{
             TSS2_BASE_RC_ABI_MISMATCH, TSS2_BASE_RC_BAD_CONTEXT, TSS2_BASE_RC_BAD_REFERENCE,
             TSS2_BASE_RC_BAD_SEQUENCE, TSS2_BASE_RC_BAD_TCTI_STRUCTURE, TSS2_BASE_RC_BAD_TEMPLATE,
-            TSS2_BASE_RC_BAD_TR, TSS2_BASE_RC_BAD_VALUE, TSS2_BASE_RC_GENERAL_FAILURE,
-            TSS2_BASE_RC_INCOMPATIBLE_TCTI, TSS2_BASE_RC_INSUFFICIENT_RESPONSE,
-            TSS2_BASE_RC_MALFORMED_RESPONSE, TSS2_BASE_RC_MEMORY,
-            TSS2_BASE_RC_MULTIPLE_DECRYPT_SESSIONS, TSS2_BASE_RC_MULTIPLE_ENCRYPT_SESSIONS,
-            TSS2_BASE_RC_NO_DECRYPT_PARAM, TSS2_BASE_RC_NO_ENCRYPT_PARAM,
-            TSS2_BASE_RC_NOT_IMPLEMENTED, TSS2_BASE_RC_NOT_SUPPORTED, TSS2_BASE_RC_TRY_AGAIN,
-            TSS2_ESYS_RC_LAYER,
+            TSS2_BASE_RC_BAD_TR, TSS2_BASE_RC_BAD_VALUE, TSS2_BASE_RC_CALLBACK_NULL,
+            TSS2_BASE_RC_GENERAL_FAILURE, TSS2_BASE_RC_INCOMPATIBLE_TCTI,
+            TSS2_BASE_RC_INSUFFICIENT_RESPONSE, TSS2_BASE_RC_MALFORMED_RESPONSE,
+            TSS2_BASE_RC_MEMORY, TSS2_BASE_RC_MULTIPLE_DECRYPT_SESSIONS,
+            TSS2_BASE_RC_MULTIPLE_ENCRYPT_SESSIONS, TSS2_BASE_RC_NO_DECRYPT_PARAM,
+            TSS2_BASE_RC_NO_ENCRYPT_PARAM, TSS2_BASE_RC_NOT_IMPLEMENTED,
+            TSS2_BASE_RC_NOT_SUPPORTED, TSS2_BASE_RC_TRY_AGAIN, TSS2_ESYS_RC_LAYER,
         },
     },
     error::{BaseReturnCode, EsapiReturnCode, ReturnCode},
@@ -116,6 +116,7 @@ fn test_valid_conversions() {
         BaseError::MultipleEncryptSessions
     );
     test_valid_conversion!(TSS2_BASE_RC_NOT_SUPPORTED, BaseError::NotSupported);
+    test_valid_conversion!(TSS2_BASE_RC_CALLBACK_NULL, BaseError::CallbackNull);
 }
 
 #[test]
@@ -229,4 +230,5 @@ fn test_base_error_method() {
     test_base_error!(BaseError::MultipleDecryptSessions);
     test_base_error!(BaseError::MultipleEncryptSessions);
     test_base_error!(BaseError::NotSupported);
+    test_base_error!(BaseError::CallbackNull);
 }

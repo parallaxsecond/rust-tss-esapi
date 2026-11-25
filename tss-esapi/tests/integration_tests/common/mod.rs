@@ -30,6 +30,8 @@ use tss_esapi::{
     utils,
 };
 
+#[cfg(has_esys_set_crypto_callbacks)]
+pub mod crypto_callbacks;
 mod marshall;
 #[cfg(feature = "serde")]
 mod serde;

@@ -123,6 +123,7 @@ impl std::fmt::Display for BaseReturnCode {
             BaseError::NoHandle => write!(f, "No handle provided."),
             BaseError::NotProvisioned => write!(f, "Provisioning was not executed."),
             BaseError::AlreadyProvisioned => write!(f, "Already provisioned."),
+            BaseError::CallbackNull => write!(f, "A required callback is not set."),
         }
     }
 }

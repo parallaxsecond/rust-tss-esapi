@@ -11,6 +11,8 @@ fn main() {
     println!("cargo:rustc-check-cfg=cfg(has_tss_base_rc_values_52_to_53)");
     println!("cargo:rustc-check-cfg=cfg(has_tpmu_sensitive_create)");
     println!("cargo:rustc-check-cfg=cfg(has_esys_tr_get_tpm_handle)");
+    println!("cargo:rustc-check-cfg=cfg(has_esys_set_crypto_callbacks)");
+    println!("cargo:rustc-check-cfg=cfg(has_tss_base_rc_value_54)");
 
     // If documentation for Docs.rs is being built then the version is set
     // to the minimum supported tpm2-tss version.
@@ -61,5 +63,16 @@ fn main() {
     let has_esys_tr_get_tpm_handle_req = VersionReq::parse(">=2.4.0").unwrap();
     if has_esys_tr_get_tpm_handle_req.matches(&tss_version) {
         println!("cargo:rustc-cfg=has_esys_tr_get_tpm_handle")
+    }
+
+    // Esys_SetCryptoCallbacks arrived in tpm2-tss 4.0.0. The pre-generated
+    // x86_64 macOS bindings predate it.
+    let pregenerated_lacks_callbacks = cfg!(not(feature = "generate-bindings"))
+        && std::env::var("CARGO_CFG_TARGET_OS").as_deref() == Ok("macos");
+    let has_esys_set_crypto_callbacks_req = VersionReq::parse(">=4.0.0").unwrap();
+    if has_esys_set_crypto_callbacks_req.matches(&tss_version) && !pregenerated_lacks_callbacks {
+        println!("cargo:rustc-cfg=has_esys_set_crypto_callbacks");
+        // TSS2_BASE_RC_CALLBACK_NULL arrived with the callbacks.
+        println!("cargo:rustc-cfg=has_tss_base_rc_value_54")
     }
 }
