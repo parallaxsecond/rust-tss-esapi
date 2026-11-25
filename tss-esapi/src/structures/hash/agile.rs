@@ -3,6 +3,7 @@
 use crate::interface_types::algorithm::HashingAlgorithm;
 use crate::structures::Digest;
 use crate::tss2_esys::{TPMT_HA, TPMU_HA};
+use crate::traits::impl_mu_complex;
 use crate::{Error, Result, WrapperErrorKind};
 use std::convert::{TryFrom, TryInto};
 
@@ -72,3 +73,5 @@ impl HashAgile {
         self.algorithm
     }
 }
+
+impl_mu_complex!(HashAgile, TPMT_HA);
