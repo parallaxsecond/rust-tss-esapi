@@ -13,7 +13,7 @@ set -euf -o pipefail
 ########################################
 # Run the TPM SWTPM server for doctest #
 ########################################
-mkdir /tmp/tpmdir
+mkdir -p /tmp/tpmdir
 swtpm_setup --tpm2 \
     --tpmstate /tmp/tpmdir \
     --pcr-banks sha1,sha256 \
@@ -33,8 +33,8 @@ RUST_BACKTRACE=1 cargo build --features "generate-bindings integration-tests ser
 #################
 # Run the tests #
 #################
-RUST_BACKTRACE=1 RUST_LOG=info \
-    cargo test --all-targets --features "generate-bindings integration-tests serde" -- --nocapture
+TEST_TCTI="swtpm:path=/tmp/tpmdir/swtpm.sock" RUST_BACKTRACE=1 RUST_LOG=info \
+    cargo test --all-targets --features "generate-bindings integration-tests serde bundled" -- --test-threads=1 --nocapture
 
 TEST_TCTI="swtpm:path=/tmp/tpmdir/swtpm.sock" RUST_BACKTRACE=1 RUST_LOG=info \
-    cargo test --doc --features "generate-bindings integration-tests serde" -- --test-threads=1 --nocapture
+    cargo test --doc --features "generate-bindings integration-tests serde bundled" -- --test-threads=1 --nocapture
